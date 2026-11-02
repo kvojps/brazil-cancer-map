@@ -11,3 +11,5 @@
 **Meu município**: A visão centrada num município escolhido pelo cidadão. Reúne os indicadores disponíveis para ele e, quando o dado só existe por UF, os da sua UF.
 
 **Ação**: Um passo concreto que o cidadão pode dar, ligado a um indicador (por exemplo, pedir uma mamografia no SUS ou acionar a Lei dos 60 dias). Todo indicador tem uma Ação associada ou uma justificativa explícita de por que não tem.
+
+**Tipo de câncer**: O recorte por localização do câncer (por exemplo mama ou próstata) que filtra os indicadores do mapa. A visão padrão é "Todos os cânceres". Quando um eixo não tem indicador para um tipo, ele mostra por que não tem.
