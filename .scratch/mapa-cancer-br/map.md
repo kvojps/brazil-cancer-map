@@ -37,10 +37,13 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 - [Que metas oficiais existem para os indicadores do MVP?](issues/14-metas-oficiais.md): há meta oficial para 60 dias (100%, lei), mamografia e citopatológico (razão 1, INCA), HPV (90% até 2030, Plano de Dant) e tabagismo (5,9% em 2030). A mortalidade não tem meta compatível com o indicador. Ficaram em aberto a faixa 50–74 da mamografia (NT 626/2025) e o efeito do DNA-HPV no citopatológico.
 - [O que o SUS e a lei garantem ao cidadão em cada Ação?](issues/16-direitos-e-orientacoes-sus.md): o tratamento começa em até 60 dias e os exames de diagnóstico saem em até 30. Se o prazo falhar, o caminho é secretaria, 136, Defensoria ou MP. A regulação define o hospital. Desde 2025 a mamografia é 50–74 a cada 2 anos e o colo usa DNA-HPV. O FIT colorretal chega ao SUS em 11/2026 e reabre a Ação de colorretal.
 - [Como as fontes oficiais tratam C55, C26 e a padronização por idade na mortalidade?](issues/15-metodos-mortalidade.md): o INCA não redistribui nada. Usa o C53 do SIM e padroniza pela população mundial de Segi com 80+, e o pipeline reproduz o número com ~1% de diferença. O C55 caiu ao longo da série e infla a tendência do colo em ~1 ponto ao ano, então redistribuí-lo ainda pede decisão. O C26 quase não pesa.
+- [Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md): 60 dias = 100%, mamografia e citopatológico = razão 1, HPV = 90% (Censo 2022 fixo), tabagismo = 5,9%. A mortalidade não tem Situação, só Tendência. O "como está hoje" tem 3 faixas fixas (alcançou, perto ≥ 80% e longe), sem quantis e numa escala de um só tom. A mamografia fica em 50–69, o citopatológico congela em 2025 com a ressalva do DNA-HPV, e a próstata fica sem Situação no 60 dias.
 
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
+
+- **O que substitui a razão de citopatológicos a partir de 2026.** Com o DNA-HPV, a série do citopatológico congela em 2025 ([Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md)). Um indicador combinado (citopatológico + DNA-HPV pelo código SIGTAP 02.02.10.025-1 no SIA-SUS) depende de confirmar que o dado aberto traz esse código por município de residência e de existir uma Referência oficial (o INCA ainda não publicou). Fica para quando houver dado.
 
 ## Out of scope
 
