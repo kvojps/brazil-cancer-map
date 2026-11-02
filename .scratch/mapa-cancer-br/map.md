@@ -4,7 +4,7 @@ Labels: wayfinder:map
 
 ## Destination
 
-Uma **spec de MVP pronta para construir** de um mapa público do câncer no Brasil, mais uma **decisão de viabilidade (go/no-go)**. A spec define as fontes de dados, os indicadores por eixo, a experiência "meu município", a stack e a hospedagem gratuita. Construir e publicar o site fica depois deste mapa.
+Uma **spec de MVP pronta para construir** de um mapa público do câncer no Brasil, mais uma **decisão de viabilidade (go/no-go)**. A spec define as fontes de dados, os indicadores por eixo e por tipo de câncer, a experiência "meu município", a stack e a hospedagem gratuita. Construir e publicar o site fica depois deste mapa.
 
 ## Notes
 
@@ -25,6 +25,7 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 - [Como servir um mapa municipal do Brasil num site estático gratuito?](issues/03-hospedagem-e-mapa-estatico.md): cabe com folga. A primeira visita baixa ~1,3 MB e o site inteiro tem menos de 30 MB. Recomendação: Cloudflare Pages (com GitHub Pages como alternativa), MapLibre GL JS + TopoJSON simplificado do IBGE, dados em JSON por indicador. Sem DuckDB-WASM e sem PMTiles no MVP.
 - [Vale construir, e como se diferenciar?](issues/05-go-no-go-e-posicionamento.md): **go**. Posicionamento: "Veja como está o cuidado com o câncer no seu município, e o que você pode fazer." O núcleo é município + Ação (novo termo no glossário), e todo indicador precisa ter uma Ação ou justificar a falta dela. O Oncoguia é citado, e a parceria fica para depois.
 - [Qual a qualidade dos dados de mama e colo do útero por UF?](issues/09-medir-completude-por-uf.md): o dado se sustenta, então o go continua de pé. O gargalo é a % "sem informação de tratamento" do Painel-Oncologia: as faixas são A (SE, PI, TO, PA, AL, CE), B (16 UFs) e C (MA, RO, RN, AP, RR). O SIM está bom. O estadiamento do Painel não serve como indicador de detecção precoce. O C55 e os anos recentes pedem tratamento.
+- [Qual é o recorte do MVP (tipos de câncer e região)?](issues/08-recorte-do-mvp.md): o MVP cobre o Brasil inteiro, e as UFs da faixa C ficam com ressalva. A visão padrão é "Todos os cânceres", com seletor de 6 tipos candidatos (mama, colo do útero, próstata, colorretal, pulmão, estômago). Quando um eixo não tem indicador para um tipo, ele mostra a justificativa. A lista depende da medição de qualidade dos outros tipos.
 
 ## Not yet specified
 
@@ -38,4 +39,5 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 - Construir e publicar o site (é execução, fica depois do destino).
 - Dados individuais de pacientes ou qualquer coisa sujeita à LGPD além de dados públicos agregados.
 - Orientação médica personalizada.
+- Tipos de câncer além dos 6 candidatos (boca, fígado, pele, bexiga…): ficam para a v2 do site, depois deste mapa.
 - Infraestrutura paga, backend ou banco de dados.
