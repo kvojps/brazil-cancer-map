@@ -20,6 +20,8 @@
 
 **Referência**: O valor com que a situação de um indicador é comparada. É a meta oficial quando ela existe (por exemplo, 100% dos casos tratados em até 60 dias) e o valor do Brasil quando não existe. Nunca é um ranking entre municípios.
 
+**Situação**: O valor do indicador no último ano consolidado, comparado à Referência. Aparece no cartão e no modo "como está hoje" do mapa. A mortalidade não tem Situação, só Tendência.
+
 **Região imediata**: O grupo de municípios vizinhos definido pelo IBGE cujo dado substitui o de um município com poucos casos, tanto no Mapa inicial quanto no Meu município. Para o cidadão, aparece como "seu município e vizinhos". _Evitar_: "agregado" em texto para o público.
 
 **Dado insuficiente**: O estado de um indicador quando nem o município nem a sua Região imediata têm casos suficientes para calcular a Situação e a Tendência. Não é uma classe de Tendência, e a Ação continua aparecendo.

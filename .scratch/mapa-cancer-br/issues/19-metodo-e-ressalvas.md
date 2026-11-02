@@ -12,3 +12,4 @@ Com [Como as fontes oficiais tratam C55, C26 e a padronização por idade na mor
 - como a ressalva de qualidade aparece **por UF e por tipo de câncer**, já que a faixa A/B/C muda com o tipo ([Qual a qualidade dos dados dos outros tipos de câncer por UF?](10-medir-completude-outros-tipos.md));
 - o texto da nota de método que explica por que "Todos os cânceres" muda de definição entre os eixos ([Quais indicadores entram no MVP?](04-indicadores-do-mvp.md));
 - como a legenda e o tooltip deixam claro que a cor não é ranking.
+- a nota de método precisa explicar a Referência ([Qual é a Referência de cada indicador?](18-referencia-de-cada-indicador.md)): mamografia em 50–69 e não 50–74, HPV pelo Censo 2022 fixo, a regra das 3 faixas e o congelamento do citopatológico.
