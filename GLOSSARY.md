@@ -9,3 +9,5 @@
 **Tendência de mortalidade**: A variação da taxa de mortalidade ao longo do tempo. É a única forma em que a mortalidade aparece no mapa; contagens absolutas de óbitos não ganham destaque.
 
 **Meu município**: A visão centrada num município escolhido pelo cidadão. Reúne os indicadores disponíveis para ele e, quando o dado só existe por UF, os da sua UF.
+
+**Ação**: Um passo concreto que o cidadão pode dar, ligado a um indicador (por exemplo, pedir uma mamografia no SUS ou acionar a Lei dos 60 dias). Todo indicador tem uma Ação associada ou uma justificativa explícita de por que não tem.
