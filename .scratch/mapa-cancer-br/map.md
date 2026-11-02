@@ -23,11 +23,12 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 - [Quais dados públicos existem para cada eixo?](issues/01-dados-disponiveis-por-eixo.md): sim, os quatro eixos são viáveis com dado aberto e série de 10 anos ou mais. Acesso ao tratamento (Painel-Oncologia) é o mais forte e é municipal. A incidência só existe por UF e capital, e o tabagismo só por capital ou UF.
 - [Já existe alguma solução que faz isso?](issues/02-solucoes-existentes.md): não. As ferramentas existentes são técnicas ou param na UF. A mais próxima é o Radar do Câncer (Oncoguia), que é estadual, sem download e sem orientar ação. Há espaço livre para um mapa municipal de "esperança + ação".
 - [Como servir um mapa municipal do Brasil num site estático gratuito?](issues/03-hospedagem-e-mapa-estatico.md): cabe com folga. A primeira visita baixa ~1,3 MB e o site inteiro tem menos de 30 MB. Recomendação: Cloudflare Pages (com GitHub Pages como alternativa), MapLibre GL JS + TopoJSON simplificado do IBGE, dados em JSON por indicador. Sem DuckDB-WASM e sem PMTiles no MVP.
+- [Vale construir, e como se diferenciar?](issues/05-go-no-go-e-posicionamento.md): **go**. Posicionamento: "Veja como está o cuidado com o câncer no seu município, e o que você pode fazer." O núcleo é município + Ação (novo termo no glossário), e todo indicador precisa ter uma Ação ou justificar a falta dela. O Oncoguia é citado, e a parceria fica para depois.
 
 ## Not yet specified
 
 - **Apresentação responsável:** municípios pequenos com números instáveis, taxas padronizadas por idade, aviso de "isto não é orientação médica", créditos e citação das fontes.
-- **Conteúdo de ação:** o que o site diz para fazer (onde se tratar, a Lei dos 60 dias, como pedir rastreamento no SUS) e quem valida esse conteúdo.
+- **Conteúdo de ação:** o que o site diz para fazer (onde se tratar, a Lei dos 60 dias, como pedir rastreamento no SUS) e quem valida esse conteúdo. Candidato: parceria com o Oncoguia, a avaliar com o protótipo em mãos.
 - **Atualização dos dados:** com que frequência e como (manual ou por automação agendada no CI).
 - **Identidade:** nome, domínio gratuito, acessibilidade (WCAG) e uso em celular.
 
