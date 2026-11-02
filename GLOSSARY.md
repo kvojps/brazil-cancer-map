@@ -12,10 +12,14 @@
 
 **Meu município**: A visão centrada num município escolhido pelo cidadão, aberta pelo Mapa inicial ou pela busca. É uma ficha com os quatro eixos empilhados (Acesso ao tratamento primeiro). Reúne os indicadores disponíveis para o município e, quando o dado só existe por UF ou capital, os da sua UF ou capital.
 
-**Tendência**: A direção recente de um indicador: melhorando, estável ou piorando. Aparece em todo cartão e é a cor padrão do Mapa inicial. "Melhorando" depende do indicador: para a mortalidade, é cair; para a cobertura, é subir.
+**Tendência**: A direção recente de um indicador, em uma de quatro classes: melhorando, piorando, estável (sabemos que quase não mudou) ou sem direção clara (a mudança é incerta demais para dizer). Quando nem há casos suficientes para calcular, o indicador fica como dado insuficiente, que não é uma Tendência. Aparece em todo cartão e é a cor padrão do Mapa inicial. "Melhorando" depende do indicador: para a mortalidade, é cair; para a cobertura, é subir. _Evitar_: "estável" para uma série que só não mostrou mudança significativa.
 
 **Ação**: Um passo concreto que o cidadão pode dar, ligado a um indicador (por exemplo, pedir uma mamografia no SUS ou acionar a Lei dos 60 dias). Todo indicador tem uma Ação associada ou uma justificativa explícita de por que não tem.
 
 **Tipo de câncer**: O recorte por localização do câncer (por exemplo mama ou próstata) que filtra os indicadores do mapa. A visão padrão é "Todos os cânceres", e o seletor oferece mama, colo do útero, próstata, colorretal e pulmão. Quando um eixo não tem indicador para um tipo, ele mostra por que não tem.
 
 **Referência**: O valor com que a situação de um indicador é comparada. É a meta oficial quando ela existe (por exemplo, 100% dos casos tratados em até 60 dias) e o valor do Brasil quando não existe. Nunca é um ranking entre municípios.
+
+**Região imediata**: O grupo de municípios vizinhos definido pelo IBGE cujo dado substitui o de um município com poucos casos, tanto no Mapa inicial quanto no Meu município. Para o cidadão, aparece como "seu município e vizinhos". _Evitar_: "agregado" em texto para o público.
+
+**Dado insuficiente**: O estado de um indicador quando nem o município nem a sua Região imediata têm casos suficientes para calcular a Situação e a Tendência. Não é uma classe de Tendência, e a Ação continua aparecendo.
