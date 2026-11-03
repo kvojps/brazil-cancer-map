@@ -41,6 +41,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Que regras de método e ressalvas a mortalidade e o Acesso ao tratamento mostram?](issues/19-metodo-e-ressalvas.md): Segi/Doll com 80+, redistribuição do C55, qualidade por UF × tipo e notas visíveis; o MVP terá metodologia pública reproduzível, da fonte ao dado exibido.
 
+- [Que Ação cada indicador mostra, e quem valida o conteúdo?](issues/20-conteudo-das-acoes.md): textos curtos dos oito indicadores aprovados, com detalhes expansíveis e alternativas por tipo; Ação sempre visível, oferta local só com confirmação e revisão profissional de conteúdo clínico exigida antes de publicar, sob responsabilidade do projeto.
+
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
