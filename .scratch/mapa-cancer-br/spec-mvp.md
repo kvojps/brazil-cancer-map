@@ -16,7 +16,7 @@ Pendências de spec: os dois pontos que os tickets não tinham fixado viraram ti
 
 ## 2. Identidade, licenças e requisitos de lançamento
 
-Fontes: [Qual o nome, o domínio e a licença do projeto?](issues/22-nome-dominio-licenca.md), [Qual licença expressa a abertura aprovada para o código?](issues/24-licenca-do-codigo.md).
+Fontes: [Qual o nome, o domínio e a licença do projeto?](issues/22-nome-dominio-licenca.md), [Qual licença expressa a abertura aprovada para o código?](issues/24-licenca-do-codigo.md), [O site deve avisar que ainda está em construção?](issues/29-aviso-em-construcao.md).
 
 - **Nome:** Observatório do Câncer no Brasil. **Subtítulo:** "Dados sobre o câncer no seu município, para entender e agir".
 - **Endereço:** o subdomínio gratuito da hospedagem (por exemplo `*.pages.dev`), conforme a disponibilidade no momento da publicação. Domínio próprio pago não entra no MVP.
@@ -25,6 +25,7 @@ Fontes: [Qual o nome, o domínio e a licença do projeto?](issues/22-nome-domini
 - **Textos do projeto** (Ações, metodologia, notas, ressalvas e glossário): CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil.
 - **Dados:** os dados de terceiros seguem as condições de cada fonte, e os arquivos que o pipeline gera não são cobertos pela licença do código. A metodologia e cada arquivo exportado identificam a fonte, o período e as condições de reutilização. Quem citar o observatório deve citar também as fontes originais.
 - **Contribuições:** entram sob a licença da parte alterada, sem CLA.
+- **Aviso de site em construção:** uma faixa fixa no topo de todas as páginas, sem botão de fechar, com o texto: **"Em construção. Este site ainda está sendo desenvolvido e os números não passaram por uma validação completa: podem conter erros e mudar."** A faixa não usa as cores da Tendência nem vermelho. Ela sai por decisão do responsável pelo projeto, e não por um critério fixo. Os arquivos de dados abertos não levam o aviso.
 - **Acessibilidade** (requisito de lançamento, sem certificação formal de WCAG ou eMAG): toda informação do mapa tem alternativa em texto ou tabela, toda interação funciona pelo teclado e nenhuma informação depende só de cor (por isso as texturas da seção 11).
 
 ## 3. Escopo
