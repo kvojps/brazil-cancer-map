@@ -116,7 +116,7 @@ def test_the_published_layer_carries_the_quality_band_and_its_period(tmp_path):
     assert layer["municipalities"]["110020"]["quality_band"] == "A"
     assert "faixa de qualidade 2020–2024" in layer["source"]["period"]
     manifest = json.loads((site / "manifest.json").read_text())
-    assert manifest["indicators"]["within_60_days"]["all"]["quality"] == [2020, 2024]
+    assert manifest["indicators"]["within_60_days"]["all"]["quality_years"] == [2020, 2024]
 
 
 def test_a_uf_without_a_quality_band_publishes_nothing(tmp_path):

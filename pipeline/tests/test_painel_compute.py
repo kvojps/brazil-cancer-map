@@ -62,7 +62,7 @@ def test_the_layer_states_its_period():
         "latest": 2024,
         "trend": [2015, 2024],
         "trend_cases": "chemo_radio",
-        "quality": [2020, 2024],
+        "quality_years": [2020, 2024],
     }
 
 

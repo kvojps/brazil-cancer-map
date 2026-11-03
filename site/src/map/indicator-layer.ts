@@ -50,7 +50,7 @@ export interface Period {
   /** Which cases the Tendência is measured on, e.g. "chemo_radio"; absent means all of them. */
   trend_cases?: string;
   /** First and last year of the quality band: `[first, last]`; absent for indicators without one. */
-  quality?: number[];
+  quality_years?: number[];
 }
 
 /** The 60 dias Tendência uses only the cases first treated with chemo or radio (spec, section 7). */
@@ -139,7 +139,7 @@ export function isHatched(entry: MunicipalityIndicator | undefined): boolean {
 }
 
 export function qualityPeriodText(period: Period): string | null {
-  return period.quality ? `${period.quality[0]}–${period.quality[1]}` : null;
+  return period.quality_years ? `${period.quality_years[0]}–${period.quality_years[1]}` : null;
 }
 
 /** "Faixa C (37,2% sem informação de tratamento)", for the tooltip and the table. */
