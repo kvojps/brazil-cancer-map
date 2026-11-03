@@ -1,6 +1,10 @@
 import {
+  QUALITY_WARNING,
   immediateRegionName,
   originText,
+  qualityPeriodText,
+  qualityText,
+  ufQuality,
   TREND_LABELS,
   formatPercent,
   trendCasesText,
@@ -26,6 +30,11 @@ export function fillIndicatorTable(
   root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
   const trendCases = trendCasesText(layer.period);
   root.querySelector(".trend-cases")!.textContent = trendCases ? ` (${trendCases})` : "";
+  const qualityPeriod = qualityPeriodText(layer.period);
+  root.querySelector(".quality-note")!.textContent = qualityPeriod
+    ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +
+      `de tratamento. Na faixa C: ${QUALITY_WARNING}`
+    : "";
   const collator = new Intl.Collator("pt-BR");
   const rows = [...listing.municipalities].sort(
     (a, b) => collator.compare(a.uf, b.uf) || collator.compare(a.name, b.name),
@@ -48,6 +57,7 @@ export function fillIndicatorTable(
           formatPercent(entry?.value ?? null),
           formatPercent(entry?.without_treatment_info ?? null),
           originText(entry, immediateRegionName(m, listing)),
+          qualityText(ufQuality(layer, m.code)),
         ];
         cells.forEach((text, i) => {
           const cell = document.createElement(i === 0 ? "th" : "td");

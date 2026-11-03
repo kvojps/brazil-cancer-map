@@ -15,12 +15,27 @@ export type TrendState = TrendClass | "insufficient";
  */
 export type Origin = "municipality" | "immediate_region" | "insufficient";
 
+/**
+ * Quality of the treatment records in the municipality's UF (spec, section 6.3),
+ * from the % of all the cases without treatment information: A up to 15%, B
+ * above 15% and below 35%, C from 35%.
+ */
+export type QualityBand = "A" | "B" | "C";
+
 export interface MunicipalityIndicator {
   origin: Origin;
   trend: TrendClass | null;
   /** % treated within 60 days in the latest consolidated year; the region's when `origin` is "immediate_region". */
   value: number | null;
   /** % without treatment information in the same year. */
+  without_treatment_info: number | null;
+  /** The band of the municipality's UF; null only for a UF without cases. */
+  quality_band: QualityBand | null;
+}
+
+/** A UF's band and its % without treatment information over the band's years. */
+export interface UfQuality {
+  band: QualityBand | null;
   without_treatment_info: number | null;
 }
 
@@ -34,6 +49,8 @@ export interface Period {
   trend: number[];
   /** Which cases the Tendência is measured on, e.g. "chemo_radio"; absent means all of them. */
   trend_cases?: string;
+  /** First and last year of the quality band: `[first, last]`; absent for indicators without one. */
+  quality?: number[];
 }
 
 /** The 60 dias Tendência uses only the cases first treated with chemo or radio (spec, section 7). */
@@ -52,6 +69,8 @@ export interface IndicatorLayer {
   cancer_type: string;
   source: { name: string; url: string; conditions: string; period: string };
   period: Period;
+  /** By 2-digit UF code. */
+  quality?: Record<string, UfQuality>;
   municipalities: Record<string, MunicipalityIndicator>;
 }
 
@@ -93,6 +112,46 @@ export const INSUFFICIENT_CSS =
   `radial-gradient(circle, ${INSUFFICIENT_DOTS.color} ${INSUFFICIENT_DOTS.radius}px, ` +
   `transparent ${INSUFFICIENT_DOTS.radius + 0.5}px) ` +
   `0 0 / ${INSUFFICIENT_DOTS.spacing}px ${INSUFFICIENT_DOTS.spacing}px, ${TREND_COLORS.insufficient}`;
+
+/**
+ * Band C gets diagonal hatching on the treatment indicator only (spec, section
+ * 11.1): dark lines, unlike the gray dots of "dado insuficiente", drawn over the
+ * Tendência color so the class still shows.
+ */
+export const HATCH = { color: "rgba(31, 41, 51, 0.7)", spacing: 6, width: 1.5 };
+
+/** The hatched fill as CSS, for the legend swatch, over the most common class. */
+export const HATCH_CSS =
+  `repeating-linear-gradient(-45deg, ${HATCH.color} 0 ${HATCH.width}px, ` +
+  `transparent ${HATCH.width}px ${HATCH.spacing}px), ${TREND_COLORS.no_clear_direction}`;
+
+/** The approved warning of band C (spec, section 6.3). */
+export const QUALITY_WARNING =
+  "Muitos casos estão sem informação de tratamento; o resultado pode não representar toda a situação.";
+
+/**
+ * Whether a municipality is hatched: band C, with a Tendência to caveat. A
+ * municipality with "dado insuficiente" keeps only its dots, so the two
+ * textures never overlap.
+ */
+export function isHatched(entry: MunicipalityIndicator | undefined): boolean {
+  return entry?.quality_band === "C" && trendState(entry) !== "insufficient";
+}
+
+export function qualityPeriodText(period: Period): string | null {
+  return period.quality ? `${period.quality[0]}–${period.quality[1]}` : null;
+}
+
+/** "Faixa C (37,2% sem informação de tratamento)", for the tooltip and the table. */
+export function qualityText(quality: UfQuality | undefined): string {
+  if (!quality?.band) return "—";
+  return `Faixa ${quality.band} (${formatPercent(quality.without_treatment_info)} sem informação de tratamento)`;
+}
+
+/** The quality of a municipality's UF, looked up by the UF part of its code. */
+export function ufQuality(layer: IndicatorLayer, code: string): UfQuality | undefined {
+  return layer.quality?.[code.slice(0, 2)];
+}
 
 /** The swatch of a legend entry: a plain color, or the dots of "dado insuficiente". */
 export function trendSwatch(state: TrendState): string {
