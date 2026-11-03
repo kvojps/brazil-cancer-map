@@ -18,6 +18,7 @@ import datasus_dbc
 import dbfread
 import duckdb
 
+from pipeline.status import classify_status, status_note
 from pipeline.cascade import Origin, data_origins
 from pipeline.download import fetch, list_ftp, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
@@ -170,6 +171,7 @@ def within_60_days_layer(
     *,
     immediate_region_of: Mapping[str, str],
     provisional: set[int],
+    cancer_type: str = "all",
 ) -> dict[str, Any]:
     """The map layer of one cancer type: each municipality's trend and latest shares.
 
@@ -225,7 +227,13 @@ def within_60_days_layer(
             shown = regional_shown[region]
         else:
             shown = NO_DATA
-        layer[code] = {"origin": origin.value, **shown, "quality_band": quality[code[:2]]["band"]}
+        layer[code] = {
+            "origin": origin.value,
+            **shown,
+            "quality_band": quality[code[:2]]["band"],
+            "status": shown["status"] if cancer_type not in WITHOUT_STATUS else None,
+            "status_note": shown["status_note"] if cancer_type not in WITHOUT_STATUS else None,
+        }
     period = {
         "first_year": years[0],
         "last_year": years[-1],
@@ -236,7 +244,12 @@ def within_60_days_layer(
         "value_cases": MEASURED_CASES,
         "quality_years": list(quality_window),
     }
-    return {"period": period, "quality": quality, "municipalities": layer}
+    return {
+        "period": period,
+        "quality": quality,
+        "municipalities": layer,
+        "reference": {"value": 100, "label": "o que a lei garante"} if cancer_type not in WITHOUT_STATUS else None,
+    }
 
 
 QUALITY_YEARS = 5
@@ -284,7 +297,7 @@ def uf_quality(
     }
 
 
-NO_DATA = {"trend": None, "value": None, "without_treatment_info": None}
+NO_DATA = {"status": None, "status_note": None, "trend": None, "value": None, "without_treatment_info": None}
 """An insufficient municipality exports neither a class nor shares that would reveal its few cases."""
 
 
@@ -298,7 +311,10 @@ def _trend_and_shares(series: Mapping[int, CaseCounts], years: Sequence[int], la
         higher_is_better=True,
     )
     last = series.get(latest, CaseCounts())
+    raw_value = 100 * last.chemo_radio_within_60_days / last.chemo_radio if last.chemo_radio else None
     return {
+        "status": classify_status(raw_value, reference=100),
+        "status_note": status_note(raw_value, maximum=100),
         "trend": trend.trend_class.value if trend else None,
         "value": _percent(last.chemo_radio_within_60_days, last.chemo_radio),
         "without_treatment_info": _percent(last.without_treatment_info, last.cases),
@@ -639,7 +655,7 @@ class PainelSource:
                 for row in rows
                 if row.cancer_type == cancer_type
             }
-            layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=provisional)
+            layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=provisional, cancer_type=cancer_type)
             path = self._clean_dir / "layers" / f"{cancer_type}.json"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(layer))

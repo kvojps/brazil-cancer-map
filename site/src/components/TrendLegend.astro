@@ -1,6 +1,7 @@
 ---
 import {
   HATCH_CSS,
+  STATUS_STATES, STATUS_COLORS, STATUS_LABELS, STATUS_LEGEND, INSUFFICIENT_CSS,
   INDICATORS,
   QUALITY_WARNING,
   REGION_NOTE,
@@ -26,22 +27,38 @@ const measuredCases = measuredCasesText(period);
 const qualityPeriod = qualityPeriodText(period);
 ---
 
-<section class="legend" aria-labelledby="legend-title">
-  <h2 id="legend-title">Tendência {trendPeriodText(period)}</h2>
-  <p>A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios.</p>
-  {measuredCases && <p>{measuredCases}.</p>}
-  <ul>
-    {
-      TREND_STATES.map((state) => (
+<section class="legend" aria-label="Legenda da Tendência">
+  <div class="trend-legend">
+    <h2>Tendência {trendPeriodText(period)}</h2>
+    <p>A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios.</p>
+    {measuredCases && <p>{measuredCases}.</p>}
+    <ul>
+      {
+        TREND_STATES.map((state) => (
+          <li>
+            <span class="swatch" style={`background: ${trendSwatch(state)}`} aria-hidden="true" />
+            <span>
+              <strong>{TREND_LABELS[state]}</strong>: {descriptions[state]}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  <div class="status-legend" hidden>
+    <h2>Situação em {period.latest}</h2>
+    <p>{STATUS_LEGEND}</p>
+    <p>Referência: 100% — o que a lei garante.</p>
+    {measuredCases && <p>{measuredCases}.</p>}
+    <ul>
+      {STATUS_STATES.map(state => (
         <li>
-          <span class="swatch" style={`background: ${trendSwatch(state)}`} aria-hidden="true" />
-          <span>
-            <strong>{TREND_LABELS[state]}</strong>: {descriptions[state]}
-          </span>
+          <span class="swatch" style={`background: ${state === "insufficient" ? INSUFFICIENT_CSS : STATUS_COLORS[state]}`} aria-hidden="true" />
+          <span><strong>{STATUS_LABELS[state]}</strong>: {{ reached: "100% ou mais da referência.", near: "de 80% a menos de 100% da referência.", far: "menos de 80% da referência.", insufficient: "poucos casos no município e na sua região para calcular a Situação." }[state]}</span>
         </li>
-      ))
-    }
-  </ul>
+      ))}
+    </ul>
+  </div>
   {
     qualityPeriod && (
       <ul class="quality">

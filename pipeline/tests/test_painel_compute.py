@@ -27,6 +27,8 @@ def test_every_municipality_of_the_mesh_is_in_the_layer():
     assert layer["municipalities"]["510183"] == {
         "origin": "insufficient",
         "trend": None,
+        "status": None,
+        "status_note": None,
         "value": None,
         "without_treatment_info": None,
         # No case at all in Mato Grosso: no band to give.
@@ -46,6 +48,8 @@ def test_a_municipality_carries_its_class_and_latest_consolidated_shares():
     assert layer["municipalities"]["261160"] == {
         "origin": "municipality",
         "trend": "improving",
+        "status": "far",
+        "status_note": None,
         "value": 60.0,
         "without_treatment_info": 10.0,
         # 10% without information in 2020–2024; the provisional 80% of 2025 stays out.
@@ -129,6 +133,8 @@ def test_a_registry_step_outside_chemo_radio_cases_does_not_change_the_class():
     assert layer["municipalities"]["261160"] == {
         "origin": "municipality",
         "trend": "stable",
+        "status": "far",
+        "status_note": None,
         # The value is over the 2024 chemo/radio cases: 158 of 400 on time.
         "value": 39.5,
         # The % without information stays over all the 2024 cases.
@@ -165,6 +171,8 @@ def test_a_small_municipality_shows_its_immediate_region():
     assert layer["municipalities"]["260005"] == {
         "origin": "immediate_region",
         "trend": "improving",
+        "status": "far",
+        "status_note": None,
         "value": 59.7,
         "without_treatment_info": 10.1,
         "quality_band": "A",
@@ -183,6 +191,8 @@ def test_a_municipality_without_enough_data_nor_region_exports_no_value():
     assert layer["municipalities"]["260005"] == {
         "origin": "insufficient",
         "trend": None,
+        "status": None,
+        "status_note": None,
         "value": None,
         "without_treatment_info": None,
         # The band is the UF's: it does not reveal the municipality's few cases.
@@ -250,3 +260,26 @@ def test_cases_with_an_unknown_municipality_of_residence_count_for_their_uf():
 
     assert layer["quality"] == {"26": {"band": "C", "without_treatment_info": 55.0}}
     assert "260000" not in layer["municipalities"]
+
+
+def test_status_uses_the_same_cascade_and_chemo_radio_value_as_the_trend():
+    counts = rising('261160', start=0.8, step=0) | small('260005')
+    layer = within_60_days_layer(counts, immediate_region_of={'261160': '260001', '260005': '260001', '510183': '510001'}, provisional=PROVISIONAL)
+    assert layer['reference'] == {'value': 100, 'label': 'o que a lei garante'}
+    assert layer['municipalities']['261160']['status'] == 'near'
+    assert layer['municipalities']['260005']['status'] == 'far'
+    assert layer['municipalities']['510183']['status'] is None
+
+
+def test_prostate_has_no_status_or_reference():
+    layer = within_60_days_layer(rising('261160'), immediate_region_of=RECIFE, provisional=PROVISIONAL, cancer_type='prostate')
+    assert layer['reference'] is None
+    assert layer['municipalities']['261160']['status'] is None
+
+
+def test_status_does_not_promote_a_value_rounded_up_to_the_reference():
+    counts = rising('261160')
+    counts[(2024, '261160')] = CaseCounts(cases=10000, chemo_radio=10000, chemo_radio_within_60_days=9999)
+    layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
+    assert layer['municipalities']['261160']['value'] == 100.0
+    assert layer['municipalities']['261160']['status'] == 'near'

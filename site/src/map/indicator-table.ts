@@ -1,5 +1,6 @@
 import {
   CANCER_TYPES,
+  statusText,
   NO_STATUS_NOTE,
   QUALITY_WARNING,
   immediateRegionName,
@@ -50,6 +51,8 @@ export function mountIndicatorTable(
           m.name,
           m.uf,
           TREND_LABELS[trendState(entry)],
+          statusText(entry, layer),
+          entry?.status_note ?? "—",
           formatPercent(entry?.value ?? null),
           formatPercent(entry?.without_treatment_info ?? null),
           originText(entry, immediateRegionName(m, listing)),
