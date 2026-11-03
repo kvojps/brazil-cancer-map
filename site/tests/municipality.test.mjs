@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 import { test, before } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { municipalityPath } from '../src/profile/profile.ts';
 
 const listing = JSON.parse(readFileSync(new URL('../public/dados/municipalities.json', import.meta.url)));
-const slug = (m) => `${m.code}-${m.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
-const page = (m) => readFileSync(new URL(`../dist/municipio/${slug(m)}/index.html`, import.meta.url), 'utf8');
+const page = (m) => readFileSync(new URL(`../dist${municipalityPath(m)}index.html`, import.meta.url), 'utf8');
 before(() => execFileSync('npm', ['run', 'build'], { cwd: new URL('..', import.meta.url), stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 }));
 
 test('every municipality has a static page with four axes and the treatment action', () => {
   assert.equal(readdirSync(new URL('../dist/municipio/', import.meta.url)).length, listing.municipalities.length);
-  const html = page(listing.municipalities.find(m => m.code === '110020'));
+  const html = readFileSync(new URL('../dist/municipio/110020-porto-velho/index.html', import.meta.url), 'utf8');
   assert.match(html, /Casos tratados com quimioterapia ou radioterapia: % que começou em até 60 dias/);
   const axes = ['Acesso ao tratamento', 'Detecção precoce', 'Prevenção', 'Panorama'].map(label => html.indexOf(`>${label}</h2>`));
   assert.ok(axes.every((position, i) => position >= 0 && (i === 0 || position > axes[i - 1])));

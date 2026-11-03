@@ -196,13 +196,7 @@ def within_60_days_layer(
     if window is None:
         raise ValueError("no consolidated diagnosis year to publish")
     first, latest = window
-    by_municipality: dict[str, dict[int, CaseCounts]] = {code: {} for code in immediate_region_of}
-    by_immediate_region: dict[str, dict[int, CaseCounts]] = {region: {} for region in immediate_region_of.values()}
-    for (year, code), entry in counts.items():
-        if code in by_municipality:
-            by_municipality[code][year] = entry
-            regional = by_immediate_region[immediate_region_of[code]]
-            regional[year] = regional.get(year, CaseCounts()) + entry
+    by_municipality, by_immediate_region, _ = _group_series(counts, immediate_region_of)
 
     origins = data_origins(
         {
@@ -252,6 +246,29 @@ def within_60_days_layer(
     }
 
 
+type PlaceSeries = dict[str, dict[int, CaseCounts]]
+
+
+def _group_series(
+    counts: Mapping[tuple[int, str], CaseCounts], immediate_region_of: Mapping[str, str]
+) -> tuple[PlaceSeries, PlaceSeries, PlaceSeries]:
+    """Group known residences by municipality, immediate region and UF for both layers."""
+    by_municipality: dict[str, dict[int, CaseCounts]] = {code: {} for code in immediate_region_of}
+    by_immediate_region: dict[str, dict[int, CaseCounts]] = {region: {} for region in immediate_region_of.values()}
+    for (year, code), entry in counts.items():
+        if code in by_municipality:
+            by_municipality[code][year] = entry
+            regional = by_immediate_region[immediate_region_of[code]]
+            regional[year] = regional.get(year, CaseCounts()) + entry
+
+    by_uf: PlaceSeries = {code[:2]: {} for code in immediate_region_of}
+    for code, series in by_municipality.items():
+        for year, entry in series.items():
+            uf_series = by_uf[code[:2]]
+            uf_series[year] = uf_series.get(year, CaseCounts()) + entry
+    return by_municipality, by_immediate_region, by_uf
+
+
 def within_60_days_profiles(
     counts: Mapping[tuple[int, str], CaseCounts],
     layer: Mapping[str, Any],
@@ -263,16 +280,11 @@ def within_60_days_profiles(
     """
     years = sorted({year for year, _ in counts})
     provisional = set(layer["period"]["provisional"])
-    grouped: dict[str, dict[int, CaseCounts]] = {}
-    by_uf: dict[str, dict[int, CaseCounts]] = {code[:2]: {} for code in immediate_region_of}
-    for (year, code), entry in counts.items():
-        if code not in immediate_region_of:
-            continue
-        for key in (f"municipality:{code}", f"immediate_region:{immediate_region_of[code]}"):
-            series = grouped.setdefault(key, {})
-            series[year] = series.get(year, CaseCounts()) + entry
-        uf_series = by_uf[code[:2]]
-        uf_series[year] = uf_series.get(year, CaseCounts()) + entry
+    by_municipality, by_region, by_uf = _group_series(counts, immediate_region_of)
+    grouped = {
+        **{f"municipality:{code}": series for code, series in by_municipality.items()},
+        **{f"immediate_region:{code}": series for code, series in by_region.items()},
+    }
     municipalities = {}
     displayed = {}
     for code, entry in layer["municipalities"].items():
