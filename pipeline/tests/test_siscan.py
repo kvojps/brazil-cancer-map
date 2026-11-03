@@ -74,6 +74,17 @@ def test_source_publishes_ratio_numerator_cascade_and_shared_profile_series(tmp_
     assert json.loads((site / 'manifest.json').read_text())['indicators']['mammography']['all']['latest'] == 2025
 
 
+def test_published_trend_is_the_class_without_the_change_estimate(tmp_path):
+    source, site, _ = prepared_source(tmp_path)
+    source.clean()
+    source.compute()
+    source.export()
+    map_entry = json.loads((site / 'map/mammography/all.json').read_text())['municipalities']['261160']
+    profile = json.loads((site / 'profiles/PE.json').read_text())['indicators']['mammography']['all']
+    assert 'trend_estimate' not in map_entry
+    assert 'trend_estimate' not in profile['municipalities']['261160']
+
+
 def test_export_rejects_bad_values_or_missing_municipalities_without_publishing(tmp_path):
     source, site, clean = prepared_source(tmp_path)
     source.clean()

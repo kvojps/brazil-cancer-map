@@ -1,8 +1,9 @@
+import io
 import os
 
 import pytest
 
-from pipeline.download import DownloadError, RemoteInfo, fetch
+from pipeline.download import DownloadError, RemoteInfo, download_ranges, fetch
 
 URL = "https://example.org/mesh.zip"
 MODIFIED = 1_772_136_168.0  # 2026-02-26 20:02:48 UTC
@@ -123,3 +124,57 @@ def test_truncated_download_is_rejected_and_not_kept(tmp_path):
         fetch(URL, dest, transport=FakeTransport(truncate=True), attempts=2, sleep=no_sleep)
 
     assert list(tmp_path.iterdir()) == []
+
+
+CONTENT = bytes(range(256)) * 1000
+
+
+def test_ranges_reassemble_the_file_byte_for_byte(tmp_path):
+    dest = tmp_path / "file.csv"
+
+    download_ranges(lambda offset: io.BytesIO(CONTENT[offset:]), len(CONTENT), dest, workers=4)
+
+    assert dest.read_bytes() == CONTENT
+
+
+class DroppingStream(io.BytesIO):
+    """Serves `limit` bytes and then loses the connection."""
+
+    def __init__(self, content: bytes, limit: int) -> None:
+        super().__init__(content)
+        self._left = limit
+
+    def read(self, size: int | None = -1) -> bytes:
+        if self._left <= 0:
+            raise ConnectionError("connection lost")
+        chunk = super().read(min(size if size and size > 0 else self._left, self._left))
+        self._left -= len(chunk)
+        return chunk
+
+
+def test_a_lost_connection_resumes_from_where_the_range_stopped(tmp_path):
+    dest = tmp_path / "file.csv"
+    offsets = []
+
+    def open_range(offset):
+        offsets.append(offset)
+        return DroppingStream(CONTENT[offset:], 50_000)
+
+    download_ranges(open_range, len(CONTENT), dest, workers=2, sleep=no_sleep)
+
+    assert dest.read_bytes() == CONTENT
+    assert 50_000 in offsets  # first range resumed, not restarted from zero
+    assert offsets.count(0) == 1
+
+
+def test_a_range_that_stops_advancing_fails_the_download(tmp_path):
+    def open_range(offset):
+        return DroppingStream(CONTENT[offset:], 0 if offset else 1000)
+
+    with pytest.raises(DownloadError):
+        download_ranges(open_range, len(CONTENT), tmp_path / "file.csv", workers=2, sleep=no_sleep)
+
+
+def test_a_stream_that_ends_early_is_not_taken_for_a_complete_file(tmp_path):
+    with pytest.raises(DownloadError):
+        download_ranges(lambda offset: io.BytesIO(b""), len(CONTENT), tmp_path / "file.csv", sleep=no_sleep)
