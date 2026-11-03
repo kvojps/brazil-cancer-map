@@ -56,7 +56,7 @@ def test_a_valid_run_publishes_the_layer_and_the_manifest(tmp_path):
     assert layer["municipalities"]["110020"]["value"] == 60.0
     manifest = json.loads((site / "manifest.json").read_text())
     assert manifest["pipeline_version"]
-    assert manifest["sources"]["painel_oncologia"]["extracted_at"] == "2026-10-17"
+    assert manifest["sources"]["painel"]["extracted_at"] == "2026-10-17"
     assert manifest["indicators"]["within_60_days"]["all"] == layer["period"]
 
 
@@ -68,4 +68,4 @@ def test_the_manifest_keeps_what_other_sources_wrote(tmp_path):
     source.export()
 
     manifest = json.loads((site / "manifest.json").read_text())
-    assert manifest["sources"].keys() == {"mesh", "painel_oncologia"}
+    assert manifest["sources"].keys() == {"mesh", "painel"}

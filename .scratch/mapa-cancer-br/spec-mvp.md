@@ -61,7 +61,7 @@ Fontes: [Quais indicadores entram no MVP?](issues/04-indicadores-do-mvp.md), [Qu
 
 | Eixo | Indicador | Fonte | Granularidade | Período | Tipos | Referência | Tendência | No mapa? |
 |---|---|---|---|---|---|---|---|---|
-| Acesso ao tratamento | % de casos com 1º tratamento em até 60 dias, sempre com a % sem informação de tratamento ao lado | Painel-Oncologia | Município de residência | 2014 até o último ano consolidado; os 2 últimos anos ficam provisórios | Todos + 5 | 100% (Lei 12.732/2012); **próstata sem Situação** | Sim (binomial/logística) | Sim |
+| Acesso ao tratamento | % de casos com 1º tratamento em até 60 dias, sempre com a % sem informação de tratamento ao lado | Painel-Oncologia | Município de residência | 2014 até o último ano consolidado; os 2 últimos anos ficam provisórios | Todos + 5 | 100% (Lei 12.732/2012); **próstata sem Situação** | Sim (quasi-Poisson com offset `log(casos)`, [ticket 25](issues/25-escala-da-faixa-estavel.md)) | Sim |
 | Acesso ao tratamento | Onde se tratar: CACON/UNACON e radioterapia habilitados mais próximos | CNES | Estabelecimento | Situação atual | Todos | Nenhuma (contexto) | Não | Não (só na ficha, junto do 60 dias) |
 | Detecção precoce | Razão de mamografias de rastreamento, mulheres de 50–69 | SISCAN | Município | 2016–2025 | Mama, Todos | 1 (ficha do INCA) | Sim (quasi-Poisson + offset) | Sim |
 | Detecção precoce | Razão de citopatológicos, mulheres de 25–64. **Série encerrada em 2025** | SISCAN | Município | 2016–2025 | Colo, Todos | 1 (ficha do INCA) | Sim, sobre 2016–2025 (quasi-Poisson + offset) | Sim |

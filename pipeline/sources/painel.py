@@ -3,20 +3,19 @@
 import json
 import re
 import tempfile
-import time
 import urllib.parse
 import urllib.request
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 import datasus_dbc
 import dbfread
 import duckdb
 
-from pipeline.download import DownloadError, fetch, list_ftp
+from pipeline.download import fetch, list_ftp, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
 from pipeline.trend import quasi_poisson_trend, trend_window
@@ -43,6 +42,13 @@ class CaseCounts:
     within_60_days: int = 0
     """First treatment within 60 days of diagnosis."""
     without_treatment_info: int = 0
+
+    def __add__(self, other: "CaseCounts") -> "CaseCounts":
+        return CaseCounts(
+            self.cases + other.cases,
+            self.within_60_days + other.within_60_days,
+            self.without_treatment_info + other.without_treatment_info,
+        )
 
 
 def is_within_60_days(days: str) -> bool:
@@ -141,8 +147,8 @@ def _percent(count: int, cases: int) -> float | None:
 
 
 @dataclass(frozen=True)
-class TabnetShare:
-    """TabNet's count of cases and of those treated within 60 days, for one UF."""
+class UfShare:
+    """Cases, and those treated within 60 days, in one UF: TabNet's or ours."""
 
     within_60_days: int
     cases: int
@@ -157,7 +163,7 @@ _ROW = re.compile(r'\["(\d\d) [^"]*"((?:\s*,\s*\{v:\s*[\d.]+[^}]*\})+)\s*\]')
 _VALUE = re.compile(r"\{v:\s*([\d.]+)")
 
 
-def parse_tabnet(page: str) -> dict[str, TabnetShare]:
+def parse_tabnet(page: str) -> dict[str, UfShare]:
     """Read a TabNet "UF da residência × Tempo Tratamento" table, by UF code.
 
     The columns are found by their labels, so a reordering of TabNet's columns
@@ -173,7 +179,7 @@ def parse_tabnet(page: str) -> dict[str, TabnetShare]:
         values = [round(float(v)) for v in _VALUE.findall(cells)]
         if len(values) != len(columns):
             raise ValueError(f"TabNet row for UF {uf} has {len(values)} cells, expected {len(columns)}")
-        shares[uf] = TabnetShare(within_60_days=sum(values[i] for i in on_time), cases=values[total])
+        shares[uf] = UfShare(within_60_days=sum(values[i] for i in on_time), cases=values[total])
     return shares
 
 
@@ -183,7 +189,7 @@ TabNet and the FTP files are refreshed on different days of the month."""
 
 
 def compare_with_tabnet(
-    ours: Mapping[str, TabnetShare], official: Mapping[str, TabnetShare], *, year: int
+    ours: Mapping[str, UfShare], official: Mapping[str, UfShare], *, year: int
 ) -> list[str]:
     """Problems found comparing the % within 60 days by UF with TabNet's, for one year."""
     problems = []
@@ -205,6 +211,9 @@ FTP_DIR = "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/"
 FILE_NAME = re.compile(r"^POBR(\d{4})\.dbc$", re.IGNORECASE)
 FIRST_YEAR = 2014
 """The series starts in 2014 (spec, section 5); 2013, the Painel's first year, stays out."""
+
+TABNET_CANCER_TYPE = "all"
+"""The TabNet query reproduces 'Todos' for treatment, so it checks that cancer type."""
 
 TABNET_URL = "http://tabnet.datasus.gov.br/cgi/webtabx.exe?PAINEL_ONCO/PAINEL_ONCOLOGIABR.def"
 
@@ -243,23 +252,19 @@ def tabnet_query(year: int) -> bytes:
     return urllib.parse.urlencode(fields, encoding="latin-1").encode("ascii")
 
 
-def fetch_tabnet(year: int, dest: Path, *, attempts: int = 4) -> None:
+def fetch_tabnet(year: int, dest: Path) -> None:
     """Save TabNet's table for one diagnosis year. TabNet answers queries, not files: no cache."""
-    last_error: Exception | None = None
-    for attempt in range(attempts):
-        if attempt > 0:
-            time.sleep(2.0**attempt)
-        try:
-            request = urllib.request.Request(TABNET_URL, data=tabnet_query(year))
-            with urllib.request.urlopen(request, timeout=300) as response:
-                page = response.read()
-            parse_tabnet(page.decode("latin-1"))  # fail here, not at validation, on an error page
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(page)
-            return
-        except Exception as error:
-            last_error = error
-    raise DownloadError(f"could not query TabNet for {year} after {attempts} attempts: {last_error}")
+
+    def query() -> bytes:
+        request = urllib.request.Request(TABNET_URL, data=tabnet_query(year))
+        with urllib.request.urlopen(request, timeout=300) as response:
+            page: bytes = response.read()
+        parse_tabnet(page.decode("latin-1"))  # fail here, not at validation, on an error page
+        return page
+
+    page = with_retries(query, f"query TabNet for {year}")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(page)
 
 
 def write_clean(clean_dir: Path, counts: Mapping[CountKey, CaseCounts], *, extracted_at: str) -> None:
@@ -282,14 +287,30 @@ def write_clean(clean_dir: Path, counts: Mapping[CountKey, CaseCounts], *, extra
     (clean_dir / "extract.json").write_text(json.dumps({"extracted_at": extracted_at}))
 
 
-def read_clean(clean_dir: Path) -> list[tuple[int, str, str, bool, int, int, int]]:
+class CleanRow(NamedTuple):
+    """One row of the standardized Painel table."""
+
+    year: int
+    municipality: str
+    cancer_type: str
+    provisional: bool
+    cases: int
+    within_60_days: int
+    without_treatment_info: int
+
+    @property
+    def counts(self) -> CaseCounts:
+        return CaseCounts(self.cases, self.within_60_days, self.without_treatment_info)
+
+
+def read_clean(clean_dir: Path) -> list[CleanRow]:
     with duckdb.connect() as db:
         rows = db.execute(
             "SELECT year, municipality, cancer_type, provisional, cases, within_60_days,"
             " without_treatment_info FROM read_parquet(?)",
             [str(clean_dir / "cases.parquet")],
         ).fetchall()
-    return [tuple(row) for row in rows]
+    return [CleanRow(*row) for row in rows]
 
 
 class PainelSource:
@@ -327,10 +348,7 @@ class PainelSource:
         counts: dict[CountKey, CaseCounts] = {}
         for path in files:
             for key, entry in count_cases(_read_dbc(path)).items():
-                total = counts.setdefault(key, CaseCounts())
-                total.cases += entry.cases
-                total.within_60_days += entry.within_60_days
-                total.without_treatment_info += entry.without_treatment_info
+                counts[key] = counts.get(key, CaseCounts()) + entry
         # DATASUS rewrites every file each month; the newest file date is the extract's.
         written = max(path.stat().st_mtime for path in files)
         extracted_at = datetime.fromtimestamp(written, UTC).date().isoformat()
@@ -338,13 +356,13 @@ class PainelSource:
 
     def compute(self) -> None:
         rows = read_clean(self._clean_dir)
-        provisional = {year for year, *_, is_provisional, _, _, _ in rows if is_provisional}
+        provisional = {row.year for row in rows if row.provisional}
         municipalities = self._municipalities()
         for cancer_type in CANCER_TYPES:
             counts = {
-                (year, code): CaseCounts(cases, within, without)
-                for year, code, kind, _, cases, within, without in rows
-                if kind == cancer_type
+                (row.year, row.municipality): row.counts
+                for row in rows
+                if row.cancer_type == cancer_type
             }
             layer = within_60_days_layer(counts, municipalities=municipalities, provisional=provisional)
             path = self._clean_dir / "layers" / f"{cancer_type}.json"
@@ -352,13 +370,15 @@ class PainelSource:
             path.write_text(json.dumps(layer))
 
     def validate(self) -> None:
-        """Compare the % within 60 days by UF with TabNet, year by year, and check the layers."""
-        ours: dict[int, dict[str, TabnetShare]] = {}
-        for year, code, kind, _, cases, within, _ in read_clean(self._clean_dir):
-            if kind == "all":
-                by_uf = ours.setdefault(year, {})
-                previous = by_uf.get(code[:2], TabnetShare(0, 0))
-                by_uf[code[:2]] = TabnetShare(previous.within_60_days + within, previous.cases + cases)
+        """Compare the % within 60 days by UF with TabNet, year by year, and check the layers:
+        every municipality of the mesh, and shares between 0 and 100%."""
+        ours: dict[int, dict[str, UfShare]] = {}
+        for row in read_clean(self._clean_dir):
+            if row.cancer_type == TABNET_CANCER_TYPE:
+                by_uf = ours.setdefault(row.year, {})
+                uf = row.municipality[:2]
+                previous = by_uf.get(uf, UfShare(0, 0))
+                by_uf[uf] = UfShare(previous.within_60_days + row.within_60_days, previous.cases + row.cases)
 
         problems = []
         for year in sorted(ours):
@@ -373,6 +393,14 @@ class PainelSource:
             layer = self._layer(cancer_type)
             if layer["municipalities"].keys() != expected:
                 problems.append(f"layer '{cancer_type}' does not cover the mesh's municipalities")
+            implausible = sorted(
+                code
+                for code, entry in layer["municipalities"].items()
+                for share in (entry["value"], entry["without_treatment_info"])
+                if share is not None and not 0 <= share <= 100
+            )
+            if implausible:
+                problems.append(f"layer '{cancer_type}' has shares outside 0–100%: {implausible[:10]}")
         if problems:
             raise PainelValidationError("; ".join(problems))
 
@@ -393,7 +421,7 @@ class PainelSource:
             }
         files[MANIFEST] = updated_manifest(
             self._site_data_dir,
-            source="painel_oncologia",
+            source=self.name,
             extract={"name": SOURCE["name"], **extract},
             indicators={INDICATOR: periods},
         )

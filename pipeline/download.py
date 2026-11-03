@@ -109,19 +109,34 @@ class FtpTransport:
             ftp.retrbinary(f"RETR {path}", file.write, blocksize=1 << 20)
 
 
-def list_ftp(url: str, *, attempts: int = 4, sleep: Callable[[float], None] = time.sleep) -> list[str]:
-    """Names of the files in an FTP directory, retrying like `fetch`."""
+def with_retries[T](
+    action: Callable[[], T],
+    what: str,
+    *,
+    attempts: int = 4,
+    sleep: Callable[[float], None] = time.sleep,
+) -> T:
+    """Run `action`, retrying failures with a growing wait like `fetch`."""
     last_error: Exception | None = None
     for attempt in range(attempts):
         if attempt > 0:
             sleep(2.0**attempt)
         try:
-            ftp, path = _connect_ftp(url, timeout=120)
-            with ftp:
-                return [name.rsplit("/", 1)[-1] for name in ftp.nlst(path)]
+            return action()
         except Exception as error:
             last_error = error
-    raise DownloadError(f"could not list {url} after {attempts} attempts: {last_error}")
+    raise DownloadError(f"could not {what} after {attempts} attempts: {last_error}")
+
+
+def list_ftp(url: str) -> list[str]:
+    """Names of the files in an FTP directory."""
+
+    def listing() -> list[str]:
+        ftp, path = _connect_ftp(url, timeout=120)
+        with ftp:
+            return [name.rsplit("/", 1)[-1] for name in ftp.nlst(path)]
+
+    return with_retries(listing, f"list {url}")
 
 
 def transport_for(url: str) -> Transport:
