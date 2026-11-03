@@ -1,0 +1,86 @@
+---
+// The same content as the map, as a table: filled by the map island once the data loads.
+---
+
+<details class="indicator-table">
+  <summary>Ver os dados do mapa em tabela</summary>
+  <label>
+    UF
+    <select>
+      <option value="">Todas as UFs</option>
+    </select>
+  </label>
+  <p class="table-count" aria-live="polite">Carregando…</p>
+  <div class="scroll" tabindex="0" role="region" aria-label="Tabela dos municípios">
+    <table>
+      <caption>
+        Tendência do indicador em cada município, com os valores do último ano consolidado (<span
+          class="latest-year"></span>)
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Município</th>
+          <th scope="col">UF</th>
+          <th scope="col">Tendência</th>
+          <th scope="col">Em até 60 dias</th>
+          <th scope="col">Sem informação de tratamento</th>
+          <th scope="col">Origem do dado</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</details>
+
+<style>
+  .indicator-table {
+    margin: 1rem 0;
+    font-size: 0.875rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.25rem 0;
+  }
+  label {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0.5rem 0;
+  }
+  select {
+    font: inherit;
+  }
+  .scroll {
+    max-height: 60vh;
+    overflow: auto;
+  }
+  .scroll:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #1f2933;
+    outline-offset: 2px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  caption {
+    text-align: left;
+    padding: 0.25rem 0;
+  }
+  /* Rows are built by the map island, outside Astro's scoped styles. */
+  table :global(th),
+  table :global(td) {
+    text-align: left;
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #d5dae1;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #ffffff;
+  }
+  tbody :global(th) {
+    font-weight: normal;
+  }
+</style>

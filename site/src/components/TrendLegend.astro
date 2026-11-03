@@ -1,0 +1,77 @@
+---
+import {
+  INDICATORS,
+  TREND_COLORS,
+  TREND_LABELS,
+  TREND_STATES,
+  trendDescriptions,
+  trendPeriodText,
+  type Period,
+} from "../map/indicator-layer";
+
+interface Props {
+  indicator: string;
+  period: Period;
+}
+
+const { indicator, period } = Astro.props;
+const descriptions = trendDescriptions(INDICATORS[indicator]!);
+const provisional = period.provisional.join(" e ");
+---
+
+<section class="legend" aria-labelledby="legend-title">
+  <h2 id="legend-title">Tendência {trendPeriodText(period)}</h2>
+  <p>A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios.</p>
+  <ul>
+    {
+      TREND_STATES.map((state) => (
+        <li>
+          <span class="swatch" style={`background: ${TREND_COLORS[state]}`} aria-hidden="true" />
+          <span>
+            <strong>{TREND_LABELS[state]}</strong>: {descriptions[state]}
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="note">
+    Anos de diagnóstico {period.first_year}–{period.last_year}. {provisional} ainda são provisórios e
+    não entram na tendência.
+  </p>
+</section>
+
+<style>
+  .legend {
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
+  }
+  h2 {
+    font-size: 1rem;
+    margin: 0 0 0.25rem;
+  }
+  p {
+    margin: 0.25rem 0;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .swatch {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #6b7280;
+    transform: translateY(0.15rem);
+  }
+  .note {
+    color: #4b5563;
+  }
+</style>

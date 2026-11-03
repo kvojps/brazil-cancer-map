@@ -1,5 +1,7 @@
 """Download with an incremental cache and retries (spec, section 14, step 1)."""
 
+import calendar
+import ftplib
 import gzip
 import os
 import shutil
@@ -11,6 +13,7 @@ from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlsplit
 
 
 @dataclass(frozen=True)
@@ -76,6 +79,56 @@ class HttpTransport:
             shutil.copyfileobj(body, file, length=1 << 20)
 
 
+def _connect_ftp(url: str, timeout: float) -> tuple[ftplib.FTP, str]:
+    """An anonymous binary-mode session on the URL's host, and the path on it."""
+    parts = urlsplit(url)
+    ftp = ftplib.FTP(parts.hostname or "", timeout=timeout)
+    ftp.login()
+    ftp.voidcmd("TYPE I")
+    return ftp, parts.path
+
+
+class FtpTransport:
+    """Transport over anonymous FTP (DATASUS), using SIZE and MDTM for the cache check."""
+
+    def __init__(self, timeout: float = 120) -> None:
+        self._timeout = timeout
+
+    def head(self, url: str) -> RemoteInfo:
+        ftp, path = _connect_ftp(url, self._timeout)
+        with ftp:
+            size = ftp.size(path)
+            # MDTM answers "213 YYYYMMDDHHMMSS" in UTC.
+            stamp = ftp.voidcmd(f"MDTM {path}").split()[-1][:14]
+        modified = float(calendar.timegm(time.strptime(stamp, "%Y%m%d%H%M%S")))
+        return RemoteInfo(size=size, modified=modified)
+
+    def get(self, url: str, dest: Path) -> None:
+        ftp, path = _connect_ftp(url, self._timeout)
+        with ftp, dest.open("wb") as file:
+            ftp.retrbinary(f"RETR {path}", file.write, blocksize=1 << 20)
+
+
+def list_ftp(url: str, *, attempts: int = 4, sleep: Callable[[float], None] = time.sleep) -> list[str]:
+    """Names of the files in an FTP directory, retrying like `fetch`."""
+    last_error: Exception | None = None
+    for attempt in range(attempts):
+        if attempt > 0:
+            sleep(2.0**attempt)
+        try:
+            ftp, path = _connect_ftp(url, timeout=120)
+            with ftp:
+                return [name.rsplit("/", 1)[-1] for name in ftp.nlst(path)]
+        except Exception as error:
+            last_error = error
+    raise DownloadError(f"could not list {url} after {attempts} attempts: {last_error}")
+
+
+def transport_for(url: str) -> Transport:
+    """The transport that speaks the URL's scheme."""
+    return FtpTransport() if url.startswith("ftp://") else HttpTransport()
+
+
 def fetch(
     url: str,
     dest: Path,
@@ -91,7 +144,7 @@ def fetch(
     retried with a growing wait; a download that fails or comes back truncated
     leaves the previous file untouched.
     """
-    transport = transport or HttpTransport()
+    transport = transport or transport_for(url)
     dest.parent.mkdir(parents=True, exist_ok=True)
     partial = dest.with_name(dest.name + ".part")
     last_error: Exception | None = None

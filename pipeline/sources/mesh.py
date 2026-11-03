@@ -10,6 +10,7 @@ from typing import Any
 
 from pipeline.download import Transport, fetch
 from pipeline.paths import CLEAN_DIR, PIPELINE_DIR, RAW_DIR, SITE_DATA_DIR
+from pipeline.publish import publish_together
 
 MESH_URL = (
     "https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/"
@@ -158,7 +159,7 @@ class MeshSource:
             "immediate_regions": {m["CD_RGI"]: m["NM_RGI"] for m in municipalities},
         }
         topology = {"source": SOURCE, **json.loads(self._topojson.read_text())}
-        _publish_together(
+        publish_together(
             self._site_data_dir,
             {"municipalities.topojson": topology, "municipalities.json": listing},
         )
@@ -171,15 +172,3 @@ def _reference_regions(localities: list[dict[str, Any]]) -> dict[str, str]:
 
 def _sample(codes: list[str]) -> str:
     return ", ".join(codes[:10]) + (", ..." if len(codes) > 10 else "")
-
-
-def _publish_together(directory: Path, files: dict[str, object]) -> None:
-    """Write every file before replacing any, so a failed write leaves the old set whole."""
-    directory.mkdir(parents=True, exist_ok=True)
-    staged = []
-    for name, content in files.items():
-        partial = directory / (name + ".part")
-        partial.write_text(json.dumps(content, ensure_ascii=False, separators=(",", ":")))
-        staged.append((partial, directory / name))
-    for partial, dest in staged:
-        partial.replace(dest)
