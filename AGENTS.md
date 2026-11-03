@@ -4,10 +4,12 @@ O projeto é o Observatório do Câncer no Brasil. A **spec** é [`.scratch/mapa
 
 Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15): os JSON em `site/public/dados/`.
 
-- **`pipeline/`**: Python, rodado com `uv` (`uv run python -m pipeline run`, `uv run pytest`, `uv run mypy`). Cada fonte implementa o protocolo `Fonte` em `pipeline/fonte.py` e entra no registro de `pipeline/fontes/`. Toda a estatística mora na etapa calcular.
+- **`pipeline/`**: Python, rodado com `uv` (`uv run python -m pipeline run`, `uv run pytest`, `uv run mypy`). Cada fonte implementa o protocolo `Source` em `pipeline/source.py` e entra no registro de `pipeline/sources/`. Toda a estatística mora na etapa `compute`.
 - **`site/`**: Astro com saída estática (`npm run build`, `npm run check`). O front recebe taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C prontas do pipeline e só as exibe: a conta estatística fica toda no pipeline.
 
 `data/raw/` e `data/clean/` são locais e ficam fora do git.
+
+**Idioma:** código em inglês: identificadores, módulos, nomes de arquivo, flags do CLI, testes, comentários e docstrings. Em português ficam os textos que o público lê no site, os documentos (spec, tickets, glossário, README) e as mensagens de commit. Ao traduzir um termo do `GLOSSARY.md` para o código, use sempre a mesma palavra em inglês (por exemplo Tendência → `trend`, Situação → `status`, Região imediata → `immediate_region`).
 
 ## Agent skills
 

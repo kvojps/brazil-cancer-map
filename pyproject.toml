@@ -1,7 +1,7 @@
 [project]
 name = "pipeline"
 version = "0.1.0"
-description = "Pipeline de dados do Observatório do Câncer no Brasil"
+description = "Data pipeline for the Observatório do Câncer no Brasil"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.14"
 dependencies = []

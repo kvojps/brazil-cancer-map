@@ -1,53 +1,53 @@
-"""Linha de comando do pipeline: `python -m pipeline run`."""
+"""Pipeline command line: `python -m pipeline run`."""
 
 import argparse
 import sys
 from collections.abc import Sequence
 
-from pipeline.fonte import ETAPAS, Fonte
+from pipeline.source import STEPS, Source
 
-ORDEM_DAS_ETAPAS = " → ".join(ETAPAS)
+STEP_ORDER = " → ".join(STEPS)
 
 
-def main(argv: Sequence[str], fontes: Sequence[Fonte]) -> int:
-    """Roda as etapas do pipeline nas fontes dadas e devolve o código de saída."""
+def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
+    """Run the pipeline steps over the given sources and return the exit code."""
     parser = argparse.ArgumentParser(prog="python -m pipeline")
-    sub = parser.add_subparsers(dest="comando", required=True)
+    sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser(
         "run",
-        help="roda o pipeline",
-        description=f"Etapas, em ordem: {ORDEM_DAS_ETAPAS}.",
+        help="run the pipeline",
+        description=f"Steps, in order: {STEP_ORDER}.",
     )
-    run.add_argument("--fonte", help="roda só esta fonte")
-    run.add_argument("--etapa", choices=list(ETAPAS), help="roda só esta etapa")
-    run.add_argument("--listar", action="store_true", help="mostra etapas e fontes sem executar")
+    run.add_argument("--source", help="run only this source")
+    run.add_argument("--step", choices=list(STEPS), help="run only this step")
+    run.add_argument("--list", action="store_true", help="show steps and sources without running")
     args = parser.parse_args(argv)
 
-    nomes = [f.nome for f in fontes]
+    names = [s.name for s in sources]
 
-    if args.listar:
-        print(f"Etapas: {ORDEM_DAS_ETAPAS}")
-        print("Fontes: " + (", ".join(nomes) or "nenhuma registrada"))
+    if args.list:
+        print(f"Steps: {STEP_ORDER}")
+        print("Sources: " + (", ".join(names) or "none registered"))
         return 0
 
-    if args.fonte is not None:
-        if args.fonte not in nomes:
+    if args.source is not None:
+        if args.source not in names:
             parser.error(
-                f"fonte desconhecida: {args.fonte!r} (disponíveis: {', '.join(nomes) or 'nenhuma'})"
+                f"unknown source: {args.source!r} (available: {', '.join(names) or 'none'})"
             )
-        fontes = [f for f in fontes if f.nome == args.fonte]
+        sources = [s for s in sources if s.name == args.source]
 
-    etapas = list(ETAPAS) if args.etapa is None else [args.etapa]
+    steps = list(STEPS) if args.step is None else [args.step]
 
-    houve_falha = False
-    for fonte in fontes:
-        for etapa in etapas:
-            print(f"{fonte.nome}: {etapa}")
+    failed = False
+    for source in sources:
+        for step in steps:
+            print(f"{source.name}: {step}")
             try:
-                ETAPAS[etapa](fonte)
-            except Exception as erro:
-                # Se uma etapa falha, nada daquela fonte segue adiante (spec, seção 14).
-                print(f"{fonte.nome}: {etapa} falhou: {erro}", file=sys.stderr)
-                houve_falha = True
+                STEPS[step](source)
+            except Exception as error:
+                # A failed step stops that source; nothing from it moves on (spec, section 14).
+                print(f"{source.name}: {step} failed: {error}", file=sys.stderr)
+                failed = True
                 break
-    return 1 if houve_falha else 0
+    return 1 if failed else 0
