@@ -53,9 +53,11 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Consolidar a spec do MVP](issues/23-consolidar-spec.md): a spec está em [spec-mvp.md](spec-mvp.md), com cada regra apontando para o seu ticket. Duas lacunas viraram tickets (a escala do "estável" e o estado inicial do mapa), e os requisitos de execução antes de publicar ficaram reunidos na seção 17.
 
+- [Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md): abre em até 60 dias × Todos os cânceres × Tendência, com a hachura da faixa C visível. A URL guarda o estado (município no caminho, o resto na query string) e nada é lembrado entre visitas. Combinações inválidas voltam ao padrão, com um aviso na troca de tipo.
+
 ## Not yet specified
 
-Nada. A spec está consolidada em [spec-mvp.md](spec-mvp.md). Faltam só os tickets abertos de lacuna que ela aponta.
+Nada. A spec está consolidada em [spec-mvp.md](spec-mvp.md) e não há tickets abertos.
 
 ## Out of scope
 

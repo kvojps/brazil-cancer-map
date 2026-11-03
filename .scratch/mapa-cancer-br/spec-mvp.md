@@ -2,7 +2,7 @@
 
 Consolidação de 2026-11-02 de [Consolidar a spec do MVP](issues/23-consolidar-spec.md). Esta spec **não decide nada**: cada regra aponta para o ticket que a decidiu, e o ticket prevalece em caso de divergência. Os termos em maiúscula (Eixo, Indicador, Tendência, Situação, Referência, Ação, Região imediata, Dado insuficiente, Mapa inicial, Meu município, Tipo de câncer) seguem o [`GLOSSARY.md`](../../GLOSSARY.md).
 
-Pendências de spec: dois pontos que os tickets não fixaram viraram tickets próprios (seção 17). Eles estão marcados **[pendente]** no texto.
+Pendências de spec: os dois pontos que os tickets não tinham fixado viraram tickets próprios e já foram resolvidos (seção 17).
 
 ---
 
@@ -208,7 +208,9 @@ Fontes: [Como a experiência "meu município" deve parecer?](issues/06-experienc
 ### 11.1 Mapa inicial
 
 - A página inicial é o mapa do Brasil por município. No topo ficam a busca de município, o seletor de Tipo de câncer e o seletor do que o mapa mostra (indicador e modo).
-- **Indicador e tipo iniciais [pendente — ver seção 17].**
+- **Estado inicial:** até 60 dias × Todos os cânceres × Tendência, com a hachura da faixa C já na primeira impressão ([Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md)).
+- **Estado na URL:** o município no caminho (`/municipio/<slug>/`); indicador, tipo e modo na query string, omitindo os valores padrão. Nada é lembrado entre visitas: sem parâmetros, o site abre no estado inicial.
+- **Combinações que não existem:** ao trocar para um tipo sem aquele indicador, o mapa volta para o até 60 dias com um aviso de uma linha, e o seletor mostra os indicadores que não se aplicam desabilitados, com o motivo. Um link inválido é corrigido em silêncio, campo a campo (valor desconhecido → padrão; modo impossível → o modo que o indicador tem), e a URL é reescrita para o estado mostrado.
 - Indicadores que pintam o mapa: até 60 dias, mamografia, citopatológico, HPV e tendência da mortalidade, filtrados pelo tipo. Tabagismo, Onde se tratar e Casos estimados ficam só na ficha.
 - **Modo padrão: Tendência.** "Como está hoje" é opcional. A mortalidade só tem Tendência. O HPV abre em "como está hoje", com uma nota no seletor explicando por quê.
 - **Cores da Tendência** (sem vermelho): melhorando em verde-azulado; piorando em âmbar; estável em cinza médio; sem direção clara em cinza claro; dado insuficiente em quase branco com **textura de pontos**, nunca branco puro.
@@ -303,7 +305,7 @@ Fontes: [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atual
 ### Lacunas encontradas na consolidação (viraram tickets)
 
 - ~~[Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md)~~: resolvido, com variação relativa em todos os indicadores (seção 7).
-- [Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md): o protótipo abria em até 60 dias × Todos × Tendência, mas nenhum ticket fixou esse estado inicial.
+- ~~[Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md)~~: resolvido, com até 60 dias × Todos × Tendência e o estado guardado na URL (seção 11.1).
 
 ### Primeiro passo da execução
 
