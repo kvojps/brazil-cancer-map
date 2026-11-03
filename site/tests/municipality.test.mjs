@@ -87,7 +87,7 @@ test('quality C opens with a warning and prostate has no status bar', () => {
 test('methodology documents all nine steps and links from the cards resolve', () => {
   const html = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
   assert.match(html, /id="60-dias"/);
-  const treatment = html.split('<section id="60-dias">')[1].split('</section>')[0];
+  const treatment = html.split('id="60-dias"')[1].split('</section>')[0];
   assert.equal((treatment.match(/<h3/g) ?? []).length, 9);
   assert.match(html, /id="onde-se-tratar"/);
   for (const term of ['CMPT_INI', 'CMPT_FIM', 'haversine', 'CADGERBR', '27 UFs', 'SP 40–300']) assert.ok(html.includes(term));
