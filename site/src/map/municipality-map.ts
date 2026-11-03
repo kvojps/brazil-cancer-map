@@ -197,7 +197,7 @@ export function mountIndicatorPaint(
       const state = mode === "status" ? entry.status ?? "insufficient" : trendState(entry);
       map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: trendState(entry), status: entry.status ?? "insufficient" });
       if (state === "insufficient") insufficient.push(code);
-      if (entry.quality_band === "C" && state !== "insufficient") hatched.push(code);
+      if (isHatched(entry, mode)) hatched.push(code);
     }
     map.setFilter(DOTS_LAYER, codeFilter(insufficient));
     map.setFilter(HATCH_LAYER, codeFilter(hatched));
@@ -251,7 +251,7 @@ function tooltip(
       `Qualidade do registro ${place ? `em ${place.uf} ` : ""}(${qualityPeriod}): ${qualityText(quality)}`,
     ]);
   }
-  if (isHatched(entry)) lines.push(["em", QUALITY_WARNING]);
+  if (isHatched(entry, mode)) lines.push(["em", QUALITY_WARNING]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";
