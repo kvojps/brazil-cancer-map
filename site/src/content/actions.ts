@@ -1,4 +1,24 @@
 /** Editorial registry: clinical review remains pending until a reviewer is appointed. */
+export const referralAction = {
+  title: 'Saiba como chegar ao atendimento especializado.',
+  summary: 'Pergunte à equipe que acompanha você sobre o encaminhamento e o serviço de referência.',
+  disclaimer: 'Informação geral. A equipe de saúde orienta o cuidado indicado para você.',
+  details: 'A entrada no SUS é pela UBS ou pela equipe que acompanha você. A regulação municipal ou estadual define o hospital conforme a rede de atendimento e a necessidade de cuidado; o paciente não escolhe o hospital. A lista de proximidade ajuda a conhecer a rede, mas não é um encaminhamento e não garante vaga ou disponibilidade de tratamento.',
+  audience: 'Pessoas com suspeita ou diagnóstico de câncer e quem as acompanha no SUS.',
+  criteria: 'Acesso ao serviço especializado por encaminhamento e regulação do SUS.',
+  exceptions: 'A habilitação não significa que o serviço atende todos os tipos de câncer ou todas as idades. A equipe e a regulação orientam o serviço adequado.',
+  version: '1',
+  checkedAt: '2026-11-03',
+  sources: [
+    { title: 'INCA — Onde tratar pelo SUS', url: 'https://www.gov.br/inca/pt-br/assuntos/cancer/tratamento/onde-tratar-pelo-sus' },
+    { title: 'INCA — Atendimento e regulação', url: 'https://www.gov.br/inca/pt-br/acesso-a-informacao/perguntas-frequentes/atendimento-no-inca/' },
+  ],
+  verificationNote: 'Fontes oficiais conferidas. Revisão editorial e clínica pendente.',
+  reviewedVersion: null,
+  reviewedAt: null,
+  reviewer: null,
+};
+
 export const treatmentAction = {
   title: 'Conheça seus direitos e acompanhe seu encaminhamento.',
   summary: 'Se estiver esperando para começar o tratamento, veja os prazos e os canais de ajuda.',

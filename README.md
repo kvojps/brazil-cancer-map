@@ -28,6 +28,8 @@ uv run python -m pipeline run --source <fonte> --step <etapa>
 uv run pytest
 ```
 
+Onde se tratar usa `uv run python -m pipeline run --source cnes`, depois da malha publicada. O CNES seleciona o último mês comum às 27 UFs, baixa os DBC HB/ST e o `TAB_CNES.zip` auxiliar para obter os nomes dos hospitais. Na carga inicial de setembro de 2026, o auxiliar acrescentou cerca de 123 MB aos DBC; o cache evita baixá-lo novamente enquanto tamanho e data forem iguais. A proximidade é aproximada entre centroides municipais, sem rotas, e as contagens de habilitações por UF bloqueiam uma publicação fora das faixas documentadas na metodologia. Uma falha mantém a publicação anterior.
+
 Site (requer Node.js 22.23.4 ou mais recente):
 
 ```sh

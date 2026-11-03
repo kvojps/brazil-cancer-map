@@ -17,6 +17,22 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 export interface UfProfile {
   uf: string;
   indicators: { within_60_days: Record<string, TreatmentProfile> };
+  where_to_treat?: WhereToTreat;
+}
+
+export interface WhereToTreat {
+  period: string;
+  extracted_at: string;
+  source: { name: string; url: string; conditions: string };
+  municipalities: Record<string, { cnes: string; distance_km: number }[]>;
+  facilities: Record<string, {
+    cnes: string;
+    name: string;
+    municipality: string;
+    municipality_name: string;
+    uf: string;
+    habilitations: { code: string; label: string }[];
+  }>;
 }
 
 export function municipalityPath(municipality: { code: string; name: string }): string {

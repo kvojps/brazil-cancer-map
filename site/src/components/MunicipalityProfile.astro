@@ -1,5 +1,6 @@
 ---
 import TreatmentCard from './TreatmentCard.astro';
+import WhereToTreat from './WhereToTreat.astro';
 import listing from '../../public/dados/municipalities.json';
 import manifest from '../../public/dados/manifest.json';
 import { ALL_CANCERS_NOTE, CANCER_TYPES } from '../map/indicator-layer';
@@ -22,7 +23,7 @@ const regions: Record<string, string> = listing.immediate_regions;
         <h3>{label}</h3>
         <TreatmentCard treatment={profile.indicators.within_60_days[cancerType]!} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={manifest.sources.painel.extracted_at} />
       </section>)}
-      <aside><h3>Onde se tratar</h3><p>Os serviços habilitados serão incluídos aqui. Pergunte à equipe que acompanha você sobre o encaminhamento e o serviço de referência. A regulação define o hospital de atendimento.</p></aside>
+      <WhereToTreat services={profile.where_to_treat} code={municipality.code} />
     </section>
     <section><h2>Detecção precoce</h2><p>Espaço reservado para os indicadores de detecção precoce e suas orientações.</p></section>
     <section><h2>Prevenção</h2><p>Espaço reservado para os indicadores de prevenção e suas orientações.</p></section>
