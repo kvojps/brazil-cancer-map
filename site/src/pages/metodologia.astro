@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import manifest from '../../public/dados/manifest.json';
+const period = manifest.indicators.within_60_days.all;
+---
+<Base title="Como calculamos — Observatório do Câncer no Brasil">
+<div class="methodology">
+<nav><a href="/">Voltar ao mapa</a></nav>
+<h1>Como calculamos</h1>
+<p>O dado descreve o cuidado no território. Não estima seu risco individual nem determina seu tratamento.</p>
+<section id="60-dias"><h2>Tratamento em até 60 dias</h2>
+<ol>
+<li><h3>Fonte e período</h3>
+<p>Painel-Oncologia do DATASUS/Ministério da Saúde. Anos de diagnóstico: {period.first_year}–{period.last_year}; extração: <time datetime={manifest.sources.painel.extracted_at}>{manifest.sources.painel.extracted_at}</time>. Arquivos POBR&lt;ano&gt;.dbc de cada ano, em DBC.</p>
+<p><a href="https://datasus.saude.gov.br/informacoes-de-saude-tabnet/">TabNet e acesso ao Painel-Oncologia</a>; <a href="ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/">arquivos, dicionário e nota técnica oficiais</a>.</p>
+</li>
+<li><h3>Universo e recortes</h3>
+<p>Casos registrados no SUS, pelo município de residência (código IBGE de seis dígitos), ano e tipo de câncer, sem filtro de sexo ou idade. No tratamento, “Todos os cânceres” é C00–C97 sem C44, C73 e C76–C80. Na mortalidade, é C00–C97 sem C44.</p>
+<p>Mama C50; colo do útero C53; próstata C61; colorretal C18–C21; pulmão C33–C34. Valor, Situação e Tendência usam apenas casos com primeiro tratamento por quimioterapia, radioterapia ou ambos (TRATAMENTO 2, 3 ou 4). Sem informação e qualidade usam todos os casos diagnosticados do recorte.</p>
+</li>
+<li><h3>Numerador, denominador e fórmulas</h3>
+<p>Percentual em até 60 dias = 100 × casos de quimio/radio em até 60 dias ÷ casos de quimio/radio. TEMPO_TRAT é a diferença em dias: de 0 a 60 após o diagnóstico. Como o TabNet, incluímos também tratamento de 1 a 90 dias antes do diagnóstico (por exemplo, diagnóstico da peça após cirurgia). Campos ausentes ou inválidos não contam como tratamento no prazo. Sem informação = 100 × casos com TRATAMENTO 5 ÷ todos os casos diagnosticados. Denominador zero gera ausência de valor, nunca zero por cento. A exibição arredonda para uma casa decimal.</p>
+<p>Não usamos população, padronização por idade ou pesos neste indicador.</p>
+</li>
+<li><h3>Limpeza, cruzamentos e ausências</h3>
+<p>Convertemos DBC e contamos por ano, residência e CID de três caracteres, com exclusões antes da soma. A referência territorial é a malha IBGE 2025. Na cascata e na ficha só entram municípios da malha; residências desconhecidas permanecem nas contagens estaduais de validação, sem atribuição municipal. Município novo tem série a partir de sua existência.</p>
+<p>Não imputamos tratamento ausente: falta de registro não significa falta de tratamento. Não há redistribuição do C55 ou de causas mal definidas no tratamento; esses ajustes pertencem à mortalidade.</p>
+</li>
+<li><h3>Janela, anos provisórios e quebras</h3>
+<p>Os dois anos de diagnóstico mais recentes ({period.provisional.join(', ')}) são provisórios, tracejados no gráfico e excluídos da Tendência. O último consolidado é {period.latest}. A Tendência usa até dez anos consolidados, hoje {period.trend.join('–')}; o gráfico mostra toda a série.</p>
+<p>Em maio de 2018, diagnósticos por exame anatomopatológico passaram a criar casos no Painel (Portaria SAS 643/2018); houve outro degrau em 2019. Em 2024, muitas cirurgias deixaram de se vincular aos casos, embora continuassem ocorrendo no SIH. A hipótese de vínculo por CPF/CNS não foi confirmada pelo DATASUS.</p>
+<p>Barra e gráfico usam a mesma série de quimio/radio, que não apresentou esses degraus. Esse recorte exclui quem começou pela cirurgia, cerca de 30% dos tratados antes da queda. Em 2024, o valor nacional foi 41,0% nesse recorte, ante 33,5% com todos os casos.</p>
+</li>
+<li><h3>Tendência, incerteza e Referência</h3>
+<p>Modelo quasi-Poisson: log(eventos) = a + b × ano + log(casos de quimio/radio). Eventos são os casos do recorte em até 60 dias. Variação percentual anual = 100 × (exp(b) − 1), relativa ao próprio valor, nunca pontos percentuais: de 9% para 8% é queda de cerca de 11%.</p>
+<p>Dispersão: qui-quadrado de Pearson ÷ (n−2); intervalo de confiança de 95% com t de Student e n−2 graus de liberdade. Anos sem denominador saem do ajuste. Menos de três anos com denominador, nenhum evento ou eventos só no primeiro ou último ano impedem estimar a direção.</p>
+<p>Estável: intervalo inteiro entre −1% e +1% ao ano (convenção do projeto). Fora dessa regra, intervalo inteiramente positivo = melhorando; inteiramente negativo = piorando; demais = sem direção clara. Amostras pequenas raramente permitem concluir “estável”. O cartão mostra classe e série, sem o número da variação.</p>
+<p>Referência: 100%, o que a Lei 12.732/2012 garante. Situação: alcançou ≥100%; perto de 80% a menos de 100%; longe abaixo de 80%. Acima de 100% recebe nota de valor acima do esperado, sem corte silencioso. Próstata não tem Situação: vigilância ativa pode ser a conduta correta. Não há ranking entre municípios.</p>
+</li>
+<li><h3>Mínimo de casos e Região imediata</h3>
+<p>Média mínima de 20 casos de quimio/radio por ano na janela da Tendência. Abaixo disso, somamos os municípios da Região imediata do IBGE e aplicamos o mesmo mínimo. Quando a região atende, a origem vale para o cartão inteiro: série, Situação e Tendência.</p>
+<p>Se nem a região atende, mostramos dado insuficiente e ocultamos os valores e a série local. A Tendência da UF aparece só como contexto; não substitui a Situação municipal. A Ação permanece.</p>
+</li>
+<li><h3>Qualidade, limitações e validações</h3>
+<p>Qualidade por UF × tipo, sobre todos os casos dos últimos cinco anos consolidados ({period.quality_years.join('–')}): A até 15% sem informação; B acima de 15% e abaixo de 35%; C a partir de 35%. A faixa C abre com aviso e hachura no tratamento, sem afetar outros eixos.</p>
+<p>A perda de cirurgias em 2024 elevou a porcentagem sem informação em média 0,4 ponto percentual (máximo 1,1), mudando quatro das 162 faixas, todas na fronteira: mama MS e DF e próstata GO de A para B; Todos PE de B para C.</p>
+<p>Validamos ano a ano por UF contra o TabNet: contagens e percentuais de todos os casos, e contagens e prazo filtrados por quimio/radio. Divergências bloqueiam publicação. Conferimos presença dos municípios e percentuais entre 0 e 100. Queda mensal de patamar por modalidade gera alerta ao mantenedor.</p>
+<p>O dado cobre registros do SUS, não todo o atendimento privado. Registros ausentes e mudanças administrativas limitam a leitura. O valor de quimio/radio difere do TabNet sem filtro; essa diferença não indica mudança no acesso real.</p>
+</li>
+<li><h3>Versões, reprodução e histórico</h3>
+<p>Versão do pipeline/dados: <code>{manifest.pipeline_version}</code>. “dirty” indica geração com código ainda não commitado. <a href="/dados/manifest.json">Manifesto com versões, fontes e períodos</a>.</p>
+<p><a href="https://github.com/kvojps/brazil-cancer-map/tree/main/pipeline">Scripts e código</a>. Reprodução: <code>uv run python -m pipeline run --source painel</code>. JSON abertos: <a href="/dados/map/within_60_days/all.json">camada do mapa</a> e arquivo da UF ao final de cada ficha. O Parquet/CSV completo será disponibilizado em uma Release quando a publicação de dados abertos estiver implementada.</p>
+<p>Novembro de 2026: Tendência passou a quimio/radio após a investigação de 2018; valor e Situação passaram ao mesmo recorte após a investigação de 2024; ficha e metodologia pública acrescentadas. Pesquisas e decisões estão versionadas no repositório.</p>
+</li>
+</ol>
+<p>Reutilização: cite Ministério da Saúde/DATASUS, Painel-Oncologia, com extração e período, e o Observatório do Câncer no Brasil pelos cálculos. Os dados seguem as condições da fonte; consulte a <a href="ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/">documentação oficial</a>. Textos do Observatório: CC BY-SA 4.0; código: AGPL-3.0-or-later.</p>
+</section></div>
+</Base>
+<style>
+.methodology { max-width: 850px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; line-height: 1.6; color: #243444; }
+li { margin-bottom: 2rem; } code { overflow-wrap: anywhere; }
+</style>

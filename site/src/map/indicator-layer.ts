@@ -316,6 +316,6 @@ export const STATUS_COLORS = { reached: "#54278f", near: "#9e9ac8", far: "#dadae
 export const STATUS_LABELS = { reached: "Alcançou", near: "Perto", far: "Longe", insufficient: "Dado insuficiente" };
 export const STATUS_LEGEND = "A cor mostra a distância até a referência. Não é um ranking entre municípios.";
 
-export function statusText(entry: MunicipalityIndicator | undefined, layer: IndicatorLayer): string {
+export function statusText(entry: MunicipalityIndicator | undefined, layer: Pick<IndicatorLayer, "has_status">): string {
   return layer.has_status ? STATUS_LABELS[entry?.status ?? "insufficient"] : "Não se aplica";
 }

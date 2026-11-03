@@ -252,6 +252,54 @@ def within_60_days_layer(
     }
 
 
+def within_60_days_profiles(
+    counts: Mapping[tuple[int, str], CaseCounts],
+    layer: Mapping[str, Any],
+    immediate_region_of: Mapping[str, str],
+) -> dict[str, Any]:
+    """Displayed series with the map's origin; UF trends are context only.
+
+    Share regional series and suppress insufficient municipalities' series.
+    """
+    years = sorted({year for year, _ in counts})
+    provisional = set(layer["period"]["provisional"])
+    grouped: dict[str, dict[int, CaseCounts]] = {}
+    by_uf: dict[str, dict[int, CaseCounts]] = {code[:2]: {} for code in immediate_region_of}
+    for (year, code), entry in counts.items():
+        if code not in immediate_region_of:
+            continue
+        for key in (f"municipality:{code}", f"immediate_region:{immediate_region_of[code]}"):
+            series = grouped.setdefault(key, {})
+            series[year] = series.get(year, CaseCounts()) + entry
+        uf_series = by_uf[code[:2]]
+        uf_series[year] = uf_series.get(year, CaseCounts()) + entry
+    municipalities = {}
+    displayed = {}
+    for code, entry in layer["municipalities"].items():
+        series_id = None
+        if entry["origin"] == "municipality":
+            series_id = f"municipality:{code}"
+        elif entry["origin"] == "immediate_region":
+            series_id = f"immediate_region:{immediate_region_of[code]}"
+        municipalities[code] = {**entry, "series_id": series_id}
+        if series_id is not None and series_id not in displayed:
+            series = grouped.get(series_id, {})
+            points = []
+            for year in years:
+                cases = series.get(year, CaseCounts())
+                points.append({
+                    "year": year, "provisional": year in provisional,
+                    "value": _percent(cases.chemo_radio_within_60_days, cases.chemo_radio),
+                    "without_treatment_info": _percent(cases.without_treatment_info, cases.cases),
+                })
+            displayed[series_id] = points
+    return {
+        "municipalities": municipalities,
+        "series": displayed,
+        "uf_trends": {uf: _trend_and_shares(series, years, layer["period"]["latest"], provisional)["trend"] for uf, series in by_uf.items()},
+    }
+
+
 QUALITY_YEARS = 5
 """The quality band looks at the last 5 consolidated years (spec, section 6.3)."""
 
@@ -659,6 +707,8 @@ class PainelSource:
             path = self._clean_dir / "layers" / f"{cancer_type}.json"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(layer))
+            profiles = within_60_days_profiles(counts, layer, immediate_region_of)
+            (path.parent / f"{cancer_type}-profiles.json").write_text(json.dumps(profiles))
 
     def validate(self) -> None:
         """Compare the cases by UF with TabNet, year by year, over all cases (counts, % within
@@ -735,6 +785,31 @@ class PainelSource:
                 "source": {**SOURCE, "period": _period_text(layer["period"])},
                 **layer,
             }
+        listing = json.loads((self._site_data_dir / "municipalities.json").read_text())
+        profiles_by_type = {
+            cancer_type: json.loads((self._clean_dir / "layers" / f"{cancer_type}-profiles.json").read_text())
+            for cancer_type in CANCER_TYPES
+        }
+        for uf in sorted({m["uf"] for m in listing["municipalities"]}):
+            name = f"profiles/{uf}.json"
+            destination = self._site_data_dir / name
+            profile = json.loads(destination.read_text()) if destination.exists() else {"uf": uf, "indicators": {}}
+            types = {}
+            codes = {m["code"] for m in listing["municipalities"] if m["uf"] == uf}
+            uf_code = next(iter(codes))[:2]
+            for cancer_type, computed in profiles_by_type.items():
+                layer = self._layer(cancer_type)
+                municipalities = {code: computed["municipalities"][code] for code in sorted(codes)}
+                series_ids = {entry["series_id"] for entry in municipalities.values()} - {None}
+                types[cancer_type] = {
+                    "period": layer["period"], "source": {**SOURCE, "period": _period_text(layer["period"])},
+                    "has_status": cancer_type not in WITHOUT_STATUS, "reference": layer["reference"],
+                    "quality": layer["quality"][uf_code], "uf_trend": computed["uf_trends"][uf_code],
+                    "municipalities": municipalities,
+                    "series": {key: computed["series"][key] for key in sorted(series_ids)},
+                }
+            profile["indicators"][INDICATOR] = types
+            files[name] = profile
         files[MANIFEST] = updated_manifest(
             self._site_data_dir,
             source=self.name,
