@@ -58,3 +58,5 @@ Decidido em grilling em 2026-11-02.
   - Dado insuficiente: o cartão diz "**Poucos casos aqui para dizer a direção**. Isso é comum em municípios pequenos e não é um problema do seu município." Mostra a Tendência da UF como contexto ("no seu estado") e mantém a Ação. A contagem bruta do município não aparece, para evitar identificar pessoas e porque ela é instável.
 
 **Glossário:** a Tendência passou a ter 4 classes. Entraram os termos **Região imediata** e **Dado insuficiente**. "Agregado" fica só como termo técnico do pipeline.
+
+> **Atualização (2026-11-02):** os modelos do 60 dias e do tabagismo e a escala do ±1% foram redefinidos em [Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](25-escala-da-faixa-estavel.md).

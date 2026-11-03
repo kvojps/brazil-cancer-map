@@ -49,6 +49,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Qual licença expressa a abertura aprovada para o código?](issues/24-licenca-do-codigo.md): AGPL-3.0-or-later para o código (cobre também forks modificados que rodam como serviço na rede), CC BY-SA 4.0 para os textos do projeto e contribuições sem CLA. Os dados continuam seguindo as condições de cada fonte.
 
+- [Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md): a Tendência é sempre a variação percentual anual (relativa, nunca p.p.), com ±1% para todos os indicadores. O 60 dias passa a usar Poisson modificado, o tabagismo usa regressão ponderada do log, e a metodologia avisa que amostras pequenas raramente chegam a "estável".
+
 - [Consolidar a spec do MVP](issues/23-consolidar-spec.md): a spec está em [spec-mvp.md](spec-mvp.md), com cada regra apontando para o seu ticket. Duas lacunas viraram tickets (a escala do "estável" e o estado inicial do mapa), e os requisitos de execução antes de publicar ficaram reunidos na seção 17.
 
 ## Not yet specified
