@@ -14,7 +14,7 @@
 
 **Tendência**: A direção recente de um indicador, em uma de quatro classes: melhorando, piorando, estável (sabemos que quase não mudou) ou sem direção clara (a mudança é incerta demais para dizer). Quando nem há casos suficientes para calcular, o indicador fica como dado insuficiente, que não é uma Tendência. Aparece em todo cartão e é a cor padrão do Mapa inicial. "Melhorando" depende do indicador: para a mortalidade, é cair; para a cobertura, é subir. _Evitar_: "estável" para uma série que só não mostrou mudança significativa.
 
-**Ação**: Um passo concreto que o cidadão pode dar, ligado a um indicador (por exemplo, pedir uma mamografia no SUS ou acionar a Lei dos 60 dias). Todo indicador tem uma Ação associada ou uma justificativa explícita de por que não tem.
+**Ação**: Um próximo passo concreto de prevenção, cuidado ou acesso a direitos, associado a um indicador ou oferecido num eixo sem indicador pertinente ao tipo de câncer. É orientação geral, disponível mesmo quando o dado é insuficiente, e não uma conduta individual determinada pela situação do município.
 
 **Tipo de câncer**: O recorte por localização do câncer (por exemplo mama ou próstata) que filtra os indicadores do mapa. A visão padrão é "Todos os cânceres", e o seletor oferece mama, colo do útero, próstata, colorretal e pulmão. Quando um eixo não tem indicador para um tipo, ele mostra por que não tem.
 
