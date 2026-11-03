@@ -1,5 +1,5 @@
 ---
-import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes } from "../map/indicator-layer";
+import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes, mapOption } from "../map/indicator-layer";
 
 // Search is wired up in a later ticket. The cancer type selector
 // starts disabled and the map island enables it once the map can switch layers.
@@ -33,12 +33,15 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     <select id="map-mode" disabled>
       {Object.entries(INDICATORS).map(([id, text]) => (
         <optgroup label={text.name}>
-          <option value={`${id}:trend`}>{text.name} · Tendência</option>
-          <option value={`${id}:status`}>{text.name} · Como está hoje</option>
+          {(["trend", "status"] as const).map((mode) => {
+            const option = mapOption(id, DEFAULT_CANCER_TYPE, mode);
+            return <option value={`${id}:${mode}`} disabled={option.disabled}>{option.label}</option>;
+          })}
         </optgroup>
       ))}
     </select>
   </label>
+  <p id="map-selection-notice" class="note" role="status" hidden></p>
 </form>
 
 <style>
