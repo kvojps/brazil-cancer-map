@@ -63,3 +63,14 @@ def test_a_month_without_any_case_of_a_treatment_raises_an_alert():
     assert monthly_drops(counts, provisional={2025, 2026}) == [
         "chemo_radio, 2024-04: 0 cases, 0% of the median of the 12 months before (15000)",
     ]
+
+
+def test_a_month_missing_from_all_treatments_is_counted_as_zero():
+    counts = months({treatment: 100 for treatment in FirstTreatment})
+    for treatment in FirstTreatment:
+        del counts[("2024-04", treatment)]
+
+    assert monthly_drops(counts, provisional={2025, 2026}) == [
+        f"{treatment.value}, 2024-04: 0 cases, 0% of the median of the 12 months before (100)"
+        for treatment in FirstTreatment
+    ]

@@ -59,14 +59,14 @@ so the trend is measured on these cases only (spec, section 7)."""
 @dataclass
 class CaseCounts:
     cases: int = 0
-    """Cases diagnosed: the denominator of the value and of the % without information."""
+    """Cases diagnosed: the denominator of the % without information."""
     within_60_days: int = 0
     """First treatment within 60 days of diagnosis."""
     without_treatment_info: int = 0
     chemo_radio: int = 0
-    """Cases first treated with chemotherapy, radiotherapy or both: the trend's denominator."""
+    """Cases first treated with chemotherapy, radiotherapy or both: value and trend denominator."""
     chemo_radio_within_60_days: int = 0
-    """Of those, the ones treated within 60 days: the trend's numerator."""
+    """Of those, the ones treated within 60 days: value and trend numerator."""
 
     def __add__(self, other: "CaseCounts") -> "CaseCounts":
         return CaseCounts(*(a + b for a, b in zip(astuple(self), astuple(other), strict=True)))
@@ -563,7 +563,15 @@ def monthly_drops(months: Mapping[MonthKey, int], *, provisional: set[int]) -> l
     """Alerts for the months whose cases of a first treatment fell far below the median of the
     12 months before, as the surgeries did from April 2024 (spec, section 14). Months of the
     provisional years are still filling in and are not watched."""
-    calendar = sorted({month for month, _ in months})
+    if not months:
+        return []
+    observed = sorted({month for month, _ in months})
+    first_year, first_month = map(int, observed[0].split("-"))
+    last_year, last_month = map(int, observed[-1].split("-"))
+    calendar = [
+        f"{index // 12:04d}-{index % 12 + 1:02d}"
+        for index in range(first_year * 12 + first_month - 1, last_year * 12 + last_month)
+    ]
     alerts = []
     for treatment in FirstTreatment:
         series = [months.get((month, treatment), 0) for month in calendar]
@@ -622,6 +630,8 @@ class PainelSource:
     def compute(self) -> None:
         rows = read_clean(self._clean_dir)
         provisional = {row.year for row in rows if row.provisional}
+        alerts = monthly_drops(read_months(self._clean_dir), provisional=provisional)
+        (self._clean_dir / "monthly_alerts.json").write_text(json.dumps(alerts))
         immediate_region_of = self._immediate_region_of()
         for cancer_type in CANCER_TYPES:
             counts = {
@@ -643,8 +653,7 @@ class PainelSource:
         A monthly drop in the cases of a first treatment only alerts the maintainer, on
         stderr: it does not block the publication (spec, section 14)."""
         rows = read_clean(self._clean_dir)
-        provisional = {row.year for row in rows if row.provisional}
-        for alert in monthly_drops(read_months(self._clean_dir), provisional=provisional):
+        for alert in json.loads((self._clean_dir / "monthly_alerts.json").read_text()):
             print(f"{self.name}: alert: {alert}", file=sys.stderr)
         self._check(rows)
 

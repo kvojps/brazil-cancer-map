@@ -4,16 +4,16 @@
 
 **Blocked by:** 27 — Tendência do 60 dias sobre os casos de quimio e radio
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `value` da camada do 60 dias passa a ser a % em até 60 dias dos casos de quimio/radio (`chemo_radio_within_60_days` / `chemo_radio`) no último ano consolidado; um teste mostra que um município que perde só cirurgias não muda de valor
-- [ ] `without_treatment_info` continua sobre todos os casos diagnosticados, sem mudança em nenhum município
-- [ ] A validação do valor contra o TabNet passa a usar a tabela filtrada por modalidade (já baixada no ticket 27); a comparação de todos os casos continua, agora para validar a % sem informação e as contagens. Se uma falhar, nada do Painel é publicado
-- [ ] A validação do Painel confere a contagem nacional de casos por mês e por modalidade de primeiro tratamento (cirurgia, quimio/radio, sem informação) e emite um alerta, sem bloquear a publicação, quando um mês fora dos provisórios cai muito abaixo da mediana dos 12 meses anteriores; com a extração de 17/10/2026, o alerta dispara nas cirurgias a partir de abril de 2024
-- [ ] O `period` da camada e do `manifest.json` diz que o valor também é medido em quimio/radio (por exemplo `"value_cases": "chemo_radio"`), e `source.period` diz isso em português
-- [ ] A legenda, o tooltip e a tabela acessível do mapa deixam de dizer "(todos os casos diagnosticados)" para o valor e passam a dizer que valor e Tendência vêm dos casos tratados com quimioterapia ou radioterapia; a % sem informação continua marcada como de todos os casos
-- [ ] O pipeline roda de novo e regenera `site/public/dados/map/within_60_days/all.json` e `manifest.json`; o valor do Brasil em 2024 fica registrado nos comentários (a pesquisa prevê 41,0%, contra 33,5% em todos os casos)
-- [ ] O texto da nota de método para a metodologia (ticket 24) fica registrado neste ticket: a queda das cirurgias de 2024, a causa provável (CPF na AIH, sem confirmação oficial), por que o valor também passou a quimio/radio, a diferença em relação ao TabNet e o efeito na faixa A/B/C (4 células de fronteira)
+- [x] `value` da camada do 60 dias passa a ser a % em até 60 dias dos casos de quimio/radio (`chemo_radio_within_60_days` / `chemo_radio`) no último ano consolidado; um teste mostra que um município que perde só cirurgias não muda de valor
+- [x] `without_treatment_info` continua sobre todos os casos diagnosticados, sem mudança em nenhum município
+- [x] A validação do valor contra o TabNet passa a usar a tabela filtrada por modalidade (já baixada no ticket 27); a comparação de todos os casos continua, agora para validar a % sem informação e as contagens. Se uma falhar, nada do Painel é publicado
+- [x] A validação do Painel confere a contagem nacional de casos por mês e por modalidade de primeiro tratamento (cirurgia, quimio/radio, sem informação) e emite um alerta, sem bloquear a publicação, quando um mês fora dos provisórios cai muito abaixo da mediana dos 12 meses anteriores; com a extração de 17/10/2026, o alerta dispara nas cirurgias a partir de abril de 2024
+- [x] O `period` da camada e do `manifest.json` diz que o valor também é medido em quimio/radio (por exemplo `"value_cases": "chemo_radio"`), e `source.period` diz isso em português
+- [x] A legenda, o tooltip e a tabela acessível do mapa deixam de dizer "(todos os casos diagnosticados)" para o valor e passam a dizer que valor e Tendência vêm dos casos tratados com quimioterapia ou radioterapia; a % sem informação continua marcada como de todos os casos
+- [x] O pipeline roda de novo e regenera `site/public/dados/map/within_60_days/all.json` e `manifest.json`; o valor do Brasil em 2024 fica registrado nos comentários (a pesquisa prevê 41,0%, contra 33,5% em todos os casos)
+- [x] O texto da nota de método para a metodologia (ticket 24) fica registrado neste ticket: a queda das cirurgias de 2024, a causa provável (CPF na AIH, sem confirmação oficial), por que o valor também passou a quimio/radio, a diferença em relação ao TabNet e o efeito na faixa A/B/C (4 células de fronteira)
 
 Fora deste ticket: a Situação e o modo "como está hoje" ficam no ticket 08, e a barra e a nota do cartão no ticket 10, os dois já usando este valor.
 
@@ -33,3 +33,27 @@ Falta:
 - Regenerar e commitar `site/public/dados/map/within_60_days/*.json` e `manifest.json`; registrar aqui o valor do Brasil em 2024 (a pesquisa prevê 41,0%) e os alertas emitidos.
 - Escrever aqui o texto da nota de método para a metodologia (ticket 24): queda das cirurgias de 2024, causa provável (CPF na AIH, sem confirmação oficial), por que o valor passou a quimio/radio, a diferença em relação ao TabNet e o efeito na faixa A/B/C (4 células de fronteira). Base: ticket de decisão 28 e pesquisa 28.
 - Revisão (`code-review`), marcar as caixas, trocar o status para `resolved` e listar os commits.
+
+**Nota de método para o ticket 24.** Desde abril de 2024, muitas cirurgias deixaram de aparecer no Painel-Oncologia: os registros mensais caíram de cerca de 6 mil para cerca de 2 mil e permaneceram nesse patamar em 2025. A pesquisa encontrou perda do vínculo das AIH aos casos em 581 hospitais, sem queda correspondente das cirurgias no SIH. A hipótese é que a introdução do CPF do paciente na AIH, na competência de abril de 2024, tenha prejudicado o vínculo pelo CNS; essa causa não tem confirmação oficial. Os casos operados em grande parte somem do Painel, em vez de passar à categoria sem informação de tratamento.
+
+Por isso, o valor do último ano consolidado, assim como a Tendência, usa os casos cujo primeiro tratamento registrado foi quimioterapia, radioterapia ou ambos. O numerador conta esses casos tratados em até 60 dias e o denominador conta todos esses casos. Esse recorte não apresenta as quebras de registro de 2018, 2019 e 2024, mas exclui a cirurgia como primeiro tratamento e os casos sem informação. O valor difere da consulta de todos os casos no TabNet e deve ser comparado à tabela filtrada pelas mesmas modalidades. A % sem informação e a faixa A/B/C continuam sobre todos os casos diagnosticados.
+
+Na janela de qualidade 2020–2024, a perda das cirurgias eleva a % sem informação em média 0,4 ponto percentual em Todos e afeta somente 4 das 162 células UF × tipo, todas na fronteira. No contrafactual sem a perda, Mama/MS (15,3% → 15,0%), Mama/DF (15,1% → 14,9%) e Próstata/GO (15,1% → 15,0%) passariam de B para A; Todos/PE (35,1% → 34,5%) passaria de C para B. Esses números são a estimativa contrafactual da [pesquisa 28, seção 3.2](../../mapa-cancer-br/research/28-queda-das-cirurgias-em-2024.md), não uma correção aplicada aos dados publicados.
+
+
+**Conclusão (2026-11-03).** Reexecutadas as etapas `clean`, `compute`, `validate` e `export` com os microdados e as duas tabelas do TabNet já baixados da extração de 17/10/2026. A tentativa de executar também `download` foi interrompida enquanto o TabNet não respondia; nenhum arquivo da extração mudou. As duas comparações (todos os casos e quimio/radio), em todos os anos e UFs, passaram, assim como as verificações das seis camadas. Regenerados os seis JSON de `within_60_days` e o `manifest.json`.
+
+Brasil, Todos, diagnóstico de 2024: **76.383 / 186.368 = 40,9850% (41,0%)** nos casos de quimio/radio; em todos os casos, 115.777 / 345.217 = 33,5375% (33,5%). Sem informação: 115.927 / 345.217 = 33,5809%. A comparação dos JSON antes/depois confirmou **zero mudanças de `without_treatment_info` em qualquer município, nos seis tipos**, e nenhuma mudança nas faixas de qualidade.
+
+Mantido o limiar de alerta de 75% da mediana dos 12 meses anteriores. Foram emitidos 16 alertas, sem bloquear a publicação:
+- Cirurgia: abril de 2020 e **abril a dezembro de 2024**. Em abril de 2024: 4.392 casos, 71% da mediana de 6.228; em dezembro: 1.914, 58% da mediana de 3.276.
+- Quimio/radio: abril de 2020.
+- Sem informação: fevereiro de 2015, fevereiro de 2017 e abril a junho de 2020.
+
+Os cinco alertas de 2020 se concentram no início da pandemia. Os anos provisórios 2025 e 2026 não geram alertas. A revisão encontrou e corrigiu a ausência de meses inteiros na vigilância: agora o calendário é contínuo e um mês ausente conta como zero. O diagnóstico mensal é calculado e persistido em `compute`; `validate` apenas emite os alertas prontos.
+
+Validação final: `uv run pytest` — **84 testes passando**; `uv run mypy` — sem erros; `npm run check` — sem erros ou avisos; `npm run build` — concluído (aviso de tamanho do bundle). Revisão paralela `code-review`, base `691026b`: Standards e Spec sem pendências após as correções.
+
+Commits que resolveram o ticket:
+- `eb96bfd` — `feat: measure the within-60-days value on chemo/radio cases and watch monthly counts`.
+- Commit deste fechamento — `fix: complete monthly monitoring and publish chemo/radio values` (correções da revisão, dados regenerados e nota de método).
