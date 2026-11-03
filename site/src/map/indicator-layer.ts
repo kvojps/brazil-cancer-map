@@ -212,6 +212,14 @@ export const INDICATORS: Record<string, IndicatorText> = {
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
   },
+  cytopathology: {
+    modes: { all: ['trend', 'status'], cervix: ['trend', 'status'] },
+    name: 'Citopatológicos (25–64 anos; série até 2025)',
+    unit: 'ratio', valueLabel: 'Razão de citopatológicos (25–64 anos)', hasTreatmentQuality: false,
+    improving: 'a razão de citopatológicos aumentou; a transição para DNA-HPV exige cautela na leitura.',
+    worsening: 'a razão de citopatológicos diminuiu; menos Papanicolaus não quer dizer menos cuidado com a transição para DNA-HPV.',
+  },
+
   mammography: {
     modes: { all: ['trend', 'status'], breast: ['trend', 'status'] },
     name: 'Mamografias de rastreamento (50–69 anos)',

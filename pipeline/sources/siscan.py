@@ -1,7 +1,8 @@
-"""SISCAN screening mammograms by municipality of residence."""
+"""SISCAN screening examinations by municipality of residence."""
 
 import json
 import re
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -16,8 +17,8 @@ from pipeline.publish import MANIFEST, publish_together, updated_manifest
 from pipeline.status import classify_status, status_note
 from pipeline.trend import quasi_poisson_trend
 
-FILE_NAME = re.compile(r'SISCAN_MAMOGRAFIA_(201[6-9]|202[0-5])\.csv', re.IGNORECASE)
 YEARS = tuple(range(2016, 2026))
+"""Fixed historical window: cytopathology must never acquire a new year."""
 FTP_ROOT = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SISCAN/SISCAN/'
 SOURCE = {
     'name': 'SISCAN (DATASUS/Ministério da Saúde)', 'url': FTP_ROOT,
@@ -29,10 +30,10 @@ MAXIMUM_RATIO = 10
 """Operational checks: flag ratios above two; block publication above ten (never clamp)."""
 
 type Series = dict[int, tuple[int, float]]
-"""Year → (screening examinations, women aged 50–69 divided by two)."""
+"""Year → (screening examinations, eligible female population divided by the examination interval)."""
 
 
-def mammography_result(series: Series, provisional: set[int]) -> dict[str, Any]:
+def screening_result(series: Series, provisional: set[int]) -> dict[str, Any]:
     years = sorted(series)
     consolidated = [year for year in YEARS if year not in provisional]
     latest = consolidated[-1]
@@ -47,7 +48,7 @@ def mammography_result(series: Series, provisional: set[int]) -> dict[str, Any]:
     }
 
 
-def mammography_data(series: dict[str, Series], regions: dict[str, str],
+def screening_data(series: dict[str, Series], regions: dict[str, str],
                      provisional: set[int]) -> tuple[dict[str, Any], dict[str, Any]]:
     """Compute the map and profile together so the numerator cascade governs the entire card."""
     consolidated = [year for year in YEARS if year not in provisional]
@@ -68,32 +69,54 @@ def mammography_data(series: dict[str, Series], regions: dict[str, str],
         series_key: str | None = (f'municipality:{code}' if origin is Origin.MUNICIPALITY else
                f'immediate_region:{regions[code]}' if origin is Origin.IMMEDIATE_REGION else None)
         if series_key is not None and series_key not in results:
-            results[series_key] = mammography_result(grouped[series_key], provisional)
+            results[series_key] = screening_result(grouped[series_key], provisional)
             displayed_series[series_key] = [
                 {'year': year, 'value': n / d if d else None, 'provisional': year in provisional,
                  'without_treatment_info': None}
                 for year, (n, d) in sorted(grouped[series_key].items())]
-        entry = {'origin': origin.value, **(results[series_key] if series_key else mammography_result({}, provisional))}
+        entry = {'origin': origin.value, **(results[series_key] if series_key else screening_result({}, provisional))}
         shown[code] = entry
         profiles[code] = {**entry, 'series_id': series_key}
     period = {'first_year': 2016, 'last_year': 2025, 'latest': consolidated[-1],
               'trend': [consolidated[0], consolidated[-1]], 'provisional': sorted(provisional)}
     layer = {'period': period, 'reference': {'value': 1, 'label': 'meta'}, 'municipalities': shown}
     profile = {'municipalities': profiles, 'series': displayed_series,
-               'uf_trends': {uf: mammography_result(grouped[f'uf:{uf}'], provisional)['trend']
+               'uf_trends': {uf: screening_result(grouped[f'uf:{uf}'], provisional)['trend']
                              for uf in {code[:2] for code in regions}}}
     return layer, profile
+
+
+@dataclass(frozen=True)
+class Screening:
+    file_prefix: str
+    min_age: int
+    max_age: int
+    interval: int
+    cancer_types: tuple[str, ...]
+    period: str
+    year_column: str
+
+
+SCREENINGS = {
+    'mammography': Screening('SISCAN_MAMOGRAFIA', 50, 69, 2, ('all', 'breast'), SOURCE['period'], 'NU_ANO_COMPETENCIA'),
+    'cytopathology': Screening('SISCAN_CITO_COLO', 25, 64, 3, ('all', 'cervix'),
+        'Citopatológicos em mulheres de 25–64 anos, 2016–2025, por residência. Série encerrada em 2025.', 'CO_ANO_LIBERACAO'),
+}
 
 
 class SiscanSource:
     name = 'siscan'
 
     def __init__(self, *, raw_dir: Path = RAW_DIR / 'siscan',
-                 clean_dir: Path = CLEAN_DIR / 'siscan', site_data_dir: Path = SITE_DATA_DIR,
+                 clean_dir: Path | None = None, site_data_dir: Path = SITE_DATA_DIR,
                  population_path: Path = CLEAN_DIR / 'popsvs' / 'population.parquet',
-                 transport: Transport | None = None) -> None:
+                 transport: Transport | None = None, indicator: str = 'mammography') -> None:
+        self._indicator = indicator
+        self._screening = SCREENINGS[indicator]
+        self.name = 'siscan' if indicator == 'mammography' else 'siscan_cytopathology'
+        self._source = {**SOURCE, 'period': self._screening.period}
         self._raw_dir = raw_dir
-        self._clean_dir = clean_dir
+        self._clean_dir = clean_dir or CLEAN_DIR / self.name
         self._site_data_dir = site_data_dir
         self._population_path = population_path
         self._transport = transport or transport_for(FTP_ROOT)
@@ -101,7 +124,7 @@ class SiscanSource:
     def download(self) -> None:
         """Download and reduce one file at a time, keeping at most one raw CSV on disk."""
         for year in YEARS:
-            path = self._raw_dir / f'SISCAN_MAMOGRAFIA_{year}.csv'
+            path = self._raw_dir / f'{self._screening.file_prefix}_{year}.csv'
             url = FTP_ROOT + path.name
             remote = with_retries(lambda: self._transport.head(url), f'inspect {path.name}')
             metadata_path = self._clean_dir / 'exams' / f'{year}.json'
@@ -115,20 +138,23 @@ class SiscanSource:
 
     def clean(self) -> None:
         """Reduce each CSV with DuckDB before deleting it; never retain the full collection."""
+        pattern = re.compile(re.escape(self._screening.file_prefix) + r'_(201[6-9]|202[0-5])\.csv', re.IGNORECASE)
         for path in sorted(self._raw_dir.glob('*.csv')):
-            if match := FILE_NAME.fullmatch(path.name):
+            if match := pattern.fullmatch(path.name):
                 self._clean_file(path, int(match[1]))
 
     def _clean_file(self, path: Path, year: int) -> None:
         destination = self._clean_dir / 'exams' / f'{year}.parquet'
         destination.parent.mkdir(parents=True, exist_ok=True)
         partial = destination.with_suffix('.parquet.part')
+        screening_filter = ("AND try_cast(CO_IND_CLINICA AS INTEGER) = 2"
+                            if self._indicator == 'mammography' else '')
         with duckdb.connect() as db:
-            db.execute('''COPY (SELECT CAST(NU_ANO_COMPETENCIA AS INTEGER) AS year,
+            db.execute(f'''COPY (SELECT CAST({self._screening.year_column} AS INTEGER) AS year,
                 trim(CO_MUN_RESIDENCIA) AS municipality, count(*) AS exams
                 FROM read_csv(?, delim=';', header=true, all_varchar=true)
-                WHERE try_cast(CO_IDADE_PACIENTE AS INTEGER) BETWEEN 50 AND 69
-                AND try_cast(CO_IND_CLINICA AS INTEGER) = 2 AND trim(SG_SEXO) = 'F'
+                WHERE try_cast(CO_IDADE_PACIENTE AS INTEGER) BETWEEN {self._screening.min_age} AND {self._screening.max_age}
+                AND trim(SG_SEXO) = 'F' {screening_filter}
                 GROUP BY ALL) TO ? (FORMAT PARQUET)''', [str(path), str(partial)])
             years = db.execute('SELECT DISTINCT year FROM read_parquet(?)', [str(partial)]).fetchall()
             if years != [(year,)]:
@@ -150,7 +176,7 @@ class SiscanSource:
             counts = {(year, code): n for year, code, n in db.execute(
                 'SELECT year, municipality, sum(exams) FROM read_parquet(?) GROUP BY ALL',
                 [[str(path) for path in files]]).fetchall()}
-        population = Population(self._population_path).get_many(regions.keys(), YEARS, sex=2, min_age=50, max_age=69)
+        population = Population(self._population_path).get_many(regions.keys(), YEARS, sex=2, min_age=self._screening.min_age, max_age=self._screening.max_age)
         series: dict[str, Series] = {code: {} for code in regions}
         provisional = set()
         for year in YEARS:
@@ -164,8 +190,8 @@ class SiscanSource:
                     provisional.add(year)
                 if result.population <= 0:
                     raise ValueError(f'nonpositive population for {code} in {result.year}')
-                series[code][year] = counts.get((year, code), 0), result.population / 2
-        layer, profiles = mammography_data(series, regions, provisional)
+                series[code][year] = counts.get((year, code), 0), result.population / self._screening.interval
+        layer, profiles = screening_data(series, regions, provisional)
         (self._clean_dir / 'layer.json').write_text(json.dumps(layer, allow_nan=False))
         (self._clean_dir / 'profiles.json').write_text(json.dumps(profiles, allow_nan=False))
 
@@ -187,9 +213,9 @@ class SiscanSource:
         computed = json.loads((self._clean_dir / 'profiles.json').read_text())
         listing = json.loads((self._site_data_dir / 'municipalities.json').read_text())
         files: dict[str, object] = {}
-        for cancer_type in ('all', 'breast'):
-            files[f'map/mammography/{cancer_type}.json'] = {
-                'indicator': 'mammography', 'cancer_type': cancer_type, 'has_status': True, 'source': SOURCE, **layer}
+        for cancer_type in self._screening.cancer_types:
+            files[f'map/{self._indicator}/{cancer_type}.json'] = {
+                'indicator': self._indicator, 'cancer_type': cancer_type, 'has_status': True, 'source': self._source, **layer}
         for uf in {m['uf'] for m in listing['municipalities']}:
             name = f'profiles/{uf}.json'
             path = self._site_data_dir / name
@@ -198,13 +224,13 @@ class SiscanSource:
             entries = {code: computed['municipalities'][code] for code in sorted(codes)}
             keys = {entry['series_id'] for entry in entries.values()} - {None}
             data = {'period': layer['period'], 'reference': layer['reference'], 'has_status': True,
-                    'source': SOURCE, 'municipalities': entries, 'uf_trend': computed['uf_trends'][next(iter(codes))[:2]],
+                    'source': self._source, 'municipalities': entries, 'uf_trend': computed['uf_trends'][next(iter(codes))[:2]],
                     'series': {key: computed['series'][key] for key in sorted(keys)}}
-            profile['indicators']['mammography'] = {cancer_type: data for cancer_type in ('all', 'breast')}
+            profile['indicators'][self._indicator] = {cancer_type: data for cancer_type in self._screening.cancer_types}
             files[name] = profile
         extracts = [json.loads((self._clean_dir / 'exams' / f'{year}.json').read_text()) for year in YEARS]
         files[MANIFEST] = updated_manifest(self._site_data_dir, source=self.name,
-            extract={'name': SOURCE['name'], 'extracted_at': max(e['extracted_at'] for e in extracts),
+            extract={'name': self._source['name'], 'extracted_at': max(e['extracted_at'] for e in extracts),
                      'files': [e['file'] for e in extracts]},
-            indicators={'mammography': {cancer_type: layer['period'] for cancer_type in ('all', 'breast')}})
+            indicators={self._indicator: {cancer_type: layer['period'] for cancer_type in self._screening.cancer_types}})
         publish_together(self._site_data_dir, files)

@@ -7,5 +7,5 @@ from pipeline.sources.cnes import CnesSource
 from pipeline.sources.popsvs import PopsvsSource
 from pipeline.sources.siscan import SiscanSource
 
-SOURCES: list[Source] = [MeshSource(), PopsvsSource(), PainelSource(), CnesSource(), SiscanSource()]
+SOURCES: list[Source] = [MeshSource(), PopsvsSource(), PainelSource(), CnesSource(), SiscanSource(), SiscanSource(indicator='cytopathology')]
 """The mesh comes first: health sources cover the municipalities it publishes."""

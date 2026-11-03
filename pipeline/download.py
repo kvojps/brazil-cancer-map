@@ -179,7 +179,10 @@ class FtpTransport:
             raise DownloadError(f"could not connect: {error}") from error
         try:
             try:
-                data = ftp.transfercmd(f"RETR {path}", rest=offset)
+                # DATASUS can stall REST after PASV; negotiate the offset first.
+                if offset:
+                    ftp.sendcmd(f"REST {offset}")
+                data = ftp.transfercmd(f"RETR {path}")
             except (ftplib.Error, EOFError) as error:
                 raise DownloadError(f"could not open byte {offset}: {error}") from error
             with data, data.makefile("rb") as stream:

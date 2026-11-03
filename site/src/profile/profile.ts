@@ -16,11 +16,11 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 
 export interface UfProfile {
   uf: string;
-  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, MammographyProfile> };
+  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile> };
   where_to_treat?: WhereToTreat;
 }
 
-export interface MammographyProfile extends Pick<TreatmentProfile, 'period' | 'source' | 'has_status' | 'reference' | 'uf_trend' | 'municipalities' | 'series'> {}
+export interface ScreeningProfile extends Pick<TreatmentProfile, 'period' | 'source' | 'has_status' | 'reference' | 'uf_trend' | 'municipalities' | 'series'> {}
 
 export interface WhereToTreat {
   period: string;

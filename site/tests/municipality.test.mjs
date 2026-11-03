@@ -121,3 +121,18 @@ test('methodology documents all nine steps and links from the cards resolve', ()
   const manifest = JSON.parse(readFileSync(new URL('../public/dados/manifest.json', import.meta.url)));
   for (const term of ['quasi-Poisson', 'TRATAMENTO', 'Região imediata', 'TabNet', manifest.pipeline_version]) assert.ok(html.includes(term));
 });
+
+test('cervical screening card always explains the frozen series and retains the approved action', () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const html = page(municipality).split('aria-label="Citopatológicos — 25–64 anos"')[1].split('</article>')[0];
+  assert.match(html, /Série encerrada em 2025 pela mudança no rastreamento/);
+  assert.match(html, /Menos Papanicolaus não quer dizer menos cuidado/);
+  assert.match(html, /Confira na UBS se seu exame está em dia/);
+  assert.match(html, /disponibilidade do teste de HPV ou do Papanicolau/);
+  assert.match(html, /Onde ele ainda não chegou, o Papanicolau continua sendo usado/);
+  assert.match(html, /Informação geral\. A equipe de saúde orienta o cuidado indicado para você/);
+  assert.match(html, /\/metodologia\/#citopatologico/);
+  assert.doesNotMatch(html, /após dois exames normais anuais consecutivos/);
+  const methodology = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
+  assert.match(methodology, /id="citopatologico"/);
+});

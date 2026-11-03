@@ -63,3 +63,22 @@ export const treatmentAction = {
   reviewedAt: null,
   reviewer: null,
 };
+
+
+export const cervicalScreeningAction = {
+  title: 'Confira na UBS se seu exame está em dia.',
+  summary: 'Pergunte sobre o exame indicado e a disponibilidade do teste de HPV ou do Papanicolau.',
+  transition: 'O SUS está implantando o teste de DNA-HPV gradualmente. Onde ele ainda não chegou, o Papanicolau continua sendo usado. Confira com a equipe da UBS qual exame está disponível e indicado para você.',
+  disclaimer: 'Informação geral. A equipe de saúde orienta o cuidado indicado para você.',
+  details: [
+    'O rastreamento é indicado para mulheres e pessoas com colo do útero de 25 a 64 anos que já tiveram atividade sexual. Após resultado negativo, o teste de DNA-HPV é repetido em cinco anos.',
+    'Onde o DNA-HPV ainda não foi implantado, o Papanicolau continua a cada três anos após dois exames normais anuais consecutivos. Resultados alterados e situações especiais exigem orientação da equipe.',
+  ],
+  audience: 'Mulheres e pessoas com colo do útero, de 25 a 64 anos, que já tiveram atividade sexual.',
+  criteria: 'DNA-HPV a cada cinco anos após resultado negativo; Papanicolau onde o teste não está implantado.',
+  exceptions: 'Resultados alterados, imunossupressão e histórico de lesões exigem avaliação individual pela equipe.',
+  version: '1', checkedAt: '2026-11-03',
+  sources: [{ title: 'INCA — Detecção precoce do câncer do colo do útero', url: 'https://www.gov.br/inca/pt-br/assuntos/gestor-e-profissional-de-saude/controle-do-cancer-do-colo-do-utero/acoes/deteccao-precoce' }],
+  verificationNote: 'Transição e periodicidade conferidas no INCA. Revisão clínica dos detalhes pendente.',
+  reviewedVersion: null, reviewedAt: null, reviewer: null,
+};
