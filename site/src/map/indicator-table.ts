@@ -1,4 +1,6 @@
 import {
+  CANCER_TYPES,
+  NO_STATUS_NOTE,
   QUALITY_WARNING,
   immediateRegionName,
   originText,
@@ -14,37 +16,31 @@ import {
 } from "./indicator-layer";
 
 /**
- * Fill the table that mirrors the map: one row per municipality, ordered by UF
+ * Set up the table that mirrors the map: one row per municipality, ordered by UF
  * and name (never by value: the map is not a ranking). A UF filter keeps the
- * 5,570 rows navigable by keyboard.
+ * 5,570 rows navigable by keyboard. Returns how to fill it with a layer, called
+ * again whenever the map switches layers.
  */
-export function fillIndicatorTable(
+export function mountIndicatorTable(
   root: HTMLElement,
-  layer: IndicatorLayer,
   listing: MunicipalityListing,
-): void {
+): (layer: IndicatorLayer) => void {
   const body = root.querySelector("tbody")!;
   const filter = root.querySelector<HTMLSelectElement>("select")!;
   const count = root.querySelector<HTMLElement>(".table-count")!;
 
-  root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
-  const trendCases = trendCasesText(layer.period);
-  root.querySelector(".trend-cases")!.textContent = trendCases ? ` (${trendCases})` : "";
-  const qualityPeriod = qualityPeriodText(layer.period);
-  root.querySelector(".quality-note")!.textContent = qualityPeriod
-    ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +
-      `de tratamento. Na faixa C: ${QUALITY_WARNING}`
-    : "";
   const collator = new Intl.Collator("pt-BR");
   const rows = [...listing.municipalities].sort(
     (a, b) => collator.compare(a.uf, b.uf) || collator.compare(a.name, b.name),
   );
-
   for (const uf of [...new Set(rows.map((m) => m.uf))]) {
     filter.add(new Option(uf, uf));
   }
 
+  let current: IndicatorLayer | undefined;
   const render = () => {
+    const layer = current;
+    if (!layer) return;
     const shown = rows.filter((m) => !filter.value || m.uf === filter.value);
     body.replaceChildren(
       ...shown.map((m) => {
@@ -71,5 +67,19 @@ export function fillIndicatorTable(
     count.textContent = `${shown.length.toLocaleString("pt-BR")} municípios`;
   };
   filter.addEventListener("change", render);
-  render();
+
+  return (layer) => {
+    current = layer;
+    root.querySelector(".cancer-type")!.textContent = CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type;
+    root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
+    const trendCases = trendCasesText(layer.period);
+    root.querySelector(".trend-cases")!.textContent = trendCases ? ` (${trendCases})` : "";
+    const qualityPeriod = qualityPeriodText(layer.period);
+    root.querySelector(".quality-note")!.textContent = qualityPeriod
+      ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +
+        `de tratamento. Na faixa C: ${QUALITY_WARNING}`
+      : "";
+    root.querySelector(".status-note")!.textContent = layer.has_status ? "" : NO_STATUS_NOTE;
+    render();
+  };
 }

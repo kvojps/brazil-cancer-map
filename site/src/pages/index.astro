@@ -5,11 +5,12 @@ import MapControls from "../components/MapControls.astro";
 import MunicipalityMap from "../components/MunicipalityMap.astro";
 import TrendLegend from "../components/TrendLegend.astro";
 import manifest from "../../public/dados/manifest.json";
+import { DEFAULT_CANCER_TYPE } from "../map/indicator-layer";
 
 // Initial state of the Mapa inicial: até 60 dias × Todos os cânceres × Tendência (spec, section 11.1).
 const indicator = "within_60_days";
-const cancerType = "all";
-const period = manifest.indicators[indicator][cancerType];
+// The trend and quality years are the same for every cancer type of the indicator.
+const period = manifest.indicators[indicator][DEFAULT_CANCER_TYPE];
 ---
 
 <Base title="Observatório do Câncer no Brasil">
@@ -19,7 +20,7 @@ const period = manifest.indicators[indicator][cancerType];
       <p>Dados sobre o câncer no seu município, para entender e agir</p>
       <MapControls />
     </header>
-    <MunicipalityMap layer={`map/${indicator}/${cancerType}.json`} />
+    <MunicipalityMap indicator={indicator} />
     <TrendLegend indicator={indicator} period={period} />
     <IndicatorTable />
   </div>
