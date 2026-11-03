@@ -214,3 +214,48 @@ def test_prostate_has_no_status(tmp_path):
 
     assert not has_status("prostate")
     assert all(has_status(t) for t in ("all", "breast", "cervix", "colorectal", "lung"))
+
+
+def test_profiles_publish_complete_chemo_radio_series_and_uf_context(tmp_path):
+    source, site = build_source(tmp_path)
+    source.compute()
+    source.export()
+
+    profile = json.loads((site / "profiles" / "RO.json").read_text())
+    types = profile["indicators"]["within_60_days"]
+    assert set(types) == set(CANCER_TYPES)
+    treatment = types["all"]
+    entry = treatment["municipalities"]["110020"]
+    assert entry["value"] == 40.0
+    assert treatment["uf_trend"] == "stable"
+    assert treatment["series"][entry["series_id"]] == [
+        {"year": year, "value": 40.0, "without_treatment_info": 10.0, "provisional": year >= 2025}
+        for year in YEARS
+    ]
+    assert types["prostate"]["reference"] is None
+    assert not types["prostate"]["has_status"]
+
+
+def test_profiles_use_the_region_series_and_hide_insufficient_local_series(tmp_path):
+    source, site = build_source(tmp_path)
+    listing_path = site / "municipalities.json"
+    listing = json.loads(listing_path.read_text())
+    listing["municipalities"] += [
+        {"code": "110001", "name": "Neighbor", "uf": "RO", "immediate_region": "110001"},
+        {"code": "110002", "name": "Small", "uf": "RO", "immediate_region": "110002"},
+    ]
+    listing_path.write_text(json.dumps(listing))
+    source.compute()
+    source.export()
+
+    treatment = json.loads((site / "profiles" / "RO.json").read_text())["indicators"]["within_60_days"]["all"]
+    neighbor = treatment["municipalities"]["110001"]
+    assert neighbor["origin"] == "immediate_region"
+    assert neighbor["value"] == 40.0
+    assert treatment["series"][neighbor["series_id"]][0]["value"] == 40.0
+    small = treatment["municipalities"]["110002"]
+    assert small["origin"] == "insufficient"
+    assert small["series_id"] is None
+    assert small["value"] is None
+    assert "110002" not in treatment["series"]
+    assert treatment["uf_trend"] == "stable"

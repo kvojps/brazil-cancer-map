@@ -1,3 +1,4 @@
+import { municipalityPath } from "../profile/profile";
 import {
   CANCER_TYPES,
   statusText,
@@ -61,7 +62,12 @@ export function mountIndicatorTable(
         cells.forEach((text, i) => {
           const cell = document.createElement(i === 0 ? "th" : "td");
           if (i === 0) cell.scope = "row";
-          cell.textContent = text;
+          if (i === 0) {
+            const link = document.createElement("a");
+            link.href = municipalityPath(m) + (layer.cancer_type === "all" ? "" : `?tipo=${layer.cancer_type}`);
+            link.textContent = text;
+            cell.append(link);
+          } else cell.textContent = text;
           row.append(cell);
         });
         return row;
