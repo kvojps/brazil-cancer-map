@@ -2,6 +2,8 @@
 
 import json
 import re
+import statistics
+import sys
 import tempfile
 import urllib.parse
 import urllib.request
@@ -89,9 +91,46 @@ CountKey = tuple[int, str, str]
 """(diagnosis year, municipality of residence, cancer type)."""
 
 
-def count_cases(records: Iterable[Mapping[str, str]]) -> dict[CountKey, CaseCounts]:
-    """Count Painel rows by diagnosis year, municipality of residence and cancer type."""
+class FirstTreatment(StrEnum):
+    """How the case was first treated, as the monthly watch groups `TRATAMENTO`."""
+
+    SURGERY = "surgery"
+    CHEMO_RADIO = "chemo_radio"
+    WITHOUT_INFO = "without_treatment_info"
+
+
+SURGERY = "1"
+"""`TRATAMENTO` code for a first treatment by surgery."""
+
+
+def first_treatment(code: str) -> FirstTreatment | None:
+    if code == SURGERY:
+        return FirstTreatment.SURGERY
+    if code in CHEMO_RADIO:
+        return FirstTreatment.CHEMO_RADIO
+    if code == NO_TREATMENT_INFO:
+        return FirstTreatment.WITHOUT_INFO
+    return None
+
+
+MonthKey = tuple[str, FirstTreatment]
+"""(diagnosis month as "YYYY-MM", first treatment)."""
+
+_YEAR_MONTH = re.compile(r"^(\d{4})(0[1-9]|1[0-2])$")
+
+
+@dataclass
+class PainelCounts:
+    by_municipality: dict[CountKey, CaseCounts]
+    by_month: dict[MonthKey, int]
+    """National 'Todos' cases by diagnosis month and first treatment, to watch for registry breaks."""
+
+
+def count_cases(records: Iterable[Mapping[str, str]]) -> PainelCounts:
+    """Count Painel rows by diagnosis year, municipality of residence and cancer type, and,
+    nationally for 'Todos', by diagnosis month and first treatment: one pass over the rows."""
     counts: dict[CountKey, CaseCounts] = {}
+    months: dict[MonthKey, int] = {}
     for row in records:
         for cancer_type, includes in CANCER_TYPES.items():
             if not includes(row["DIAG_DETH"]):
@@ -105,11 +144,17 @@ def count_cases(records: Iterable[Mapping[str, str]]) -> dict[CountKey, CaseCoun
             if row["TRATAMENTO"] in CHEMO_RADIO:
                 entry.chemo_radio += 1
                 entry.chemo_radio_within_60_days += within_60_days
-    return counts
+        if row["DIAG_DETH"] in TREATMENT_ALL_CANCERS:
+            month = _YEAR_MONTH.match(row["ANOMES_DIA"])
+            treatment = first_treatment(row["TRATAMENTO"])
+            if month and treatment:
+                month_key = (f"{month[1]}-{month[2]}", treatment)
+                months[month_key] = months.get(month_key, 0) + 1
+    return PainelCounts(counts, months)
 
 
-TREND_CASES = "chemo_radio"
-"""The cases the trend is measured on, stated in the layer's period."""
+MEASURED_CASES = "chemo_radio"
+"""The cases the trend and the value are measured on, stated in the layer's period."""
 
 PROVISIONAL_YEARS = 2
 """The latest diagnosis years are still filling in treatment records (spec, section 6.4)."""
@@ -128,9 +173,10 @@ def within_60_days_layer(
 ) -> dict[str, Any]:
     """The map layer of one cancer type: each municipality's trend and latest shares.
 
-    The trend is fitted on the chemo/radio cases only; the value and the % without
-    treatment information are over all the cases of the latest consolidated year,
-    as TabNet shows them (spec, sections 6.3 and 7).
+    The trend and the value of the latest consolidated year are measured on the
+    chemo/radio cases only, a series the Painel's 2018 and 2024 breaks leave
+    untouched; the % without treatment information is over all the cases of that
+    year, as TabNet shows it (spec, sections 6.3, 7 and 9).
 
     A municipality below the minimum of chemo/radio cases shows its immediate
     region's trend and shares, or none at all (spec, section 8).
@@ -186,7 +232,8 @@ def within_60_days_layer(
         "provisional": sorted(provisional & set(years)),
         "latest": latest,
         "trend": list(window),
-        "trend_cases": TREND_CASES,
+        "trend_cases": MEASURED_CASES,
+        "value_cases": MEASURED_CASES,
         "quality_years": list(quality_window),
     }
     return {"period": period, "quality": quality, "municipalities": layer}
@@ -253,7 +300,7 @@ def _trend_and_shares(series: Mapping[int, CaseCounts], years: Sequence[int], la
     last = series.get(latest, CaseCounts())
     return {
         "trend": trend.trend_class.value if trend else None,
-        "value": _percent(last.within_60_days, last.cases),
+        "value": _percent(last.chemo_radio_within_60_days, last.chemo_radio),
         "without_treatment_info": _percent(last.without_treatment_info, last.cases),
     }
 
@@ -265,15 +312,20 @@ def _percent(count: int, cases: int) -> float | None:
 
 @dataclass(frozen=True)
 class UfShare:
-    """Cases, and those treated within 60 days, in one UF: TabNet's or ours."""
+    """Cases, those treated within 60 days and those without treatment information, in one UF:
+    TabNet's or ours."""
 
     within_60_days: int
     cases: int
+    without_treatment_info: int = 0
 
 
 ON_TIME_COLUMNS = ("30 dias", "31 - 60 dias")
 """Endings of TabNet's "Até 30 dias" and "31 - 60 dias" labels: ASCII, because
 the page mixes encodings and "Até" does not survive every decoding."""
+WITHOUT_INFO_COLUMN = "Sem inform"
+"""Start of TabNet's "Sem informação de tratamento" label, ASCII for the same reason.
+TabNet leaves the column out when it is empty, as in the chemo/radio table."""
 TOTAL_COLUMN = "Total"
 _COLUMN = re.compile(r"data\.addColumn\('(?:string|number)','([^']*)'\)")
 _ROW = re.compile(r'\["(\d\d) [^"]*"((?:\s*,\s*\{v:\s*[\d.]+[^}]*\})+)\s*\]')
@@ -291,24 +343,33 @@ def parse_tabnet(page: str) -> dict[str, UfShare]:
     if len(on_time) != len(ON_TIME_COLUMNS) or TOTAL_COLUMN not in columns:
         raise ValueError(f"unexpected TabNet columns: {columns}")
     total = columns.index(TOTAL_COLUMN)
+    without_info = next((i for i, c in enumerate(columns) if c.startswith(WITHOUT_INFO_COLUMN)), None)
     shares = {}
     for uf, cells in _ROW.findall(page):
         values = [round(float(v)) for v in _VALUE.findall(cells)]
         if len(values) != len(columns):
             raise ValueError(f"TabNet row for UF {uf} has {len(values)} cells, expected {len(columns)}")
-        shares[uf] = UfShare(within_60_days=sum(values[i] for i in on_time), cases=values[total])
+        shares[uf] = UfShare(
+            within_60_days=sum(values[i] for i in on_time),
+            cases=values[total],
+            without_treatment_info=values[without_info] if without_info is not None else 0,
+        )
     return shares
 
 
 TABNET_TOLERANCE = 0.5
-"""Largest gap, in percentage points, between our % within 60 days and TabNet's for a UF.
+"""Largest gap, in percentage points, between our shares and TabNet's for a UF.
 TabNet and the FTP files are refreshed on different days of the month."""
+
+TABNET_CASES_TOLERANCE = 0.01
+"""Largest relative gap between our number of cases and TabNet's for a UF, for the same reason."""
 
 
 def compare_with_tabnet(
     ours: Mapping[str, UfShare], official: Mapping[str, UfShare], *, year: int
 ) -> list[str]:
-    """Problems found comparing the % within 60 days by UF with TabNet's, for one year."""
+    """Problems found comparing, by UF and for one year, the number of cases, the % within
+    60 days and the % without treatment information with TabNet's."""
     problems = []
     for uf, expected in sorted(official.items()):
         if expected.cases == 0:
@@ -317,10 +378,16 @@ def compare_with_tabnet(
         if got is None or got.cases == 0:
             problems.append(f"{year}, UF {uf}: TabNet has {expected.cases} cases, we have none")
             continue
-        theirs = 100 * expected.within_60_days / expected.cases
-        mine = 100 * got.within_60_days / got.cases
-        if abs(mine - theirs) > TABNET_TOLERANCE:
-            problems.append(f"{year}, UF {uf}: {mine:.1f}% within 60 days, TabNet {theirs:.1f}%")
+        if abs(got.cases - expected.cases) > TABNET_CASES_TOLERANCE * expected.cases:
+            problems.append(f"{year}, UF {uf}: {got.cases} cases, TabNet {expected.cases}")
+        for label, mine, theirs in (
+            ("within 60 days", got.within_60_days, expected.within_60_days),
+            ("without treatment information", got.without_treatment_info, expected.without_treatment_info),
+        ):
+            mine_share = 100 * mine / got.cases
+            their_share = 100 * theirs / expected.cases
+            if abs(mine_share - their_share) > TABNET_TOLERANCE:
+                problems.append(f"{year}, UF {uf}: {mine_share:.1f}% {label}, TabNet {their_share:.1f}%")
     return problems
 
 
@@ -345,7 +412,7 @@ SOURCE = {
 """Attribution carried by every exported file (spec, section 2)."""
 
 INDICATOR = "within_60_days"
-FIELDS = ("ANO_DIAGN", "MUN_RESID", "DIAG_DETH", "TRATAMENTO", "TEMPO_TRAT")
+FIELDS = ("ANO_DIAGN", "ANOMES_DIA", "MUN_RESID", "DIAG_DETH", "TRATAMENTO", "TEMPO_TRAT")
 
 
 class PainelValidationError(Exception):
@@ -369,7 +436,8 @@ TABNET_TABLES = (
         ("QUIMIOTERAPIA|2|1", "RADIOTERAPIA|3|1", "AMBOS|4|1"),
     ),
 )
-"""All cases check the value; the chemo/radio cases (`TRATAMENTO` 2, 3 or 4) check the trend's series."""
+"""The chemo/radio cases (`TRATAMENTO` 2, 3 or 4) check the value and the trend's series;
+all the cases check the % without treatment information and the case counts."""
 
 
 def tabnet_query(year: int, modalities: Sequence[str] = ()) -> bytes:
@@ -406,8 +474,15 @@ def fetch_tabnet(year: int, dest: Path, modalities: Sequence[str] = ()) -> None:
     dest.write_bytes(page)
 
 
-def write_clean(clean_dir: Path, counts: Mapping[CountKey, CaseCounts], *, extracted_at: str) -> None:
-    """Write the standardized counts as Parquet, marking the provisional years."""
+def write_clean(
+    clean_dir: Path,
+    counts: Mapping[CountKey, CaseCounts],
+    months: Mapping[MonthKey, int],
+    *,
+    extracted_at: str,
+) -> None:
+    """Write the standardized counts as Parquet, marking the provisional years, and the
+    national monthly counts by first treatment."""
     provisional = provisional_years(year for year, _, _ in counts)
     clean_dir.mkdir(parents=True, exist_ok=True)
     with duckdb.connect() as db:
@@ -427,6 +502,12 @@ def write_clean(clean_dir: Path, counts: Mapping[CountKey, CaseCounts], *, extra
             ],
         )
         db.execute(f"COPY cases TO '{clean_dir / 'cases.parquet'}' (FORMAT parquet)")
+        db.execute("CREATE TABLE months (month VARCHAR, first_treatment VARCHAR, cases INTEGER)")
+        db.executemany(
+            "INSERT INTO months VALUES (?, ?, ?)",
+            [(month, treatment.value, n) for (month, treatment), n in sorted(months.items())],
+        )
+        db.execute(f"COPY months TO '{clean_dir / 'months.parquet'}' (FORMAT parquet)")
     (clean_dir / "extract.json").write_text(json.dumps({"extracted_at": extracted_at}))
 
 
@@ -464,6 +545,41 @@ def read_clean(clean_dir: Path) -> list[CleanRow]:
     return [CleanRow(*row) for row in rows]
 
 
+def read_months(clean_dir: Path) -> dict[MonthKey, int]:
+    with duckdb.connect() as db:
+        rows = db.execute(
+            "SELECT month, first_treatment, cases FROM read_parquet(?)", [str(clean_dir / "months.parquet")]
+        ).fetchall()
+    return {(month, FirstTreatment(treatment)): n for month, treatment, n in rows}
+
+
+DROP_SHARE = 0.75
+"""A month below this share of the median of the 12 months before it has dropped to a new level."""
+
+WATCH_MONTHS = 12
+
+
+def monthly_drops(months: Mapping[MonthKey, int], *, provisional: set[int]) -> list[str]:
+    """Alerts for the months whose cases of a first treatment fell far below the median of the
+    12 months before, as the surgeries did from April 2024 (spec, section 14). Months of the
+    provisional years are still filling in and are not watched."""
+    calendar = sorted({month for month, _ in months})
+    alerts = []
+    for treatment in FirstTreatment:
+        series = [months.get((month, treatment), 0) for month in calendar]
+        for i in range(WATCH_MONTHS, len(calendar)):
+            month, cases = calendar[i], series[i]
+            if int(month[:4]) in provisional:
+                continue
+            reference = statistics.median(series[i - WATCH_MONTHS : i])
+            if cases < DROP_SHARE * reference:
+                alerts.append(
+                    f"{treatment.value}, {month}: {cases} cases, {cases / reference:.0%} of the median "
+                    f"of the {WATCH_MONTHS} months before ({reference:.0f})"
+                )
+    return alerts
+
+
 class PainelSource:
     """% of cases treated within 60 days, and % without treatment information."""
 
@@ -497,14 +613,11 @@ class PainelSource:
         )
         if not files:
             raise FileNotFoundError(f"no POBR*.dbc in {self._raw_dir}: run the download step")
-        counts: dict[CountKey, CaseCounts] = {}
-        for path in files:
-            for key, entry in count_cases(_read_dbc(path)).items():
-                counts[key] = counts.get(key, CaseCounts()) + entry
+        counts = count_cases(row for path in files for row in _read_dbc(path))
         # DATASUS rewrites every file each month; the newest file date is the extract's.
         written = max(path.stat().st_mtime for path in files)
         extracted_at = datetime.fromtimestamp(written, UTC).date().isoformat()
-        write_clean(self._clean_dir, counts, extracted_at=extracted_at)
+        write_clean(self._clean_dir, counts.by_municipality, counts.by_month, extracted_at=extracted_at)
 
     def compute(self) -> None:
         rows = read_clean(self._clean_dir)
@@ -522,11 +635,23 @@ class PainelSource:
             path.write_text(json.dumps(layer))
 
     def validate(self) -> None:
-        """Compare the % within 60 days by UF with TabNet, year by year, over all cases and
-        over the chemo/radio cases, and check the layers: every municipality of the mesh,
-        and shares between 0 and 100%."""
+        """Compare the cases by UF with TabNet, year by year, over all cases (counts, % within
+        60 days and % without information) and over the chemo/radio cases (counts and % within
+        60 days, the value), and check the layers: every municipality of the mesh,
+        and shares between 0 and 100%.
+
+        A monthly drop in the cases of a first treatment only alerts the maintainer, on
+        stderr: it does not block the publication (spec, section 14)."""
+        rows = read_clean(self._clean_dir)
+        provisional = {row.year for row in rows if row.provisional}
+        for alert in monthly_drops(read_months(self._clean_dir), provisional=provisional):
+            print(f"{self.name}: alert: {alert}", file=sys.stderr)
+        self._check(rows)
+
+    def _check(self, rows: Sequence[CleanRow]) -> None:
+        """The checks that block the publication."""
         by_year: dict[int, dict[str, CaseCounts]] = {}
-        for row in read_clean(self._clean_dir):
+        for row in rows:
             if row.cancer_type == TABNET_CANCER_TYPE:
                 by_uf = by_year.setdefault(row.year, {})
                 uf = row.municipality[:2]
@@ -542,7 +667,9 @@ class PainelSource:
                 if table.modalities:
                     ours = {uf: UfShare(c.chemo_radio_within_60_days, c.chemo_radio) for uf, c in by_uf.items()}
                 else:
-                    ours = {uf: UfShare(c.within_60_days, c.cases) for uf, c in by_uf.items()}
+                    ours = {
+                        uf: UfShare(c.within_60_days, c.cases, c.without_treatment_info) for uf, c in by_uf.items()
+                    }
                 official = parse_tabnet(page.read_text("latin-1"))
                 problems += [
                     f"{table.label}, {problem}" for problem in compare_with_tabnet(ours, official, year=year)
@@ -568,8 +695,8 @@ class PainelSource:
             raise PainelValidationError("; ".join(problems))
 
     def export(self) -> None:
-        """Publish the map layers and the manifest, only if the validation passes."""
-        self.validate()
+        """Publish the map layers and the manifest, only if the blocking checks pass."""
+        self._check(read_clean(self._clean_dir))
         extract = json.loads((self._clean_dir / "extract.json").read_text())
         files: dict[str, object] = {}
         periods = {}
@@ -611,8 +738,9 @@ def _period_text(period: Mapping[str, Any]) -> str:
     quality_first, quality_last = period["quality_years"]
     return (
         f"Anos de diagnóstico {first}–{last} ({provisional} provisórios). "
-        f"Tendência {trend_first}–{trend_last} medida nos casos tratados com quimioterapia ou radioterapia; "
-        f"valor de {period['latest']} e % sem informação sobre todos os casos diagnosticados; "
+        f"Tendência {trend_first}–{trend_last} e valor de {period['latest']} medidos nos casos tratados "
+        "com quimioterapia ou radioterapia; "
+        f"% sem informação de {period['latest']} sobre todos os casos diagnosticados; "
         f"faixa de qualidade {quality_first}–{quality_last}, por UF, sobre todos os casos diagnosticados"
     )
 

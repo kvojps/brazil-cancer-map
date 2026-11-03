@@ -9,7 +9,7 @@ import {
   ufQuality,
   TREND_LABELS,
   formatPercent,
-  trendCasesText,
+  measuredCasesText,
   trendState,
   type IndicatorLayer,
   type MunicipalityListing,
@@ -72,8 +72,8 @@ export function mountIndicatorTable(
     current = layer;
     root.querySelector(".cancer-type")!.textContent = CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type;
     root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
-    const trendCases = trendCasesText(layer.period);
-    root.querySelector(".trend-cases")!.textContent = trendCases ? ` (${trendCases})` : "";
+    const measuredCases = measuredCasesText(layer.period);
+    root.querySelector(".measured-cases")!.textContent = measuredCases ? ` (${measuredCases})` : "";
     const qualityPeriod = qualityPeriodText(layer.period);
     root.querySelector(".quality-note")!.textContent = qualityPeriod
       ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +

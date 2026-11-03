@@ -49,19 +49,35 @@ export interface Period {
   trend: number[];
   /** Which cases the Tendência is measured on, e.g. "chemo_radio"; absent means all of them. */
   trend_cases?: string;
+  /** Which cases `value` is measured on, e.g. "chemo_radio"; absent means all of them. */
+  value_cases?: string;
   /** First and last year of the quality band: `[first, last]`; absent for indicators without one. */
   quality_years?: number[];
 }
 
-/** The 60 dias Tendência uses only the cases first treated with chemo or radio (spec, section 7). */
-const TREND_CASES_TEXT: Record<string, string> = {
+/** The 60 dias Tendência and value use only the cases first treated with chemo or radio (spec, sections 7 and 9). */
+const MEASURED_CASES_TEXT: Record<string, string> = {
   chemo_radio: "casos tratados com quimioterapia ou radioterapia",
 };
 
-/** Which cases the Tendência speaks about, for the legend, the tooltip and the table; null for all. */
-export function trendCasesText(period: Period): string | null {
-  if (!period.trend_cases) return null;
-  return `Tendência medida nos ${TREND_CASES_TEXT[period.trend_cases] ?? period.trend_cases}`;
+function casesText(cases: string): string {
+  return MEASURED_CASES_TEXT[cases] ?? cases;
+}
+
+/**
+ * Which cases the Tendência and the value of the latest year speak about, for the
+ * legend, the tooltip and the table; null when both are over all the cases.
+ */
+export function measuredCasesText(period: Period): string | null {
+  const { trend_cases: trend, value_cases: value } = period;
+  if (trend && trend === value) return `Tendência e valor do último ano medidos nos ${casesText(trend)}`;
+  const parts = [
+    trend && `Tendência medida nos ${casesText(trend)}`,
+    value && `valor do último ano medido nos ${casesText(value)}`,
+  ].filter(Boolean);
+  if (!parts.length) return null;
+  const text = parts.join("; ");
+  return text[0]!.toUpperCase() + text.slice(1);
 }
 
 export interface IndicatorLayer {

@@ -41,7 +41,8 @@ def test_a_municipality_carries_its_class_and_latest_consolidated_shares():
 
     layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
 
-    # 2024 is the 11th year: 30% + 10 × 3 points = 60%; 100 of 1000 without information.
+    # 2024 is the 11th year: 30% + 10 × 3 points = 60% of the chemo/radio cases;
+    # 100 of all the 1000 cases without information.
     assert layer["municipalities"]["261160"] == {
         "origin": "municipality",
         "trend": "improving",
@@ -62,6 +63,7 @@ def test_the_layer_states_its_period():
         "latest": 2024,
         "trend": [2015, 2024],
         "trend_cases": "chemo_radio",
+        "value_cases": "chemo_radio",
         "quality_years": [2020, 2024],
     }
 
@@ -71,7 +73,9 @@ def test_shares_are_rounded_to_one_decimal_and_absent_without_cases_that_year():
     counts = {
         (2023, "261160"): CaseCounts(cases=3, within_60_days=1, without_treatment_info=2, chemo_radio=40),
         (2025, "261160"): CaseCounts(cases=5, within_60_days=5, without_treatment_info=0),
-        (2024, "355030"): CaseCounts(cases=3, within_60_days=1, without_treatment_info=2, chemo_radio=40),
+        (2024, "355030"): CaseCounts(
+            cases=63, within_60_days=21, without_treatment_info=42, chemo_radio=42, chemo_radio_within_60_days=14
+        ),
     }
 
     layer = within_60_days_layer(counts, immediate_region_of={"261160": "260001", "355030": "350001"}, provisional={2025})
@@ -79,6 +83,30 @@ def test_shares_are_rounded_to_one_decimal_and_absent_without_cases_that_year():
     assert layer["municipalities"]["355030"]["value"] == 33.3
     assert layer["municipalities"]["355030"]["without_treatment_info"] == 66.7
     assert layer["municipalities"]["261160"]["value"] is None
+
+
+def test_a_municipality_that_loses_only_surgeries_keeps_its_value():
+    # From April 2024 many surgeries stop reaching the Painel: Recife loses 300 of its
+    # 1000 cases in 2024, all of them surgeries on time. Its 500 chemo/radio cases,
+    # 200 of them on time, do not change, and neither does the value.
+    before = rising("261160")
+    after = rising("261160")
+    lost = CaseCounts(cases=300, within_60_days=300)
+    entry = after[(2024, "261160")]
+    after[(2024, "261160")] = CaseCounts(
+        cases=entry.cases - lost.cases,
+        within_60_days=entry.within_60_days - lost.within_60_days,
+        without_treatment_info=entry.without_treatment_info,
+        chemo_radio=entry.chemo_radio,
+        chemo_radio_within_60_days=entry.chemo_radio_within_60_days,
+    )
+
+    shown_before = within_60_days_layer(before, immediate_region_of=RECIFE, provisional=PROVISIONAL)
+    shown_after = within_60_days_layer(after, immediate_region_of=RECIFE, provisional=PROVISIONAL)
+
+    assert shown_after["municipalities"]["261160"]["value"] == shown_before["municipalities"]["261160"]["value"] == 60.0
+    # The % without information stays over all the cases diagnosed: 100 of 700 now.
+    assert shown_after["municipalities"]["261160"]["without_treatment_info"] == 14.3
 
 
 def test_a_registry_step_outside_chemo_radio_cases_does_not_change_the_class():
@@ -101,8 +129,9 @@ def test_a_registry_step_outside_chemo_radio_cases_does_not_change_the_class():
     assert layer["municipalities"]["261160"] == {
         "origin": "municipality",
         "trend": "stable",
-        # The value and the % without information stay over all the 2024 cases.
-        "value": 25.0,
+        # The value is over the 2024 chemo/radio cases: 158 of 400 on time.
+        "value": 39.5,
+        # The % without information stays over all the 2024 cases.
         "without_treatment_info": 27.0,
         "quality_band": "B",
     }
@@ -131,7 +160,8 @@ def test_a_small_municipality_shows_its_immediate_region():
     layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=PROVISIONAL)
 
     assert layer["municipalities"]["261160"]["origin"] == "municipality"
-    # 2024: (600 + 8 + 8) of (1000 + 16 + 16) cases on time; (100 + 2 + 2) without information.
+    # 2024: (300 + 4 + 4) of (500 + 8 + 8) chemo/radio cases on time;
+    # (100 + 2 + 2) of (1000 + 16 + 16) cases without information.
     assert layer["municipalities"]["260005"] == {
         "origin": "immediate_region",
         "trend": "improving",

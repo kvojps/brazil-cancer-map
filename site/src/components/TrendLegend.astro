@@ -6,7 +6,7 @@ import {
   REGION_NOTE,
   TREND_LABELS,
   TREND_STATES,
-  trendCasesText,
+  measuredCasesText,
   trendDescriptions,
   trendPeriodText,
   qualityPeriodText,
@@ -22,14 +22,14 @@ interface Props {
 const { indicator, period } = Astro.props;
 const descriptions = trendDescriptions(INDICATORS[indicator]!);
 const provisional = period.provisional.join(" e ");
-const trendCases = trendCasesText(period);
+const measuredCases = measuredCasesText(period);
 const qualityPeriod = qualityPeriodText(period);
 ---
 
 <section class="legend" aria-labelledby="legend-title">
   <h2 id="legend-title">Tendência {trendPeriodText(period)}</h2>
   <p>A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios.</p>
-  {trendCases && <p>{trendCases}.</p>}
+  {measuredCases && <p>{measuredCases}.</p>}
   <ul>
     {
       TREND_STATES.map((state) => (
