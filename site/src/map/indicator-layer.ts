@@ -151,12 +151,13 @@ export const QUALITY_WARNING =
   "Muitos casos estão sem informação de tratamento; o resultado pode não representar toda a situação.";
 
 /**
- * Whether a municipality is hatched: band C, with a Tendência to caveat. A
+ * Whether a municipality is hatched: band C, with a class in the selected mode. A
  * municipality with "dado insuficiente" keeps only its dots, so the two
  * textures never overlap.
  */
-export function isHatched(entry: MunicipalityIndicator | undefined): boolean {
-  return entry?.quality_band === "C" && trendState(entry) !== "insufficient";
+export function isHatched(entry: MunicipalityIndicator | undefined, mode: MapMode = "trend"): boolean {
+  const state = mode === "status" ? entry?.status ?? "insufficient" : trendState(entry);
+  return entry?.quality_band === "C" && state !== "insufficient";
 }
 
 export function qualityPeriodText(period: Period): string | null {
