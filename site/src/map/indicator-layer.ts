@@ -192,6 +192,9 @@ export interface IndicatorText {
   /** Available modes by cancer type; first is the indicator default. */
   modes: Record<string, readonly MapMode[]>;
   name: string;
+  unit: 'percent' | 'ratio';
+  valueLabel: string;
+  hasTreatmentQuality: boolean;
   /** What "melhorando" and "piorando" mean for this indicator. */
   improving: string;
   worsening: string;
@@ -205,12 +208,14 @@ export const INDICATORS: Record<string, IndicatorText> = {
       colorectal: ["trend", "status"], lung: ["trend", "status"],
     },
     name: "Até 60 dias para começar o tratamento",
+    unit: 'percent', valueLabel: 'Em até 60 dias', hasTreatmentQuality: true,
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
   },
   mammography: {
     modes: { all: ['trend', 'status'], breast: ['trend', 'status'] },
     name: 'Mamografias de rastreamento (50–69 anos)',
+    unit: 'ratio', valueLabel: 'Razão de mamografias (50–69 anos)', hasTreatmentQuality: false,
     improving: 'a razão de mamografias de rastreamento aumentou.',
     worsening: 'a razão de mamografias de rastreamento diminuiu.',
   },
@@ -313,7 +318,7 @@ export function formatPercent(value: number | null): string {
 const ratio = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function formatIndicatorValue(indicator: string, value: number | null): string {
-  return indicator === 'mammography' ? value === null ? '—' : ratio.format(value) : formatPercent(value);
+  return INDICATORS[indicator]?.unit === 'ratio' ? value === null ? '—' : ratio.format(value) : formatPercent(value);
 }
 
 export function trendPeriodText(period: Period): string {
