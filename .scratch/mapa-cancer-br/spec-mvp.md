@@ -120,15 +120,20 @@ Fontes: [Que regras de método e ressalvas a mortalidade e o Acesso ao tratament
 
 ## 7. Tendência
 
-Fonte: [Como classificar a Tendência e tratar municípios pequenos no mapa?](issues/12-tendencia-e-municipios-pequenos.md), com base em [Que métodos existem para classificar tendência e estabilizar taxas de municípios pequenos?](issues/11-metodos-tendencia-e-pequenos-numeros.md).
+Fonte: [Como classificar a Tendência e tratar municípios pequenos no mapa?](issues/12-tendencia-e-municipios-pequenos.md), com base em [Que métodos existem para classificar tendência e estabilizar taxas de municípios pequenos?](issues/11-metodos-tendencia-e-pequenos-numeros.md). Escala e modelos: [Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md).
 
 - **Cálculo:** uma única variação anual sobre os últimos até 10 anos consolidados (SIM 2014–2024; Painel de 2014 ao último ano consolidado; SISCAN 2016–2025), com IC 95%. Não há Joinpoint nem Prais-Winsten no MVP. Uma virada recente aparece no gráfico, não na classe.
-- **Modelos:** quasi-Poisson com offset de população (mortalidade padronizada e razões do SISCAN); binomial/logístico (60 dias); regressão ponderada pelos erros-padrão (tabagismo na capital).
+- **Escala única:** toda Tendência é uma **variação percentual anual**, relativa ao próprio valor do indicador. Nunca se usam pontos percentuais nem razão de chances.
+- **Modelos:**
+  - quasi-Poisson com offset de população (mortalidade padronizada e razões do SISCAN);
+  - quasi-Poisson com ligação log e offset `log(casos)` ("Poisson modificado") para o 60 dias;
+  - regressão ponderada de `log(prevalência)` contra o ano, com peso 1/EP² e EP do log = EP/prevalência tirado do IC do Vigitel, para o tabagismo na capital.
 - **Classes:**
   - **melhorando** ou **piorando** quando o IC exclui zero (o sentido de "melhorando" depende do indicador);
-  - **estável** quando o IC inteiro cabe em ±1% ao ano **[pendente: escala do ±1% para proporções, razões e tabagismo — ver seção 17]**;
+  - **estável** quando o IC inteiro cabe em **±1% ao ano (relativo)**, com o mesmo corte para todos os indicadores. É uma convenção do projeto, mais tolerante que a do NCI (±0,5%);
   - **sem direção clara** quando o IC é largo e inclui zero.
 - **Dado insuficiente** não é uma classe (seção 8).
+- **Esperado:** com amostras pequenas, "estável" quase nunca aparece. O tabagismo na capital fica em melhorando/piorando ou sem direção clara, e o 60 dias só chega a "estável" com cerca de 400 casos por ano (capitais e regiões grandes).
 - **HPV:** sem Tendência estatística.
 
 ## 8. Municípios pequenos
@@ -210,7 +215,7 @@ Fontes: [Como a experiência "meu município" deve parecer?](issues/06-experienc
 - **Cores da Situação:** uma escala de um só tom em 3 passos, mais escura quanto mais perto da Referência e diferente das cores da Tendência.
 - **Texturas:** pontos só para dado insuficiente; hachura diagonal só para a faixa C, e só no indicador de tratamento correspondente. O município que usa o dado da Região imediata recebe a cor da região, sem textura.
 - **Legendas:**
-  - Tendência: "A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios." (5 entradas)
+  - Tendência: "A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios." (5 entradas). Entre elas: "**Estável**: quase não mudou, menos de 1% por ano em relação ao próprio valor." e "**Sem direção clara**: pode ter subido ou caído; os dados não bastam para dizer." Os mesmos textos valem no cartão, que mostra a classe e a série, sem o número da variação.
   - Situação: "A cor mostra a distância até a referência. Não é um ranking entre municípios."
 - **Tooltip:** nome do lugar, indicador, período, classe e origem geográfica do dado. Quando usa a região: **"Seu município e vizinhos — região de X"**.
 - **Interação:** clicar num município ou buscá-lo aproxima o mapa no estado, contorna o município e abre a ficha ao lado (embaixo, no celular).
@@ -236,7 +241,7 @@ Fonte: [Que regras de método e ressalvas a mortalidade e o Acesso ao tratamento
 3. numerador, denominador, fórmulas, população de referência e pesos (Segi com 80+);
 4. limpeza, cruzamentos, registros ausentes, ajustes, redistribuições (C55) e regras de fallback (proporção nacional, "ajuste não calculável");
 5. janela temporal, anos provisórios, consolidação, quebras de série (HPV 2024) e congelamentos (citopatológico);
-6. método da Tendência, incerteza, critérios das classes, Referência e cortes de Situação (inclusive a regra invertida do tabagismo e os valores acima do esperado);
+6. método da Tendência (variação percentual anual, nunca pontos percentuais, com o exemplo do tabagismo: de 9% para 8% é uma queda de 11%), modelo de cada indicador, incerteza, critérios das classes (±1% como convenção do projeto, com o aviso de que amostras pequenas raramente chegam a "estável"), Referência e cortes de Situação (inclusive a regra invertida do tabagismo e os valores acima do esperado);
 7. mínimo de casos, substituição pela Região imediata e dado insuficiente;
 8. qualidade por UF × tipo, limitações (C26, R00–R99, C76–C80, cobertura só do SUS), diferenças em relação aos painéis oficiais (POPSVS revisto, C55, Censo 2022 no HPV) e validações feitas;
 9. versões do código e dos dados, acesso aos scripts e aos agregados, e histórico das revisões que alteram resultados.
@@ -297,7 +302,7 @@ Fontes: [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atual
 
 ### Lacunas encontradas na consolidação (viraram tickets)
 
-- [Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md): o ticket 12 fixou uma regra só para todos os indicadores, mas não disse se o ±1% é variação relativa, pontos percentuais ou razão de chances nos modelos logísticos e ponderados. Isso muda a cor do Mapa inicial.
+- ~~[Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md)~~: resolvido, com variação relativa em todos os indicadores (seção 7).
 - [Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md): o protótipo abria em até 60 dias × Todos × Tendência, mas nenhum ticket fixou esse estado inicial.
 
 ### Primeiro passo da execução
