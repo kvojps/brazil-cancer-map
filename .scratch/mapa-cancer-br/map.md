@@ -43,6 +43,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Que Ação cada indicador mostra, e quem valida o conteúdo?](issues/20-conteudo-das-acoes.md): textos curtos dos oito indicadores aprovados, com detalhes expansíveis e alternativas por tipo; Ação sempre visível, oferta local só com confirmação e revisão profissional de conteúdo clínico exigida antes de publicar, sob responsabilidade do projeto.
 
+- [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atualizacao-dos-dados.md): atualização por fonte no GitHub Actions gratuito de repositório público, com execução local para etapas pesadas que não couberem; falhas preservam a última versão válida, e o site distingue período dos dados de data de atualização, identificando o citopatológico como série encerrada.
+
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
