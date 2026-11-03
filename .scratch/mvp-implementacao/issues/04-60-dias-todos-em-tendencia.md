@@ -32,3 +32,4 @@ A validação bate **exatamente** com o TabNet: mesmas contagens de casos e de "
 
 A camada tem 5.571 municípios, como a malha 2025 (ver o ticket 02). A abertura da tabela pelo teclado não pôde ser testada no Chromium sem interface (os eventos de tecla não chegam à página); ela usa `<details>`, `<select>` e uma região com `tabindex="0"`, que funcionam pelo teclado sem código próprio. A auditoria do ticket 25 deve conferir.
 
+**Quebra de série:** depois do fechamento, a série nacional mostrou uma quebra em 2018–2019 (casos quase dobram, % sem informação de 4% para 30%) dentro da janela 2015–2024. A investigação e a decisão estão no [ticket de decisão 27](../../mapa-cancer-br/issues/27-quebra-de-serie-do-painel.md), que vai gerar um ticket de implementação próprio.
