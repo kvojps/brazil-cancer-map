@@ -147,14 +147,14 @@ export function paintTrend(
     map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: trendState(entry) });
   }
 
-  const names = new Map(listing.municipalities.map((m) => [m.code, m]));
+  const places = new Map(listing.municipalities.map((m) => [m.code, m]));
   const popup = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "20rem" });
   map.on("mousemove", FILL_LAYER, (event) => {
     const code = event.features?.[0]?.id;
     if (code === undefined) return;
     popup
       .setLngLat(event.lngLat)
-      .setDOMContent(tooltip(layer, String(code), names))
+      .setDOMContent(tooltip(layer, String(code), places))
       .addTo(map);
   });
   map.on("mouseleave", FILL_LAYER, () => popup.remove());
@@ -163,10 +163,10 @@ export function paintTrend(
 function tooltip(
   layer: IndicatorLayer,
   code: string,
-  names: Map<string, MunicipalityListing["municipalities"][number]>,
+  places: Map<string, MunicipalityListing["municipalities"][number]>,
 ): HTMLElement {
   const entry = layer.municipalities[code];
-  const place = names.get(code);
+  const place = places.get(code);
   const state = trendState(entry);
   const indicator = INDICATORS[layer.indicator]?.name ?? layer.indicator;
   const lines: [string, string][] = [
