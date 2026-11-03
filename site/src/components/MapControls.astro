@@ -1,0 +1,44 @@
+---
+// Placeholders: search, Tipo de câncer and indicator are wired up in later tickets.
+const cancerTypes = ["Todos os cânceres", "Mama", "Colo do útero", "Próstata", "Colorretal", "Pulmão"];
+---
+
+<form class="map-controls" aria-label="O que o mapa mostra" onsubmit="return false">
+  <label>
+    Buscar município
+    <input type="search" placeholder="Digite o nome do município" disabled />
+  </label>
+  <label>
+    Tipo de câncer
+    <select disabled>
+      {cancerTypes.map((type) => <option>{type}</option>)}
+    </select>
+  </label>
+  <label>
+    O que o mapa mostra
+    <select disabled>
+      <option>Até 60 dias para começar o tratamento · Tendência</option>
+    </select>
+  </label>
+</form>
+
+<style>
+  .map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    padding: 0.75rem 0;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    flex: 1 1 14rem;
+  }
+  input,
+  select {
+    font: inherit;
+    padding: 0.4rem 0.5rem;
+  }
+</style>

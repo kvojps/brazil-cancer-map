@@ -1,8 +1,27 @@
 ---
 import Base from "../layouts/Base.astro";
+import MapControls from "../components/MapControls.astro";
+import MunicipalityMap from "../components/MunicipalityMap.astro";
 ---
 
 <Base title="Observatório do Câncer no Brasil">
-  <h1>Observatório do Câncer no Brasil</h1>
-  <p>Dados sobre o câncer no seu município, para entender e agir</p>
+  <div class="home">
+    <header>
+      <h1>Observatório do Câncer no Brasil</h1>
+      <p>Dados sobre o câncer no seu município, para entender e agir</p>
+      <MapControls />
+    </header>
+    <MunicipalityMap />
+  </div>
 </Base>
+
+<style>
+  .home {
+    display: flex;
+    flex-direction: column;
+    min-height: 85vh;
+  }
+  h1 {
+    margin-bottom: 0;
+  }
+</style>

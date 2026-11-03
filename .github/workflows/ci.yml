@@ -11,7 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
       - run: uv sync --locked
+      - run: npm ci --prefix pipeline
       - run: uv run mypy
       - run: uv run pytest
 

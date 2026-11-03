@@ -2,7 +2,7 @@
 
 Dados sobre o câncer no seu município, para entender e agir.
 
-Um mapa estático dos 5.570 municípios brasileiros que reúne prevenção, detecção precoce, acesso ao tratamento e panorama do câncer, e liga cada dado a uma ação concreta.
+Um mapa estático dos 5.571 municípios brasileiros (malha IBGE 2025) que reúne prevenção, detecção precoce, acesso ao tratamento e panorama do câncer, e liga cada dado a uma ação concreta.
 
 ## Estrutura
 
@@ -11,10 +11,11 @@ Um mapa estático dos 5.570 municípios brasileiros que reúne prevenção, dete
 
 ## Como rodar
 
-Pipeline (requer [uv](https://docs.astral.sh/uv/)):
+Pipeline (requer [uv](https://docs.astral.sh/uv/) e Node.js, que roda o mapshaper na simplificação da malha):
 
 ```sh
 uv sync
+npm ci --prefix pipeline
 uv run python -m pipeline run --list                 # mostra etapas e fontes
 uv run python -m pipeline run                        # roda tudo
 uv run python -m pipeline run --source <fonte> --step <etapa>
