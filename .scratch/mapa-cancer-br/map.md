@@ -45,6 +45,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atualizacao-dos-dados.md): atualização por fonte no GitHub Actions gratuito de repositório público, com execução local para etapas pesadas que não couberem; falhas preservam a última versão válida, e o site distingue período dos dados de data de atualização, identificando o citopatológico como série encerrada.
 
+- [Qual o nome, o domínio e a licença do projeto?](issues/22-nome-dominio-licenca.md): Observatório do Câncer no Brasil, com foco nos dados, custo zero, código aberto com copyleft e acessibilidade obrigatória; a licença concreta será escolhida em ticket próprio.
+
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
