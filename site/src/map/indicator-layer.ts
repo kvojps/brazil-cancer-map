@@ -27,6 +27,19 @@ export interface Period {
   latest: number;
   /** First and last year of the Tendência: `[first, last]`. */
   trend: number[];
+  /** Which cases the Tendência is measured on, e.g. "chemo_radio"; absent means all of them. */
+  trend_cases?: string;
+}
+
+/** The 60 dias Tendência uses only the cases first treated with chemo or radio (spec, section 7). */
+const TREND_CASES_TEXT: Record<string, string> = {
+  chemo_radio: "casos tratados com quimioterapia ou radioterapia",
+};
+
+/** Which cases the Tendência speaks about, for the legend, the tooltip and the table; null for all. */
+export function trendCasesText(period: Period): string | null {
+  if (!period.trend_cases) return null;
+  return `Tendência medida nos ${TREND_CASES_TEXT[period.trend_cases] ?? period.trend_cases}`;
 }
 
 export interface IndicatorLayer {

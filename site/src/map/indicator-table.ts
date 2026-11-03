@@ -2,6 +2,7 @@ import {
   ORIGIN_TEXT,
   TREND_LABELS,
   formatPercent,
+  trendCasesText,
   trendState,
   type IndicatorLayer,
   type MunicipalityListing,
@@ -22,6 +23,8 @@ export function fillIndicatorTable(
   const count = root.querySelector<HTMLElement>(".table-count")!;
 
   root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
+  const trendCases = trendCasesText(layer.period);
+  root.querySelector(".trend-cases")!.textContent = trendCases ? ` (${trendCases})` : "";
   const collator = new Intl.Collator("pt-BR");
   const rows = [...listing.municipalities].sort(
     (a, b) => collator.compare(a.uf, b.uf) || collator.compare(a.name, b.name),

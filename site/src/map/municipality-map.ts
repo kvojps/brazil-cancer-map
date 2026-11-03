@@ -18,6 +18,7 @@ import {
   TREND_COLORS,
   TREND_LABELS,
   formatPercent,
+  trendCasesText,
   trendPeriodText,
   trendState,
   type IndicatorLayer,
@@ -174,11 +175,14 @@ function tooltip(
     ["span", `${indicator} · ${CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type}`],
     ["span", `Tendência ${trendPeriodText(layer.period)}: ${TREND_LABELS[state]}`],
   ];
+  const trendCases = trendCasesText(layer.period);
+  if (trendCases) lines.push(["span", trendCases]);
   if (entry?.value != null) {
     lines.push([
       "span",
       `Em ${layer.period.latest}: ${formatPercent(entry.value)} em até 60 dias; ` +
-        `${formatPercent(entry.without_treatment_info)} sem informação de tratamento`,
+        `${formatPercent(entry.without_treatment_info)} sem informação de tratamento ` +
+        `(todos os casos diagnosticados)`,
     ]);
   }
   lines.push(["span", entry ? ORIGIN_TEXT[entry.origin] : ORIGIN_TEXT.insufficient]);
