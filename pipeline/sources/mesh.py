@@ -1,4 +1,4 @@
-"""IBGE 2025 municipal mesh: geometry and Região imediata of each municipality."""
+"""IBGE 2025 municipal mesh: geometry and immediate region of each municipality."""
 
 import gzip
 import json
@@ -27,7 +27,7 @@ SOURCE = {
         "da malha: https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais.html"
     ),
 }
-"""Attribution carried by the exported list (spec, section 2)."""
+"""Attribution carried by every exported file (spec, section 2)."""
 
 MAX_GZIP_BYTES = 1_000_000
 """First-visit budget for the geometry (spec, section 13: ~0.6–0.9 MB gzip)."""
@@ -79,7 +79,7 @@ class MeshValidationError(Exception):
 
 
 class MeshSource:
-    """The map geometry and each municipality's Região imediata."""
+    """The map geometry and each municipality's immediate region."""
 
     name = "mesh"
 
@@ -114,7 +114,7 @@ class MeshSource:
         """The mesh has no statistics."""
 
     def validate(self) -> None:
-        """Check the mesh against IBGE's list: same municipalities, same Região imediata."""
+        """Check the mesh against IBGE's list: same municipalities, same immediate regions."""
         expected = _reference_regions(json.loads(self._reference.read_text()))
         topology = json.loads(self._topojson.read_text())
         geometries = topology["objects"]["municipalities"]["geometries"]
@@ -126,12 +126,14 @@ class MeshSource:
             problems.append(f"{len(missing)} municipalities missing from the mesh: {_sample(missing)}")
         if unknown := sorted(on_map.keys() - expected.keys()):
             problems.append(f"{len(unknown)} codes not in IBGE's list: {_sample(unknown)}")
+        if empty := sorted(g["properties"]["CD_MUN"] for g in geometries if not g.get("type")):
+            problems.append(f"{len(empty)} municipalities without geometry: {_sample(empty)}")
         if len(on_map) != len(geometries):
             problems.append("repeated municipality codes in the mesh")
         if listed != on_map:
             problems.append("the municipality list and the map geometry disagree")
         if wrong := sorted(c for c in expected.keys() & on_map.keys() if on_map[c] != expected[c]):
-            problems.append(f"{len(wrong)} with a Região imediata other than IBGE's: {_sample(wrong)}")
+            problems.append(f"{len(wrong)} with an immediate region other than IBGE's: {_sample(wrong)}")
         size = len(gzip.compress(self._topojson.read_bytes(), compresslevel=9))
         if size > MAX_GZIP_BYTES:
             problems.append(f"TopoJSON is {size} bytes gzip, over the {MAX_GZIP_BYTES} budget")
@@ -155,16 +157,15 @@ class MeshSource:
             ],
             "immediate_regions": {m["CD_RGI"]: m["NM_RGI"] for m in municipalities},
         }
-        self._site_data_dir.mkdir(parents=True, exist_ok=True)
-        _write_atomically(self._site_data_dir / "municipalities.topojson", self._topojson.read_bytes())
-        _write_atomically(
-            self._site_data_dir / "municipalities.json",
-            json.dumps(listing, ensure_ascii=False, separators=(",", ":")).encode(),
+        topology = {"source": SOURCE, **json.loads(self._topojson.read_text())}
+        _publish_together(
+            self._site_data_dir,
+            {"municipalities.topojson": topology, "municipalities.json": listing},
         )
 
 
 def _reference_regions(localities: list[dict[str, Any]]) -> dict[str, str]:
-    """6-digit code → Região imediata code, from IBGE's localities API."""
+    """6-digit code → immediate region code, from IBGE's localities API."""
     return {str(m["id"])[:6]: str(m["regiao-imediata"]["id"]) for m in localities}
 
 
@@ -172,7 +173,13 @@ def _sample(codes: list[str]) -> str:
     return ", ".join(codes[:10]) + (", ..." if len(codes) > 10 else "")
 
 
-def _write_atomically(dest: Path, content: bytes) -> None:
-    partial = dest.with_name(dest.name + ".part")
-    partial.write_bytes(content)
-    partial.replace(dest)
+def _publish_together(directory: Path, files: dict[str, object]) -> None:
+    """Write every file before replacing any, so a failed write leaves the old set whole."""
+    directory.mkdir(parents=True, exist_ok=True)
+    staged = []
+    for name, content in files.items():
+        partial = directory / (name + ".part")
+        partial.write_text(json.dumps(content, ensure_ascii=False, separators=(",", ":")))
+        staged.append((partial, directory / name))
+    for partial, dest in staged:
+        partial.replace(dest)

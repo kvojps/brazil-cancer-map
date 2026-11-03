@@ -14,7 +14,7 @@ import type { Topology, GeometryCollection } from "topojson-specification";
 export interface MunicipalityProperties {
   /** 6-digit IBGE code, the id used by `feature-state`. */
   CD_MUN: string;
-  /** Código da Região imediata. */
+  /** Immediate region code. */
   CD_RGI: string;
 }
 
@@ -23,6 +23,7 @@ type MeshTopology = Topology<{
 }>;
 
 export const SOURCE_ID = "municipalities";
+const FILL_LAYER = "municipality-fill";
 
 // MapLibre looks for its worker next to its own module, which the bundler
 // does not emit; point it at the copy Vite publishes.
@@ -34,7 +35,7 @@ const BRAZIL_BOUNDS: LngLatBoundsLike = [
 ];
 
 /**
- * Mount the Mapa inicial: the municipalities of the IBGE mesh, with no base map.
+ * Mount the home map: the municipalities of the IBGE mesh, with no base map.
  * The source promotes `CD_MUN` to the feature id, so indicators can be painted
  * later with `map.setFeatureState({ source: SOURCE_ID, id: code }, state)`.
  */
@@ -65,7 +66,7 @@ export async function mountMunicipalityMap(
 
   const [topology] = await Promise.all([
     fetch(meshUrl).then((response) => {
-      if (!response.ok) throw new Error(`malha indisponível (${response.status})`);
+      if (!response.ok) throw new Error(`mesh request failed (${response.status})`);
       return response.json() as Promise<MeshTopology>;
     }),
     map.once("load"),
@@ -77,7 +78,7 @@ export async function mountMunicipalityMap(
     promoteId: "CD_MUN",
   });
   map.addLayer({
-    id: "municipality-fill",
+    id: FILL_LAYER,
     type: "fill",
     source: SOURCE_ID,
     paint: {
@@ -108,14 +109,14 @@ function highlightOnHover(map: MapLibreMap): void {
   const setHover = (id: string | number | undefined, hover: boolean) => {
     if (id !== undefined) map.setFeatureState({ source: SOURCE_ID, id }, { hover });
   };
-  map.on("mousemove", "municipality-fill", (event) => {
+  map.on("mousemove", FILL_LAYER, (event) => {
     const id = event.features?.[0]?.id;
     if (id === hovered) return;
     setHover(hovered, false);
     hovered = id;
     setHover(hovered, true);
   });
-  map.on("mouseleave", "municipality-fill", () => {
+  map.on("mouseleave", FILL_LAYER, () => {
     setHover(hovered, false);
     hovered = undefined;
   });

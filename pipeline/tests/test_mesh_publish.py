@@ -15,8 +15,11 @@ def reference_entry(code, name, region):
     return {"id": int(code + check_digit), "nome": name, "regiao-imediata": {"id": int(region)}}
 
 
-def make_source(tmp_path, mesh, reference):
-    """MeshSource whose clean mesh holds `mesh` and whose IBGE list holds `reference`."""
+def make_source(tmp_path, mesh, reference, empty=()):
+    """MeshSource whose clean mesh holds `mesh` and whose IBGE list holds `reference`.
+
+    Codes in `empty` get no geometry.
+    """
     raw = tmp_path / "raw"
     clean = tmp_path / "clean"
     raw.mkdir()
@@ -36,12 +39,16 @@ def make_source(tmp_path, mesh, reference):
         json.dumps(
             {
                 "type": "Topology",
-                "arcs": [],
+                "arcs": [[[0, 0], [1, 0], [1, 1], [0, 0]]],
                 "objects": {
                     "municipalities": {
                         "type": "GeometryCollection",
                         "geometries": [
-                            {"type": None, "properties": {"CD_MUN": code, "CD_RGI": rgi}}
+                            {
+                                "type": None if code in empty else "Polygon",
+                                **({} if code in empty else {"arcs": [[0]]}),
+                                "properties": {"CD_MUN": code, "CD_RGI": rgi},
+                            }
                             for code, _, _, rgi, _ in mesh
                         ],
                     }
@@ -64,7 +71,9 @@ def test_complete_mesh_is_published_with_the_municipality_list(tmp_path):
         "431440",
         "430463",
     ]
-    listing = json.loads((site / "municipalities.json").read_text())
+    assert "IBGE" in topology["source"]["name"]
+    assert topology["source"]["period"] == "2025"
+    listing =json.loads((site / "municipalities.json").read_text())
     assert listing["municipalities"] == [
         {"code": "431440", "name": "Pelotas", "uf": "RS", "immediate_region": "430018"},
         {"code": "430463", "name": "Capão do Leão", "uf": "RS", "immediate_region": "430018"},
@@ -97,6 +106,13 @@ def test_municipality_outside_the_ibge_list_fails_validation(tmp_path):
 def test_wrong_immediate_region_fails_validation(tmp_path):
     wrong_region = ("430463", "Capão do Leão", "RS", "430099", "Elsewhere")
     source, _ = make_source(tmp_path, mesh=[PELOTAS, wrong_region], reference=[PELOTAS, CAPAO])
+
+    with pytest.raises(MeshValidationError, match="430463"):
+        source.validate()
+
+
+def test_municipality_without_geometry_fails_validation(tmp_path):
+    source, _ = make_source(tmp_path, mesh=[PELOTAS, CAPAO], reference=[PELOTAS, CAPAO], empty={"430463"})
 
     with pytest.raises(MeshValidationError, match="430463"):
         source.validate()

@@ -18,7 +18,7 @@ class Source(Protocol):
         """Download raw data into `data/raw/`, with an incremental cache."""
 
     def clean(self) -> None:
-        """Write standardized Parquet into `data/clean/`."""
+        """Write standardized data into `data/clean/`: Parquet for tables, other formats for geometry."""
 
     def compute(self) -> None:
         """Compute the indicators. The only place where statistics happen."""
