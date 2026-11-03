@@ -9,7 +9,7 @@ Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15):
 
 `data/raw/` e `data/clean/` são locais e ficam fora do git.
 
-**Idioma:** código em inglês: identificadores, módulos, nomes de arquivo, flags do CLI, testes, comentários e docstrings. Em português ficam os textos que o público lê no site, os documentos (spec, tickets, glossário, README) e as mensagens de commit. Ao traduzir um termo do `GLOSSARY.md` para o código, use sempre a mesma palavra em inglês (por exemplo Tendência → `trend`, Situação → `status`, Região imediata → `immediate_region`).
+**Idioma:** código e commits em inglês: identificadores, módulos, nomes de arquivo, flags do CLI, testes, comentários, docstrings e mensagens de commit. Em português ficam os textos que o público lê no site e os documentos (spec, tickets, glossário, README). Ao traduzir um termo do `GLOSSARY.md` para o código, use sempre a mesma palavra em inglês (por exemplo Tendência → `trend`, Situação → `status`, Região imediata → `immediate_region`).
 
 ## Agent skills
 
