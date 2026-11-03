@@ -129,7 +129,8 @@ test('cervical screening card always explains the frozen series and retains the 
   assert.match(html, /Menos Papanicolaus não quer dizer menos cuidado/);
   assert.match(html, /Confira na UBS se seu exame está em dia/);
   assert.match(html, /disponibilidade do teste de HPV ou do Papanicolau/);
-  assert.match(html, /Onde ele ainda não chegou, o Papanicolau continua sendo usado/);
+  const action = html.split('aria-label="Ação"')[1];
+  assert.match(action, /A partir de 2025 o SUS está trocando o Papanicolau pelo teste de DNA-HPV/);
   assert.match(html, /Informação geral\. A equipe de saúde orienta o cuidado indicado para você/);
   assert.match(html, /\/metodologia\/#citopatologico/);
   assert.doesNotMatch(html, /após dois exames normais anuais consecutivos/);

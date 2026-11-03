@@ -137,10 +137,22 @@ def download_ranges(
             future.result()
 
 
+class _ExtendedPassiveFTP(ftplib.FTP):
+    def makepasv(self) -> tuple[str, int]:
+        """Prefer EPSV: DATASUS PASV sessions can stall when negotiating REST."""
+        assert self.sock is not None
+        try:
+            return ftplib.parse229(self.sendcmd('EPSV'), self.sock.getpeername())
+        except ftplib.error_perm as error:
+            if str(error)[:3] not in {'500', '502'}:
+                raise
+            return super().makepasv()
+
+
 def _connect_ftp(url: str, timeout: float) -> tuple[ftplib.FTP, str]:
     """An anonymous binary-mode session on the URL's host, and the path on it."""
     parts = urlsplit(url)
-    ftp = ftplib.FTP(parts.hostname or "", timeout=timeout)
+    ftp = _ExtendedPassiveFTP(parts.hostname or "", timeout=timeout)
     ftp.login()
     ftp.voidcmd("TYPE I")
     return ftp, parts.path
@@ -179,10 +191,7 @@ class FtpTransport:
             raise DownloadError(f"could not connect: {error}") from error
         try:
             try:
-                # DATASUS can stall REST after PASV; negotiate the offset first.
-                if offset:
-                    ftp.sendcmd(f"REST {offset}")
-                data = ftp.transfercmd(f"RETR {path}")
+                data = ftp.transfercmd(f"RETR {path}", rest=offset if offset else None)
             except (ftplib.Error, EOFError) as error:
                 raise DownloadError(f"could not open byte {offset}: {error}") from error
             with data, data.makefile("rb") as stream:

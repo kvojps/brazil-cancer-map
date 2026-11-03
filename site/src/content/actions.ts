@@ -68,7 +68,7 @@ export const treatmentAction = {
 export const cervicalScreeningAction = {
   title: 'Confira na UBS se seu exame está em dia.',
   summary: 'Pergunte sobre o exame indicado e a disponibilidade do teste de HPV ou do Papanicolau.',
-  transition: 'O SUS está implantando o teste de DNA-HPV gradualmente. Onde ele ainda não chegou, o Papanicolau continua sendo usado. Confira com a equipe da UBS qual exame está disponível e indicado para você.',
+  transition: 'A partir de 2025 o SUS está trocando o Papanicolau pelo teste de DNA-HPV, feito a cada 5 anos. Menos Papanicolaus não quer dizer menos cuidado.',
   disclaimer: 'Informação geral. A equipe de saúde orienta o cuidado indicado para você.',
   details: [
     'O rastreamento é indicado para mulheres e pessoas com colo do útero de 25 a 64 anos que já tiveram atividade sexual. Após resultado negativo, o teste de DNA-HPV é repetido em cinco anos.',

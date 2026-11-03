@@ -1,7 +1,6 @@
 ---
 import TreatmentCard from './TreatmentCard.astro';
 import ScreeningCard from './ScreeningCard.astro';
-import MammographyCard from './MammographyCard.astro';
 import WhereToTreat from './WhereToTreat.astro';
 import listing from '../../public/dados/municipalities.json';
 import manifest from '../../public/dados/manifest.json';
@@ -30,7 +29,7 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
     </section>
     <section><h2>Detecção precoce</h2>
       {['all', 'breast'].map(cancerType => <section data-cancer-type={cancerType}>
-        <MammographyCard data={profile.indicators.mammography?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan?.extracted_at} />
+        <ScreeningCard indicator="mammography" data={profile.indicators.mammography?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan?.extracted_at} />
       </section>)}
       {['all', 'cervix'].map(cancerType => <section data-cancer-type={cancerType}>
         <ScreeningCard indicator="cytopathology" data={profile.indicators.cytopathology?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan_cytopathology?.extracted_at} />
