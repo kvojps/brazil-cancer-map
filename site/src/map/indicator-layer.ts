@@ -189,6 +189,8 @@ export const TREND_LABELS: Record<TrendState, string> = {
 };
 
 export interface IndicatorText {
+  /** Available modes by cancer type; first is the indicator default. */
+  modes: Record<string, readonly MapMode[]>;
   name: string;
   /** What "melhorando" and "piorando" mean for this indicator. */
   improving: string;
@@ -197,11 +199,26 @@ export interface IndicatorText {
 
 export const INDICATORS: Record<string, IndicatorText> = {
   within_60_days: {
+    modes: {
+      all: ["trend", "status"], breast: ["trend", "status"],
+      cervix: ["trend", "status"], prostate: ["trend"],
+      colorectal: ["trend", "status"], lung: ["trend", "status"],
+    },
     name: "Até 60 dias para começar o tratamento",
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
   },
 };
+
+/** The same option label and availability for static rendering and selection changes. */
+export function mapOption(indicator: string, cancerType: string, mode: MapMode): { label: string; disabled: boolean } {
+  const text = INDICATORS[indicator]!;
+  const modes = text.modes[cancerType];
+  const disabled = !modes?.includes(mode);
+  const reason = !modes ? "não se aplica a este tipo de câncer" : "modo indisponível para este indicador e tipo";
+  const label = `${text.name} · ${mode === "trend" ? "Tendência" : "Como está hoje"}${disabled ? ` — ${reason}` : ""}`;
+  return { label, disabled };
+}
 
 /** The cancer types of the selector, in its order; "all" is the default view (spec, section 3). */
 export const CANCER_TYPES: Record<string, string> = {

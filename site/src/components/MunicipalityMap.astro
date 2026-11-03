@@ -1,11 +1,5 @@
 ---
-interface Props {
-  /** Indicator whose layers the map shows: one JSON per cancer type under `dados/map/<indicator>/`. */
-  indicator: string;
-}
-
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
-const { indicator } = Astro.props;
 ---
 
 <div class="map-frame">
@@ -13,7 +7,7 @@ const { indicator } = Astro.props;
     class="map"
     data-mesh-url={`${base}/municipalities.topojson`}
     data-listing-url={`${base}/municipalities.json`}
-    data-layers-url={`${base}/map/${indicator}/`}
+    data-layers-url={`${base}/map/`}
     role="region"
     aria-label="Mapa do Brasil por município. Os mesmos dados estão na tabela abaixo do mapa."
   >
@@ -25,12 +19,15 @@ const { indicator } = Astro.props;
   import { mountMunicipalityMap, mountIndicatorPaint } from "../map/municipality-map";
   import { mountIndicatorTable } from "../map/indicator-table";
   import {
-    DEFAULT_CANCER_TYPE,
-    type MapMode,
+    CANCER_TYPES,
+    INDICATORS,
+    mapOption,
     cancerTypeNotes,
     type IndicatorLayer,
     type MunicipalityListing,
   } from "../map/indicator-layer";
+
+  import { normalizeMapState, readMapState, writeMapState, type MapState } from "../map/map-state";
 
   async function getJson<T>(url: string): Promise<T> {
     const response = await fetch(url);
@@ -47,12 +44,13 @@ const { indicator } = Astro.props;
 
   /** One request per cancer type: switching back reuses the layer already loaded. */
   const layers = new Map<string, Promise<IndicatorLayer>>();
-  function layerOf(cancerType: string): Promise<IndicatorLayer> {
-    let layer = layers.get(cancerType);
+  function layerOf(state: MapState): Promise<IndicatorLayer> {
+    const key = `${state.indicator}/${state.cancerType}`;
+    let layer = layers.get(key);
     if (!layer) {
-      layer = getJson<IndicatorLayer>(`${container!.dataset.layersUrl}${cancerType}.json`);
-      layer.catch(() => layers.delete(cancerType));
-      layers.set(cancerType, layer);
+      layer = getJson<IndicatorLayer>(`${container!.dataset.layersUrl}${key}.json`);
+      layer.catch(() => layers.delete(key));
+      layers.set(key, layer);
     }
     return layer;
   }
@@ -70,7 +68,7 @@ const { indicator } = Astro.props;
 
   if (container && status) {
     const { meshUrl, listingUrl } = container.dataset;
-    const initial = selector?.value ?? DEFAULT_CANCER_TYPE;
+    const initial = readMapState(new URLSearchParams(location.search));
     Promise.all([
       mountMunicipalityMap(container, meshUrl!),
       layerOf(initial),
@@ -79,48 +77,76 @@ const { indicator } = Astro.props;
       .then(([map, layer, listing]) => {
         const showOnMap = mountIndicatorPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
-        let current = layer;
-        const show = (shown: IndicatorLayer) => {
-          current = shown;
-          const statusOption = modeSelector?.querySelector<HTMLOptionElement>('option[value$=":status"]');
-          if (statusOption) statusOption.disabled = !shown.has_status;
-          if (!shown.has_status && modeSelector) modeSelector.value = `${shown.indicator}:trend`;
-          const mode: MapMode = modeSelector?.value.endsWith(":status") ? "status" : "trend";
-          showOnMap(shown, mode);
-          document.querySelector<HTMLElement>(".trend-legend")!.hidden = mode !== "trend";
-          document.querySelector<HTMLElement>(".status-legend")!.hidden = mode !== "status";
-          document.querySelector(".legend")?.setAttribute("aria-label", mode === "trend" ? "Legenda da Tendência" : "Legenda da Situação");
+        const notice = document.querySelector<HTMLElement>("#map-selection-notice");
+        let current = initial;
+        let request = 0;
+        const syncControls = (state: MapState) => {
+          if (selector) selector.value = state.cancerType;
+          if (!modeSelector) return;
+          for (const option of modeSelector.options) {
+            const [id, mode] = option.value.split(":");
+            const presentation = mapOption(id!, state.cancerType, mode as MapState["mode"]);
+            option.disabled = presentation.disabled;
+            option.textContent = presentation.label;
+          }
+          modeSelector.value = `${state.indicator}:${state.mode}`;
+        };
+        const show = (shown: IndicatorLayer, state: MapState) => {
+          current = state;
+          syncControls(state);
+          showOnMap(shown, state.mode);
+          document.querySelector<HTMLElement>(".trend-legend")!.hidden = state.mode !== "trend";
+          document.querySelector<HTMLElement>(".status-legend")!.hidden = state.mode !== "status";
+          document.querySelector(".legend")?.setAttribute("aria-label", state.mode === "trend" ? "Legenda da Tendência" : "Legenda da Situação");
           showInTable(shown);
           showNotes(shown);
+          const url = new URL(location.href);
+          url.search = writeMapState(state, url.searchParams).toString();
+          history.replaceState(null, "", url);
         };
-        show(layer);
-        if (modeSelector) {
-          modeSelector.disabled = false;
-          modeSelector.addEventListener("change", () => show(current));
-        }
-        status.hidden = true;
-
-        if (!selector) return;
-        // Only the latest choice is painted, even if an earlier layer arrives later.
-        let requested = initial;
-        selector.addEventListener("change", () => {
-          const cancerType = selector.value;
-          requested = cancerType;
+        const selectState = async (next: MapState, message = "") => {
+          const pending = ++request;
           status.textContent = "Carregando o mapa…";
           status.hidden = false;
-          layerOf(cancerType)
-            .then((next) => {
-              if (requested !== cancerType) return;
-              show(next);
-              status.hidden = true;
-            })
-            .catch((error: unknown) => {
-              if (requested !== cancerType) return;
-              console.error(error);
-              status.textContent = "Não foi possível carregar este tipo de câncer. Tente de novo.";
-            });
+          if (notice) notice.hidden = true;
+          try {
+            const nextLayer = await layerOf(next);
+            if (pending !== request) return;
+            show(nextLayer, next);
+            status.hidden = true;
+            if (notice) {
+              notice.textContent = message;
+              notice.hidden = !message;
+            }
+          } catch (error) {
+            if (pending !== request) return;
+            console.error(error);
+            syncControls(current);
+            status.textContent = "Não foi possível carregar esta seleção. Tente de novo.";
+          }
+        };
+        show(layer, initial);
+        status.hidden = true;
+        if (modeSelector) {
+          modeSelector.disabled = false;
+          modeSelector.addEventListener("change", () => {
+            const [indicator, mode] = modeSelector.value.split(":");
+            void selectState(normalizeMapState({ indicator, mode, cancerType: selector?.value ?? current.cancerType }));
+          });
+        }
+        if (selector) {
+          selector.disabled = false;
+          selector.addEventListener("change", () => {
+            const [indicator, mode] = modeSelector?.value.split(":") ?? [current.indicator, current.mode];
+            const next = normalizeMapState({ indicator, mode, cancerType: selector.value });
+            const message = next.indicator !== indicator
+              ? `${INDICATORS[indicator!]?.name} não se aplica a ${CANCER_TYPES[next.cancerType]}; mostrando até 60 dias.` : "";
+            void selectState(next, message);
+          });
+        }
+        window.addEventListener("popstate", () => {
+          void selectState(readMapState(new URLSearchParams(location.search)));
         });
-        selector.disabled = false;
       })
       .catch((error: unknown) => {
         console.error(error);
