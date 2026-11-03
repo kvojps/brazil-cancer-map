@@ -15,9 +15,9 @@ Pipeline (requer [uv](https://docs.astral.sh/uv/)):
 
 ```sh
 uv sync
-uv run python -m pipeline run --listar               # mostra etapas e fontes
+uv run python -m pipeline run --list                 # mostra etapas e fontes
 uv run python -m pipeline run                        # roda tudo
-uv run python -m pipeline run --fonte <fonte> --etapa <etapa>
+uv run python -m pipeline run --source <fonte> --step <etapa>
 uv run pytest
 ```
 
