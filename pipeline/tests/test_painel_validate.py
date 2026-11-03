@@ -29,8 +29,8 @@ def test_tabnet_page_gives_the_cases_within_60_days_by_uf():
     shares = parse_tabnet(page)
 
     assert shares == {
-        "11": UfShare(within_60_days=1040, cases=2234),
-        "26": UfShare(within_60_days=1723, cases=2160),
+        "11": UfShare(within_60_days=1040, cases=2234, without_treatment_info=455),
+        "26": UfShare(within_60_days=1723, cases=2160, without_treatment_info=53),
     }
 
 
@@ -55,3 +55,44 @@ def test_a_uf_missing_from_our_data_is_a_problem():
     official = {"11": UfShare(within_60_days=1040, cases=2234)}
 
     assert compare_with_tabnet({}, official, year=2022) != []
+
+
+def test_tabnet_page_gives_the_cases_without_treatment_information_by_uf():
+    page = tabnet_page({"11 Rondônia": (635, 405, 739, 455)})
+
+    assert parse_tabnet(page)["11"].without_treatment_info == 455
+
+
+def test_a_tabnet_page_without_the_column_has_no_case_without_information():
+    # Filtered by chemotherapy or radiotherapy, TabNet leaves out the empty column.
+    page = tabnet_page({"11 Rondônia": (635, 405, 739, 0)}).replace(
+        "        data.addColumn('number','Sem informação de tratamento');\n", ""
+    ).replace(" ,{v: 0.0 ,f: '0'}", "")
+
+    assert parse_tabnet(page) == {"11": UfShare(within_60_days=1040, cases=1779, without_treatment_info=0)}
+
+
+def test_a_uf_off_in_the_share_without_information_is_a_problem():
+    official = {"11": UfShare(within_60_days=1040, cases=2234, without_treatment_info=455)}
+    ours = {"11": UfShare(within_60_days=1040, cases=2234, without_treatment_info=500)}  # 20.4% vs 22.4%
+
+    problems = compare_with_tabnet(ours, official, year=2022)
+
+    assert problems == ["2022, UF 11: 22.4% without treatment information, TabNet 20.4%"]
+
+
+def test_a_uf_off_in_the_number_of_cases_is_a_problem():
+    # Same shares, but 10% more cases than TabNet: rows were lost or doubled.
+    official = {"11": UfShare(within_60_days=1000, cases=2000, without_treatment_info=400)}
+    ours = {"11": UfShare(within_60_days=1100, cases=2200, without_treatment_info=440)}
+
+    problems = compare_with_tabnet(ours, official, year=2022)
+
+    assert problems == ["2022, UF 11: 2200 cases, TabNet 2000"]
+
+
+def test_a_gap_in_cases_within_the_tolerance_agrees_with_tabnet():
+    official = {"11": UfShare(within_60_days=1000, cases=2000, without_treatment_info=400)}
+    ours = {"11": UfShare(within_60_days=1005, cases=2010, without_treatment_info=402)}
+
+    assert compare_with_tabnet(ours, official, year=2022) == []

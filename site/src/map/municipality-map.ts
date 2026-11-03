@@ -26,7 +26,7 @@ import {
   originText,
   qualityPeriodText,
   qualityText,
-  trendCasesText,
+  measuredCasesText,
   trendPeriodText,
   trendState,
   ufQuality,
@@ -214,14 +214,14 @@ function tooltip(
     ["span", `${indicator} · ${CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type}`],
     ["span", `Tendência ${trendPeriodText(layer.period)}: ${TREND_LABELS[state]}`],
   ];
-  const trendCases = trendCasesText(layer.period);
-  if (trendCases) lines.push(["span", trendCases]);
+  const measuredCases = measuredCasesText(layer.period);
+  if (measuredCases) lines.push(["span", measuredCases]);
   if (entry?.value != null) {
     lines.push([
       "span",
       `Em ${layer.period.latest}: ${formatPercent(entry.value)} em até 60 dias; ` +
-        `${formatPercent(entry.without_treatment_info)} sem informação de tratamento ` +
-        `(todos os casos diagnosticados)`,
+        `${formatPercent(entry.without_treatment_info)} de todos os casos diagnosticados ` +
+        `sem informação de tratamento`,
     ]);
   }
   lines.push(["span", originText(entry, immediateRegionName(place, listing))]);

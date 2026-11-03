@@ -16,3 +16,20 @@
 - [ ] O texto da nota de método para a metodologia (ticket 24) fica registrado neste ticket: a queda das cirurgias de 2024, a causa provável (CPF na AIH, sem confirmação oficial), por que o valor também passou a quimio/radio, a diferença em relação ao TabNet e o efeito na faixa A/B/C (4 células de fronteira)
 
 Fora deste ticket: a Situação e o modo "como está hoje" ficam no ticket 08, e a barra e a nota do cartão no ticket 10, os dois já usando este valor.
+
+## Comments
+
+**Andamento (sessão de 2026-11-03, interrompida antes de fechar o ticket).**
+
+Feito, com testes (`uv run pytest`: 83 passando; `uv run mypy` e `npm run check` sem erros):
+- `value` da camada = `chemo_radio_within_60_days / chemo_radio` no último ano consolidado (`_trend_and_shares` em `pipeline/sources/painel.py`); `without_treatment_info` continua sobre todos os casos. Teste: `test_a_municipality_that_loses_only_surgeries_keeps_its_value`.
+- `period` ganha `"value_cases": "chemo_radio"` (constante `MEASURED_CASES`, que substituiu `TREND_CASES`); `source.period`: "Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade …".
+- Validação contra o TabNet: `parse_tabnet` lê também a coluna "Sem informação de tratamento" (opcional: a tabela de quimio/radio não a tem), e `compare_with_tabnet` confere a contagem de casos (tolerância de 1%), a % em até 60 dias e a % sem informação (0,5 p.p.). A tabela de todos os casos valida a % sem informação e as contagens; a de quimio/radio valida o valor. Se uma falhar, nada é publicado.
+- Vigilância mensal: `count_cases` agora devolve `PainelCounts` (`by_municipality` e `by_month`), numa única passada; `by_month` conta os casos de "Todos", Brasil, por mês do diagnóstico (`ANOMES_DIA`) × `FirstTreatment` (cirurgia, quimio/radio, sem informação) e vai para `data/clean/painel/months.parquet`. `monthly_drops` alerta quando um mês fora dos anos provisórios fica abaixo de 75% (`DROP_SHARE`) da mediana dos 12 meses anteriores (mês ausente conta como 0). O passo `validate` imprime os alertas no stderr (`painel: alert: …`) sem bloquear; `export` roda só as checagens que bloqueiam (`_check`), para não repetir os alertas.
+- Site: `trendCasesText` virou `measuredCasesText` ("Tendência e valor do último ano medidos nos casos tratados com quimioterapia ou radioterapia") na legenda, no tooltip e na tabela; o tooltip diz "X% de todos os casos diagnosticados sem informação de tratamento"; a legenda da tabela diz que a % sem informação é sobre todos os casos.
+
+Falta:
+- Rodar o pipeline com os dados reais (`uv run python -m pipeline run --source painel`; o `clean` precisa rodar de novo por causa do `ANOMES_DIA` e do `months.parquet`), conferir que as duas comparações com o TabNet passam e que o alerta dispara nas cirurgias a partir de abril de 2024 (se não, ajustar `DROP_SHARE`; conferir também que 2020, a pandemia, não gera alertas demais).
+- Regenerar e commitar `site/public/dados/map/within_60_days/*.json` e `manifest.json`; registrar aqui o valor do Brasil em 2024 (a pesquisa prevê 41,0%) e os alertas emitidos.
+- Escrever aqui o texto da nota de método para a metodologia (ticket 24): queda das cirurgias de 2024, causa provável (CPF na AIH, sem confirmação oficial), por que o valor passou a quimio/radio, a diferença em relação ao TabNet e o efeito na faixa A/B/C (4 células de fronteira). Base: ticket de decisão 28 e pesquisa 28.
+- Revisão (`code-review`), marcar as caixas, trocar o status para `resolved` e listar os commits.

@@ -5,6 +5,7 @@ import pytest
 from pipeline.sources.painel import (
     CANCER_TYPES,
     CaseCounts,
+    FirstTreatment,
     PainelSource,
     PainelValidationError,
     write_clean,
@@ -14,10 +15,27 @@ from pipeline.tests.test_painel_validate import tabnet_page
 YEARS = range(2014, 2027)
 
 
-def build_source(tmp_path, tabnet_on_time_in_2020=600, chemo_radio_on_time_in_2020=200):
+def steady_months():
+    """The same national cases every month: 30 surgeries, 40 chemo/radio, 30 without information."""
+    per_month = {FirstTreatment.SURGERY: 30, FirstTreatment.CHEMO_RADIO: 40, FirstTreatment.WITHOUT_INFO: 30}
+    return {
+        (f"{year}-{month:02d}", treatment): n
+        for year in YEARS
+        for month in range(1, 13)
+        for treatment, n in per_month.items()
+    }
+
+
+def build_source(
+    tmp_path,
+    tabnet_on_time_in_2020=600,
+    chemo_radio_on_time_in_2020=200,
+    tabnet_without_info_in_2020=100,
+    months=None,
+):
     """A Painel source whose clean step already ran: one municipality in Rondônia,
-    with, for every cancer type, 1000 cases a year, 600 of them within 60 days; 500 treated with chemotherapy or
-    radiotherapy, 200 of them within 60 days."""
+    with, for every cancer type, 1000 cases a year, 600 of them within 60 days and 100 without
+    treatment information; 500 treated with chemotherapy or radiotherapy, 200 of them within 60 days."""
     raw, clean, site = tmp_path / "raw", tmp_path / "clean", tmp_path / "site"
     counts = {
         (year, "110020", cancer_type): CaseCounts(
@@ -30,11 +48,12 @@ def build_source(tmp_path, tabnet_on_time_in_2020=600, chemo_radio_on_time_in_20
         for year in YEARS
         for cancer_type in CANCER_TYPES
     }
-    write_clean(clean, counts, extracted_at="2026-10-17")
+    write_clean(clean, counts, steady_months() if months is None else months, extracted_at="2026-10-17")
     (raw / "tabnet" / "chemo_radio").mkdir(parents=True)
     for year in YEARS:
         on_time = tabnet_on_time_in_2020 if year == 2020 else 600
-        page = tabnet_page({"11 Rondônia": (on_time, 0, 900 - on_time, 100)})
+        without_info = tabnet_without_info_in_2020 if year == 2020 else 100
+        page = tabnet_page({"11 Rondônia": (on_time, 0, 1000 - on_time - without_info, without_info)})
         (raw / "tabnet" / f"{year}.html").write_text(page)
         on_time = chemo_radio_on_time_in_2020 if year == 2020 else 200
         page = tabnet_page({"11 Rondônia": (on_time, 0, 500 - on_time, 0)})
@@ -55,6 +74,16 @@ def test_a_tabnet_mismatch_publishes_nothing(tmp_path):
     assert sorted(p.name for p in site.rglob("*")) == ["municipalities.json"]
 
 
+def test_a_mismatch_in_the_share_without_information_publishes_nothing(tmp_path):
+    source, site = build_source(tmp_path, tabnet_without_info_in_2020=150)
+    source.compute()
+
+    with pytest.raises(PainelValidationError, match="all cases, 2020, UF 11: 10.0% without treatment information"):
+        source.export()
+
+    assert sorted(p.name for p in site.rglob("*")) == ["municipalities.json"]
+
+
 def test_a_chemo_radio_mismatch_with_tabnet_publishes_nothing(tmp_path):
     source, site = build_source(tmp_path, chemo_radio_on_time_in_2020=150)
     source.compute()
@@ -65,7 +94,7 @@ def test_a_chemo_radio_mismatch_with_tabnet_publishes_nothing(tmp_path):
     assert sorted(p.name for p in site.rglob("*")) == ["municipalities.json"]
 
 
-def test_the_published_layer_says_the_trend_is_measured_on_chemo_radio_cases(tmp_path):
+def test_the_published_layer_says_the_trend_and_the_value_are_measured_on_chemo_radio_cases(tmp_path):
     source, site = build_source(tmp_path)
     source.compute()
 
@@ -73,7 +102,13 @@ def test_the_published_layer_says_the_trend_is_measured_on_chemo_radio_cases(tmp
 
     layer = json.loads((site / "map" / "within_60_days" / "all.json").read_text())
     assert layer["period"]["trend_cases"] == "chemo_radio"
-    assert "quimioterapia ou radioterapia" in layer["source"]["period"]
+    assert layer["period"]["value_cases"] == "chemo_radio"
+    assert layer["source"]["period"] == (
+        "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). "
+        "Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; "
+        "% sem informação de 2024 sobre todos os casos diagnosticados; "
+        "faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    )
     # 40% of the chemo/radio cases on time every year: the trend is fitted on them.
     assert layer["municipalities"]["110020"]["trend"] == "stable"
 
@@ -88,11 +123,27 @@ def test_a_valid_run_publishes_the_layer_and_the_manifest(tmp_path):
     assert layer["indicator"] == "within_60_days"
     assert layer["cancer_type"] == "all"
     assert layer["source"]["name"].startswith("Painel-Oncologia")
-    assert layer["municipalities"]["110020"]["value"] == 60.0
+    # 200 of the 500 chemo/radio cases of 2024 on time.
+    assert layer["municipalities"]["110020"]["value"] == 40.0
     manifest = json.loads((site / "manifest.json").read_text())
     assert manifest["pipeline_version"]
     assert manifest["sources"]["painel"]["extracted_at"] == "2026-10-17"
     assert manifest["indicators"]["within_60_days"]["all"] == layer["period"]
+
+
+def test_a_monthly_drop_alerts_the_maintainer_and_still_publishes(tmp_path, capsys):
+    months = steady_months()
+    months[("2024-04", FirstTreatment.SURGERY)] = 10
+    source, site = build_source(tmp_path, months=months)
+    source.compute()
+
+    source.validate()
+    source.export()
+
+    assert (site / "map" / "within_60_days" / "all.json").exists()
+    assert capsys.readouterr().err == (
+        "painel: alert: surgery, 2024-04: 10 cases, 33% of the median of the 12 months before (30)\n"
+    )
 
 
 def test_the_manifest_keeps_what_other_sources_wrote(tmp_path):
