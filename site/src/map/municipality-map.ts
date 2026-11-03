@@ -18,6 +18,7 @@ import {
   TREND_COLORS,
   TREND_LABELS,
   formatPercent,
+  immediateRegionName,
   originText,
   trendCasesText,
   trendPeriodText,
@@ -41,6 +42,7 @@ type MeshTopology = Topology<{
 export const SOURCE_ID = "municipalities";
 const FILL_LAYER = "municipality-fill";
 const DOTS_LAYER = "municipality-insufficient";
+const BORDER_LAYER = "municipality-border";
 const DOTS_IMAGE = "insufficient-dots";
 
 /** Fill by the `trend` feature-state; anything else (no class) is "dado insuficiente". */
@@ -118,7 +120,7 @@ export async function mountMunicipalityMap(
     paint: { "fill-color": TREND_FILL },
   });
   map.addLayer({
-    id: "municipality-border",
+    id: BORDER_LAYER,
     type: "line",
     source: SOURCE_ID,
     paint: {
@@ -193,7 +195,7 @@ function tooltip(
         `(todos os casos diagnosticados)`,
     ]);
   }
-  lines.push(["span", originText(entry, place, listing)]);
+  lines.push(["span", originText(entry, immediateRegionName(place, listing))]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";
@@ -219,7 +221,7 @@ function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
   context.fillRect(0, 0, size, size);
   context.fillStyle = INSUFFICIENT_DOTS.color;
   context.beginPath();
-  context.arc(size / 2, size / 2, 1, 0, 2 * Math.PI);
+  context.arc(size / 2, size / 2, INSUFFICIENT_DOTS.radius, 0, 2 * Math.PI);
   context.fill();
   map.addImage(DOTS_IMAGE, context.getImageData(0, 0, size, size));
   map.addLayer(
@@ -230,7 +232,7 @@ function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
       filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
       paint: { "fill-pattern": DOTS_IMAGE },
     },
-    "municipality-border",
+    BORDER_LAYER,
   );
 }
 

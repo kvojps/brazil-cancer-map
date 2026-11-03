@@ -21,7 +21,7 @@ def rising(municipality, cases=1000, start=0.30, step=0.03):
 
 
 def test_every_municipality_of_the_mesh_is_in_the_layer():
-    layer = within_60_days_layer(rising("261160"), region_of={"261160": "260001", "510183": "510001"}, provisional=PROVISIONAL)
+    layer = within_60_days_layer(rising("261160"), immediate_region_of={"261160": "260001", "510183": "510001"}, provisional=PROVISIONAL)
 
     assert layer["municipalities"].keys() == {"261160", "510183"}
     assert layer["municipalities"]["510183"] == {
@@ -37,7 +37,7 @@ def test_a_municipality_carries_its_class_and_latest_consolidated_shares():
     # Provisional 2025–2026 would show a collapse; they must not be the latest value.
     counts[(2025, "261160")] = CaseCounts(cases=1000, within_60_days=100, without_treatment_info=800)
 
-    layer = within_60_days_layer(counts, region_of=RECIFE, provisional=PROVISIONAL)
+    layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
 
     # 2024 is the 11th year: 30% + 10 × 3 points = 60%; 100 of 1000 without information.
     assert layer["municipalities"]["261160"] == {
@@ -49,7 +49,7 @@ def test_a_municipality_carries_its_class_and_latest_consolidated_shares():
 
 
 def test_the_layer_states_its_period():
-    layer = within_60_days_layer(rising("261160"), region_of=RECIFE, provisional=PROVISIONAL)
+    layer = within_60_days_layer(rising("261160"), immediate_region_of=RECIFE, provisional=PROVISIONAL)
 
     assert layer["period"] == {
         "first_year": 2014,
@@ -69,7 +69,7 @@ def test_shares_are_rounded_to_one_decimal_and_absent_without_cases_that_year():
         (2024, "355030"): CaseCounts(cases=3, within_60_days=1, without_treatment_info=2, chemo_radio=40),
     }
 
-    layer = within_60_days_layer(counts, region_of={"261160": "260001", "355030": "350001"}, provisional={2025})
+    layer = within_60_days_layer(counts, immediate_region_of={"261160": "260001", "355030": "350001"}, provisional={2025})
 
     assert layer["municipalities"]["355030"]["value"] == 33.3
     assert layer["municipalities"]["355030"]["without_treatment_info"] == 66.7
@@ -91,7 +91,7 @@ def test_a_registry_step_outside_chemo_radio_cases_does_not_change_the_class():
             chemo_radio_within_60_days=158 + 4 * (i % 2),
         )
 
-    layer = within_60_days_layer(counts, region_of=RECIFE, provisional=PROVISIONAL)
+    layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
 
     assert layer["municipalities"]["261160"] == {
         "origin": "municipality",
@@ -120,14 +120,14 @@ def test_a_small_municipality_shows_its_immediate_region():
     # Recife reaches the minimum alone; Abreu e Lima and Igarassu, 8 cases a year each,
     # take the data of the Recife region, which sums the three of them.
     counts = rising("261160") | small("260005") | small("260680")
-    region_of = {"261160": "260001", "260005": "260001", "260680": "260001"}
+    immediate_region_of = {"261160": "260001", "260005": "260001", "260680": "260001"}
 
-    layer = within_60_days_layer(counts, region_of=region_of, provisional=PROVISIONAL)
+    layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=PROVISIONAL)
 
     assert layer["municipalities"]["261160"]["origin"] == "municipality"
     # 2024: (600 + 8 + 8) of (1000 + 16 + 16) cases on time; (100 + 2 + 2) without information.
     assert layer["municipalities"]["260005"] == {
-        "origin": "region",
+        "origin": "immediate_region",
         "trend": "improving",
         "value": 59.7,
         "without_treatment_info": 10.1,
@@ -137,9 +137,9 @@ def test_a_small_municipality_shows_its_immediate_region():
 
 def test_a_municipality_without_enough_data_nor_region_exports_no_value():
     counts = small("260005") | small("260680")
-    region_of = {"260005": "260001", "260680": "260001"}
+    immediate_region_of = {"260005": "260001", "260680": "260001"}
 
-    layer = within_60_days_layer(counts, region_of=region_of, provisional=PROVISIONAL)
+    layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=PROVISIONAL)
 
     # 16 a year in the region: not enough. Neither the class nor shares that would
     # reveal a handful of cases are exported.
