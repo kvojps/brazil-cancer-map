@@ -40,11 +40,12 @@ def test_buckets_follow_the_tabnet_edges():
 
 
 def test_counts_are_per_diagnosis_year_and_municipality_of_residence():
+    # Stomach (C16) is only in "all", so each row is counted once.
     rows = [
-        record(year="2019", municipality="261160"),
-        record(year="2020", municipality="261160"),
-        record(year="2020", municipality="261160", days="+0200"),
-        record(year="2020", municipality="355030"),
+        record(cid="C16", year="2019", municipality="261160"),
+        record(cid="C16", year="2020", municipality="261160"),
+        record(cid="C16", year="2020", municipality="261160", days="+0200"),
+        record(cid="C16", year="2020", municipality="355030"),
     ]
 
     counts = count_cases(rows)
@@ -79,3 +80,19 @@ def test_chemo_radio_cases_are_counted_apart_with_the_same_60_day_rule():
         chemo_radio=3,
         chemo_radio_within_60_days=2,
     )
+
+
+def test_each_cancer_type_takes_its_icd10_codes():
+    cids = ["C50", "C53", "C61", "C18", "C19", "C20", "C21", "C33", "C34", "C16", "C54", "C17", "C22"]
+
+    counts = count_cases(record(cid=cid) for cid in cids)
+
+    cases = {cancer_type: c.cases for (_, _, cancer_type), c in counts.items()}
+    assert cases == {
+        "all": len(cids),
+        "breast": 1,
+        "cervix": 1,
+        "prostate": 1,
+        "colorectal": 4,
+        "lung": 2,
+    }

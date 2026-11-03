@@ -3,6 +3,7 @@ import json
 import pytest
 
 from pipeline.sources.painel import (
+    CANCER_TYPES,
     CaseCounts,
     PainelSource,
     PainelValidationError,
@@ -15,11 +16,11 @@ YEARS = range(2014, 2027)
 
 def build_source(tmp_path, tabnet_on_time_in_2020=600, chemo_radio_on_time_in_2020=200):
     """A Painel source whose clean step already ran: one municipality in Rondônia,
-    1000 cases a year, 600 of them within 60 days; 500 treated with chemotherapy or
+    with, for every cancer type, 1000 cases a year, 600 of them within 60 days; 500 treated with chemotherapy or
     radiotherapy, 200 of them within 60 days."""
     raw, clean, site = tmp_path / "raw", tmp_path / "clean", tmp_path / "site"
     counts = {
-        (year, "110020", "all"): CaseCounts(
+        (year, "110020", cancer_type): CaseCounts(
             cases=1000,
             within_60_days=600,
             without_treatment_info=100,
@@ -27,6 +28,7 @@ def build_source(tmp_path, tabnet_on_time_in_2020=600, chemo_radio_on_time_in_20
             chemo_radio_within_60_days=200,
         )
         for year in YEARS
+        for cancer_type in CANCER_TYPES
     }
     write_clean(clean, counts, extracted_at="2026-10-17")
     (raw / "tabnet" / "chemo_radio").mkdir(parents=True)
@@ -130,3 +132,34 @@ def test_a_uf_without_a_quality_band_publishes_nothing(tmp_path):
         source.export()
 
     assert sorted(p.name for p in site.rglob("*")) == ["municipalities.json"]
+
+
+def test_a_valid_run_publishes_a_layer_for_each_cancer_type(tmp_path):
+    source, site = build_source(tmp_path)
+    source.compute()
+
+    source.export()
+
+    published = sorted(p.stem for p in (site / "map" / "within_60_days").glob("*.json"))
+    assert published == ["all", "breast", "cervix", "colorectal", "lung", "prostate"]
+    manifest = json.loads((site / "manifest.json").read_text())
+    assert sorted(manifest["indicators"]["within_60_days"]) == published
+    for cancer_type in published:
+        layer = json.loads((site / "map" / "within_60_days" / f"{cancer_type}.json").read_text())
+        assert layer["cancer_type"] == cancer_type
+        assert layer["municipalities"]["110020"]["trend"] == "stable"
+        assert layer["quality"]["11"]["band"] == "A"
+
+
+def test_prostate_has_no_status(tmp_path):
+    # Active surveillance is correct care in prostate cancer: no Situação against the 60 days.
+    source, site = build_source(tmp_path)
+    source.compute()
+
+    source.export()
+
+    def has_status(cancer_type):
+        return json.loads((site / "map" / "within_60_days" / f"{cancer_type}.json").read_text())["has_status"]
+
+    assert not has_status("prostate")
+    assert all(has_status(t) for t in ("all", "breast", "cervix", "colorectal", "lung"))

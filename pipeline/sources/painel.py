@@ -29,8 +29,20 @@ TREATMENT_ALL_CANCERS = frozenset(
 
 CANCER_TYPES: dict[str, Callable[[str], bool]] = {
     "all": TREATMENT_ALL_CANCERS.__contains__,
+    "breast": frozenset({"C50"}).__contains__,
+    "cervix": frozenset({"C53"}).__contains__,
+    "prostate": frozenset({"C61"}).__contains__,
+    "colorectal": frozenset({"C18", "C19", "C20", "C21"}).__contains__,
+    "lung": frozenset({"C33", "C34"}).__contains__,
 }
-"""Cancer type → whether a 3-character ICD-10 code (`DIAG_DETH`) belongs to it."""
+"""Cancer type → whether a 3-character ICD-10 code (`DIAG_DETH`) belongs to it:
+"Todos os cânceres" and the 5 types of the selector (spec, sections 3 and 5)."""
+
+
+WITHOUT_STATUS = frozenset({"prostate"})
+"""Cancer types whose 60 dias has no Situação, only the Tendência: in prostate cancer,
+active surveillance is correct care, so a late start is not a failure of access
+(spec, sections 5 and 6.3)."""
 
 
 NO_TREATMENT_INFO = "5"
@@ -567,6 +579,7 @@ class PainelSource:
             files[f"map/{INDICATOR}/{cancer_type}.json"] = {
                 "indicator": INDICATOR,
                 "cancer_type": cancer_type,
+                "has_status": cancer_type not in WITHOUT_STATUS,
                 "source": {**SOURCE, "period": _period_text(layer["period"])},
                 **layer,
             }
