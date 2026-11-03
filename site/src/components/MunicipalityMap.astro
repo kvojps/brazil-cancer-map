@@ -19,6 +19,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
   import { mountMunicipalityMap, mountIndicatorPaint } from "../map/municipality-map";
   import { mountMunicipalityNavigation } from "../map/navigation-view";
   import { mountIndicatorTable } from "../map/indicator-table";
+  import { updateLegend } from '../map/legend';
   import {
     CANCER_TYPES,
     INDICATORS,
@@ -97,9 +98,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           current = state;
           syncControls(state);
           showOnMap(shown, state.mode);
-          document.querySelector<HTMLElement>(".trend-legend")!.hidden = state.mode !== "trend";
-          document.querySelector<HTMLElement>(".status-legend")!.hidden = state.mode !== "status";
-          document.querySelector(".legend")?.setAttribute("aria-label", state.mode === "trend" ? "Legenda da Tendência" : "Legenda da Situação");
+          updateLegend(document.querySelector<HTMLElement>('.legend')!, shown, state.mode);
           showNotes(shown);
           const url = new URL(location.href);
           url.search = writeMapState(state, url.searchParams).toString();

@@ -70,3 +70,20 @@ Os dados são públicos (Decreto 8.777/2016), sem licença explícita no FTP;
 cite Ministério da Saúde/SVSA/CGIAE, ano e extração. POPSVS não substitui o
 Censo 2022 fixo no indicador de HPV. A população sozinha não gera indicador
 nem arquivo para o site.
+
+## Mamografia (SISCAN)
+
+Com a malha publicada e o POPSVS limpo, rode
+`uv run python -m pipeline run --source siscan`. O download já reduz um CSV
+anual por vez com DuckDB e apaga o bruto, mantendo contagens e metadados em
+`data/clean/siscan/exams/`. A etapa `clean` também aceita CSVs previamente
+baixados em `data/raw/siscan/`. Tamanho e data remotos iguais aos do agregado
+permitem reaproveitá-lo sem guardar o CSV. São exigidos os dez anos 2016–2025.
+
+A razão é exames de rastreamento em mulheres de 50–69 anos divididos pela
+metade da população feminina dessa idade. O mínimo da cascata conta exames.
+Mama e Todos compartilham os dados; valores acima de 2 recebem nota, e valores
+fora de 0–10 bloqueiam a publicação (limiares operacionais, não oficiais).
+A validação também confere a presença dos municípios da malha e as séries.
+Os detalhes de campos, fórmula, Tendência, limitações e da diferença para a
+orientação atual de 50–74 estão em `/metodologia/#mamografia` no site.

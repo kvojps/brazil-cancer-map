@@ -1,6 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeMapState, readMapState, writeMapState } from '../src/map/map-state.ts';
+import { formatIndicatorValue, mapOption } from '../src/map/indicator-layer.ts';
+
+test('mammography is available for breast and all in both modes, formatted as a ratio', () => {
+  for (const cancerType of ['all', 'breast']) {
+    for (const mode of ['trend', 'status']) {
+      assert.deepEqual(normalizeMapState({ indicator: 'mammography', cancerType, mode }),
+        { indicator: 'mammography', cancerType, mode });
+      assert.equal(mapOption('mammography', cancerType, mode).disabled, false);
+    }
+  }
+  for (const cancerType of ['cervix', 'prostate', 'lung', 'colorectal']) {
+    assert.equal(mapOption('mammography', cancerType, 'trend').disabled, true);
+    assert.equal(normalizeMapState({ indicator: 'mammography', cancerType }).indicator, 'within_60_days');
+  }
+  assert.equal(formatIndicatorValue('mammography', 0.8), '0,80');
+  assert.equal(formatIndicatorValue('mammography', null), '—');
+  assert.equal(formatIndicatorValue('within_60_days', 80), '80,0%');
+});
 
 test('a clean link opens the initial map and defaults are omitted', () => {
   const state = readMapState(new URLSearchParams());

@@ -14,10 +14,11 @@
   <div class="scroll" tabindex="0" role="region" aria-label="Tabela dos municípios">
     <table>
       <caption>
+        <span class="indicator-name"></span>.
         Tipo de câncer: <span class="cancer-type"></span>. Tendência do indicador em cada
         município e valor do último ano consolidado (<span class="latest-year"></span>)<span
           class="measured-cases"
-        ></span>. A % sem informação de tratamento é sobre todos os casos diagnosticados.
+        ></span>. <span class="treatment-note">A % sem informação de tratamento é sobre todos os casos diagnosticados.</span>
         <span class="quality-note"></span>
         <span class="status-note"></span>
       </caption>
@@ -28,10 +29,10 @@
           <th scope="col">Tendência</th>
           <th scope="col">Situação</th>
           <th scope="col">Nota do valor</th>
-          <th scope="col">Em até 60 dias</th>
-          <th scope="col">Sem informação de tratamento</th>
+          <th scope="col" class="value-heading">Em até 60 dias</th>
+          <th scope="col" data-treatment-column>Sem informação de tratamento</th>
           <th scope="col">Origem do dado</th>
-          <th scope="col">Qualidade do registro na UF</th>
+          <th scope="col" data-treatment-column>Qualidade do registro na UF</th>
         </tr>
       </thead>
       <tbody></tbody>
