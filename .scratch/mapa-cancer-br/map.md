@@ -57,9 +57,11 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [O que causa a quebra de 2018–2019 no Painel-Oncologia, e como a Tendência do 60 dias deve tratá-la?](issues/27-quebra-de-serie-do-painel.md): a Portaria SAS nº 643/2018 levou o exame anatomopatológico ao Painel em maio de 2018, criando casos sem tratamento e casos operados. Entre metade e dois terços da piora atual vem do registro. A Tendência do 60 dias passa a usar só os casos tratados com quimio e radio, que não têm degrau. Valor, Situação e faixa continuam sobre todos os casos, e o gráfico do cartão mostra a série da Tendência.
 
-## Not yet specified
+- [O site deve avisar que ainda está em construção?](issues/29-aviso-em-construcao.md): sim. Uma faixa fixa no topo de todas as páginas, sem botão de fechar e sem cores da Tendência, diz que os números ainda não passaram por validação completa. Ela sai por decisão manual do responsável, e os dados abertos não levam o aviso.
 
-- [Por que os casos tratados por cirurgia caem no Painel a partir de abril de 2024?](issues/28-queda-das-cirurgias-em-2024.md): achado na pesquisa 27. As cirurgias caem de ~6 mil para ~2 mil por mês e ficam assim em 2025, rebaixando a Situação do 60 dias em 2024. Hoje o cartão leva uma nota; falta a causa e a regra definitiva.
+- [Por que os casos tratados por cirurgia caem no Painel a partir de abril de 2024?](issues/28-queda-das-cirurgias-em-2024.md): as cirurgias não caíram no SIH. O que se perdeu foi o vínculo delas ao caso no Painel, em 581 hospitais, provavelmente pelo CPF que entrou na AIH em 04/2024 (sem confirmação oficial). O valor e a Situação do 60 dias passam a usar só quimio e radio, como a Tendência. A % sem informação e a faixa continuam sobre todos os casos, e o pipeline vigia a contagem mensal por modalidade.
+
+## Not yet specified
 
 ## Out of scope
 
