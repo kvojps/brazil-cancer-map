@@ -15,6 +15,7 @@ import datasus_dbc
 import dbfread
 import duckdb
 
+from pipeline.cascade import Origin, cascade
 from pipeline.download import fetch, list_ftp, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
@@ -109,7 +110,7 @@ def provisional_years(years: Iterable[int]) -> set[int]:
 def within_60_days_layer(
     counts: Mapping[tuple[int, str], CaseCounts],
     *,
-    municipalities: Sequence[str],
+    region_of: Mapping[str, str],
     provisional: set[int],
 ) -> dict[str, Any]:
     """The map layer of one cancer type: each municipality's trend and latest shares.
@@ -118,35 +119,47 @@ def within_60_days_layer(
     treatment information are over all the cases of the latest consolidated year,
     as TabNet shows them (spec, sections 6.3 and 7).
 
-    `counts` is keyed by (diagnosis year, municipality). Every municipality of
-    the mesh is in the layer; codes outside it (unknown residence) are ignored.
+    A municipality below the minimum of chemo/radio cases shows its immediate
+    region's trend and shares, or none at all (spec, section 8).
+
+    `counts` is keyed by (diagnosis year, municipality). `region_of` maps every
+    municipality of the mesh to its immediate region: all of them are in the
+    layer, and codes outside it (unknown residence) are ignored.
     """
     years = sorted({year for year, _ in counts})
     window = trend_window(years, provisional)
     if window is None:
         raise ValueError("no consolidated diagnosis year to publish")
-    latest = window[1]
-    by_municipality: dict[str, dict[int, CaseCounts]] = {code: {} for code in municipalities}
+    first, latest = window
+    by_municipality: dict[str, dict[int, CaseCounts]] = {code: {} for code in region_of}
+    by_region: dict[str, dict[int, CaseCounts]] = {region: {} for region in region_of.values()}
     for (year, code), entry in counts.items():
         if code in by_municipality:
             by_municipality[code][year] = entry
+            regional = by_region[region_of[code]]
+            regional[year] = regional.get(year, CaseCounts()) + entry
 
+    origins = cascade(
+        {
+            code: sum(entry.chemo_radio for year, entry in series.items() if first <= year <= latest)
+            for code, series in by_municipality.items()
+        },
+        region_of,
+        years=latest - first + 1,
+    )
+    regional_entries: dict[str, dict[str, Any]] = {}
     layer = {}
-    for code, series in by_municipality.items():
-        trend = quasi_poisson_trend(
-            years,
-            [series[y].chemo_radio_within_60_days if y in series else 0 for y in years],
-            [series[y].chemo_radio if y in series else 0 for y in years],
-            provisional=provisional,
-            higher_is_better=True,
-        )
-        last = series.get(latest, CaseCounts())
-        layer[code] = {
-            "origin": "municipality" if trend else "insufficient",
-            "trend": trend.trend_class.value if trend else None,
-            "value": _percent(last.within_60_days, last.cases),
-            "without_treatment_info": _percent(last.without_treatment_info, last.cases),
-        }
+    for code, origin in origins.items():
+        if origin is Origin.MUNICIPALITY:
+            shown = _entry(by_municipality[code], years, latest, provisional)
+        elif origin is Origin.REGION:
+            region = region_of[code]
+            if region not in regional_entries:
+                regional_entries[region] = _entry(by_region[region], years, latest, provisional)
+            shown = regional_entries[region]
+        else:
+            shown = {"trend": None, "value": None, "without_treatment_info": None}
+        layer[code] = {"origin": origin.value, **shown}
     period = {
         "first_year": years[0],
         "last_year": years[-1],
@@ -156,6 +169,23 @@ def within_60_days_layer(
         "trend_cases": TREND_CASES,
     }
     return {"period": period, "municipalities": layer}
+
+
+def _entry(series: Mapping[int, CaseCounts], years: Sequence[int], latest: int, provisional: set[int]) -> dict[str, Any]:
+    """The trend class and latest shares of a municipality's or a region's series."""
+    trend = quasi_poisson_trend(
+        years,
+        [series[y].chemo_radio_within_60_days if y in series else 0 for y in years],
+        [series[y].chemo_radio if y in series else 0 for y in years],
+        provisional=provisional,
+        higher_is_better=True,
+    )
+    last = series.get(latest, CaseCounts())
+    return {
+        "trend": trend.trend_class.value if trend else None,
+        "value": _percent(last.within_60_days, last.cases),
+        "without_treatment_info": _percent(last.without_treatment_info, last.cases),
+    }
 
 
 def _percent(count: int, cases: int) -> float | None:
@@ -409,14 +439,14 @@ class PainelSource:
     def compute(self) -> None:
         rows = read_clean(self._clean_dir)
         provisional = {row.year for row in rows if row.provisional}
-        municipalities = self._municipalities()
+        region_of = self._region_of()
         for cancer_type in CANCER_TYPES:
             counts = {
                 (row.year, row.municipality): row.counts
                 for row in rows
                 if row.cancer_type == cancer_type
             }
-            layer = within_60_days_layer(counts, municipalities=municipalities, provisional=provisional)
+            layer = within_60_days_layer(counts, region_of=region_of, provisional=provisional)
             path = self._clean_dir / "layers" / f"{cancer_type}.json"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(layer))
@@ -448,7 +478,7 @@ class PainelSource:
                     f"{table.label}, {problem}" for problem in compare_with_tabnet(ours, official, year=year)
                 ]
 
-        expected = set(self._municipalities())
+        expected = self._region_of().keys()
         for cancer_type in CANCER_TYPES:
             layer = self._layer(cancer_type)
             if layer["municipalities"].keys() != expected:
@@ -490,9 +520,10 @@ class PainelSource:
     def _tabnet_page(self, table: TabnetTable, year: int) -> Path:
         return self._raw_dir / "tabnet" / table.directory / f"{year}.html"
 
-    def _municipalities(self) -> list[str]:
+    def _region_of(self) -> dict[str, str]:
+        """Each municipality of the mesh → its immediate region."""
         listing = json.loads((self._site_data_dir / "municipalities.json").read_text())
-        return [m["code"] for m in listing["municipalities"]]
+        return {m["code"]: m["immediate_region"] for m in listing["municipalities"]}
 
     def _layer(self, cancer_type: str) -> dict[str, Any]:
         layer: dict[str, Any] = json.loads((self._clean_dir / "layers" / f"{cancer_type}.json").read_text())

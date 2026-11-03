@@ -37,7 +37,7 @@ def build_source(tmp_path, tabnet_on_time_in_2020=600, chemo_radio_on_time_in_20
         on_time = chemo_radio_on_time_in_2020 if year == 2020 else 200
         page = tabnet_page({"11 Rondônia": (on_time, 0, 500 - on_time, 0)})
         (raw / "tabnet" / "chemo_radio" / f"{year}.html").write_text(page)
-    listing = {"municipalities": [{"code": "110020", "name": "Porto Velho", "uf": "RO"}]}
+    listing = {"municipalities": [{"code": "110020", "name": "Porto Velho", "uf": "RO", "immediate_region": "110001"}]}
     (site).mkdir()
     (site / "municipalities.json").write_text(json.dumps(listing))
     return PainelSource(raw_dir=raw, clean_dir=clean, site_data_dir=site), site

@@ -9,11 +9,16 @@ export type TrendClass = "improving" | "worsening" | "stable" | "no_clear_direct
 /** What the map shows for a municipality: a Tendência class, or not enough data. */
 export type TrendState = TrendClass | "insufficient";
 
+/**
+ * Whose data a municipality shows (spec, section 8): its own, its immediate
+ * region's when it has too few cases, or none when the region has too few too.
+ */
+export type Origin = "municipality" | "region" | "insufficient";
+
 export interface MunicipalityIndicator {
-  /** Whose data this is: the municipality's own, or none with enough cases. */
-  origin: "municipality" | "insufficient";
+  origin: Origin;
   trend: TrendClass | null;
-  /** % treated within 60 days in the latest consolidated year. */
+  /** % treated within 60 days in the latest consolidated year; the region's when `origin` is "region". */
   value: number | null;
   /** % without treatment information in the same year. */
   without_treatment_info: number | null;
@@ -80,6 +85,19 @@ export const TREND_COLORS: Record<TrendState, string> = {
   insufficient: "#f3f2ec",
 };
 
+/** "Dado insuficiente" is near-white with gray dots, never plain white (spec, section 11.1). */
+export const INSUFFICIENT_DOTS = { color: "#8a9099", spacing: 6 };
+
+/** The dotted fill as CSS, for the legend swatch. */
+export const INSUFFICIENT_CSS =
+  `radial-gradient(circle, ${INSUFFICIENT_DOTS.color} 1px, transparent 1.5px) ` +
+  `0 0 / ${INSUFFICIENT_DOTS.spacing}px ${INSUFFICIENT_DOTS.spacing}px, ${TREND_COLORS.insufficient}`;
+
+/** The swatch of a legend entry: a plain color, or the dots of "dado insuficiente". */
+export function trendSwatch(state: TrendState): string {
+  return state === "insufficient" ? INSUFFICIENT_CSS : TREND_COLORS[state];
+}
+
 export const TREND_LABELS: Record<TrendState, string> = {
   improving: "Melhorando",
   worsening: "Piorando",
@@ -114,14 +132,31 @@ export function trendDescriptions(indicator: IndicatorText): Record<TrendState, 
     worsening: indicator.worsening,
     stable: "quase não mudou, menos de 1% por ano em relação ao próprio valor.",
     no_clear_direction: "pode ter subido ou caído; os dados não bastam para dizer.",
-    insufficient: "poucos casos para dizer a direção.",
+    insufficient: "poucos casos no município e na sua região para dizer a direção.",
   };
 }
 
-export const ORIGIN_TEXT: Record<MunicipalityIndicator["origin"], string> = {
-  municipality: "Dado do próprio município",
-  insufficient: "Poucos casos aqui para dizer a direção",
-};
+/** A municipality below the minimum shows its immediate region, with the region's color. */
+export const REGION_NOTE =
+  "Municípios com poucos casos mostram o dado da sua Região imediata, que junta o município e os vizinhos.";
+
+/** Where a municipality's data comes from, for the tooltip and the table. */
+export function originText(
+  entry: MunicipalityIndicator | undefined,
+  place: MunicipalityListing["municipalities"][number] | undefined,
+  listing: MunicipalityListing,
+): string {
+  switch (entry?.origin) {
+    case "municipality":
+      return "Dado do próprio município";
+    case "region": {
+      const region = place && listing.immediate_regions[place.immediate_region];
+      return region ? `Seu município e vizinhos — região de ${region}` : "Seu município e vizinhos";
+    }
+    default:
+      return "Poucos casos aqui para dizer a direção";
+  }
+}
 
 const percent = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 1,

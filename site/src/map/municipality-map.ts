@@ -14,10 +14,11 @@ import type { Topology, GeometryCollection } from "topojson-specification";
 import {
   CANCER_TYPES,
   INDICATORS,
-  ORIGIN_TEXT,
+  INSUFFICIENT_DOTS,
   TREND_COLORS,
   TREND_LABELS,
   formatPercent,
+  originText,
   trendCasesText,
   trendPeriodText,
   trendState,
@@ -39,6 +40,8 @@ type MeshTopology = Topology<{
 
 export const SOURCE_ID = "municipalities";
 const FILL_LAYER = "municipality-fill";
+const DOTS_LAYER = "municipality-insufficient";
+const DOTS_IMAGE = "insufficient-dots";
 
 /** Fill by the `trend` feature-state; anything else (no class) is "dado insuficiente". */
 const TREND_FILL: ExpressionSpecification = [
@@ -144,9 +147,13 @@ export function paintTrend(
   layer: IndicatorLayer,
   listing: MunicipalityListing,
 ): void {
+  const insufficient: string[] = [];
   for (const [code, entry] of Object.entries(layer.municipalities)) {
-    map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: trendState(entry) });
+    const state = trendState(entry);
+    map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: state });
+    if (state === "insufficient") insufficient.push(code);
   }
+  addInsufficientDots(map, insufficient);
 
   const places = new Map(listing.municipalities.map((m) => [m.code, m]));
   const popup = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "20rem" });
@@ -155,7 +162,7 @@ export function paintTrend(
     if (code === undefined) return;
     popup
       .setLngLat(event.lngLat)
-      .setDOMContent(tooltip(layer, String(code), places))
+      .setDOMContent(tooltip(layer, String(code), places, listing))
       .addTo(map);
   });
   map.on("mouseleave", FILL_LAYER, () => popup.remove());
@@ -165,6 +172,7 @@ function tooltip(
   layer: IndicatorLayer,
   code: string,
   places: Map<string, MunicipalityListing["municipalities"][number]>,
+  listing: MunicipalityListing,
 ): HTMLElement {
   const entry = layer.municipalities[code];
   const place = places.get(code);
@@ -185,7 +193,7 @@ function tooltip(
         `(todos os casos diagnosticados)`,
     ]);
   }
-  lines.push(["span", entry ? ORIGIN_TEXT[entry.origin] : ORIGIN_TEXT.insufficient]);
+  lines.push(["span", originText(entry, place, listing)]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";
@@ -195,6 +203,35 @@ function tooltip(
     box.append(line);
   }
   return box;
+}
+
+/**
+ * Cover the "dado insuficiente" municipalities with near-white dots (spec,
+ * section 11.1). `fill-pattern` cannot read feature-state, so a second layer
+ * draws the pattern over the listed codes only.
+ */
+function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
+  const size = INSUFFICIENT_DOTS.spacing;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const context = canvas.getContext("2d")!;
+  context.fillStyle = TREND_COLORS.insufficient;
+  context.fillRect(0, 0, size, size);
+  context.fillStyle = INSUFFICIENT_DOTS.color;
+  context.beginPath();
+  context.arc(size / 2, size / 2, 1, 0, 2 * Math.PI);
+  context.fill();
+  map.addImage(DOTS_IMAGE, context.getImageData(0, 0, size, size));
+  map.addLayer(
+    {
+      id: DOTS_LAYER,
+      type: "fill",
+      source: SOURCE_ID,
+      filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
+      paint: { "fill-pattern": DOTS_IMAGE },
+    },
+    "municipality-border",
+  );
 }
 
 function highlightOnHover(map: MapLibreMap): void {
