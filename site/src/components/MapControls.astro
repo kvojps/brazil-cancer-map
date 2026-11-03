@@ -1,6 +1,9 @@
 ---
-// Placeholders: search, cancer type and indicator are wired up in later tickets.
-const cancerTypes = ["Todos os cânceres", "Mama", "Colo do útero", "Próstata", "Colorretal", "Pulmão"];
+import { CANCER_TYPES, DEFAULT_CANCER_TYPE, cancerTypeNotes } from "../map/indicator-layer";
+
+// Search and indicator are wired up in later tickets. The cancer type selector
+// starts disabled and the map island enables it once the map can switch layers.
+const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: true });
 ---
 
 <form class="map-controls" aria-label="O que o mapa mostra" onsubmit="return false">
@@ -8,12 +11,23 @@ const cancerTypes = ["Todos os cânceres", "Mama", "Colo do útero", "Próstata"
     Buscar município
     <input type="search" placeholder="Digite o nome do município" disabled />
   </label>
-  <label>
-    Tipo de câncer
-    <select disabled>
-      {cancerTypes.map((type) => <option>{type}</option>)}
-    </select>
-  </label>
+  <div class="cancer-type">
+    <label>
+      Tipo de câncer
+      <select id="cancer-type" name="cancer-type" aria-describedby="cancer-type-note" disabled>
+        {
+          Object.entries(CANCER_TYPES).map(([value, label]) => (
+            <option value={value} selected={value === DEFAULT_CANCER_TYPE}>
+              {label}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <div id="cancer-type-note" class="note" aria-live="polite">
+      {notes.map((note) => <p>{note}</p>)}
+    </div>
+  </div>
   <label>
     O que o mapa mostra
     <select disabled>
@@ -29,16 +43,34 @@ const cancerTypes = ["Todos os cânceres", "Mama", "Colo do útero", "Próstata"
     gap: 0.75rem 1rem;
     padding: 0.75rem 0;
   }
-  label {
+  label,
+  .cancer-type {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     font-size: 0.875rem;
     flex: 1 1 14rem;
   }
+  .cancer-type label {
+    flex: none;
+  }
   input,
   select {
     font: inherit;
     padding: 0.4rem 0.5rem;
+  }
+  select:focus-visible {
+    outline: 2px solid #1f2933;
+    outline-offset: 2px;
+  }
+  .note {
+    color: #4b5563;
+    font-size: 0.8125rem;
+  }
+  .note p {
+    margin: 0;
+  }
+  .note p + p {
+    margin-top: 0.25rem;
   }
 </style>

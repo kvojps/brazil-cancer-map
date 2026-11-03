@@ -5,6 +5,7 @@ import {
   Popup,
   setWorkerUrl,
   type ExpressionSpecification,
+  type FilterSpecification,
   type LngLatBoundsLike,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -16,6 +17,7 @@ import {
   HATCH,
   INDICATORS,
   INSUFFICIENT_DOTS,
+  NO_STATUS_NOTE,
   TREND_COLORS,
   TREND_LABELS,
   QUALITY_WARNING,
@@ -151,34 +153,51 @@ export async function mountMunicipalityMap(
   return map;
 }
 
-/** Paint each municipality with its Tendência class and describe it on hover. */
+/**
+ * Prepare the Tendência paint and the tooltip, and return how to show a layer:
+ * each call repaints every municipality through `feature-state` and moves the
+ * dots and the hatching to the layer's municipalities, so switching the cancer
+ * type never rebuilds the map.
+ */
 export function paintTrend(
   map: MapLibreMap,
-  layer: IndicatorLayer,
   listing: MunicipalityListing,
-): void {
-  const insufficient: string[] = [];
-  const hatched: string[] = [];
-  for (const [code, entry] of Object.entries(layer.municipalities)) {
-    const state = trendState(entry);
-    map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: state });
-    if (state === "insufficient") insufficient.push(code);
-    if (isHatched(entry)) hatched.push(code);
-  }
-  addInsufficientDots(map, insufficient);
-  addQualityHatch(map, hatched);
+): (layer: IndicatorLayer) => void {
+  addInsufficientDots(map);
+  addQualityHatch(map);
 
+  let current: IndicatorLayer | undefined;
   const places = new Map(listing.municipalities.map((m) => [m.code, m]));
   const popup = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "20rem" });
   map.on("mousemove", FILL_LAYER, (event) => {
     const code = event.features?.[0]?.id;
-    if (code === undefined) return;
+    if (code === undefined || !current) return;
     popup
       .setLngLat(event.lngLat)
-      .setDOMContent(tooltip(layer, String(code), places, listing))
+      .setDOMContent(tooltip(current, String(code), places, listing))
       .addTo(map);
   });
   map.on("mouseleave", FILL_LAYER, () => popup.remove());
+
+  return (layer) => {
+    const insufficient: string[] = [];
+    const hatched: string[] = [];
+    for (const [code, entry] of Object.entries(layer.municipalities)) {
+      const state = trendState(entry);
+      map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: state });
+      if (state === "insufficient") insufficient.push(code);
+      if (isHatched(entry)) hatched.push(code);
+    }
+    map.setFilter(DOTS_LAYER, codeFilter(insufficient));
+    map.setFilter(HATCH_LAYER, codeFilter(hatched));
+    current = layer;
+    popup.remove();
+  };
+}
+
+/** Only the listed municipalities: pattern layers cannot read feature-state. */
+function codeFilter(codes: string[]): FilterSpecification {
+  return ["in", ["get", "CD_MUN"], ["literal", codes]];
 }
 
 function tooltip(
@@ -216,6 +235,7 @@ function tooltip(
     ]);
   }
   if (isHatched(entry)) lines.push(["em", QUALITY_WARNING]);
+  if (!layer.has_status) lines.push(["em", NO_STATUS_NOTE]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";
@@ -230,9 +250,9 @@ function tooltip(
 /**
  * Cover the "dado insuficiente" municipalities with near-white dots (spec,
  * section 11.1). `fill-pattern` cannot read feature-state, so a second layer
- * draws the pattern over the listed codes only.
+ * draws the pattern, filtered to the codes of the layer shown.
  */
-function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
+function addInsufficientDots(map: MapLibreMap): void {
   const size = INSUFFICIENT_DOTS.spacing;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -249,7 +269,7 @@ function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
       id: DOTS_LAYER,
       type: "fill",
       source: SOURCE_ID,
-      filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
+      filter: codeFilter([]),
       paint: { "fill-pattern": DOTS_IMAGE },
     },
     BORDER_LAYER,
@@ -258,11 +278,11 @@ function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
 
 /**
  * Hatch the municipalities of the UFs in band C (spec, section 11.1), like the
- * dots: a pattern layer over the listed codes. The tile is transparent between
+ * dots: a pattern layer filtered to the codes of the layer shown. The tile is transparent between
  * the lines, so the Tendência color shows through, and its three segments join
  * across tiles into continuous diagonals.
  */
-function addQualityHatch(map: MapLibreMap, codes: string[]): void {
+function addQualityHatch(map: MapLibreMap): void {
   const size = HATCH.spacing;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -281,7 +301,7 @@ function addQualityHatch(map: MapLibreMap, codes: string[]): void {
       id: HATCH_LAYER,
       type: "fill",
       source: SOURCE_ID,
-      filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
+      filter: codeFilter([]),
       paint: { "fill-pattern": HATCH_IMAGE },
     },
     BORDER_LAYER,

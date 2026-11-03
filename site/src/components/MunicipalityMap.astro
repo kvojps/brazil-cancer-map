@@ -1,11 +1,11 @@
 ---
 interface Props {
-  /** Map layer, relative to `dados/`: one JSON per indicator × cancer type. */
-  layer: string;
+  /** Indicator whose layers the map shows: one JSON per cancer type under `dados/map/<indicator>/`. */
+  indicator: string;
 }
 
 const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
-const { layer } = Astro.props;
+const { indicator } = Astro.props;
 ---
 
 <div class="map-frame">
@@ -13,7 +13,7 @@ const { layer } = Astro.props;
     class="map"
     data-mesh-url={`${base}/municipalities.topojson`}
     data-listing-url={`${base}/municipalities.json`}
-    data-layer-url={`${base}/${layer}`}
+    data-layers-url={`${base}/map/${indicator}/`}
     role="region"
     aria-label="Mapa do Brasil por município. Os mesmos dados estão na tabela abaixo do mapa."
   >
@@ -23,8 +23,13 @@ const { layer } = Astro.props;
 
 <script>
   import { mountMunicipalityMap, paintTrend } from "../map/municipality-map";
-  import { fillIndicatorTable } from "../map/indicator-table";
-  import type { IndicatorLayer, MunicipalityListing } from "../map/indicator-layer";
+  import { mountIndicatorTable } from "../map/indicator-table";
+  import {
+    DEFAULT_CANCER_TYPE,
+    cancerTypeNotes,
+    type IndicatorLayer,
+    type MunicipalityListing,
+  } from "../map/indicator-layer";
 
   async function getJson<T>(url: string): Promise<T> {
     const response = await fetch(url);
@@ -35,17 +40,72 @@ const { layer } = Astro.props;
   const container = document.querySelector<HTMLElement>(".map[data-mesh-url]");
   const status = document.querySelector<HTMLElement>(".map-status");
   const table = document.querySelector<HTMLElement>(".indicator-table");
+  const selector = document.querySelector<HTMLSelectElement>("#cancer-type");
+  const notes = document.querySelector<HTMLElement>("#cancer-type-note");
+
+  /** One request per cancer type: switching back reuses the layer already loaded. */
+  const layers = new Map<string, Promise<IndicatorLayer>>();
+  function layerOf(cancerType: string): Promise<IndicatorLayer> {
+    let layer = layers.get(cancerType);
+    if (!layer) {
+      layer = getJson<IndicatorLayer>(`${container!.dataset.layersUrl}${cancerType}.json`);
+      layer.catch(() => layers.delete(cancerType));
+      layers.set(cancerType, layer);
+    }
+    return layer;
+  }
+
+  function showNotes(layer: IndicatorLayer): void {
+    if (!notes) return;
+    notes.replaceChildren(
+      ...cancerTypeNotes(layer).map((text) => {
+        const note = document.createElement("p");
+        note.textContent = text;
+        return note;
+      }),
+    );
+  }
+
   if (container && status) {
-    const { meshUrl, listingUrl, layerUrl } = container.dataset;
+    const { meshUrl, listingUrl } = container.dataset;
+    const initial = selector?.value ?? DEFAULT_CANCER_TYPE;
     Promise.all([
       mountMunicipalityMap(container, meshUrl!),
-      getJson<IndicatorLayer>(layerUrl!),
+      layerOf(initial),
       getJson<MunicipalityListing>(listingUrl!),
     ])
       .then(([map, layer, listing]) => {
-        paintTrend(map, layer, listing);
-        if (table) fillIndicatorTable(table, layer, listing);
+        const showOnMap = paintTrend(map, listing);
+        const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
+        const show = (shown: IndicatorLayer) => {
+          showOnMap(shown);
+          showInTable(shown);
+          showNotes(shown);
+        };
+        show(layer);
         status.hidden = true;
+
+        if (!selector) return;
+        // Only the latest choice is painted, even if an earlier layer arrives later.
+        let requested = initial;
+        selector.addEventListener("change", () => {
+          const cancerType = selector.value;
+          requested = cancerType;
+          status.textContent = "Carregando o mapa…";
+          status.hidden = false;
+          layerOf(cancerType)
+            .then((next) => {
+              if (requested !== cancerType) return;
+              show(next);
+              status.hidden = true;
+            })
+            .catch((error: unknown) => {
+              if (requested !== cancerType) return;
+              console.error(error);
+              status.textContent = "Não foi possível carregar este tipo de câncer. Tente de novo.";
+            });
+        });
+        selector.disabled = false;
       })
       .catch((error: unknown) => {
         console.error(error);

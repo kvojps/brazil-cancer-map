@@ -67,6 +67,8 @@ export function trendCasesText(period: Period): string | null {
 export interface IndicatorLayer {
   indicator: string;
   cancer_type: string;
+  /** Whether the indicator has a Situação for this cancer type; the 60 dias in prostate has none. */
+  has_status: boolean;
   source: { name: string; url: string; conditions: string; period: string };
   period: Period;
   /** By 2-digit UF code. */
@@ -181,9 +183,39 @@ export const INDICATORS: Record<string, IndicatorText> = {
   },
 };
 
+/** The cancer types of the selector, in its order; "all" is the default view (spec, section 3). */
 export const CANCER_TYPES: Record<string, string> = {
   all: "Todos os cânceres",
+  breast: "Mama",
+  cervix: "Colo do útero",
+  prostate: "Próstata",
+  colorectal: "Colorretal",
+  lung: "Pulmão",
 };
+
+export const DEFAULT_CANCER_TYPE = "all";
+
+/** The approved note beside the selector on "Todos os cânceres" (spec, section 11.2). */
+export const ALL_CANCERS_NOTE =
+  "Cada eixo usa os registros adequados ao seu indicador. No tratamento, excluímos alguns tipos " +
+  "com informação incompleta. Por isso, 'Todos os cânceres' não reúne exatamente os mesmos tipos em todos os eixos.";
+
+/**
+ * The fixed caveat of a cancer type without Situação (spec, sections 5 and 6.3):
+ * in prostate cancer, active surveillance is correct care.
+ */
+export const NO_STATUS_NOTE =
+  "Na próstata, acompanhar o câncer antes de tratar (vigilância ativa) pode ser a conduta correta. " +
+  "Por isso, começar o tratamento depois de 60 dias não indica, sozinho, falta de acesso, e este " +
+  "indicador não é comparado ao prazo da lei: o mapa mostra só a Tendência.";
+
+/** The notes shown beside the cancer type selector for a layer. */
+export function cancerTypeNotes(layer: Pick<IndicatorLayer, "cancer_type" | "has_status">): string[] {
+  const notes: string[] = [];
+  if (layer.cancer_type === "all") notes.push(ALL_CANCERS_NOTE);
+  if (!layer.has_status) notes.push(NO_STATUS_NOTE);
+  return notes;
+}
 
 /** One line per legend entry; "estável" and "sem direção clara" are the approved texts. */
 export function trendDescriptions(indicator: IndicatorText): Record<TrendState, string> {
