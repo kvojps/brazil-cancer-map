@@ -193,7 +193,10 @@ export const CANCER_TYPES: Record<string, string> = {
   lung: "Pulmão",
 };
 
-export const DEFAULT_CANCER_TYPE = "all";
+/** "Todos os cânceres": its definition changes between axes (spec, section 5). */
+export const ALL_CANCERS = "all";
+
+export const DEFAULT_CANCER_TYPE = ALL_CANCERS;
 
 /** The approved note beside the selector on "Todos os cânceres" (spec, section 11.2). */
 export const ALL_CANCERS_NOTE =
@@ -212,7 +215,7 @@ export const NO_STATUS_NOTE =
 /** The notes shown beside the cancer type selector for a layer. */
 export function cancerTypeNotes(layer: Pick<IndicatorLayer, "cancer_type" | "has_status">): string[] {
   const notes: string[] = [];
-  if (layer.cancer_type === "all") notes.push(ALL_CANCERS_NOTE);
+  if (layer.cancer_type === ALL_CANCERS) notes.push(ALL_CANCERS_NOTE);
   if (!layer.has_status) notes.push(NO_STATUS_NOTE);
   return notes;
 }
