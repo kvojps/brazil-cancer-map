@@ -186,3 +186,23 @@ def test_incomplete_population_slice_does_not_trigger_previous_year_fallback(tmp
     source.clean()
     with pytest.raises(ValueError, match='population for municipality .* in 2025'):
         source.compute()
+
+
+def test_new_municipality_does_not_backfill_regional_population(tmp_path):
+    source, site, _ = prepared_source(tmp_path)
+    path = tmp_path / 'population.parquet'
+    with duckdb.connect() as db:
+        db.execute('''COPY (SELECT * FROM read_parquet(?)
+            WHERE municipality != '260005' OR year=2025) TO ? (FORMAT PARQUET)''',
+            [str(path), str(path.with_suffix('.new'))])
+    path.with_suffix('.new').replace(path)
+    for year in range(2016, 2025):
+        raw = tmp_path / 'raw' / f'SISCAN_MAMOGRAFIA_{year}.csv'
+        raw.write_text(raw.read_text().replace(f'260005;{year};050;02;F\n', ''))
+    source.clean()
+    source.compute()
+    source.export()
+    data = json.loads((site / 'profiles/PE.json').read_text())['indicators']['mammography']['all']
+    regional = data['series']['immediate_region:r1']
+    assert regional[0]['value'] == 0.4
+    assert regional[-1]['value'] == 0.3

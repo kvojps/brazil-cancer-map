@@ -8,6 +8,30 @@ const listing = JSON.parse(readFileSync(new URL('../public/dados/municipalities.
 const page = (m) => readFileSync(new URL(`../dist${municipalityPath(m)}index.html`, import.meta.url), 'utf8');
 before(() => execFileSync('npm', ['run', 'build'], { cwd: new URL('..', import.meta.url), stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 }));
 
+test('mammography is rendered from the published profile with its ratio, reference and approved action', () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const mammography = profile.indicators.mammography.all;
+  const entry = mammography.municipalities[municipality.code];
+  const html = page(municipality).split('aria-label="Mamografias de rastreamento — 50–69 anos"')[1].split('</article>')[0];
+  const value = entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  assert.ok(html.includes(`Razão ${value}`));
+  assert.match(html, /Referência: razão 1 — meta/);
+  assert.match(html, /<meter[^>]+max="1"/);
+  assert.match(html, /A orientação atual do SUS abrange 50 a 74 anos/);
+  assert.match(html, /Converse na UBS sobre quando fazer a mamografia/);
+  assert.match(html, /Informe sua idade, seu histórico e qualquer alteração nas mamas/);
+  assert.match(html, /Informação geral\. A equipe de saúde orienta o cuidado indicado para você/);
+  assert.match(html, /\/metodologia\/#mamografia/);
+  assert.doesNotMatch(html, /A orientação atual do SUS é o rastreamento de mulheres/);
+  for (const point of mammography.series[entry.series_id]) assert.ok(html.includes(`<th scope="row">${point.year}</th>`));
+  const all = JSON.parse(readFileSync(new URL('../public/dados/map/mammography/all.json', import.meta.url)));
+  const breast = JSON.parse(readFileSync(new URL('../public/dados/map/mammography/breast.json', import.meta.url)));
+  assert.equal(Object.keys(all.municipalities).length, listing.municipalities.length);
+  assert.deepEqual(all.municipalities, breast.municipalities);
+  assert.equal(all.municipalities[municipality.code].value, entry.value);
+});
+
 test('every municipality has a static page with four axes and the treatment action', () => {
   assert.equal(readdirSync(new URL('../dist/municipio/', import.meta.url)).length, listing.municipalities.length);
   const html = readFileSync(new URL('../dist/municipio/110020-porto-velho/index.html', import.meta.url), 'utf8');
