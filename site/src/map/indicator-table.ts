@@ -1,4 +1,5 @@
 import {
+  immediateRegionName,
   originText,
   TREND_LABELS,
   formatPercent,
@@ -46,7 +47,7 @@ export function fillIndicatorTable(
           TREND_LABELS[trendState(entry)],
           formatPercent(entry?.value ?? null),
           formatPercent(entry?.without_treatment_info ?? null),
-          originText(entry, m, listing),
+          originText(entry, immediateRegionName(m, listing)),
         ];
         cells.forEach((text, i) => {
           const cell = document.createElement(i === 0 ? "th" : "td");
