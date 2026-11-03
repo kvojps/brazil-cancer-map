@@ -15,6 +15,14 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
     <title>{title}</title>
   </head>
   <body>
+    <!-- Under-construction notice, not dismissible (spec, section 2; decision ticket 29).
+         Blue keeps it apart from the Tendência palette and from red. -->
+    <aside class="construction-notice" aria-label="Aviso">
+      <p>
+        <strong>Em construção.</strong> Este site ainda está sendo desenvolvido e os números não
+        passaram por uma validação completa: podem conter erros e mudar.
+      </p>
+    </aside>
     <main>
       <slot />
     </main>
@@ -27,3 +35,16 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
     </footer>
   </body>
 </html>
+
+<style>
+  .construction-notice {
+    background: #e8f0fb;
+    border-bottom: 1px solid #9db7dc;
+    color: #1e3a5f;
+    padding: 0.5rem 1rem;
+    overflow-wrap: break-word;
+  }
+  .construction-notice p {
+    margin: 0;
+  }
+</style>
