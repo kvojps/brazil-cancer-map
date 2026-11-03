@@ -63,7 +63,7 @@ export function mountIndicatorTable(
         ];
         cells.forEach((text, i) => {
           const cell = document.createElement(i === 0 ? "th" : "td");
-          cell.hidden = layer.indicator === 'mammography' && (i === 6 || i === 8);
+          cell.hidden = !INDICATORS[layer.indicator]!.hasTreatmentQuality && (i === 6 || i === 8);
           if (i === 0) cell.scope = "row";
           if (i === 0) {
             const link = document.createElement("a");
@@ -82,10 +82,11 @@ export function mountIndicatorTable(
 
   return (layer) => {
     current = layer;
-    root.querySelector('.indicator-name')!.textContent = INDICATORS[layer.indicator]!.name;
-    for (const header of root.querySelectorAll<HTMLElement>('[data-treatment-column]')) header.hidden = layer.indicator === 'mammography';
-    root.querySelector('.value-heading')!.textContent = layer.indicator === 'mammography' ? 'Razão de mamografias (50–69 anos)' : 'Em até 60 dias';
-    root.querySelector('.treatment-note')!.textContent = layer.indicator === 'within_60_days' ? 'A % sem informação de tratamento é sobre todos os casos diagnosticados.' : '';
+    const presentation = INDICATORS[layer.indicator]!;
+    root.querySelector('.indicator-name')!.textContent = presentation.name;
+    for (const header of root.querySelectorAll<HTMLElement>('[data-treatment-column]')) header.hidden = !presentation.hasTreatmentQuality;
+    root.querySelector('.value-heading')!.textContent = presentation.valueLabel;
+    root.querySelector('.treatment-note')!.textContent = presentation.hasTreatmentQuality ? 'A % sem informação de tratamento é sobre todos os casos diagnosticados.' : '';
     root.querySelector(".cancer-type")!.textContent = CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type;
     root.querySelector(".latest-year")!.textContent = String(layer.period.latest);
     const measuredCases = measuredCasesText(layer.period);

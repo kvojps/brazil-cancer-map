@@ -12,6 +12,7 @@ import duckdb
 from pipeline.cascade import Origin, data_origins
 from pipeline.download import Transport, fetch, transport_for, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
+from pipeline.population import Population
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
 from pipeline.status import classify_status, status_note
 from pipeline.trend import quasi_poisson_trend
@@ -151,32 +152,21 @@ class SiscanSource:
             counts = {(year, code): n for year, code, n in db.execute(
                 'SELECT year, municipality, sum(exams) FROM read_parquet(?) GROUP BY ALL',
                 [[str(path) for path in files]]).fetchall()}
-            population = {(year, code): n for year, code, n in db.execute('''
-                SELECT year, municipality, sum(population) FROM read_parquet(?)
-                WHERE sex=2 AND age BETWEEN 50 AND 69 GROUP BY ALL''', [str(self._population_path)]).fetchall()}
-        available = {year for year, _ in population}
-        first_population: dict[str, int] = {}
-        for year, code in population:
-            first_population[code] = min(first_population.get(code, year), year)
-        if not regions.keys() <= first_population.keys():
-            raise ValueError('missing population municipalities')
+        population = Population(self._population_path).get_many(regions.keys(), YEARS, sex=2, min_age=50, max_age=69)
         series: dict[str, Series] = {code: {} for code in regions}
         provisional = set()
         for year in YEARS:
-            selected = year if year in available else year - 1
-            if selected not in available:
-                raise ValueError(f'no population for {year} or the previous year')
-            if selected != year:
-                provisional.add(year)
             for code in regions:
-                denominator = population.get((selected, code))
-                if denominator is None:
-                    if year < first_population[code] and not counts.get((year, code), 0):
+                result = population.get((code, year))
+                if result is None:
+                    if not counts.get((year, code), 0):
                         continue
-                    raise ValueError(f'missing population for {code} in {selected}')
-                if denominator <= 0:
-                    raise ValueError(f'nonpositive population for {code} in {selected}')
-                series[code][year] = counts.get((year, code), 0), denominator / 2
+                    raise ValueError(f'exams before population history for {code} in {year}')
+                if result.provisional:
+                    provisional.add(year)
+                if result.population <= 0:
+                    raise ValueError(f'nonpositive population for {code} in {result.year}')
+                series[code][year] = counts.get((year, code), 0), result.population / 2
         layer, profiles = mammography_data(series, regions, provisional)
         (self._clean_dir / 'layer.json').write_text(json.dumps(layer, allow_nan=False))
         (self._clean_dir / 'profiles.json').write_text(json.dumps(profiles, allow_nan=False))

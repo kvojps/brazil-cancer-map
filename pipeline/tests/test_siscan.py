@@ -173,3 +173,16 @@ def test_failed_clean_keeps_raw_and_last_good_aggregate(tmp_path):
         source.clean()
     assert raw.exists()
     assert (clean / 'exams/2025.parquet').read_bytes() == previous
+
+
+def test_incomplete_population_slice_does_not_trigger_previous_year_fallback(tmp_path):
+    source, _, _ = prepared_source(tmp_path)
+    path = tmp_path / 'population.parquet'
+    with duckdb.connect() as db:
+        db.execute('''COPY (SELECT * FROM read_parquet(?)
+            WHERE NOT (year=2025 AND sex=2 AND age BETWEEN 50 AND 69)) TO ? (FORMAT PARQUET)''',
+            [str(path), str(path.with_suffix('.new'))])
+    path.with_suffix('.new').replace(path)
+    source.clean()
+    with pytest.raises(ValueError, match='population for municipality .* in 2025'):
+        source.compute()

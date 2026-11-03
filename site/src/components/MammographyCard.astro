@@ -25,6 +25,7 @@ const pointY = (value: number) => 160 - 130 * value / maximum;
     </> : <>
       <h4>Situação em {data.period.latest}</h4>
       <p><strong>Razão {valueText(entry.value)}</strong> — {statusText(entry, data)}.</p>
+      {entry.value !== null && <meter min="0" max="1" value={entry.value} aria-label="Razão de mamografias em relação à meta 1" />}
       {entry.status_note && <p>{entry.status_note}</p>}
       <p>Referência: razão 1 — meta. Comparamos o número anual de exames com a metade das mulheres de 50–69 anos.</p>
       <h4>Tendência ({data.period.trend.join('–')})</h4>
@@ -58,7 +59,7 @@ const pointY = (value: number) => 160 - 130 * value / maximum;
   </> : <p>Os dados de mamografia ainda não estão disponíveis nesta ficha.</p>}
   <p>Conta exames realizados no SUS, não mulheres únicas. Não mede a cobertura de toda a população nem estima seu risco individual.</p>
   <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
-    <details><summary>Saiba mais</summary>{action.details.map(text => <p>{text}</p>)}
+    <details><summary>Saiba mais</summary>{action.reviewedVersion === action.version && action.reviewer && action.details.map(text => <p>{text}</p>)}
       <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
     </details><p>{action.disclaimer}</p>
   </section>

@@ -245,12 +245,10 @@ function tooltip(
   if (entry?.value != null) {
     lines.push([
       "span",
-      layer.indicator === 'mammography'
-        ? `Em ${layer.period.latest}: razão ${formatIndicatorValue(layer.indicator, entry.value)} de mamografias de rastreamento (50–69 anos)`
-        : `Em ${layer.period.latest}: ${formatPercent(entry.value)} em até 60 dias; ` +
-        `${formatPercent(entry.without_treatment_info)} de todos os casos diagnosticados ` +
-        `sem informação de tratamento`,
+      `Em ${layer.period.latest}: ${formatIndicatorValue(layer.indicator, entry.value)} — ${INDICATORS[layer.indicator]!.valueLabel}`,
     ]);
+    if (INDICATORS[layer.indicator]!.hasTreatmentQuality) lines.push(['span',
+      `${formatPercent(entry.without_treatment_info)} de todos os casos diagnosticados sem informação de tratamento`]);
   }
   lines.push(["span", originText(entry, immediateRegionName(place, listing))]);
   const qualityPeriod = qualityPeriodText(layer.period);

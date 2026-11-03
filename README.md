@@ -53,10 +53,13 @@ Rode `uv run python -m pipeline run --source popsvs` para baixar os ZIP anuais
 `POPSBR00.zip` a `POPSBR25.zip` do DATASUS com cache por tamanho e data e gerar
 `data/clean/popsvs/population.parquet`. A fonte fornece município de seis dígitos,
 ano, sexo (1 masculino, 2 feminino), idade (0–79 e 80 para 80+) e população.
-As etapas de cálculo consultam `pipeline.population.Population.get`: os limites
+As etapas de cálculo consultam `pipeline.population.Population.get` ou sua
+variante em lote `get_many`: os limites
 de idade são inclusivos e o retorno informa o ano usado e se é provisório.
 Só a ausência do arquivo anual permite usar o ano imediatamente anterior;
 município ausente gera erro, sem reconstruir sua história ou alterar o de origem.
+Na consulta em lote, anos anteriores ao primeiro registro municipal são omitidos;
+ausências posteriores e recortes incompletos geram erro, sem fallback indevido.
 
 A validação exige 162 células distintas por município e ano, as 27 UFs e total
 nacional entre 160 e 230 milhões em cada ano disponível. Para cada UF, aceita
