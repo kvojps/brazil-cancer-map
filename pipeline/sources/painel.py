@@ -122,6 +122,10 @@ def within_60_days_layer(
     A municipality below the minimum of chemo/radio cases shows its immediate
     region's trend and shares, or none at all (spec, section 8).
 
+    Every municipality also carries its UF's quality band, from the % of all the
+    cases without treatment information over the last 5 consolidated years
+    (spec, section 6.3); `quality` gives each UF's band and share.
+
     `counts` is keyed by (diagnosis year, municipality). `immediate_region_of` maps every
     municipality of the mesh to its immediate region: all of them are in the
     layer, and codes outside it (unknown residence) are ignored.
@@ -147,6 +151,9 @@ def within_60_days_layer(
         immediate_region_of,
         years=latest - first + 1,
     )
+    consolidated = [year for year in years if year not in provisional]
+    quality_window = (consolidated[-QUALITY_YEARS:][0], latest)
+    quality = uf_quality(counts, {code[:2] for code in immediate_region_of}, quality_window)
     regional_shown: dict[str, dict[str, Any]] = {}
     layer = {}
     for code, origin in origins.items():
@@ -159,7 +166,7 @@ def within_60_days_layer(
             shown = regional_shown[region]
         else:
             shown = NO_DATA
-        layer[code] = {"origin": origin.value, **shown}
+        layer[code] = {"origin": origin.value, **shown, "quality_band": quality[code[:2]]["band"]}
     period = {
         "first_year": years[0],
         "last_year": years[-1],
@@ -167,8 +174,46 @@ def within_60_days_layer(
         "latest": latest,
         "trend": list(window),
         "trend_cases": TREND_CASES,
+        "quality": list(quality_window),
     }
-    return {"period": period, "municipalities": layer}
+    return {"period": period, "quality": quality, "municipalities": layer}
+
+
+QUALITY_YEARS = 5
+"""The quality band looks at the last 5 consolidated years (spec, section 6.3)."""
+
+
+def quality_band(without_treatment_info: int, cases: int) -> str | None:
+    """A, B or C from the share of cases without treatment information (spec, section 6.3):
+    A up to 15%, B above 15% and below 35%, C from 35%. Compared exactly, not rounded."""
+    if not cases:
+        return None
+    if 100 * without_treatment_info <= 15 * cases:
+        return "A"
+    if 100 * without_treatment_info < 35 * cases:
+        return "B"
+    return "C"
+
+
+def uf_quality(
+    counts: Mapping[tuple[int, str], CaseCounts], ufs: Iterable[str], window: tuple[int, int]
+) -> dict[str, dict[str, Any]]:
+    """Each UF's quality band and % without treatment information, pooling all the cases
+    diagnosed in the window, by UF of residence. Cases with an unknown municipality of
+    residence still count for their UF, as in TabNet."""
+    first, last = window
+    pooled = {uf: CaseCounts() for uf in sorted(ufs)}
+    for (year, code), entry in counts.items():
+        uf = code[:2]
+        if uf in pooled and first <= year <= last:
+            pooled[uf] += entry
+    return {
+        uf: {
+            "band": quality_band(total.without_treatment_info, total.cases),
+            "without_treatment_info": _percent(total.without_treatment_info, total.cases),
+        }
+        for uf, total in pooled.items()
+    }
 
 
 NO_DATA = {"trend": None, "value": None, "without_treatment_info": None}
@@ -495,6 +540,9 @@ class PainelSource:
             )
             if implausible:
                 problems.append(f"layer '{cancer_type}' has shares outside 0–100%: {implausible[:10]}")
+            unbanded = sorted(uf for uf, quality in layer["quality"].items() if quality["band"] is None)
+            if unbanded:
+                problems.append(f"layer '{cancer_type}' has UFs without a quality band: {', '.join(unbanded)}")
         if problems:
             raise PainelValidationError("; ".join(problems))
 
@@ -538,10 +586,12 @@ def _period_text(period: Mapping[str, Any]) -> str:
     first, last = period["first_year"], period["last_year"]
     provisional = ", ".join(str(y) for y in period["provisional"])
     trend_first, trend_last = period["trend"]
+    quality_first, quality_last = period["quality"]
     return (
         f"Anos de diagnóstico {first}–{last} ({provisional} provisórios). "
         f"Tendência {trend_first}–{trend_last} medida nos casos tratados com quimioterapia ou radioterapia; "
-        f"valor de {period['latest']} e % sem informação sobre todos os casos diagnosticados"
+        f"valor de {period['latest']} e % sem informação sobre todos os casos diagnosticados; "
+        f"faixa de qualidade {quality_first}–{quality_last}, por UF, sobre todos os casos diagnosticados"
     )
 
 

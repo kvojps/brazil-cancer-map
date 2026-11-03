@@ -1,12 +1,15 @@
 ---
 import {
+  HATCH_CSS,
   INDICATORS,
+  QUALITY_WARNING,
   REGION_NOTE,
   TREND_LABELS,
   TREND_STATES,
   trendCasesText,
   trendDescriptions,
   trendPeriodText,
+  qualityPeriodText,
   trendSwatch,
   type Period,
 } from "../map/indicator-layer";
@@ -20,6 +23,7 @@ const { indicator, period } = Astro.props;
 const descriptions = trendDescriptions(INDICATORS[indicator]!);
 const provisional = period.provisional.join(" e ");
 const trendCases = trendCasesText(period);
+const qualityPeriod = qualityPeriodText(period);
 ---
 
 <section class="legend" aria-labelledby="legend-title">
@@ -38,6 +42,20 @@ const trendCases = trendCasesText(period);
       ))
     }
   </ul>
+  {
+    qualityPeriod && (
+      <ul class="quality">
+        <li>
+          <span class="swatch" style={`background: ${HATCH_CSS}`} aria-hidden="true" />
+          <span>
+            <strong>Hachura (faixa C)</strong>: {QUALITY_WARNING} Vale para todo o estado, com 35% ou mais
+            dos casos de {qualityPeriod} sem informação de tratamento. As faixas A (até 15%) e B (acima de
+            15% e abaixo de 35%) não têm hachura.
+          </span>
+        </li>
+      </ul>
+    )
+  }
   <p>{REGION_NOTE}</p>
   <p class="note">
     Anos de diagnóstico {period.first_year}–{period.last_year}. {provisional} ainda são provisórios e

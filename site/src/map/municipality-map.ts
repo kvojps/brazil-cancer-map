@@ -13,16 +13,22 @@ import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import {
   CANCER_TYPES,
+  HATCH,
   INDICATORS,
   INSUFFICIENT_DOTS,
   TREND_COLORS,
   TREND_LABELS,
+  QUALITY_WARNING,
   formatPercent,
   immediateRegionName,
+  isHatched,
   originText,
+  qualityPeriodText,
+  qualityText,
   trendCasesText,
   trendPeriodText,
   trendState,
+  ufQuality,
   type IndicatorLayer,
   type MunicipalityListing,
 } from "./indicator-layer";
@@ -44,6 +50,8 @@ const FILL_LAYER = "municipality-fill";
 const DOTS_LAYER = "municipality-insufficient";
 const BORDER_LAYER = "municipality-border";
 const DOTS_IMAGE = "insufficient-dots";
+const HATCH_LAYER = "municipality-quality-c";
+const HATCH_IMAGE = "quality-c-hatch";
 
 /** Fill by the `trend` feature-state; anything else (no class) is "dado insuficiente". */
 const TREND_FILL: ExpressionSpecification = [
@@ -150,12 +158,15 @@ export function paintTrend(
   listing: MunicipalityListing,
 ): void {
   const insufficient: string[] = [];
+  const hatched: string[] = [];
   for (const [code, entry] of Object.entries(layer.municipalities)) {
     const state = trendState(entry);
     map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: state });
     if (state === "insufficient") insufficient.push(code);
+    if (isHatched(entry)) hatched.push(code);
   }
   addInsufficientDots(map, insufficient);
+  addQualityHatch(map, hatched);
 
   const places = new Map(listing.municipalities.map((m) => [m.code, m]));
   const popup = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "20rem" });
@@ -196,6 +207,15 @@ function tooltip(
     ]);
   }
   lines.push(["span", originText(entry, immediateRegionName(place, listing))]);
+  const qualityPeriod = qualityPeriodText(layer.period);
+  const quality = ufQuality(layer, code);
+  if (qualityPeriod && quality?.band) {
+    lines.push([
+      "span",
+      `Qualidade do registro ${place ? `em ${place.uf} ` : ""}(${qualityPeriod}): ${qualityText(quality)}`,
+    ]);
+  }
+  if (isHatched(entry)) lines.push(["em", QUALITY_WARNING]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";
@@ -231,6 +251,38 @@ function addInsufficientDots(map: MapLibreMap, codes: string[]): void {
       source: SOURCE_ID,
       filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
       paint: { "fill-pattern": DOTS_IMAGE },
+    },
+    BORDER_LAYER,
+  );
+}
+
+/**
+ * Hatch the municipalities of the UFs in band C (spec, section 11.1), like the
+ * dots: a pattern layer over the listed codes. The tile is transparent between
+ * the lines, so the Tendência color shows through, and its three segments join
+ * across tiles into continuous diagonals.
+ */
+function addQualityHatch(map: MapLibreMap, codes: string[]): void {
+  const size = HATCH.spacing;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const context = canvas.getContext("2d")!;
+  context.strokeStyle = HATCH.color;
+  context.lineWidth = HATCH.width;
+  context.beginPath();
+  for (const offset of [-size, 0, size]) {
+    context.moveTo(offset, size);
+    context.lineTo(offset + size, 0);
+  }
+  context.stroke();
+  map.addImage(HATCH_IMAGE, context.getImageData(0, 0, size, size));
+  map.addLayer(
+    {
+      id: HATCH_LAYER,
+      type: "fill",
+      source: SOURCE_ID,
+      filter: ["in", ["get", "CD_MUN"], ["literal", codes]],
+      paint: { "fill-pattern": HATCH_IMAGE },
     },
     BORDER_LAYER,
   );

@@ -102,3 +102,31 @@ def test_the_manifest_keeps_what_other_sources_wrote(tmp_path):
 
     manifest = json.loads((site / "manifest.json").read_text())
     assert manifest["sources"].keys() == {"mesh", "painel"}
+
+
+def test_the_published_layer_carries_the_quality_band_and_its_period(tmp_path):
+    source, site = build_source(tmp_path)
+    source.compute()
+
+    source.export()
+
+    layer = json.loads((site / "map" / "within_60_days" / "all.json").read_text())
+    # 100 of 1000 cases a year without treatment information in Rondônia.
+    assert layer["quality"] == {"11": {"band": "A", "without_treatment_info": 10.0}}
+    assert layer["municipalities"]["110020"]["quality_band"] == "A"
+    assert "faixa de qualidade 2020–2024" in layer["source"]["period"]
+    manifest = json.loads((site / "manifest.json").read_text())
+    assert manifest["indicators"]["within_60_days"]["all"]["quality"] == [2020, 2024]
+
+
+def test_a_uf_without_a_quality_band_publishes_nothing(tmp_path):
+    source, site = build_source(tmp_path)
+    listing = json.loads((site / "municipalities.json").read_text())
+    listing["municipalities"].append({"code": "120040", "name": "Rio Branco", "uf": "AC", "immediate_region": "120001"})
+    (site / "municipalities.json").write_text(json.dumps(listing))
+    source.compute()
+
+    with pytest.raises(PainelValidationError, match="without a quality band: 12"):
+        source.export()
+
+    assert sorted(p.name for p in site.rglob("*")) == ["municipalities.json"]

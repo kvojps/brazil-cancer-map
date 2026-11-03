@@ -29,6 +29,8 @@ def test_every_municipality_of_the_mesh_is_in_the_layer():
         "trend": None,
         "value": None,
         "without_treatment_info": None,
+        # No case at all in Mato Grosso: no band to give.
+        "quality_band": None,
     }
 
 
@@ -45,6 +47,8 @@ def test_a_municipality_carries_its_class_and_latest_consolidated_shares():
         "trend": "improving",
         "value": 60.0,
         "without_treatment_info": 10.0,
+        # 10% without information in 2020–2024; the provisional 80% of 2025 stays out.
+        "quality_band": "A",
     }
 
 
@@ -58,6 +62,7 @@ def test_the_layer_states_its_period():
         "latest": 2024,
         "trend": [2015, 2024],
         "trend_cases": "chemo_radio",
+        "quality": [2020, 2024],
     }
 
 
@@ -99,6 +104,7 @@ def test_a_registry_step_outside_chemo_radio_cases_does_not_change_the_class():
         # The value and the % without information stay over all the 2024 cases.
         "value": 25.0,
         "without_treatment_info": 27.0,
+        "quality_band": "B",
     }
 
 
@@ -131,6 +137,7 @@ def test_a_small_municipality_shows_its_immediate_region():
         "trend": "improving",
         "value": 59.7,
         "without_treatment_info": 10.1,
+        "quality_band": "A",
     }
     assert layer["municipalities"]["260680"] == layer["municipalities"]["260005"]
 
@@ -148,4 +155,68 @@ def test_a_municipality_without_enough_data_nor_region_exports_no_value():
         "trend": None,
         "value": None,
         "without_treatment_info": None,
+        # The band is the UF's: it does not reveal the municipality's few cases.
+        "quality_band": "A",
     }
+
+
+def without_information(municipality, share, cases=1000):
+    """A municipality with `share` of its cases, every year, without treatment information."""
+    return {
+        (year, municipality): CaseCounts(
+            cases=cases,
+            within_60_days=cases // 2,
+            without_treatment_info=round(cases * share),
+            chemo_radio=cases // 2,
+            chemo_radio_within_60_days=cases // 4,
+        )
+        for year in YEARS
+    }
+
+
+def test_the_quality_band_of_each_uf_follows_its_share_without_treatment_information():
+    # One municipality per UF: 15% is still A, just above it is B, 35% is already C.
+    counts = (
+        without_information("261160", 0.15)
+        | without_information("355030", 0.151)
+        | without_information("510340", 0.349)
+        | without_information("130260", 0.35)
+    )
+    immediate_region_of = {"261160": "260001", "355030": "350001", "510340": "510001", "130260": "130001"}
+
+    layer = within_60_days_layer(counts, immediate_region_of=immediate_region_of, provisional=PROVISIONAL)
+
+    assert layer["quality"] == {
+        "26": {"band": "A", "without_treatment_info": 15.0},
+        "35": {"band": "B", "without_treatment_info": 15.1},
+        "51": {"band": "B", "without_treatment_info": 34.9},
+        "13": {"band": "C", "without_treatment_info": 35.0},
+    }
+    assert {code: entry["quality_band"] for code, entry in layer["municipalities"].items()} == {
+        "261160": "A",
+        "355030": "B",
+        "510340": "B",
+        "130260": "C",
+    }
+
+
+def test_the_quality_band_pools_only_the_last_five_consolidated_years():
+    # 90% without information before 2020 and in the provisional 2025–2026; 10% in 2020–2024.
+    counts = without_information("261160", 0.9)
+    for year in range(2020, 2025):
+        counts[(year, "261160")] = CaseCounts(cases=1000, without_treatment_info=100, chemo_radio=500)
+
+    layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
+
+    assert layer["quality"] == {"26": {"band": "A", "without_treatment_info": 10.0}}
+
+
+def test_cases_with_an_unknown_municipality_of_residence_count_for_their_uf():
+    # Recife: 10% without information. 1000 more cases a year in Pernambuco, municipality
+    # unknown ("260000"), all without information: (100 + 1000) of 2000 is 55%.
+    counts = without_information("261160", 0.1) | without_information("260000", 1.0)
+
+    layer = within_60_days_layer(counts, immediate_region_of=RECIFE, provisional=PROVISIONAL)
+
+    assert layer["quality"] == {"26": {"band": "C", "without_treatment_info": 55.0}}
+    assert "260000" not in layer["municipalities"]
