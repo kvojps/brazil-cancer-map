@@ -46,3 +46,27 @@ npm run build
 - **Dados:** os dados de terceiros (DATASUS, IBGE, INCA e demais fontes) seguem as condições de reutilização de cada fonte, e os arquivos gerados pelo pipeline não são cobertos pela licença do código. A metodologia e cada arquivo exportado identificam a fonte, o período e as condições de reutilização. Quem citar o observatório deve citar também as fontes originais.
 
 Contribuições entram sob a licença da parte alterada, sem CLA.
+
+## Denominadores populacionais
+
+Rode `uv run python -m pipeline run --source popsvs` para baixar os ZIP anuais
+`POPSBR00.zip` a `POPSBR25.zip` do DATASUS com cache por tamanho e data e gerar
+`data/clean/popsvs/population.parquet`. A fonte fornece município de seis dígitos,
+ano, sexo (1 masculino, 2 feminino), idade (0–79 e 80 para 80+) e população.
+As etapas de cálculo consultam `pipeline.population.Population.get`: os limites
+de idade são inclusivos e o retorno informa o ano usado e se é provisório.
+Só a ausência do arquivo anual permite usar o ano imediatamente anterior;
+município ausente gera erro, sem reconstruir sua história ou alterar o de origem.
+
+A validação exige 162 células distintas por município e ano, as 27 UFs e total
+nacional entre 160 e 230 milhões em cada ano disponível. Para cada UF, aceita
+45% a 155% do total aproximado de 2022 registrado em `STATE_BASELINES`, uma
+faixa ampla para 2000–2025 que detecta cargas incompletas e duplicações, sem
+pretender reproduzir taxas oficiais. A série MS/SVSA foi revista pós-Censo 2022:
+publicações anteriores a 2025 usavam estimativas que superestimavam a população
+em cerca de 5,8% e não devem ser usadas como alvo de igualdade. A conferência
+de taxas deve usar o TabNet atual. Veja a [pesquisa e fontes da decisão](.scratch/mapa-cancer-br/research/13-denominador-populacional.md).
+Os dados são públicos (Decreto 8.777/2016), sem licença explícita no FTP;
+cite Ministério da Saúde/SVSA/CGIAE, ano e extração. POPSVS não substitui o
+Censo 2022 fixo no indicador de HPV. A população sozinha não gera indicador
+nem arquivo para o site.
