@@ -22,10 +22,11 @@ const { indicator } = Astro.props;
 </div>
 
 <script>
-  import { mountMunicipalityMap, mountTrendPaint } from "../map/municipality-map";
+  import { mountMunicipalityMap, mountIndicatorPaint } from "../map/municipality-map";
   import { mountIndicatorTable } from "../map/indicator-table";
   import {
     DEFAULT_CANCER_TYPE,
+    type MapMode,
     cancerTypeNotes,
     type IndicatorLayer,
     type MunicipalityListing,
@@ -41,6 +42,7 @@ const { indicator } = Astro.props;
   const status = document.querySelector<HTMLElement>(".map-status");
   const table = document.querySelector<HTMLElement>(".indicator-table");
   const selector = document.querySelector<HTMLSelectElement>("#cancer-type");
+  const modeSelector = document.querySelector<HTMLSelectElement>("#map-mode");
   const notes = document.querySelector<HTMLElement>("#cancer-type-note");
 
   /** One request per cancer type: switching back reuses the layer already loaded. */
@@ -75,14 +77,27 @@ const { indicator } = Astro.props;
       getJson<MunicipalityListing>(listingUrl!),
     ])
       .then(([map, layer, listing]) => {
-        const showOnMap = mountTrendPaint(map, listing);
+        const showOnMap = mountIndicatorPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
+        let current = layer;
         const show = (shown: IndicatorLayer) => {
-          showOnMap(shown);
+          current = shown;
+          const statusOption = modeSelector?.querySelector<HTMLOptionElement>('option[value$=":status"]');
+          if (statusOption) statusOption.disabled = !shown.has_status;
+          if (!shown.has_status && modeSelector) modeSelector.value = `${shown.indicator}:trend`;
+          const mode: MapMode = modeSelector?.value.endsWith(":status") ? "status" : "trend";
+          showOnMap(shown, mode);
+          document.querySelector<HTMLElement>(".trend-legend")!.hidden = mode !== "trend";
+          document.querySelector<HTMLElement>(".status-legend")!.hidden = mode !== "status";
+          document.querySelector(".legend")?.setAttribute("aria-label", mode === "trend" ? "Legenda da Tendência" : "Legenda da Situação");
           showInTable(shown);
           showNotes(shown);
         };
         show(layer);
+        if (modeSelector) {
+          modeSelector.disabled = false;
+          modeSelector.addEventListener("change", () => show(current));
+        }
         status.hidden = true;
 
         if (!selector) return;

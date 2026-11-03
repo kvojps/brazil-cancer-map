@@ -25,6 +25,8 @@ export type QualityBand = "A" | "B" | "C";
 export interface MunicipalityIndicator {
   origin: Origin;
   trend: TrendClass | null;
+  status: StatusClass | null;
+  status_note: string | null;
   /** % treated within 60 days in the latest consolidated year; the region's when `origin` is "immediate_region". */
   value: number | null;
   /** % without treatment information in the same year. */
@@ -85,6 +87,7 @@ export interface IndicatorLayer {
   cancer_type: string;
   /** Whether the indicator has a Situação for this cancer type; the 60 dias in prostate has none. */
   has_status: boolean;
+  reference: { value: number; label: string } | null;
   source: { name: string; url: string; conditions: string; period: string };
   period: Period;
   /** By 2-digit UF code. */
@@ -267,7 +270,7 @@ export function immediateRegionName(
  * a Tendência class it reads as "dado insuficiente", like its color.
  */
 export function originText(entry: MunicipalityIndicator | undefined, region: string | undefined): string {
-  if (trendState(entry) === "insufficient") return "Poucos casos aqui para dizer a direção";
+  if (!entry || entry.origin === "insufficient") return "Poucos casos no município e na sua região para calcular o indicador";
   if (entry?.origin === "immediate_region") {
     return region ? `Seu município e vizinhos — região de ${region}` : "Seu município e vizinhos";
   }
@@ -285,4 +288,16 @@ export function formatPercent(value: number | null): string {
 
 export function trendPeriodText(period: Period): string {
   return `${period.trend[0]}–${period.trend[1]}`;
+}
+
+
+export type MapMode = "trend" | "status";
+export type StatusClass = "reached" | "near" | "far";
+export const STATUS_STATES: (StatusClass | "insufficient")[] = ["reached", "near", "far", "insufficient"];
+export const STATUS_COLORS = { reached: "#54278f", near: "#9e9ac8", far: "#dadaeb", insufficient: TREND_COLORS.insufficient };
+export const STATUS_LABELS = { reached: "Alcançou", near: "Perto", far: "Longe", insufficient: "Dado insuficiente" };
+export const STATUS_LEGEND = "A cor mostra a distância até a referência. Não é um ranking entre municípios.";
+
+export function statusText(entry: MunicipalityIndicator | undefined, layer: IndicatorLayer): string {
+  return layer.has_status ? STATUS_LABELS[entry?.status ?? "insufficient"] : "Não se aplica";
 }

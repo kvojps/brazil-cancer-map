@@ -14,6 +14,9 @@ import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import {
   CANCER_TYPES,
+  STATUS_COLORS,
+  statusText,
+  type MapMode,
   HATCH,
   INDICATORS,
   INSUFFICIENT_DOTS,
@@ -67,6 +70,12 @@ const TREND_FILL: ExpressionSpecification = [
   "no_clear_direction",
   TREND_COLORS.no_clear_direction,
   TREND_COLORS.insufficient,
+];
+
+const STATUS_FILL: ExpressionSpecification = [
+  "match", ["coalesce", ["feature-state", "status"], "insufficient"],
+  "reached", STATUS_COLORS.reached, "near", STATUS_COLORS.near,
+  "far", STATUS_COLORS.far, STATUS_COLORS.insufficient,
 ];
 
 // MapLibre looks for its worker next to its own module, which the bundler
@@ -158,14 +167,15 @@ export async function mountMunicipalityMap(
  * dots and the hatching to the layer's municipalities, so switching the cancer
  * type never rebuilds the map.
  */
-export function mountTrendPaint(
+export function mountIndicatorPaint(
   map: MapLibreMap,
   listing: MunicipalityListing,
-): (layer: IndicatorLayer) => void {
+): (layer: IndicatorLayer, mode?: MapMode) => void {
   addInsufficientDots(map);
   addQualityHatch(map);
 
   let current: IndicatorLayer | undefined;
+  let currentMode: MapMode = "trend";
   const places = new Map(listing.municipalities.map((m) => [m.code, m]));
   const popup = new Popup({ closeButton: false, closeOnClick: false, maxWidth: "20rem" });
   map.on("mousemove", FILL_LAYER, (event) => {
@@ -173,19 +183,21 @@ export function mountTrendPaint(
     if (code === undefined || !current) return;
     popup
       .setLngLat(event.lngLat)
-      .setDOMContent(tooltip(current, String(code), places, listing))
+      .setDOMContent(tooltip(current, String(code), places, listing, currentMode))
       .addTo(map);
   });
   map.on("mouseleave", FILL_LAYER, () => popup.remove());
 
-  return (layer) => {
+  return (layer, mode = "trend") => {
+    currentMode = mode;
+    map.setPaintProperty(FILL_LAYER, "fill-color", mode === "status" ? STATUS_FILL : TREND_FILL);
     const insufficient: string[] = [];
     const hatched: string[] = [];
     for (const [code, entry] of Object.entries(layer.municipalities)) {
-      const state = trendState(entry);
-      map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: state });
+      const state = mode === "status" ? entry.status ?? "insufficient" : trendState(entry);
+      map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: trendState(entry), status: entry.status ?? "insufficient" });
       if (state === "insufficient") insufficient.push(code);
-      if (isHatched(entry)) hatched.push(code);
+      if (entry.quality_band === "C" && state !== "insufficient") hatched.push(code);
     }
     map.setFilter(DOTS_LAYER, codeFilter(insufficient));
     map.setFilter(HATCH_LAYER, codeFilter(hatched));
@@ -204,6 +216,7 @@ function tooltip(
   code: string,
   places: Map<string, MunicipalityListing["municipalities"][number]>,
   listing: MunicipalityListing,
+  mode: MapMode,
 ): HTMLElement {
   const entry = layer.municipalities[code];
   const place = places.get(code);
@@ -214,6 +227,11 @@ function tooltip(
     ["span", `${indicator} · ${CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type}`],
     ["span", `Tendência ${trendPeriodText(layer.period)}: ${TREND_LABELS[state]}`],
   ];
+  if (mode === "status") {
+    lines.push(["strong", `Situação em ${layer.period.latest}: ${statusText(entry, layer)}`]);
+    if (layer.reference) lines.push(["span", `Referência: ${formatPercent(layer.reference.value)} — ${layer.reference.label}`]);
+  }
+  if (entry?.status_note) lines.push(["em", entry.status_note]);
   const measuredCases = measuredCasesText(layer.period);
   if (measuredCases) lines.push(["span", measuredCases]);
   if (entry?.value != null) {
