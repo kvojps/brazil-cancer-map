@@ -8,6 +8,7 @@ import urllib.request
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import astuple, dataclass
 from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, NamedTuple
 
@@ -174,7 +175,7 @@ def within_60_days_layer(
         "latest": latest,
         "trend": list(window),
         "trend_cases": TREND_CASES,
-        "quality": list(quality_window),
+        "quality_years": list(quality_window),
     }
     return {"period": period, "quality": quality, "municipalities": layer}
 
@@ -183,16 +184,24 @@ QUALITY_YEARS = 5
 """The quality band looks at the last 5 consolidated years (spec, section 6.3)."""
 
 
-def quality_band(without_treatment_info: int, cases: int) -> str | None:
+class QualityBand(StrEnum):
+    """Quality of the treatment records of a UF × cancer type (spec, section 6.3)."""
+
+    A = "A"
+    B = "B"
+    C = "C"
+
+
+def quality_band(without_treatment_info: int, cases: int) -> QualityBand | None:
     """A, B or C from the share of cases without treatment information (spec, section 6.3):
     A up to 15%, B above 15% and below 35%, C from 35%. Compared exactly, not rounded."""
     if not cases:
         return None
     if 100 * without_treatment_info <= 15 * cases:
-        return "A"
+        return QualityBand.A
     if 100 * without_treatment_info < 35 * cases:
-        return "B"
-    return "C"
+        return QualityBand.B
+    return QualityBand.C
 
 
 def uf_quality(
@@ -586,7 +595,7 @@ def _period_text(period: Mapping[str, Any]) -> str:
     first, last = period["first_year"], period["last_year"]
     provisional = ", ".join(str(y) for y in period["provisional"])
     trend_first, trend_last = period["trend"]
-    quality_first, quality_last = period["quality"]
+    quality_first, quality_last = period["quality_years"]
     return (
         f"Anos de diagnóstico {first}–{last} ({provisional} provisórios). "
         f"Tendência {trend_first}–{trend_last} medida nos casos tratados com quimioterapia ou radioterapia; "
