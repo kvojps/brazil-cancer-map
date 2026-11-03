@@ -57,7 +57,7 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 ## Not yet specified
 
-Nada. A spec está consolidada em [spec-mvp.md](spec-mvp.md) e não há tickets abertos.
+- [O que causa a quebra de 2018–2019 no Painel-Oncologia, e como a Tendência do 60 dias deve tratá-la?](issues/27-quebra-de-serie-do-painel.md): achado na implementação do Mapa inicial. Os casos quase dobram e a % sem informação de tratamento salta de ~4% para ~30% entre 2017 e 2019, dentro da janela da Tendência. O resultado esperado é uma decisão e um ticket de implementação.
 
 ## Out of scope
 
