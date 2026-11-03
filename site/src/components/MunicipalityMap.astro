@@ -17,6 +17,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
 
 <script>
   import { mountMunicipalityMap, mountIndicatorPaint } from "../map/municipality-map";
+  import { mountMunicipalityNavigation } from "../map/navigation-view";
   import { mountIndicatorTable } from "../map/indicator-table";
   import {
     CANCER_TYPES,
@@ -78,6 +79,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
         const showOnMap = mountIndicatorPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
         const notice = document.querySelector<HTMLElement>("#map-selection-notice");
+        let updateProfileType = () => {};
         let current = initial;
         let request = 0;
         const syncControls = (state: MapState) => {
@@ -98,11 +100,12 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           document.querySelector<HTMLElement>(".trend-legend")!.hidden = state.mode !== "trend";
           document.querySelector<HTMLElement>(".status-legend")!.hidden = state.mode !== "status";
           document.querySelector(".legend")?.setAttribute("aria-label", state.mode === "trend" ? "Legenda da Tendência" : "Legenda da Situação");
-          showInTable(shown);
           showNotes(shown);
           const url = new URL(location.href);
           url.search = writeMapState(state, url.searchParams).toString();
           history.replaceState(null, "", url);
+          showInTable(shown);
+          updateProfileType();
         };
         const selectState = async (next: MapState, message = "") => {
           const pending = ++request;
@@ -126,6 +129,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           }
         };
         show(layer, initial);
+        updateProfileType = mountMunicipalityNavigation(map, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
         status.hidden = true;
         if (modeSelector) {
           modeSelector.disabled = false;

@@ -1,4 +1,5 @@
 import {
+  LngLatBounds,
   AttributionControl,
   MapLibreMap,
   NavigationControl,
@@ -48,6 +49,8 @@ export interface MunicipalityProperties {
 type MeshTopology = Topology<{
   municipalities: GeometryCollection<MunicipalityProperties>;
 }>;
+
+const meshes = new WeakMap<MapLibreMap, GeoJSON.FeatureCollection>();
 
 export const SOURCE_ID = "municipalities";
 const FILL_LAYER = "municipality-fill";
@@ -126,9 +129,11 @@ export async function mountMunicipalityMap(
     map.once("load"),
   ]);
 
+  const mesh = feature(topology, topology.objects.municipalities);
+  meshes.set(map, mesh);
   map.addSource(SOURCE_ID, {
     type: "geojson",
-    data: feature(topology, topology.objects.municipalities),
+    data: mesh,
     promoteId: "CD_MUN",
   });
   map.addLayer({
@@ -157,6 +162,8 @@ export async function mountMunicipalityMap(
     },
   });
 
+  map.addLayer({ id: "municipality-selected", type: "line", source: SOURCE_ID,
+    filter: codeFilter([]), paint: { "line-color": "#142f55", "line-width": 3 } });
   highlightOnHover(map);
   return map;
 }
@@ -339,5 +346,36 @@ function highlightOnHover(map: MapLibreMap): void {
   map.on("mouseleave", FILL_LAYER, () => {
     setHover(hovered, false);
     hovered = undefined;
+  });
+}
+
+
+/** Fit the complete state, using the same mesh that paints the map. */
+export function focusMunicipality(map: MapLibreMap, code: string): void {
+  const bounds = new LngLatBounds();
+  for (const item of meshes.get(map)?.features ?? []) {
+    if (!String(item.properties?.CD_MUN).startsWith(code.slice(0, 2))) continue;
+    const visit = (coordinates: unknown): void => {
+      if (!Array.isArray(coordinates)) return;
+      if (typeof coordinates[0] === 'number' && typeof coordinates[1] === 'number') {
+        bounds.extend([coordinates[0], coordinates[1]]);
+      } else coordinates.forEach(visit);
+    };
+    if ('coordinates' in item.geometry) visit(item.geometry.coordinates);
+  }
+  map.resize();
+  if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 24, duration: 0 });
+  map.setFilter('municipality-selected', codeFilter([code]));
+}
+
+export function clearMunicipality(map: MapLibreMap): void {
+  map.setFilter('municipality-selected', codeFilter([]));
+  map.resize();
+}
+
+export function onMunicipalityClick(map: MapLibreMap, select: (code: string) => void): void {
+  map.on('click', FILL_LAYER, event => {
+    const code = event.features?.[0]?.id;
+    if (code !== undefined) select(String(code));
   });
 }

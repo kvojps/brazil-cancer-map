@@ -1,9 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import TreatmentCard from '../../components/TreatmentCard.astro';
+import MapExperience from '../../components/MapExperience.astro';
+import MunicipalityProfile from '../../components/MunicipalityProfile.astro';
 import listing from '../../../public/dados/municipalities.json';
-import manifest from '../../../public/dados/manifest.json';
-import { ALL_CANCERS_NOTE, CANCER_TYPES } from '../../map/indicator-layer';
 import { municipalityPath, type UfProfile } from '../../profile/profile';
 
 export function getStaticPaths() {
@@ -19,59 +18,7 @@ interface Props {
   profile: UfProfile;
 }
 const { municipality, profile } = Astro.props;
-const regions: Record<string, string> = listing.immediate_regions;
 ---
 <Base title={`${municipality.name} (${municipality.uf}) — Meu município`}>
-  <div class="profile">
-    <nav><a href="/">Voltar ao mapa do Brasil</a></nav>
-    <h1>{municipality.name} <small>({municipality.uf})</small></h1>
-    <p>Meu município — dados sobre o cuidado com o câncer, para entender e agir.</p>
-    <div class="type-controls">
-      <label for="cancer-type">Tipo de câncer</label>
-      <select id="cancer-type">{Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}</select>
-      <p>{ALL_CANCERS_NOTE}</p>
-      <noscript><p>Todos os tipos estão disponíveis abaixo. Use os títulos para encontrar o tipo desejado.</p></noscript>
-    </div>
-    <section><h2>Acesso ao tratamento</h2>
-      {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
-        <h3>{label}</h3>
-        <TreatmentCard treatment={profile.indicators.within_60_days[cancerType]!} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={manifest.sources.painel.extracted_at} />
-      </section>)}
-      <aside><h3>Onde se tratar</h3><p>Os serviços habilitados serão incluídos aqui. Pergunte à equipe que acompanha você sobre o encaminhamento e o serviço de referência. A regulação define o hospital de atendimento.</p></aside>
-    </section>
-    <section><h2>Detecção precoce</h2><p>Espaço reservado para os indicadores de detecção precoce e suas orientações.</p></section>
-    <section><h2>Prevenção</h2><p>Espaço reservado para os indicadores de prevenção e suas orientações.</p></section>
-    <section><h2>Panorama</h2><p>Espaço reservado para a Tendência de mortalidade e os casos novos estimados.</p></section>
-    <p><a href={`/dados/profiles/${municipality.uf}.json`}>Baixar os dados da ficha da UF</a> · <a href="/metodologia/">Como calculamos</a></p>
-  </div>
+  <MapExperience><MunicipalityProfile municipality={municipality} profile={profile} /></MapExperience>
 </Base>
-<script>
-  import { CANCER_TYPES } from '../../map/indicator-layer';
-  const select = document.querySelector<HTMLSelectElement>('#cancer-type')!;
-  function showType() {
-    const url = new URL(window.location.href);
-    const requested = url.searchParams.get('tipo') ?? 'all';
-    const cancerType = Object.hasOwn(CANCER_TYPES, requested) ? requested : 'all';
-    select.value = cancerType;
-    for (const section of document.querySelectorAll<HTMLElement>('[data-cancer-type]')) {
-      section.hidden = section.dataset.cancerType !== cancerType;
-    }
-    if (cancerType === 'all') url.searchParams.delete('tipo');
-    else url.searchParams.set('tipo', cancerType);
-    history.replaceState(null, '', url);
-  }
-  select.addEventListener('change', () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('tipo', select.value);
-    history.pushState(null, '', url);
-    showType();
-  });
-  window.addEventListener('popstate', showType);
-  showType();
-</script>
-<style>
-  .profile { max-width: 850px; margin: 2rem auto; padding: 0 1rem; color: #243444; font-family: system-ui, sans-serif; line-height: 1.55; }
-  h1 { line-height: 1.2; } small { font-size: .65em; }
-  section, aside { margin: 2rem 0; } .type-controls { padding: 1rem; background: #eef3f8; }
-  select { font: inherit; padding: .4rem; max-width: 100%; }
-</style>

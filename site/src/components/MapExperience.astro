@@ -1,0 +1,35 @@
+---
+import '../profile/profile.css';
+import IndicatorTable from './IndicatorTable.astro';
+import MapControls from './MapControls.astro';
+import MunicipalityMap from './MunicipalityMap.astro';
+import TrendLegend from './TrendLegend.astro';
+import manifest from '../../public/dados/manifest.json';
+const indicator = 'within_60_days';
+const period = manifest.indicators[indicator].all;
+---
+<div class="home">
+  <header>
+    <h1>Observatório do Câncer no Brasil</h1>
+    <p>Dados sobre o câncer no seu município, para entender e agir</p>
+    <MapControls />
+  </header>
+  <div class="map-and-profile">
+    <MunicipalityMap />
+    <aside id="municipality-profile" aria-label="Meu município" hidden={!Astro.slots.has('default')}><slot /></aside>
+  </div>
+  <TrendLegend indicator={indicator} period={period} />
+  <IndicatorTable />
+</div>
+<style>
+  #municipality-profile :global(.profile) { margin: 1rem auto; padding: 0 1rem; color: #243444; font-family: system-ui, sans-serif; line-height: 1.55; }
+  #municipality-profile :global(section), #municipality-profile :global(aside) { margin: 2rem 0; }
+  .home { display: flex; flex-direction: column; min-height: 85vh; }
+  .map-and-profile { display: flex; align-items: stretch; min-height: 60vh; }
+  #municipality-profile { width: min(48%, 850px); max-height: 85vh; overflow: auto; }
+  #municipality-profile[hidden] { display: none; }
+  @media (max-width: 700px) {
+    .map-and-profile { flex-direction: column; }
+    #municipality-profile { width: 100%; max-height: none; }
+  }
+</style>

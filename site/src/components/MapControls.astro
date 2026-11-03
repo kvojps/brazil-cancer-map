@@ -1,16 +1,17 @@
 ---
 import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes, mapOption } from "../map/indicator-layer";
 
-// Search is wired up in a later ticket. The cancer type selector
-// starts disabled and the map island enables it once the map can switch layers.
+// Controls become available once their data is ready.
 const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: true });
 ---
 
 <form class="map-controls" aria-label="O que o mapa mostra" onsubmit="return false">
-  <label>
-    Buscar município
-    <input type="search" placeholder="Digite o nome do município" disabled />
-  </label>
+  <div class="municipality-search">
+    <label for="municipality-search">Buscar município</label>
+    <input id="municipality-search" type="search" placeholder="Nome do município e UF" aria-controls="municipality-results" disabled />
+    <p id="search-status" role="status"></p>
+    <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
+  </div>
   <div class="cancer-type">
     <label>
       Tipo de câncer
