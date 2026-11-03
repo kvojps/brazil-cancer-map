@@ -61,7 +61,7 @@ Fontes: [Quais indicadores entram no MVP?](issues/04-indicadores-do-mvp.md), [Qu
 
 | Eixo | Indicador | Fonte | Granularidade | Período | Tipos | Referência | Tendência | No mapa? |
 |---|---|---|---|---|---|---|---|---|
-| Acesso ao tratamento | % de casos com 1º tratamento em até 60 dias, sempre com a % sem informação de tratamento ao lado | Painel-Oncologia | Município de residência | 2014 até o último ano consolidado; os 2 últimos anos ficam provisórios | Todos + 5 | 100% (Lei 12.732/2012); **próstata sem Situação** | Sim (quasi-Poisson com offset `log(casos)`, [ticket 25](issues/25-escala-da-faixa-estavel.md)) | Sim |
+| Acesso ao tratamento | % de casos com 1º tratamento em até 60 dias, sempre com a % sem informação de tratamento ao lado | Painel-Oncologia | Município de residência | 2014 até o último ano consolidado; os 2 últimos anos ficam provisórios | Todos + 5 | 100% (Lei 12.732/2012); **próstata sem Situação** | Sim, **só sobre os casos tratados com quimio ou radio** (quasi-Poisson com offset `log(casos)`, [ticket 25](issues/25-escala-da-faixa-estavel.md), [ticket 27](issues/27-quebra-de-serie-do-painel.md)) | Sim |
 | Acesso ao tratamento | Onde se tratar: CACON/UNACON e radioterapia habilitados mais próximos | CNES | Estabelecimento | Situação atual | Todos | Nenhuma (contexto) | Não | Não (só na ficha, junto do 60 dias) |
 | Detecção precoce | Razão de mamografias de rastreamento, mulheres de 50–69 | SISCAN | Município | 2016–2025 | Mama, Todos | 1 (ficha do INCA) | Sim (quasi-Poisson + offset) | Sim |
 | Detecção precoce | Razão de citopatológicos, mulheres de 25–64. **Série encerrada em 2025** | SISCAN | Município | 2016–2025 | Colo, Todos | 1 (ficha do INCA) | Sim, sobre 2016–2025 (quasi-Poisson + offset) | Sim |
@@ -110,12 +110,15 @@ Fontes: [Que regras de método e ressalvas a mortalidade e o Acesso ao tratament
 - A: até 15% sem informação de tratamento; B: acima de 15% e abaixo de 35%; C: 35% ou mais.
 - Na faixa C, o indicador de tratamento correspondente ganha hachura e o aviso: **"Muitos casos estão sem informação de tratamento; o resultado pode não representar toda a situação."** A hachura não se aplica aos outros eixos.
 - A % sem informação de tratamento aparece sempre ao lado da % em até 60 dias, porque falta de registro não significa falta de tratamento.
+- A faixa, a % sem informação, o valor e a Situação do 60 dias usam **todos os casos diagnosticados**, como o TabNet. Só a Tendência usa o recorte de quimio e radio (seção 7). Os 5 anos da faixa (hoje 2020–2024) ficam todos depois da quebra de 2018 (seção 6.4), então ela não é afetada ([ticket 27](issues/27-quebra-de-serie-do-painel.md)).
 - Próstata leva uma ressalva fixa (a vigilância ativa é conduta correta) e não tem Situação.
 
 ### 6.4 Anos provisórios e séries especiais
 
 - Painel: os 2 últimos anos de diagnóstico são provisórios. SIM: os anos preliminares ficam fora. Os anos provisórios aparecem tracejados no gráfico e não entram na Tendência ([Como classificar a Tendência e tratar municípios pequenos no mapa?](issues/12-tendencia-e-municipios-pequenos.md)).
 - HPV: a mudança para dose única em 2024 fica marcada na série. A contagem oficial é "ao menos uma dose" em todos os anos.
+- Painel: **quebra de série em maio de 2018** ([ticket 27](issues/27-quebra-de-serie-do-painel.md)). Com a Portaria SAS nº 643/2018, o exame anatomopatológico (BPA-I) passou a criar casos, os sem tratamento registrado e os operados. A % sem informação vai de ~4% para ~30% (com um segundo degrau em maio de 2019), e a série de todos os casos não é comparável antes e depois. Os casos tratados com quimio ou radio (APAC) não têm degrau, por isso a Tendência usa só eles (seção 7).
+- Painel: **queda das cirurgias a partir de abril de 2024**, de ~6 mil para ~2 mil casos por mês, sem explicação oficial e investigada no [ticket 28](issues/28-queda-das-cirurgias-em-2024.md). Ela rebaixa a % em até 60 dias de todos os casos em 2024. O cartão e a metodologia levam a nota de 2024 (seção 11.2). A Tendência de quimio e radio não é afetada.
 - Citopatológico: a série fica congelada em 2025 e não recebe anos novos ([Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md), [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atualizacao-dos-dados.md)).
 
 ## 7. Tendência
@@ -126,7 +129,7 @@ Fonte: [Como classificar a Tendência e tratar municípios pequenos no mapa?](is
 - **Escala única:** toda Tendência é uma **variação percentual anual**, relativa ao próprio valor do indicador. Nunca se usam pontos percentuais nem razão de chances.
 - **Modelos:**
   - quasi-Poisson com offset de população (mortalidade padronizada e razões do SISCAN);
-  - quasi-Poisson com ligação log e offset `log(casos)` ("Poisson modificado") para o 60 dias;
+  - quasi-Poisson com ligação log e offset `log(casos)` ("Poisson modificado") para o 60 dias, **só sobre os casos cujo primeiro tratamento foi quimioterapia, radioterapia ou ambos** (`TRATAMENTO` 2, 3 ou 4): numerador = esses casos em até 60 dias; denominador = esses casos. Esse recorte atravessa sem degrau as quebras do Painel de 2018, 2019 e 2024 (seção 6.4, [ticket 27](issues/27-quebra-de-serie-do-painel.md)). Vale para todos os tipos;
   - regressão ponderada de `log(prevalência)` contra o ano, com peso 1/EP² e EP do log = EP/prevalência tirado do IC do Vigitel, para o tabagismo na capital.
 - **Classes:**
   - **melhorando** ou **piorando** quando o IC exclui zero (o sentido de "melhorando" depende do indicador);
@@ -140,7 +143,7 @@ Fonte: [Como classificar a Tendência e tratar municípios pequenos no mapa?](is
 
 Fonte: [Como classificar a Tendência e tratar municípios pequenos no mapa?](issues/12-tendencia-e-municipios-pequenos.md).
 
-- **Mínimo:** média de pelo menos 20 por ano na janela. Nas taxas, conta o numerador (óbitos, exames). Nas proporções e coberturas, conta o denominador (casos diagnosticados, população de 9–14 anos).
+- **Mínimo:** média de pelo menos 20 por ano na janela. Nas taxas, conta o numerador (óbitos, exames). Nas proporções e coberturas, conta o denominador da Tendência (no 60 dias, os casos tratados com quimio ou radio, [ticket 27](issues/27-quebra-de-serie-do-painel.md); no HPV, a população de 9–14 anos). A origem que esse mínimo escolhe vale para o cartão inteiro, Situação inclusive.
 - **Cascata por indicador × tipo**, igual para a Tendência e para a Situação: o município usa o próprio dado se passar do mínimo; se não passar, usa o da **Região imediata** (IBGE, 510 regiões, código já na malha) se ela passar; senão fica como **dado insuficiente**. Nunca se sobe para a UF.
 - A suavização bayesiana foi descartada.
 - A contagem bruta do município com dado insuficiente não é exibida.
@@ -228,6 +231,7 @@ Fontes: [Como a experiência "meu município" deve parecer?](issues/06-experienc
 - **Cartão de indicador:** Situação (valor e barra contra a Referência), Tendência (série com os anos provisórios tracejados) e Ação. Também há "O que é este número?" (explicação e fonte), "Como calculamos" (link para a metodologia, seção 12), o **período dos dados em destaque** e a data de atualização nos detalhes.
 - **Dado da região:** "Seu município e vizinhos (região de X)", com a série e a Situação da região e uma nota de uma linha com o motivo.
 - **Dado insuficiente:** "Poucos casos aqui para dizer a direção. Isso é comum em municípios pequenos e não é um problema do seu município." O cartão mostra a Tendência da UF como contexto ("no seu estado") e mantém a Ação.
+- **Cartão do 60 dias** ([ticket 27](issues/27-quebra-de-serie-do-painel.md)): o gráfico mostra a série da Tendência, com o título "Casos tratados com quimioterapia ou radioterapia: % que começou em até 60 dias", para que a linha e a cor nunca se contradigam. A barra da Situação mostra o valor de todos os casos, com a % sem informação ao lado. Notas: "A direção é medida nos casos tratados com quimioterapia ou radioterapia, cujo registro não mudou desde 2014. Em 2018, o painel passou a incluir diagnósticos por biópsia, o que mudou a contagem dos demais casos." e, enquanto o último ano for 2024, "Em 2024, caiu o registro de cirurgias no painel do Ministério da Saúde; o valor deste ano pode estar abaixo do real." Esses textos ainda precisam de aprovação.
 - **Ressalvas no cartão:** a faixa C abre com aviso e mostra a % sem informação de tratamento; próstata tem a ressalva fixa; HPV marca a dose única e a nota do Censo 2022; mamografia explica 50–69 vs 50–74; citopatológico diz "Série encerrada em 2025 pela mudança no rastreamento", com a ressalva do DNA-HPV; colo do útero leva a nota do ajuste do C55.
 - **Nota de "Todos os cânceres"** junto ao seletor: "Cada eixo usa os registros adequados ao seu indicador. No tratamento, excluímos alguns tipos com informação incompleta. Por isso, 'Todos os cânceres' não reúne exatamente os mesmos tipos em todos os eixos."
 - A página de cada município funciona sem JavaScript para a leitura básica.
@@ -242,7 +246,7 @@ Fonte: [Que regras de método e ressalvas a mortalidade e o Acesso ao tratamento
 2. universo, unidade, residência ou estabelecimento, recortes de sexo e idade, códigos e exclusões;
 3. numerador, denominador, fórmulas, população de referência e pesos (Segi com 80+);
 4. limpeza, cruzamentos, registros ausentes, ajustes, redistribuições (C55) e regras de fallback (proporção nacional, "ajuste não calculável");
-5. janela temporal, anos provisórios, consolidação, quebras de série (HPV 2024) e congelamentos (citopatológico);
+5. janela temporal, anos provisórios, consolidação, quebras de série (HPV 2024; Painel em maio de 2018 e nas cirurgias de 2024, com a escolha do recorte de quimio e radio para a Tendência e o efeito medido no [ticket 27](issues/27-quebra-de-serie-do-painel.md)) e congelamentos (citopatológico);
 6. método da Tendência (variação percentual anual, nunca pontos percentuais, com o exemplo do tabagismo: de 9% para 8% é uma queda de 11%), modelo de cada indicador, incerteza, critérios das classes (±1% como convenção do projeto, com o aviso de que amostras pequenas raramente chegam a "estável"), Referência e cortes de Situação (inclusive a regra invertida do tabagismo e os valores acima do esperado);
 7. mínimo de casos, substituição pela Região imediata e dado insuficiente;
 8. qualidade por UF × tipo, limitações (C26, R00–R99, C76–C80, cobertura só do SUS), diferenças em relação aos painéis oficiais (POPSVS revisto, C55, Censo 2022 no HPV) e validações feitas;
@@ -306,6 +310,11 @@ Fontes: [Quando e onde o pipeline roda para atualizar os dados?](issues/21-atual
 
 - ~~[Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](issues/25-escala-da-faixa-estavel.md)~~: resolvido, com variação relativa em todos os indicadores (seção 7).
 - ~~[Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md)~~: resolvido, com até 60 dias × Todos × Tendência e o estado guardado na URL (seção 11.1).
+
+### Lacunas encontradas na execução
+
+- ~~[O que causa a quebra de 2018–2019 no Painel-Oncologia, e como a Tendência do 60 dias deve tratá-la?](issues/27-quebra-de-serie-do-painel.md)~~: resolvido. A Tendência do 60 dias passa a usar só os casos tratados com quimio e radio (seções 6.4, 7 e 8).
+- [Por que os casos tratados por cirurgia caem no Painel a partir de abril de 2024?](issues/28-queda-das-cirurgias-em-2024.md): aberto.
 
 ### Primeiro passo da execução
 

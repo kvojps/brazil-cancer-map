@@ -10,6 +10,7 @@
 - [ ] O Astro gera uma página estática por município (~5.570) em `/municipio/<código>-<nome>`, legível sem JS
 - [ ] Os quatro eixos aparecem empilhados, com o Acesso ao tratamento primeiro; os eixos ainda sem indicador ficam com espaço reservado
 - [ ] O cartão do 60 dias mostra: a Situação (valor e barra contra a Referência); a Tendência (classe e série com os anos provisórios tracejados, sem o número da variação); a % sem informação de tratamento ao lado; o período dos dados em destaque; a data de atualização nos detalhes; "O que é este número?"; e "Como calculamos"
+- [ ] No 60 dias, o gráfico mostra a série da Tendência (casos tratados com quimio ou radio), com o título e a nota da spec, seção 11.2; a barra da Situação e a % sem informação usam todos os casos; enquanto o último ano for 2024, o cartão leva a nota da queda das cirurgias ([ticket de decisão 27](../../mapa-cancer-br/issues/27-quebra-de-serie-do-painel.md))
 - [ ] Com dado da região, o cartão diz "Seu município e vizinhos (região de X)", com a série e a Situação da região e uma nota de uma linha com o motivo
 - [ ] Com dado insuficiente, o cartão mostra o texto aprovado, a Tendência da UF como contexto ("no seu estado") e mantém a Ação
 - [ ] Faixa C: o cartão abre com o aviso; próstata: ressalva fixa

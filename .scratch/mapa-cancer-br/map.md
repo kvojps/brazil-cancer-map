@@ -55,9 +55,11 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md): abre em até 60 dias × Todos os cânceres × Tendência, com a hachura da faixa C visível. A URL guarda o estado (município no caminho, o resto na query string) e nada é lembrado entre visitas. Combinações inválidas voltam ao padrão, com um aviso na troca de tipo.
 
+- [O que causa a quebra de 2018–2019 no Painel-Oncologia, e como a Tendência do 60 dias deve tratá-la?](issues/27-quebra-de-serie-do-painel.md): a Portaria SAS nº 643/2018 levou o exame anatomopatológico ao Painel em maio de 2018, criando casos sem tratamento e casos operados. Entre metade e dois terços da piora atual vem do registro. A Tendência do 60 dias passa a usar só os casos tratados com quimio e radio, que não têm degrau. Valor, Situação e faixa continuam sobre todos os casos, e o gráfico do cartão mostra a série da Tendência.
+
 ## Not yet specified
 
-- [O que causa a quebra de 2018–2019 no Painel-Oncologia, e como a Tendência do 60 dias deve tratá-la?](issues/27-quebra-de-serie-do-painel.md): achado na implementação do Mapa inicial. Os casos quase dobram e a % sem informação de tratamento salta de ~4% para ~30% entre 2017 e 2019, dentro da janela da Tendência. O resultado esperado é uma decisão e um ticket de implementação.
+- [Por que os casos tratados por cirurgia caem no Painel a partir de abril de 2024?](issues/28-queda-das-cirurgias-em-2024.md): achado na pesquisa 27. As cirurgias caem de ~6 mil para ~2 mil por mês e ficam assim em 2025, rebaixando a Situação do 60 dias em 2024. Hoje o cartão leva uma nota; falta a causa e a regra definitiva.
 
 ## Out of scope
 
