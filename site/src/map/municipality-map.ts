@@ -17,7 +17,6 @@ import {
   HATCH,
   INDICATORS,
   INSUFFICIENT_DOTS,
-  NO_STATUS_NOTE,
   TREND_COLORS,
   TREND_LABELS,
   QUALITY_WARNING,
@@ -159,7 +158,7 @@ export async function mountMunicipalityMap(
  * dots and the hatching to the layer's municipalities, so switching the cancer
  * type never rebuilds the map.
  */
-export function paintTrend(
+export function mountTrendPaint(
   map: MapLibreMap,
   listing: MunicipalityListing,
 ): (layer: IndicatorLayer) => void {
@@ -235,7 +234,6 @@ function tooltip(
     ]);
   }
   if (isHatched(entry)) lines.push(["em", QUALITY_WARNING]);
-  if (!layer.has_status) lines.push(["em", NO_STATUS_NOTE]);
 
   const box = document.createElement("div");
   box.className = "map-tooltip";

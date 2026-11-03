@@ -22,7 +22,7 @@ const { indicator } = Astro.props;
 </div>
 
 <script>
-  import { mountMunicipalityMap, paintTrend } from "../map/municipality-map";
+  import { mountMunicipalityMap, mountTrendPaint } from "../map/municipality-map";
   import { mountIndicatorTable } from "../map/indicator-table";
   import {
     DEFAULT_CANCER_TYPE,
@@ -75,7 +75,7 @@ const { indicator } = Astro.props;
       getJson<MunicipalityListing>(listingUrl!),
     ])
       .then(([map, layer, listing]) => {
-        const showOnMap = paintTrend(map, listing);
+        const showOnMap = mountTrendPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
         const show = (shown: IndicatorLayer) => {
           showOnMap(shown);
