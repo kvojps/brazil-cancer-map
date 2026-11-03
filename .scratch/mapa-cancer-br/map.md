@@ -47,6 +47,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Qual o nome, o domínio e a licença do projeto?](issues/22-nome-dominio-licenca.md): Observatório do Câncer no Brasil, com foco nos dados, custo zero, código aberto com copyleft e acessibilidade obrigatória; a licença concreta será escolhida em ticket próprio.
 
+- [Qual licença expressa a abertura aprovada para o código?](issues/24-licenca-do-codigo.md): AGPL-3.0-or-later para o código (cobre também forks modificados que rodam como serviço na rede), CC BY-SA 4.0 para os textos do projeto e contribuições sem CLA. Os dados continuam seguindo as condições de cada fonte.
+
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
