@@ -4,6 +4,7 @@ from pipeline.source import Source
 from pipeline.sources.mesh import MeshSource
 from pipeline.sources.painel import PainelSource
 from pipeline.sources.cnes import CnesSource
+from pipeline.sources.popsvs import PopsvsSource
 
-SOURCES: list[Source] = [MeshSource(), PainelSource(), CnesSource()]
+SOURCES: list[Source] = [MeshSource(), PopsvsSource(), PainelSource(), CnesSource()]
 """The mesh comes first: health sources cover the municipalities it publishes."""
