@@ -39,6 +39,8 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 - [Como as fontes oficiais tratam C55, C26 e a padronização por idade na mortalidade?](issues/15-metodos-mortalidade.md): o INCA não redistribui nada. Usa o C53 do SIM e padroniza pela população mundial de Segi com 80+, e o pipeline reproduz o número com ~1% de diferença. O C55 caiu ao longo da série e infla a tendência do colo em ~1 ponto ao ano, então redistribuí-lo ainda pede decisão. O C26 quase não pesa.
 - [Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md): 60 dias = 100%, mamografia e citopatológico = razão 1, HPV = 90% (Censo 2022 fixo), tabagismo = 5,9%. A mortalidade não tem Situação, só Tendência. O "como está hoje" tem 3 faixas fixas (alcançou, perto ≥ 80% e longe), sem quantis e numa escala de um só tom. A mamografia fica em 50–69, o citopatológico congela em 2025 com a ressalva do DNA-HPV, e a próstata fica sem Situação no 60 dias.
 
+- [Que regras de método e ressalvas a mortalidade e o Acesso ao tratamento mostram?](issues/19-metodo-e-ressalvas.md): Segi/Doll com 80+, redistribuição do C55, qualidade por UF × tipo e notas visíveis; o MVP terá metodologia pública reproduzível, da fonte ao dado exibido.
+
 ## Not yet specified
 
 Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
