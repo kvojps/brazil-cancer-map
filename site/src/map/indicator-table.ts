@@ -64,7 +64,7 @@ export function mountIndicatorTable(
           if (i === 0) cell.scope = "row";
           if (i === 0) {
             const link = document.createElement("a");
-            link.href = municipalityPath(m) + (layer.cancer_type === "all" ? "" : `?tipo=${layer.cancer_type}`);
+            link.href = municipalityPath(m) + window.location.search;
             link.textContent = text;
             cell.append(link);
           } else cell.textContent = text;
