@@ -1,0 +1,15 @@
+# Dado bruto e intermediário do pipeline: nunca entram no git (spec, seção 14).
+/data/raw/
+/data/clean/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+
+# Site
+site/node_modules/
+site/dist/
+site/.astro/

@@ -1,0 +1,29 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const CODIGO_FONTE = "https://github.com/kvojps/brazil-cancer-map";
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>
+        <a href={CODIGO_FONTE}>Código-fonte</a> sob a licença AGPL-3.0-or-later.
+        Textos sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil.
+        Os dados seguem as condições de cada fonte.
+      </p>
+    </footer>
+  </body>
+</html>
