@@ -2,7 +2,6 @@
 
 import json
 import re
-from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -43,7 +42,6 @@ def mammography_result(series: Series, provisional: set[int]) -> dict[str, Any]:
     value = numerator / denominator if denominator else None
     return {
         'value': value, 'trend': trend.trend_class.value if trend else None,
-        'trend_estimate': asdict(trend) if trend else None,
         'status': classify_status(value, reference=1), 'status_note': status_note(value, maximum=ABOVE_EXPECTED),
         'quality_band': None, 'without_treatment_info': None,
     }

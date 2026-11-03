@@ -3,16 +3,20 @@
 import calendar
 import ftplib
 import gzip
+import itertools
 import os
 import shutil
+import threading
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Protocol
+from typing import BinaryIO, Protocol
 from urllib.parse import urlsplit
 
 
@@ -38,6 +42,12 @@ class Transport(Protocol):
 class DownloadError(Exception):
     pass
 
+
+_CHUNK_BYTES = 1 << 20
+"""How much one read or write moves at a time."""
+
+RANGED_FROM = 64 << 20
+"""Below this size, a single stream is fast enough and costs fewer FTP sessions."""
 
 METHOD_NOT_SUPPORTED = {405, 501}
 """HEAD refused (IBGE's localities API answers 405): size and date are unknown."""
@@ -76,7 +86,55 @@ class HttpTransport:
                 if response.headers.get("Content-Encoding") == "gzip"
                 else response
             )
-            shutil.copyfileobj(body, file, length=1 << 20)
+            shutil.copyfileobj(body, file, length=_CHUNK_BYTES)
+
+
+def download_ranges(
+    open_range: Callable[[int], AbstractContextManager[BinaryIO]],
+    size: int,
+    dest: Path,
+    *,
+    workers: int = 4,
+    attempts: int = 5,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    """Download `size` bytes into `dest` over `workers` streams, each from its own offset.
+
+    A lost stream reopens from where it stopped. A range gives up after `attempts`
+    consecutive failures without a new byte, and that stops the other ranges too.
+    """
+    failed = threading.Event()
+
+    def download_range(fd: int, start: int, end: int) -> None:
+        position = start
+        failures = 0
+        while position < end and not failed.is_set():
+            try:
+                with open_range(position) as stream:
+                    while position < end and not failed.is_set():
+                        chunk = stream.read(min(_CHUNK_BYTES, end - position))
+                        if not chunk:
+                            raise DownloadError(f"stream ended at byte {position} of {end}")
+                        os.pwrite(fd, chunk, position)
+                        position += len(chunk)
+                        failures = 0
+            except (OSError, DownloadError) as error:
+                failures += 1
+                if failures >= attempts:
+                    failed.set()
+                    raise DownloadError(f"range stuck at byte {position}: {error}") from error
+                sleep(2.0**failures)
+
+    with dest.open("wb") as file:
+        file.truncate(size)
+        bounds = [size * i // workers for i in range(workers + 1)]
+        with ThreadPoolExecutor(workers) as pool:
+            futures = [
+                pool.submit(download_range, file.fileno(), start, end)
+                for start, end in itertools.pairwise(bounds)
+            ]
+        for future in futures:
+            future.result()
 
 
 def _connect_ftp(url: str, timeout: float) -> tuple[ftplib.FTP, str]:
@@ -105,8 +163,30 @@ class FtpTransport:
 
     def get(self, url: str, dest: Path) -> None:
         ftp, path = _connect_ftp(url, self._timeout)
-        with ftp, dest.open("wb") as file:
-            ftp.retrbinary(f"RETR {path}", file.write, blocksize=1 << 20)
+        with ftp:
+            size = ftp.size(path)
+            if size is None or size < RANGED_FROM:
+                with dest.open("wb") as file:
+                    ftp.retrbinary(f"RETR {path}", file.write, blocksize=_CHUNK_BYTES)
+                return
+        download_ranges(lambda offset: self._open_range(url, offset), size, dest)
+
+    @contextmanager
+    def _open_range(self, url: str, offset: int) -> Iterator[BinaryIO]:
+        try:
+            ftp, path = _connect_ftp(url, self._timeout)
+        except (ftplib.Error, EOFError) as error:
+            raise DownloadError(f"could not connect: {error}") from error
+        try:
+            try:
+                data = ftp.transfercmd(f"RETR {path}", rest=offset)
+            except (ftplib.Error, EOFError) as error:
+                raise DownloadError(f"could not open byte {offset}: {error}") from error
+            with data, data.makefile("rb") as stream:
+                yield stream
+        finally:
+            # Not QUIT: the server would only answer after the unfinished transfer.
+            ftp.close()
 
 
 def with_retries[T](
