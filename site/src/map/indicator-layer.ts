@@ -208,6 +208,12 @@ export const INDICATORS: Record<string, IndicatorText> = {
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
   },
+  mammography: {
+    modes: { all: ['trend', 'status'], breast: ['trend', 'status'] },
+    name: 'Mamografias de rastreamento (50–69 anos)',
+    improving: 'a razão de mamografias de rastreamento aumentou.',
+    worsening: 'a razão de mamografias de rastreamento diminuiu.',
+  },
 };
 
 /** The same option label and availability for static rendering and selection changes. */
@@ -302,6 +308,12 @@ const percent = new Intl.NumberFormat("pt-BR", {
 
 export function formatPercent(value: number | null): string {
   return value === null ? "—" : `${percent.format(value)}%`;
+}
+
+const ratio = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+export function formatIndicatorValue(indicator: string, value: number | null): string {
+  return indicator === 'mammography' ? value === null ? '—' : ratio.format(value) : formatPercent(value);
 }
 
 export function trendPeriodText(period: Period): string {

@@ -1,4 +1,22 @@
 /** Editorial registry: clinical review remains pending until a reviewer is appointed. */
+export const mammographyAction = {
+  title: 'Converse na UBS sobre quando fazer a mamografia.',
+  summary: 'Informe sua idade, seu histórico e qualquer alteração nas mamas.',
+  disclaimer: 'Informação geral. A equipe de saúde orienta o cuidado indicado para você.',
+  details: [
+    'A orientação atual do SUS é o rastreamento de mulheres de 50 a 74 anos, a cada dois anos (NT 626/2025). O indicador acompanha 50–69 anos para preservar a comparação histórica.',
+    'Entre 40 e 49 anos e acima de 74 anos, mulheres sem sintomas podem conversar com a equipe sobre o exame por demanda e seus possíveis benefícios e riscos.',
+    'Se perceber alteração nas mamas, procure a UBS sem esperar a próxima mamografia de rastreamento. A equipe orienta a avaliação conforme seu histórico e sua necessidade.',
+  ],
+  audience: 'Mulheres e pessoas que procuram orientação sobre o cuidado com as mamas no SUS.',
+  criteria: 'Rastreamento bienal entre 50 e 74 anos, conforme NT 626/2025.',
+  exceptions: 'Fora dessa faixa, decisão compartilhada; alterações nas mamas exigem avaliação, independentemente do calendário de rastreamento.',
+  version: '1', checkedAt: '2026-11-03',
+  sources: [{ title: 'Ministério da Saúde — Nota Técnica 626/2025', url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/notas-tecnicas/2025/nota-tecnica-no-626-2025-cgcan-decan-saes-ms.pdf/view' }],
+  verificationNote: 'Faixa etária e periodicidade conferidas na NT 626/2025. Revisão clínica pendente.',
+  reviewedVersion: null, reviewedAt: null, reviewer: null,
+};
+
 export const referralAction = {
   title: 'Saiba como chegar ao atendimento especializado.',
   summary: 'Pergunte à equipe que acompanha você sobre o encaminhamento e o serviço de referência.',

@@ -25,6 +25,7 @@ import {
   TREND_LABELS,
   QUALITY_WARNING,
   formatPercent,
+  formatIndicatorValue,
   immediateRegionName,
   isHatched,
   originText,
@@ -236,7 +237,7 @@ function tooltip(
   ];
   if (mode === "status") {
     lines.push(["strong", `Situação em ${layer.period.latest}: ${statusText(entry, layer)}`]);
-    if (layer.reference) lines.push(["span", `Referência: ${formatPercent(layer.reference.value)} — ${layer.reference.label}`]);
+    if (layer.reference) lines.push(["span", `Referência: ${formatIndicatorValue(layer.indicator, layer.reference.value)} — ${layer.reference.label}`]);
   }
   if (entry?.status_note) lines.push(["em", entry.status_note]);
   const measuredCases = measuredCasesText(layer.period);
@@ -244,7 +245,9 @@ function tooltip(
   if (entry?.value != null) {
     lines.push([
       "span",
-      `Em ${layer.period.latest}: ${formatPercent(entry.value)} em até 60 dias; ` +
+      layer.indicator === 'mammography'
+        ? `Em ${layer.period.latest}: razão ${formatIndicatorValue(layer.indicator, entry.value)} de mamografias de rastreamento (50–69 anos)`
+        : `Em ${layer.period.latest}: ${formatPercent(entry.value)} em até 60 dias; ` +
         `${formatPercent(entry.without_treatment_info)} de todos os casos diagnosticados ` +
         `sem informação de tratamento`,
     ]);
