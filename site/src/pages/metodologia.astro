@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import manifest from '../../public/dados/manifest.json';
 const period = manifest.indicators.within_60_days.all;
+const cnes = (manifest.sources as Record<string, { period?: string; extracted_at: string }>).cnes;
 ---
 <Base title="Como calculamos — Observatório do Câncer no Brasil">
 <div class="methodology">
@@ -54,6 +55,23 @@ const period = manifest.indicators.within_60_days.all;
 </li>
 </ol>
 <p>Reutilização: cite Ministério da Saúde/DATASUS, Painel-Oncologia, com extração e período, e o Observatório do Câncer no Brasil pelos cálculos. Os dados seguem as condições da fonte; consulte a <a href="ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/">documentação oficial</a>. Textos do Observatório: CC BY-SA 4.0; código: AGPL-3.0-or-later.</p>
+</section>
+<section id="onde-se-tratar"><h2>Onde se tratar</h2>
+<h3>Fonte, competência e universo</h3>
+<p>Cadastro Nacional de Estabelecimentos de Saúde (CNES), Ministério da Saúde/DATASUS. A atualização é mensal. Usamos a competência mais recente disponível ao mesmo tempo nos arquivos HB (habilitações) e ST (estabelecimentos) das 27 UFs, sem misturar meses. {cnes ? `Competência publicada: ${cnes.period}; extração: ${cnes.extracted_at}.` : 'Ainda não há extração publicada.'}</p>
+<p>Arquivos HB&lt;UF&gt;&lt;aamm&gt;.dbc e ST&lt;UF&gt;&lt;aamm&gt;.dbc no <a href="ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/">FTP oficial do DATASUS</a>. O nome do estabelecimento vem de CADGERBR.dbf, no <a href="ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Auxiliar/TAB_CNES.zip">TAB_CNES.zip oficial</a>, tabela auxiliar vigente na extração; esse nome pode ter sido atualizado depois da competência.</p>
+<h3>Habilitações e limpeza</h3>
+<p>Incluímos os códigos 1704 (radioterapia isolada), 1706–1711 (UNACON e suas modalidades), 1712–1713 (CACON e suas modalidades) e 1715 (radioterapia de complexo hospitalar). Não incluímos hospitais habilitados apenas em cirurgia, oncologia clínica ou diagnóstico. As modalidades específicas, inclusive hematologia e oncologia pediátrica, aparecem na lista; não significam atendimento para todos os tipos ou idades.</p>
+<p>SGRUPHAB identifica a habilitação. CMPT_INI deve ser menor ou igual à competência e CMPT_FIM maior ou igual a ela (999999 indica vigência aberta). COMPETEN deve coincidir com o mês escolhido. Removemos duplicatas por CNES e código; cruzamos o CNES com ST na mesma competência e com o código IBGE de seis dígitos da malha. Nomes ausentes, municípios desconhecidos e divergências no cruzamento bloqueiam a publicação.</p>
+<h3>Como calculamos os mais próximos</h3>
+<p>Como as coordenadas dos estabelecimentos não são confiáveis, usamos os centroides dos municípios da malha IBGE 2025 simplificada, calculados pelo mapshaper. A distância aproximada é a do arco de grande círculo (fórmula de haversine, raio terrestre médio de 6.371,0088 km), entre o município da ficha e o do estabelecimento. Não usamos endereço do paciente, trajeto rodoviário ou tempo de viagem.</p>
+<p>Para cada município, selecionamos até três CACON/UNACON e até três estabelecimentos com radioterapia (1704, 1707, 1712, 1713, 1715), removendo repetições. A busca é nacional, sem restringir à UF. Ordenamos pela distância e, em empate, pelo código CNES. Estabelecimentos no mesmo município ficam com distância zero; a ordem entre eles não indica qualidade ou preferência. As distâncias publicadas são arredondadas para uma casa decimal.</p>
+<p>É contexto sobre a rede, sem taxa, numerador, denominador, Referência, Situação ou Tendência. Não há ajuste por população ou idade, nem substituição pela Região imediata; o cálculo cobre todos os municípios da malha publicada. A lista vale para todos os tipos selecionados e não pinta o mapa.</p>
+<h3>Validação, limites e acesso</h3>
+<p>Conferimos a contagem de pares distintos de estabelecimento e habilitação ativa por UF. Faixas de plausibilidade do projeto: AC 1–10; AL 2–25; AM 1–20; AP 1–10; BA 10–100; CE 5–70; DF 2–30; ES 4–50; GO 5–60; MA 2–35; MG 20–180; MS 3–35; MT 3–35; PA 3–40; PB 3–35; PE 5–70; PI 2–30; PR 15–130; RJ 15–130; RN 3–35; RO 1–20; RR 1–10; RS 15–140; SC 10–90; SE 2–25; SP 40–300; TO 1–20. São limites amplos para detectar extrações incompletas ou contagens excessivas, não metas oficiais nem validação da capacidade assistencial. Uma mudança real que ultrapasse a faixa exige revisão antes de publicar.</p>
+<p>Se qualquer validação falhar, os dados anteriores do CNES e sua data de extração são mantidos. As outras fontes seguem independentes. O pipeline também verifica a cobertura municipal e a integridade das listas exportadas.</p>
+<p>A habilitação administrativa não garante vagas ou capacidade atual. <strong>A regulação define o hospital; o paciente não escolhe o hospital pela lista.</strong> O serviço adequado depende da rede, da idade e da necessidade de cuidado. Veja as orientações oficiais do <a href="https://www.gov.br/inca/pt-br/assuntos/cancer/tratamento/onde-tratar-pelo-sus">INCA sobre onde tratar pelo SUS</a> e <a href="https://www.gov.br/inca/pt-br/acesso-a-informacao/perguntas-frequentes/atendimento-no-inca/">sobre atendimento e regulação</a>, conferidas em 03/11/2026.</p>
+<p>Reproduza com <code>uv run python -m pipeline run --source cnes</code>. Código em <code>pipeline/sources/cnes.py</code>; agregados nas fichas de UF em <code>dados/profiles/</code>; arquivos, extração, competência e versão do código em <a href="/dados/manifest.json">manifest.json</a>. Cite Ministério da Saúde/DATASUS — CNES, competência e extração, e o Observatório pelos cálculos. Dados públicos conforme as condições da fonte. Novembro de 2026: primeira publicação de Onde se tratar.</p>
 </section></div>
 </Base>
 <style>

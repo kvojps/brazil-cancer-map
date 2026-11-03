@@ -38,6 +38,25 @@ function card(municipality, cancerType) {
 }
 const percent = (value) => `${value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 
+test('where to treat shows published facilities and explains regulated access without JavaScript', () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const html = page(municipality);
+  assert.match(html, /Saiba como chegar ao atendimento especializado/);
+  assert.match(html, /A regulação.*define o hospital/);
+  assert.match(html, /paciente não escolhe/);
+  assert.match(html, /aproximada.*municípios/s);
+  assert.ok(profile.where_to_treat.municipalities['261160'].length > 0);
+  for (const entry of profile.where_to_treat.municipalities['261160']) {
+    const facility = profile.where_to_treat.facilities[entry.cnes];
+    assert.ok(html.includes(facility.name));
+    assert.ok(html.includes(facility.municipality_name));
+    for (const habilitation of facility.habilitations) assert.ok(html.includes(habilitation.label));
+  }
+  const section = html.split('aria-label="Onde se tratar"')[1].split('</aside>')[0];
+  assert.doesNotMatch(section, /<meter|Referência:|Tendência:/);
+});
+
 test('regional cards show the region name and the exported regional values', () => {
   const { entry, municipality } = example('immediate_region');
   const html = card(municipality, 'all');
@@ -68,7 +87,10 @@ test('quality C opens with a warning and prostate has no status bar', () => {
 test('methodology documents all nine steps and links from the cards resolve', () => {
   const html = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
   assert.match(html, /id="60-dias"/);
-  assert.equal((html.match(/<h3/g) ?? []).length, 9);
+  const treatment = html.split('<section id="60-dias">')[1].split('</section>')[0];
+  assert.equal((treatment.match(/<h3/g) ?? []).length, 9);
+  assert.match(html, /id="onde-se-tratar"/);
+  for (const term of ['CMPT_INI', 'CMPT_FIM', 'haversine', 'CADGERBR', '27 UFs', 'SP 40–300']) assert.ok(html.includes(term));
   const manifest = JSON.parse(readFileSync(new URL('../public/dados/manifest.json', import.meta.url)));
   for (const term of ['quasi-Poisson', 'TRATAMENTO', 'Região imediata', 'TabNet', manifest.pipeline_version]) assert.ok(html.includes(term));
 });

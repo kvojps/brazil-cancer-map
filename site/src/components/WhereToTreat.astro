@@ -1,0 +1,33 @@
+---
+import type { WhereToTreat } from '../profile/profile';
+import { referralAction as action } from '../content/actions';
+interface Props { services?: WhereToTreat; code: string }
+const { services, code } = Astro.props;
+const nearby = services?.municipalities[code] ?? [];
+---
+<aside aria-label="Onde se tratar">
+  <h3>Onde se tratar</h3>
+  {services ? <>
+    <p><strong>Competência do CNES: {services.period.slice(4)}/{services.period.slice(0, 4)}.</strong></p>
+    <p>CACON e UNACON são centros e unidades habilitados para o tratamento do câncer no SUS. A lista reúne até três estabelecimentos mais próximos e até três com radioterapia, sem repetir os que aparecem nos dois grupos.</p>
+    <p>Proximidade aproximada entre os centros dos municípios, em linha reta. Não é distância por estrada nem tempo de viagem; serviços de outras UFs podem aparecer.</p>
+    {nearby.length ? <ul>{nearby.map(entry => {
+      const facility = services.facilities[entry.cnes]!;
+      return <li><strong>{facility.name}</strong> — {facility.municipality_name} ({facility.uf})
+        <p>{facility.habilitations.map(habilitation => habilitation.label).join('; ')}.</p>
+        <p>{entry.distance_km.toLocaleString('pt-BR')} km entre municípios · CNES {facility.cnes}</p>
+      </li>;
+    })}</ul> : <p>Não há lista de serviços disponível para este município nesta extração.</p>}
+    <details><summary>O que é esta lista?</summary>
+      <p>Fonte: <a href={services.source.url}>{services.source.name}</a>. Extração: <time datetime={services.extracted_at}>{services.extracted_at.slice(0, 10)}</time>. A habilitação é um registro administrativo e não garante capacidade ou vagas disponíveis.</p>
+      <p><a href="/metodologia/#onde-se-tratar">Como calculamos a proximidade</a></p>
+    </details>
+  </> : <p>A lista de serviços do CNES ainda não está disponível nesta ficha.</p>}
+  <div class="action"><h4>{action.title}</h4><p>{action.summary}</p><p>{action.disclaimer}</p>
+    <details><summary>Saiba mais</summary><p>{action.details}</p>
+      <p>Público: {action.audience}</p><p>{action.criteria}</p><p>{action.exceptions}</p>
+      <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
+      <p>Fontes conferidas em {action.checkedAt}. Versão {action.version}. {action.verificationNote}</p>
+    </details>
+  </div>
+</aside>
