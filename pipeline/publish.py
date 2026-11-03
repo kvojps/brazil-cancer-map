@@ -44,15 +44,23 @@ def updated_manifest(directory: Path, *, source: str, extract: dict[str, Any], i
 def pipeline_version() -> str:
     """The version in `pyproject.toml`, plus the git commit when there is one.
 
-    A run with uncommitted code is marked `-dirty`: its commit alone would not
-    reproduce the data.
+    A run with uncommitted pipeline code is marked `-dirty`: its commit alone
+    would not reproduce the data. The data it writes does not count.
     """
     version = str(tomllib.loads((REPO_DIR / "pyproject.toml").read_text())["project"]["version"])
     try:
-        commit = subprocess.run(
-            ["git", "describe", "--always", "--dirty", "--exclude", "*"],
-            cwd=REPO_DIR, capture_output=True, text=True, check=True,
-        ).stdout.strip()
+        commit = _git("rev-parse", "--short", "HEAD")
+        changed = _git("status", "--porcelain", "--", *PIPELINE_CODE)
     except (OSError, subprocess.CalledProcessError):
         return version
-    return f"{version}+{commit}"
+    return f"{version}+{commit}" + ("-dirty" if changed else "")
+
+
+PIPELINE_CODE = ("pipeline", "pyproject.toml", "uv.lock")
+"""What produces the data, as opposed to the data itself."""
+
+
+def _git(*args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=REPO_DIR, capture_output=True, text=True, check=True
+    ).stdout.strip()
