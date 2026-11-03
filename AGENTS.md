@@ -4,7 +4,7 @@ O projeto é o Observatório do Câncer no Brasil. A **spec** é [`.scratch/mapa
 
 Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15): os JSON em `site/public/dados/`.
 
-- **`pipeline/`**: Python, rodado com `uv` (`uv run python -m pipeline run`, `uv run pytest`, `uv run mypy`). Cada fonte implementa o protocolo `Source` em `pipeline/source.py` e entra no registro de `pipeline/sources/`. Toda a estatística mora na etapa `compute`.
+- **`pipeline/`**: Python, rodado com `uv` (`uv run python -m pipeline run`, `uv run pytest`, `uv run mypy`). Cada fonte implementa o protocolo `Source` em `pipeline/source.py` e entra no registro de `pipeline/sources/`. Toda a estatística mora na etapa `compute`. A malha é simplificada pelo mapshaper, ferramenta Node fixada em `pipeline/package.json` (`npm ci --prefix pipeline`).
 - **`site/`**: Astro com saída estática (`npm run build`, `npm run check`). O front recebe taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C prontas do pipeline e só as exibe: a conta estatística fica toda no pipeline.
 
 `data/raw/` e `data/clean/` são locais e ficam fora do git.

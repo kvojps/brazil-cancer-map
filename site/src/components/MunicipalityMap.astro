@@ -1,0 +1,50 @@
+---
+const meshUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados/municipalities.topojson`;
+---
+
+<div class="map-frame">
+  <div
+    class="map"
+    data-mesh-url={meshUrl}
+    role="region"
+    aria-label="Mapa do Brasil por município"
+  >
+  </div>
+  <p class="map-status" role="status">Carregando o mapa…</p>
+</div>
+
+<script>
+  import { mountMunicipalityMap } from "../map/municipality-map";
+
+  const container = document.querySelector<HTMLElement>(".map[data-mesh-url]");
+  const status = document.querySelector<HTMLElement>(".map-status");
+  if (container && status) {
+    mountMunicipalityMap(container, container.dataset.meshUrl!)
+      .then(() => {
+        status.hidden = true;
+      })
+      .catch((error: unknown) => {
+        console.error(error);
+        status.textContent = "Não foi possível carregar o mapa. Tente recarregar a página.";
+      });
+  }
+</script>
+
+<style>
+  .map-frame {
+    position: relative;
+    flex: 1;
+    min-height: 60vh;
+  }
+  .map {
+    position: absolute;
+    inset: 0;
+  }
+  .map-status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+</style>

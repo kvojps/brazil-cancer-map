@@ -1,0 +1,9 @@
+{
+  "name": "pipeline-tools",
+  "private": true,
+  "description": "Node build tools called by the Python pipeline (mapshaper simplifies the IBGE mesh).",
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "mapshaper": "0.7.101"
+  }
+}
