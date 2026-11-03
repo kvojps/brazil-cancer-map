@@ -49,11 +49,11 @@ Uma **spec de MVP pronta para construir** de um mapa público do câncer no Bras
 
 - [Qual licença expressa a abertura aprovada para o código?](issues/24-licenca-do-codigo.md): AGPL-3.0-or-later para o código (cobre também forks modificados que rodam como serviço na rede), CC BY-SA 4.0 para os textos do projeto e contribuições sem CLA. Os dados continuam seguindo as condições de cada fonte.
 
+- [Consolidar a spec do MVP](issues/23-consolidar-spec.md): a spec está em [spec-mvp.md](spec-mvp.md), com cada regra apontando para o seu ticket. Duas lacunas viraram tickets (a escala do "estável" e o estado inicial do mapa), e os requisitos de execução antes de publicar ficaram reunidos na seção 17.
+
 ## Not yet specified
 
-Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteúdo de ação, atualização dos dados e identidade) viraram tickets em 2026-11-02. A spec final é o ticket [Consolidar a spec do MVP](issues/23-consolidar-spec.md).
-
-- **O que substitui a razão de citopatológicos a partir de 2026.** Com o DNA-HPV, a série do citopatológico congela em 2025 ([Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md)). Um indicador combinado (citopatológico + DNA-HPV pelo código SIGTAP 02.02.10.025-1 no SIA-SUS) depende de confirmar que o dado aberto traz esse código por município de residência e de existir uma Referência oficial (o INCA ainda não publicou). Fica para quando houver dado.
+Nada. A spec está consolidada em [spec-mvp.md](spec-mvp.md). Faltam só os tickets abertos de lacuna que ela aponta.
 
 ## Out of scope
 
@@ -62,3 +62,4 @@ Nada no momento. Os quatro pedaços de fog (apresentação responsável, conteú
 - Orientação médica personalizada.
 - Tipos de câncer além dos 5 do seletor (estômago, boca, fígado, pele, bexiga…) e os indicadores adiados em [Quais indicadores entram no MVP?](issues/04-indicadores-do-mvp.md): ficam para a v2 do site, depois deste mapa.
 - Infraestrutura paga, backend ou banco de dados.
+- O substituto da razão de citopatológicos (citopatológico + DNA-HPV, SIGTAP 02.02.10.025-1): o MVP fica completo com a série congelada em 2025 ([Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md)), e o substituto depende de dado aberto por município de residência e de uma Referência oficial que ainda não existem. Fica para depois do MVP.
