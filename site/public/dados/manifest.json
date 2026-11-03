@@ -1,1 +1,1 @@
-{"pipeline_version":"0.1.0+974caec","sources":{"painel_oncologia":{"name":"Painel-Oncologia (DATASUS/Ministério da Saúde)","extracted_at":"2026-10-17"}},"indicators":{"within_60_days":{"all":{"first_year":2014,"last_year":2026,"provisional":[2025,2026],"latest":2024,"trend":[2015,2024]}}}}
+{"pipeline_version":"0.1.0+3cc7541","sources":{"painel":{"name":"Painel-Oncologia (DATASUS/Ministério da Saúde)","extracted_at":"2026-10-17"}},"indicators":{"within_60_days":{"all":{"first_year":2014,"last_year":2026,"provisional":[2025,2026],"latest":2024,"trend":[2015,2024]}}}}
