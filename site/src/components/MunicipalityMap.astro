@@ -1,26 +1,50 @@
 ---
-const meshUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados/municipalities.topojson`;
+interface Props {
+  /** Map layer, relative to `dados/`: one JSON per indicator × cancer type. */
+  layer: string;
+}
+
+const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
+const { layer } = Astro.props;
 ---
 
 <div class="map-frame">
   <div
     class="map"
-    data-mesh-url={meshUrl}
+    data-mesh-url={`${base}/municipalities.topojson`}
+    data-listing-url={`${base}/municipalities.json`}
+    data-layer-url={`${base}/${layer}`}
     role="region"
-    aria-label="Mapa do Brasil por município"
+    aria-label="Mapa do Brasil por município. Os mesmos dados estão na tabela abaixo do mapa."
   >
   </div>
   <p class="map-status" role="status">Carregando o mapa…</p>
 </div>
 
 <script>
-  import { mountMunicipalityMap } from "../map/municipality-map";
+  import { mountMunicipalityMap, paintTrend } from "../map/municipality-map";
+  import { fillIndicatorTable } from "../map/indicator-table";
+  import type { IndicatorLayer, MunicipalityListing } from "../map/indicator-layer";
+
+  async function getJson<T>(url: string): Promise<T> {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`${url} request failed (${response.status})`);
+    return response.json() as Promise<T>;
+  }
 
   const container = document.querySelector<HTMLElement>(".map[data-mesh-url]");
   const status = document.querySelector<HTMLElement>(".map-status");
+  const table = document.querySelector<HTMLElement>(".indicator-table");
   if (container && status) {
-    mountMunicipalityMap(container, container.dataset.meshUrl!)
-      .then(() => {
+    const { meshUrl, listingUrl, layerUrl } = container.dataset;
+    Promise.all([
+      mountMunicipalityMap(container, meshUrl!),
+      getJson<IndicatorLayer>(layerUrl!),
+      getJson<MunicipalityListing>(listingUrl!),
+    ])
+      .then(([map, layer, listing]) => {
+        paintTrend(map, layer, listing);
+        if (table) fillIndicatorTable(table, layer, listing);
         status.hidden = true;
       })
       .catch((error: unknown) => {
@@ -46,5 +70,10 @@ const meshUrl = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados/municipali
     left: 50%;
     transform: translate(-50%, -50%);
     margin: 0;
+  }
+  .map :global(.map-tooltip) {
+    display: grid;
+    gap: 0.2rem;
+    font: 0.8125rem/1.35 system-ui, sans-serif;
   }
 </style>
