@@ -66,3 +66,17 @@ test('sharing a selection round trips and canonicalization preserves unrelated U
   assert.equal(query.toString(), 'source=link&indicador=mammography&tipo=breast&modo=hoje');
   assert.deepEqual(readMapState(query, catalog), state);
 });
+
+test('cytopathology is selectable for cervix and all, in both modes, as a ratio', () => {
+  for (const cancerType of ['all', 'cervix']) {
+    for (const mode of ['trend', 'status']) {
+      assert.deepEqual(normalizeMapState({ indicator: 'cytopathology', cancerType, mode }),
+        { indicator: 'cytopathology', cancerType, mode });
+      assert.equal(mapOption('cytopathology', cancerType, mode).disabled, false);
+    }
+  }
+  for (const cancerType of ['breast', 'prostate', 'lung', 'colorectal']) {
+    assert.equal(mapOption('cytopathology', cancerType, 'trend').disabled, true);
+  }
+  assert.equal(formatIndicatorValue('cytopathology', 0.8), '0,80');
+});
