@@ -6,7 +6,7 @@ import tempfile
 import urllib.parse
 import urllib.request
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -34,21 +34,26 @@ CANCER_TYPES: dict[str, Callable[[str], bool]] = {
 NO_TREATMENT_INFO = "5"
 """`TRATAMENTO` code for "sem informação de tratamento"."""
 
+CHEMO_RADIO = frozenset({"2", "3", "4"})
+"""`TRATAMENTO` codes of a first treatment by chemotherapy, radiotherapy or both.
+Their registry (APAC) did not change in the Painel's 2018, 2019 and 2024 breaks,
+so the trend is measured on these cases only (spec, section 7)."""
+
 
 @dataclass
 class CaseCounts:
     cases: int = 0
-    """Cases diagnosed: the denominator of both shares."""
+    """Cases diagnosed: the denominator of the value and of the % without information."""
     within_60_days: int = 0
     """First treatment within 60 days of diagnosis."""
     without_treatment_info: int = 0
+    chemo_radio: int = 0
+    """Cases first treated with chemotherapy, radiotherapy or both: the trend's denominator."""
+    chemo_radio_within_60_days: int = 0
+    """Of those, the ones treated within 60 days: the trend's numerator."""
 
     def __add__(self, other: "CaseCounts") -> "CaseCounts":
-        return CaseCounts(
-            self.cases + other.cases,
-            self.within_60_days + other.within_60_days,
-            self.without_treatment_info + other.without_treatment_info,
-        )
+        return CaseCounts(*(a + b for a, b in zip(astuple(self), astuple(other), strict=True)))
 
 
 def is_within_60_days(days: str) -> bool:
@@ -79,11 +84,18 @@ def count_cases(records: Iterable[Mapping[str, str]]) -> dict[CountKey, CaseCoun
                 continue
             key = (int(row["ANO_DIAGN"]), row["MUN_RESID"], cancer_type)
             entry = counts.setdefault(key, CaseCounts())
+            within_60_days = is_within_60_days(row["TEMPO_TRAT"])
             entry.cases += 1
-            entry.within_60_days += is_within_60_days(row["TEMPO_TRAT"])
+            entry.within_60_days += within_60_days
             entry.without_treatment_info += row["TRATAMENTO"] == NO_TREATMENT_INFO
+            if row["TRATAMENTO"] in CHEMO_RADIO:
+                entry.chemo_radio += 1
+                entry.chemo_radio_within_60_days += within_60_days
     return counts
 
+
+TREND_CASES = "chemo_radio"
+"""The cases the trend is measured on, stated in the layer's period."""
 
 PROVISIONAL_YEARS = 2
 """The latest diagnosis years are still filling in treatment records (spec, section 6.4)."""
@@ -102,6 +114,10 @@ def within_60_days_layer(
 ) -> dict[str, Any]:
     """The map layer of one cancer type: each municipality's trend and latest shares.
 
+    The trend is fitted on the chemo/radio cases only; the value and the % without
+    treatment information are over all the cases of the latest consolidated year,
+    as TabNet shows them (spec, sections 6.3 and 7).
+
     `counts` is keyed by (diagnosis year, municipality). Every municipality of
     the mesh is in the layer; codes outside it (unknown residence) are ignored.
     """
@@ -119,8 +135,8 @@ def within_60_days_layer(
     for code, series in by_municipality.items():
         trend = quasi_poisson_trend(
             years,
-            [series[y].within_60_days if y in series else 0 for y in years],
-            [series[y].cases if y in series else 0 for y in years],
+            [series[y].chemo_radio_within_60_days if y in series else 0 for y in years],
+            [series[y].chemo_radio if y in series else 0 for y in years],
             provisional=provisional,
             higher_is_better=True,
         )
@@ -137,6 +153,7 @@ def within_60_days_layer(
         "provisional": sorted(provisional & set(years)),
         "latest": latest,
         "trend": list(window),
+        "trend_cases": TREND_CASES,
     }
     return {"period": period, "municipalities": layer}
 
@@ -235,8 +252,29 @@ class PainelValidationError(Exception):
     pass
 
 
-def tabnet_query(year: int) -> bytes:
-    """TabNet form: cases by UF of residence × treatment time, 'Todos' for treatment, one year."""
+class TabnetTable(NamedTuple):
+    """One TabNet comparison: which cases it covers, and where it is saved under `raw/painel/tabnet/`."""
+
+    label: str
+    directory: str
+    modalities: tuple[str, ...]
+    """`Modalidade Terapêutica` filter values; empty means every case."""
+
+
+TABNET_TABLES = (
+    TabnetTable("all cases", "", ()),
+    TabnetTable(
+        "chemotherapy or radiotherapy",
+        "chemo_radio",
+        ("QUIMIOTERAPIA|2|1", "RADIOTERAPIA|3|1", "AMBOS|4|1"),
+    ),
+)
+"""All cases check the value; the chemo/radio cases (`TRATAMENTO` 2, 3 or 4) check the trend's series."""
+
+
+def tabnet_query(year: int, modalities: Sequence[str] = ()) -> bytes:
+    """TabNet form: cases by UF of residence × treatment time, 'Todos' for treatment,
+    one year, optionally only some therapeutic modalities."""
     fields = [
         ("Linha", "UF da residência|fato.CO_UF_RESIDENCIA|1|territorio\\br_uf.cnv"),
         (
@@ -246,17 +284,18 @@ def tabnet_query(year: int) -> bytes:
         ("Incremento", "Casos|= count(*)"),
         ("PAno do diagnóstico", f"{year}|{year}|4"),
         *(("XDiagnóstico Detalhado", f"{cid}|{cid}|3") for cid in sorted(TREATMENT_ALL_CANCERS)),
+        *(("XModalidade Terapêutica", modality) for modality in modalities),
         ("formato", "prn"),
         ("mostre", "Mostra"),
     ]
     return urllib.parse.urlencode(fields, encoding="latin-1").encode("ascii")
 
 
-def fetch_tabnet(year: int, dest: Path) -> None:
+def fetch_tabnet(year: int, dest: Path, modalities: Sequence[str] = ()) -> None:
     """Save TabNet's table for one diagnosis year. TabNet answers queries, not files: no cache."""
 
     def query() -> bytes:
-        request = urllib.request.Request(TABNET_URL, data=tabnet_query(year))
+        request = urllib.request.Request(TABNET_URL, data=tabnet_query(year, modalities))
         with urllib.request.urlopen(request, timeout=300) as response:
             page: bytes = response.read()
         parse_tabnet(page.decode("latin-1"))  # fail here, not at validation, on an error page
@@ -274,12 +313,16 @@ def write_clean(clean_dir: Path, counts: Mapping[CountKey, CaseCounts], *, extra
     with duckdb.connect() as db:
         db.execute(
             "CREATE TABLE cases (year INTEGER, municipality VARCHAR, cancer_type VARCHAR,"
-            " provisional BOOLEAN, cases INTEGER, within_60_days INTEGER, without_treatment_info INTEGER)"
+            " provisional BOOLEAN, cases INTEGER, within_60_days INTEGER, without_treatment_info INTEGER,"
+            " chemo_radio INTEGER, chemo_radio_within_60_days INTEGER)"
         )
         db.executemany(
-            "INSERT INTO cases VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO cases VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                (year, code, cancer_type, year in provisional, c.cases, c.within_60_days, c.without_treatment_info)
+                (
+                    year, code, cancer_type, year in provisional, c.cases, c.within_60_days,
+                    c.without_treatment_info, c.chemo_radio, c.chemo_radio_within_60_days,
+                )
                 for (year, code, cancer_type), c in sorted(counts.items())
             ],
         )
@@ -297,17 +340,25 @@ class CleanRow(NamedTuple):
     cases: int
     within_60_days: int
     without_treatment_info: int
+    chemo_radio: int
+    chemo_radio_within_60_days: int
 
     @property
     def counts(self) -> CaseCounts:
-        return CaseCounts(self.cases, self.within_60_days, self.without_treatment_info)
+        return CaseCounts(
+            self.cases,
+            self.within_60_days,
+            self.without_treatment_info,
+            self.chemo_radio,
+            self.chemo_radio_within_60_days,
+        )
 
 
 def read_clean(clean_dir: Path) -> list[CleanRow]:
     with duckdb.connect() as db:
         rows = db.execute(
             "SELECT year, municipality, cancer_type, provisional, cases, within_60_days,"
-            " without_treatment_info FROM read_parquet(?)",
+            " without_treatment_info, chemo_radio, chemo_radio_within_60_days FROM read_parquet(?)",
             [str(clean_dir / "cases.parquet")],
         ).fetchall()
     return [CleanRow(*row) for row in rows]
@@ -336,7 +387,8 @@ class PainelSource:
         for year in years:
             if year >= FIRST_YEAR:
                 fetch(f"{FTP_DIR}POBR{year}.dbc", self._raw_dir / f"POBR{year}.dbc")
-                fetch_tabnet(year, self._raw_dir / "tabnet" / f"{year}.html")
+                for table in TABNET_TABLES:
+                    fetch_tabnet(year, self._tabnet_page(table, year), table.modalities)
 
     def clean(self) -> None:
         files = sorted(
@@ -370,23 +422,31 @@ class PainelSource:
             path.write_text(json.dumps(layer))
 
     def validate(self) -> None:
-        """Compare the % within 60 days by UF with TabNet, year by year, and check the layers:
-        every municipality of the mesh, and shares between 0 and 100%."""
-        ours: dict[int, dict[str, UfShare]] = {}
+        """Compare the % within 60 days by UF with TabNet, year by year, over all cases and
+        over the chemo/radio cases, and check the layers: every municipality of the mesh,
+        and shares between 0 and 100%."""
+        by_year: dict[int, dict[str, CaseCounts]] = {}
         for row in read_clean(self._clean_dir):
             if row.cancer_type == TABNET_CANCER_TYPE:
-                by_uf = ours.setdefault(row.year, {})
+                by_uf = by_year.setdefault(row.year, {})
                 uf = row.municipality[:2]
-                previous = by_uf.get(uf, UfShare(0, 0))
-                by_uf[uf] = UfShare(previous.within_60_days + row.within_60_days, previous.cases + row.cases)
+                by_uf[uf] = by_uf.get(uf, CaseCounts()) + row.counts
 
         problems = []
-        for year in sorted(ours):
-            page = self._raw_dir / "tabnet" / f"{year}.html"
-            if not page.exists():
-                problems.append(f"{year}: no TabNet table to compare with")
-                continue
-            problems += compare_with_tabnet(ours[year], parse_tabnet(page.read_text("latin-1")), year=year)
+        for table in TABNET_TABLES:
+            for year, by_uf in sorted(by_year.items()):
+                page = self._tabnet_page(table, year)
+                if not page.exists():
+                    problems.append(f"{table.label}, {year}: no TabNet table to compare with")
+                    continue
+                if table.modalities:
+                    ours = {uf: UfShare(c.chemo_radio_within_60_days, c.chemo_radio) for uf, c in by_uf.items()}
+                else:
+                    ours = {uf: UfShare(c.within_60_days, c.cases) for uf, c in by_uf.items()}
+                official = parse_tabnet(page.read_text("latin-1"))
+                problems += [
+                    f"{table.label}, {problem}" for problem in compare_with_tabnet(ours, official, year=year)
+                ]
 
         expected = set(self._municipalities())
         for cancer_type in CANCER_TYPES:
@@ -427,6 +487,9 @@ class PainelSource:
         )
         publish_together(self._site_data_dir, files)
 
+    def _tabnet_page(self, table: TabnetTable, year: int) -> Path:
+        return self._raw_dir / "tabnet" / table.directory / f"{year}.html"
+
     def _municipalities(self) -> list[str]:
         listing = json.loads((self._site_data_dir / "municipalities.json").read_text())
         return [m["code"] for m in listing["municipalities"]]
@@ -439,7 +502,12 @@ class PainelSource:
 def _period_text(period: Mapping[str, Any]) -> str:
     first, last = period["first_year"], period["last_year"]
     provisional = ", ".join(str(y) for y in period["provisional"])
-    return f"Anos de diagnóstico {first}–{last} ({provisional} provisórios)"
+    trend_first, trend_last = period["trend"]
+    return (
+        f"Anos de diagnóstico {first}–{last} ({provisional} provisórios). "
+        f"Tendência {trend_first}–{trend_last} medida nos casos tratados com quimioterapia ou radioterapia; "
+        f"valor de {period['latest']} e % sem informação sobre todos os casos diagnosticados"
+    )
 
 
 def _read_dbc(path: Path) -> Iterator[dict[str, str]]:

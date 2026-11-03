@@ -4,6 +4,7 @@ import {
   TREND_COLORS,
   TREND_LABELS,
   TREND_STATES,
+  trendCasesText,
   trendDescriptions,
   trendPeriodText,
   type Period,
@@ -17,11 +18,13 @@ interface Props {
 const { indicator, period } = Astro.props;
 const descriptions = trendDescriptions(INDICATORS[indicator]!);
 const provisional = period.provisional.join(" e ");
+const trendCases = trendCasesText(period);
 ---
 
 <section class="legend" aria-labelledby="legend-title">
   <h2 id="legend-title">Tendência {trendPeriodText(period)}</h2>
   <p>A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios.</p>
+  {trendCases && <p>{trendCases}.</p>}
   <ul>
     {
       TREND_STATES.map((state) => (

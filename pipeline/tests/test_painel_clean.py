@@ -34,7 +34,9 @@ def test_buckets_follow_the_tabnet_edges():
 
     counts = count_cases(rows)[(2020, "261160", "all")]
 
-    assert counts == CaseCounts(cases=7, within_60_days=3, without_treatment_info=2)
+    assert counts == CaseCounts(
+        cases=7, within_60_days=3, without_treatment_info=2, chemo_radio=5, chemo_radio_within_60_days=3
+    )
 
 
 def test_counts_are_per_diagnosis_year_and_municipality_of_residence():
@@ -48,12 +50,32 @@ def test_counts_are_per_diagnosis_year_and_municipality_of_residence():
     counts = count_cases(rows)
 
     assert counts == {
-        (2019, "261160", "all"): CaseCounts(cases=1, within_60_days=1, without_treatment_info=0),
-        (2020, "261160", "all"): CaseCounts(cases=2, within_60_days=1, without_treatment_info=0),
-        (2020, "355030", "all"): CaseCounts(cases=1, within_60_days=1, without_treatment_info=0),
+        (2019, "261160", "all"): CaseCounts(1, 1, 0, chemo_radio=1, chemo_radio_within_60_days=1),
+        (2020, "261160", "all"): CaseCounts(2, 1, 0, chemo_radio=2, chemo_radio_within_60_days=1),
+        (2020, "355030", "all"): CaseCounts(1, 1, 0, chemo_radio=1, chemo_radio_within_60_days=1),
     }
 
 
 def test_the_two_latest_diagnosis_years_are_provisional():
     # The FTP has POBR2014…POBR2026, 2026 still partial: 2025 and 2026 are provisional.
     assert provisional_years(range(2014, 2027)) == {2025, 2026}
+
+
+def test_chemo_radio_cases_are_counted_apart_with_the_same_60_day_rule():
+    rows = [
+        record(treatment="1", days="+0010"),  # surgery: outside the trend's cases
+        record(treatment="2", days="+0030"),  # chemotherapy, on time
+        record(treatment="3", days="-0090"),  # radiotherapy, treated before diagnosis: on time
+        record(treatment="4", days="+0061"),  # both, late
+        record(treatment="5", days=""),  # no treatment information
+    ]
+
+    counts = count_cases(rows)[(2020, "261160", "all")]
+
+    assert counts == CaseCounts(
+        cases=5,
+        within_60_days=3,
+        without_treatment_info=1,
+        chemo_radio=3,
+        chemo_radio_within_60_days=2,
+    )
