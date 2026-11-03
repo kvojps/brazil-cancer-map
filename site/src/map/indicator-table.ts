@@ -1,5 +1,5 @@
 import {
-  ORIGIN_TEXT,
+  originText,
   TREND_LABELS,
   formatPercent,
   trendCasesText,
@@ -46,7 +46,7 @@ export function fillIndicatorTable(
           TREND_LABELS[trendState(entry)],
           formatPercent(entry?.value ?? null),
           formatPercent(entry?.without_treatment_info ?? null),
-          entry ? ORIGIN_TEXT[entry.origin] : ORIGIN_TEXT.insufficient,
+          originText(entry, m, listing),
         ];
         cells.forEach((text, i) => {
           const cell = document.createElement(i === 0 ? "th" : "td");

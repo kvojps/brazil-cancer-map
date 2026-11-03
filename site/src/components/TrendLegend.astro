@@ -1,12 +1,13 @@
 ---
 import {
   INDICATORS,
-  TREND_COLORS,
+  REGION_NOTE,
   TREND_LABELS,
   TREND_STATES,
   trendCasesText,
   trendDescriptions,
   trendPeriodText,
+  trendSwatch,
   type Period,
 } from "../map/indicator-layer";
 
@@ -29,7 +30,7 @@ const trendCases = trendCasesText(period);
     {
       TREND_STATES.map((state) => (
         <li>
-          <span class="swatch" style={`background: ${TREND_COLORS[state]}`} aria-hidden="true" />
+          <span class="swatch" style={`background: ${trendSwatch(state)}`} aria-hidden="true" />
           <span>
             <strong>{TREND_LABELS[state]}</strong>: {descriptions[state]}
           </span>
@@ -37,6 +38,7 @@ const trendCases = trendCasesText(period);
       ))
     }
   </ul>
+  <p>{REGION_NOTE}</p>
   <p class="note">
     Anos de diagnóstico {period.first_year}–{period.last_year}. {provisional} ainda são provisórios e
     não entram na tendência.
