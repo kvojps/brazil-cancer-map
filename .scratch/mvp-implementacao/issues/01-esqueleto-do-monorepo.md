@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `python -m pipeline run` existe, lista as etapas (baixar, limpar, calcular, validar, exportar) e aceita rodar uma fonte ou etapa isolada
 - [x] `pipeline/` tem uma suíte de testes que roda no CI
@@ -13,3 +13,7 @@
 - [x] O `AGENTS.md` mantém a configuração de skills atual e ganha a orientação da execução: links para a spec, o `GLOSSARY.md` e a estrutura `pipeline/` + `site/`, além da regra de que o front não faz conta estatística
 - [x] Arquivo `LICENSE` com o texto da AGPL-3.0; README declara `AGPL-3.0-or-later` para o código, CC BY-SA 4.0 para os textos e as condições de cada fonte para os dados
 - [x] O rodapé do site tem link para o código-fonte
+
+## Comments
+
+Resolvido em `61c8300` (esqueleto, CLI do pipeline, site Astro, CI, licenças), `185ce22` (código em inglês) e `f8cb1dd` (regra de commits em inglês).
