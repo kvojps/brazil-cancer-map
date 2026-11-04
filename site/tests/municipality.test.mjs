@@ -137,3 +137,28 @@ test('cervical screening card always explains the frozen series and retains the 
   const methodology = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
   assert.match(methodology, /id="citopatologico"/);
 });
+
+test('published cytopathology covers the mesh in both cancer selections and renders the frozen ratio series', () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const data = profile.indicators.cytopathology.all;
+  const entry = data.municipalities[municipality.code];
+  const html = page(municipality).split('aria-label="Citopatológicos — 25–64 anos"')[1].split('</article>')[0];
+  const value = entry.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  assert.ok(html.includes(`Razão ${value}`));
+  assert.match(html, /Referência: razão 1 — meta/);
+  assert.match(html, /um terço das mulheres de 25–64 anos/);
+  assert.match(html, /<meter[^>]+max="1"/);
+  assert.match(html, /Período dos dados: 2016–2025/);
+  assert.match(html, /Último ano consolidado: 2025/);
+  for (const point of data.series[entry.series_id]) {
+    assert.ok(point.year >= 2016 && point.year <= 2025);
+    assert.ok(html.includes(`<th scope="row">${point.year}</th>`));
+  }
+  const all = JSON.parse(readFileSync(new URL('../public/dados/map/cytopathology/all.json', import.meta.url)));
+  const cervix = JSON.parse(readFileSync(new URL('../public/dados/map/cytopathology/cervix.json', import.meta.url)));
+  assert.equal(Object.keys(all.municipalities).length, listing.municipalities.length);
+  assert.deepEqual(all.municipalities, cervix.municipalities);
+  assert.equal(all.municipalities[municipality.code].value, entry.value);
+  assert.equal(manifest.indicators.cytopathology.all.last_year, 2025);
+});
