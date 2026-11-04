@@ -96,3 +96,99 @@ export const hpvAction = {
   verificationNote: 'Texto curto aprovado no ticket 20. Revisão clínica dos detalhes pendente.',
   reviewedVersion: null, reviewedAt: null, reviewer: null,
 };
+
+interface AlternativeAction {
+  title: string;
+  summary: string;
+  disclaimer: string;
+  details: string[];
+  audience: string;
+  criteria: string;
+  exceptions: string;
+  version: string;
+  checkedAt: string;
+  sources: { title: string; url: string }[];
+  verificationNote: string;
+  reviewedVersion: string | null;
+  reviewedAt: string | null;
+  reviewer: string | null;
+}
+
+const cancerSources = {
+  breast: { title: 'INCA — Câncer de mama', url: 'https://www.gov.br/inca/pt-br/assuntos/cancer/tipos/mama/versao-para-populacao' },
+  prostate: { title: 'INCA — Câncer de próstata', url: 'https://www.gov.br/inca/pt-br/assuntos/cancer/tipos/prostata/versao-para-populacao' },
+  colorectal: { title: 'INCA — Câncer de intestino', url: 'https://www.gov.br/inca/pt-br/assuntos/cancer/tipos/intestino/versao-para-populacao' },
+  lung: { title: 'INCA — Câncer de pulmão', url: 'https://www.gov.br/inca/pt-br/assuntos/cancer/tipos/pulmao/versao-para-populacao' },
+};
+
+function alternativeAction(cancerType: keyof typeof cancerSources, content: Pick<AlternativeAction, 'title' | 'summary' | 'details' | 'criteria' | 'exceptions'>): AlternativeAction {
+  return {
+    ...content,
+    disclaimer: treatmentAction.disclaimer,
+    audience: `Pessoas que procuram orientação sobre ${cancerSources[cancerType].title.replace('INCA — ', '').toLowerCase()} e quem as acompanha.`,
+    version: '1', checkedAt: '2026-11-04',
+    sources: [cancerSources[cancerType]],
+    verificationNote: 'Fonte oficial consultada. Revisão clínica pendente; reconferir os detalhes antes da publicação.',
+    reviewedVersion: null, reviewedAt: null, reviewer: null,
+  };
+}
+
+export const earlyDetectionActions = {
+  prostate: alternativeAction('prostate', {
+    title: 'Conheça os sinais e saiba quando procurar avaliação',
+    summary: 'Consulte as orientações oficiais sobre próstata e converse na UBS sobre alterações ou dúvidas.',
+    details: ['Dificuldade para urinar e alterações no jato urinário podem ter diferentes causas e precisam de avaliação. O INCA não recomenda rastreamento populacional do câncer de próstata.'],
+    criteria: 'Avaliação de sinais, sintomas e histórico pela equipe de saúde.',
+    exceptions: 'Exames em pessoas sem sintomas exigem conversa sobre benefícios e riscos; não há recomendação única de exame para todos.',
+  }),
+  lung: alternativeAction('lung', {
+    title: 'Conheça os sinais e saiba quando procurar avaliação',
+    summary: 'Consulte as orientações oficiais sobre pulmão e converse na UBS sobre alterações ou dúvidas.',
+    details: ['Tosse persistente, sangue no escarro e falta de ar precisam de avaliação e podem ter diferentes causas.'],
+    criteria: 'Avaliação de sinais, sintomas e exposições pela equipe de saúde.',
+    exceptions: 'A equipe define a necessidade de investigação; esta orientação não indica exame de rastreamento para todos.',
+  }),
+  colorectal: alternativeAction('colorectal', {
+    title: 'Conheça os sinais e pergunte na UBS sobre a indicação e a disponibilidade de exames de rastreamento',
+    summary: 'Consulte as orientações oficiais sobre câncer colorretal. A equipe orienta a avaliação conforme sua necessidade.',
+    details: ['Sangue nas fezes e mudanças persistentes do hábito intestinal precisam de avaliação. O teste imunoquímico fecal (FIT) pesquisa pequenas quantidades de sangue nas fezes. O Ministério da Saúde anunciou implantação gradual; isso não confirma oferta no seu município. Pergunte na UBS sobre indicação, disponibilidade e acompanhamento do resultado.'],
+    criteria: 'Indicação de exames e avaliação do histórico pela equipe da UBS.',
+    exceptions: 'Sintomas exigem avaliação própria, independentemente do rastreamento. Não há confirmação de oferta local nesta ficha.',
+  }),
+};
+earlyDetectionActions.colorectal.sources.push({
+  title: 'Ministério da Saúde — implantação gradual do FIT',
+  url: 'https://www.gov.br/saude/pt-br/assuntos/noticias/2026/outubro/ministerio-da-saude-inicia-oferta-no-sus-de-nove-medicamentos-oncologicos-de-alta-tecnologia-em-todas-as-regioes-do-pais',
+});
+
+export const preventionActions = {
+  breast: alternativeAction('breast', {
+    title: 'Conheça os fatores de risco do câncer de mama.',
+    summary: 'Converse na UBS sobre fatores de risco e hábitos de proteção. Reduzir riscos não garante evitar o câncer.',
+    details: ['Atividade física, controle do peso e evitar bebidas alcoólicas ajudam a reduzir riscos. Idade e histórico familiar também influenciam o risco.'],
+    criteria: 'Orientação de prevenção conforme histórico e condições de saúde.',
+    exceptions: 'Nem todos os fatores de risco podem ser modificados; hábitos de proteção não substituem avaliação de alterações nas mamas.',
+  }),
+  prostate: alternativeAction('prostate', {
+    title: 'Conheça os fatores de risco do câncer de próstata.',
+    summary: 'Converse na UBS sobre fatores de risco e hábitos de proteção. Reduzir riscos não garante evitar o câncer.',
+    details: ['Idade, histórico familiar e excesso de gordura corporal estão relacionados ao risco. Converse sobre cuidados com o peso e atividade física.'],
+    criteria: 'Orientação de prevenção conforme histórico e condições de saúde.',
+    exceptions: 'Idade e histórico familiar não podem ser modificados; hábitos saudáveis não garantem proteção individual.',
+  }),
+  colorectal: alternativeAction('colorectal', {
+    title: 'Conheça os fatores de risco do câncer colorretal.',
+    summary: 'Converse na UBS sobre fatores de risco e hábitos de proteção. Reduzir riscos não garante evitar o câncer.',
+    details: ['Atividade física, controle do peso e alimentação com fibras ajudam na prevenção. Tabagismo e consumo de álcool também estão relacionados ao risco.'],
+    criteria: 'Orientação de prevenção conforme histórico e condições de saúde.',
+    exceptions: 'Histórico familiar e doenças intestinais podem exigir acompanhamento específico; hábitos saudáveis não substituem avaliação.',
+  }),
+};
+
+export const smokingAction = alternativeAction('lung', {
+  title: 'Quer parar de fumar? Procure apoio.',
+  summary: 'Pergunte na UBS onde encontrar atendimento para parar de fumar.',
+  details: ['A equipe da UBS orienta sobre o atendimento para parar de fumar e os recursos disponíveis na rede.'],
+  criteria: 'Pessoas que desejam apoio para parar de fumar.',
+  exceptions: 'A equipe orienta o cuidado e a disponibilidade do atendimento local.',
+});

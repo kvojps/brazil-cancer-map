@@ -1,0 +1,25 @@
+---
+import type { earlyDetectionActions } from '../content/actions';
+interface Props {
+  label: string;
+  reason: string;
+  action: typeof earlyDetectionActions.prostate;
+}
+const { label, reason, action } = Astro.props;
+---
+<article class="indicator-card" aria-label={`${label} — orientação`}>
+  <h3>{label}</h3>
+  <p>{reason}</p>
+  <section aria-label="Ação">
+    <h4>{action.title}</h4>
+    <p>{action.summary}</p>
+    <details><summary>Saiba mais</summary>
+      {action.reviewedVersion === action.version && action.reviewer && action.reviewedAt && <>
+        <p>{action.audience}</p><p>{action.criteria}</p><p>{action.exceptions}</p>
+        {action.details.map(text => <p>{text}</p>)}
+      </>}
+      <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
+    </details>
+    <p>{action.disclaimer}</p>
+  </section>
+</article>
