@@ -12,13 +12,15 @@ export function navigationUrl(destination: URL, current: URL): URL {
   const state = readMapState(current.searchParams);
   const ownType = result.searchParams.get('tipo');
   const theme = readTheme(result.searchParams) ?? readTheme(current.searchParams);
+  const cancerType = ownType ? readMapState(new URLSearchParams({ tipo: ownType })).cancerType : state.cancerType;
   result.searchParams.delete('theme');
   for (const key of ['indicador', 'tipo', 'modo']) result.searchParams.delete(key);
-  if (result.pathname === '/') {
-    result.search = writeMapState({ ...state, ...(ownType ? { cancerType: readMapState(new URLSearchParams({ tipo: ownType })).cancerType } : {}) }, result.searchParams).toString();
+  // Municipal routes still contain a live map until the dedicated profile redesign.
+  const sameMunicipalMap = result.pathname.startsWith('/municipio/') && result.pathname === current.pathname;
+  if (result.pathname === '/' || sameMunicipalMap) {
+    result.search = writeMapState({ ...state, cancerType }, result.searchParams).toString();
   } else {
-    const type = ownType ? readMapState(new URLSearchParams({ tipo: ownType })).cancerType : state.cancerType;
-    if (type !== 'all') result.searchParams.set('tipo', type);
+    if (cancerType !== 'all') result.searchParams.set('tipo', cancerType);
   }
   if (theme) result.searchParams.set('theme', theme);
   return result;
@@ -34,9 +36,17 @@ export function mountSharedNavigation(): void {
     if (!destinations.has(link)) destinations.set(link, link.getAttribute('href')!);
     return new URL(destinations.get(link)!, location.href);
   };
+  const updateLink = (link: HTMLAnchorElement, current: URL) => {
+    if (link.dataset.themeChoice) {
+      const target = new URL(current);
+      target.searchParams.set('theme', link.dataset.themeChoice);
+      link.href = target.href;
+      link.setAttribute('aria-current', readTheme(current.searchParams) === link.dataset.themeChoice ? 'true' : 'false');
+    } else link.href = navigationUrl(destination(link), current).href;
+  };
   const sync = () => {
     const current = new URL(location.href);
-    if (current.pathname !== '/') {
+    if (current.pathname === '/metodologia/') {
       const canonical = navigationUrl(current, current);
       if (canonical.href !== current.href) {
         history.replaceState(null, '', canonical);
@@ -50,25 +60,13 @@ export function mountSharedNavigation(): void {
       current.searchParams.delete('theme');
       history.replaceState(null, '', current);
     }
-    for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
-      if (link.dataset.themeChoice) {
-        const target = new URL(current);
-        target.searchParams.set('theme', link.dataset.themeChoice);
-        link.href = target.href;
-        link.setAttribute('aria-current', theme === link.dataset.themeChoice ? 'true' : 'false');
-      } else link.href = navigationUrl(destination(link), current).href;
-    }
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) updateLink(link, current);
   };
   sync();
   // Resolve at activation too: map selections and fetched profiles can change state or links.
   document.addEventListener('click', event => {
     const target = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
-    if (target && !target.dataset.themeChoice) target.href = navigationUrl(destination(target), new URL(location.href)).href;
-    else if (target?.dataset.themeChoice) {
-      const url = new URL(location.href);
-      url.searchParams.set('theme', target.dataset.themeChoice);
-      target.href = url.href;
-    }
+    if (target) updateLink(target, new URL(location.href));
   }, true);
   window.addEventListener('popstate', sync);
   window.addEventListener('navigation-state-change', sync);
