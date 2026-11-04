@@ -9,9 +9,28 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 ---
 <Base title="Como calculamos — Observatório do Câncer no Brasil">
 <div class="methodology">
-<nav><a href="/">Voltar ao mapa</a></nav>
+<header class="methodology-header">
+<p class="eyebrow">Metodologia</p>
 <h1>Como calculamos</h1>
 <p>O dado descreve o cuidado no território. Não estima seu risco individual nem determina seu tratamento.</p>
+</header>
+<div class="methodology-layout">
+<nav class="methodology-index" aria-labelledby="methodology-index-title">
+<h2 id="methodology-index-title">Nesta página</h2>
+<ul>
+<li><a href="#60-dias">Tratamento em até 60 dias</a></li>
+<li><a href="#onde-se-tratar">Onde se tratar</a></li>
+<li><a href="#mamografia">Mamografia de rastreamento</a></li>
+<li><a href="#citopatologico">Citopatológico do colo do útero</a></li>
+<li><a href="#mortalidade">Mortalidade</a></li>
+<li><a href="#hpv">Vacina HPV</a></li>
+<li><a href="#casos-estimados">Casos novos estimados</a></li>
+<li><a href="#dados-e-fontes">Dados e fontes</a></li>
+<li><a href="#versoes-e-reproducao">Versões e reprodução</a></li>
+<li><a href="#reutilizacao-e-citacao">Reutilização e citação</a></li>
+</ul>
+</nav>
+<div class="methodology-reading">
 <section id="60-dias"><h2>Tratamento em até 60 dias</h2>
 <ol>
 <li><h3>Fonte e período</h3>
@@ -118,9 +137,9 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <p>A idade do SIM é decodificada pela unidade: minutos, horas, dias e meses entram em 0–4; anos em faixas quinquenais; o código para 100 anos ou mais entra em 80+. Idade ignorada fica na contagem de validação e no mínimo de óbitos, mas não entra na taxa. Residência fora da malha não entra nas séries municipais nem regionais; permanece nos totais do Brasil e da UF quando identificável. Não reconstruímos a história dos municípios novos.</p>
 <h3>Pesos e fórmula</h3>
 <p>Padronização direta com a população mundial de Segi/Doll, por 100 mil. Para cada faixa a, óbitos D e população POPSVS P: <code>taxa = Σ (W[a] × D[a] / P[a])</code>, onde os pesos W somam 100.000. A última faixa reúne 80 anos ou mais. Primeiro somamos óbitos e população da região, UF ou Brasil; depois calculamos a taxa. Não fazemos média das taxas municipais.</p>
-<table><caption>População mundial padrão Segi/Doll</caption><thead><tr><th scope="col">Idade</th><th scope="col">Peso</th></tr></thead><tbody>
+<div class="table-scroll" role="region" aria-label="Conferência de mortalidade" tabindex="0"><table><caption>População mundial padrão Segi/Doll</caption><thead><tr><th scope="col">Idade</th><th scope="col">Peso</th></tr></thead><tbody>
 {['0–4:12000', '5–9:10000', '10–14:9000', '15–19:9000', '20–24:8000', '25–29:8000', '30–34:6000', '35–39:6000', '40–44:6000', '45–49:6000', '50–54:5000', '55–59:4000', '60–64:4000', '65–69:3000', '70–74:2000', '75–79:1000', '80+:1000'].map(row => <tr><th scope="row">{row.split(':')[0]}</th><td>{row.split(':')[1]}</td></tr>)}
-</tbody></table>
+</tbody></table></div>
 <p>Referência dos pesos: <a href="https://rbc.inca.gov.br/index.php/revista/article/download/4836/3815/42605">INCA, tabela suplementar de população padrão Segi</a>. POPSVS revisto após o Censo 2022, idades simples de 0 a 79 e 80+. Ausência de um ano populacional inteiro permite usar apenas o anterior, marcando-o provisório; denominador ausente ou não positivo bloqueia o cálculo.</p>
 <h3>Tendência, mínimo e contexto</h3>
 <p>A série cobre 2014–2024; a Tendência usa os últimos até 10 anos consolidados, normalmente 2015–2024. Usamos quasi-Poisson com ligação log, resposta de óbitos padronizados (<code>taxa × população total / 100000</code>) e offset <code>log(população total)</code>. A resposta é fracionária; representa a taxa padronizada na população local. IC 95% com dispersão de Pearson e t de Student; variação anual relativa <code>100 × (exp(b) − 1)</code>. A incerteza é a do modelo quasi-Poisson da série padronizada, não um intervalo de risco individual. O gráfico inclui 2014 e marca anos provisórios, que não entram no ajuste.</p>
@@ -129,7 +148,7 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <h3>Validação, limitações e reprodução</h3>
 <p>Antes de publicar, comparamos o C53 original, sem redistribuição, em contagens exatas e taxas padronizadas com tolerância relativa de ±3% contra uma amostra do Atlas do INCA: C53 em 2022, Brasil, Minas Gerais, Rio de Janeiro, Pará e São Paulo. Valores e proveniência em <code>pipeline/references/sim-atlas.json</code>; não é uma comparação exaustiva dos seis tipos e onze anos. O POPSVS revisto pode diferir do denominador usado no Atlas. A definição padrão de “Todos” no Atlas também difere: a consulta precisa selecionar os mesmos códigos. Qualquer falha bloqueia todos os JSON do SIM e preserva a publicação anterior. Também verificamos cobertura da malha e taxas finitas e plausíveis. A série ajustada inteira passa por conferência da conservação dos óbitos C53+C54+C55, da preservação dos demais tipos (inclusive “Todos”), das contagens ajustadas e da sinalização de taxas ausentes em todos os anos e territórios calculados. O resultado, os fallbacks e as contagens anuais ficam em <code>data/clean/sim/c55-validation.json</code>; as alocações por município, ano e idade ficam em <code>c55-adjustment.json</code>. Essa conferência interna não equivale à validação externa de uma série ajustada pelo Atlas, que usa C53 sem ajuste.</p>
 <p>Validação da série ajustada em 4 de novembro de 2026: 64.304 células de município × ano × idade e 67.188 pontos de série conferidos, com 36 usos do fallback nacional e cinco células com ajuste não calculável. Elas ocorrem em 2015, 2020, 2021 e 2023 e afetam também o contexto nacional; por isso, a Tendência ajustada do Brasil não recebe uma classe nesta publicação. A idade ignorada é um dos casos sinalizados. A conferência de integridade passou, mas o ajuste não é calculável em todas as células. Mapa e ficha concordam nos 5.571 municípios; os demais tipos e indicadores conservaram seus valores. O registro desta execução está em <code>pipeline/references/sim-c55-validation.json</code>.</p>
-<table><caption>Conferência inicial de C53, mulheres, em 2022 — novembro de 2026</caption>
+<div class="table-scroll" role="region" aria-label="Conferência de mortalidade" tabindex="0"><table><caption>Conferência inicial de C53, mulheres, em 2022 — novembro de 2026</caption>
 <thead><tr><th scope="col">Território</th><th scope="col">Óbitos SIM e Atlas (iguais)</th><th scope="col">Taxa POPSVS/Segi</th><th scope="col">Taxa Atlas</th></tr></thead>
 <tbody>
 <tr><th scope="row">Brasil</th><td>6.983</td><td>4,75</td><td>4,79</td></tr>
@@ -137,7 +156,7 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <tr><th scope="row">Rio de Janeiro</th><td>543</td><td>4,21</td><td>4,22</td></tr>
 <tr><th scope="row">Pará</th><td>417</td><td>8,92</td><td>9,11</td></tr>
 <tr><th scope="row">São Paulo</th><td>1.107</td><td>3,27</td><td>3,25</td></tr>
-</tbody></table>
+</tbody></table></div>
 <p>Não redistribuímos C26 (digestivo mal definido), R00–R99 (causas mal definidas) ou C76–C80 (localização mal definida, secundária ou desconhecida). Sub-registro, sexo ou idade ignorados e mudanças na certificação podem alterar as séries. Esses dados descrevem o território, não estimam seu risco individual nem determinam conduta.</p>
 <p>Reproduza com a malha publicada: <code>uv run python -m pipeline run --source popsvs</code> e <code>uv run python -m pipeline run --source sim</code>. Código: <code>pipeline/sources/sim.py</code>; contagens em <code>data/clean/sim/deaths.parquet</code>, cálculos em <code>computed.json</code> e conferências em <code>validation.json</code>. JSON do <a href="/dados/map/mortality/all.json">mapa</a> e fichas por UF em <code>dados/profiles/</code>. O <a href="/dados/manifest.json">manifesto</a> registra arquivos, extração e versão do pipeline <code>{manifest.pipeline_version}</code>. Cite SIM e POPSVS (Ministério da Saúde/DATASUS), período e extração, e o Observatório pelos cálculos. Novembro de 2026: inclusão da série e posterior redistribuição do C55. A pesquisa inicial mediu o efeito nas contagens; ela não comprova efeito na classe da Tendência padronizada. A validação da série ajustada verifica sua integridade, sem demonstrar que o ajuste melhora a classificação. {sim ? 'A carga real de 2014–2024 foi limpa e calculada, com conferência da amostra do Atlas, cobertura de todos os municípios da malha publicada e taxas plausíveis antes da publicação dos JSON.' : 'A primeira publicação dos JSON depende da limpeza e do cálculo da série real completa e da aprovação das validações.'}</p>
 </section>
@@ -168,9 +187,65 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <p>Estimativas são aproximações sujeitas às fontes e ao método do INCA; não são contagens observadas nem preveem quem terá câncer. Não distribuímos os casos da UF entre os municípios. A Ação oferece caminhos gerais de prevenção e detecção precoce, independentemente do número estimado. Informação geral. A equipe de saúde orienta o cuidado indicado para você.</p>
 <p>Reproduza com <code>uv run python -m pipeline run --source inca</code>. A fonte <code>pipeline/sources/inca.py</code> publica somente nas fichas por UF e no manifesto, preservando os outros indicadores. A atualização é manual a cada edição, com nova conferência das tabelas, do período e dos recortes. Cite INCA, Estimativa 2026–2028, extração de 2026-11-04, e o Observatório pela apresentação. Novembro de 2026: primeira inclusão deste contexto.</p>
 </section>
+<section id="dados-e-fontes">
+<h2>Dados e fontes</h2>
+<p>As seções de cada indicador acima reúnem as fontes oficiais, os períodos, os recortes e as limitações. Consulte-as junto dos arquivos para interpretar os números.</p>
+<ul>
+<li><a href="/dados/manifest.json">Manifesto dos dados publicados</a>: fontes, extrações, períodos e versão do pipeline.</li>
+<li><a href="/dados/municipalities.json">Índice de municípios</a>: códigos, nomes e UFs para localizar as fichas.</li>
+<li><a href="/#municipality-index-heading">Fichas por município</a>: cada ficha oferece o download dos dados da sua UF.</li>
+</ul>
+<details>
+<summary>Camadas do mapa em JSON — Todos os cânceres</summary>
+<ul>
+<li><a href="/dados/map/within_60_days/all.json">Tratamento em até 60 dias</a></li>
+<li><a href="/dados/map/mammography/all.json">Mamografia</a></li>
+<li><a href="/dados/map/cytopathology/all.json">Citopatológico</a></li>
+<li><a href="/dados/map/mortality/all.json">Mortalidade</a></li>
+</ul>
+<p>Os arquivos refletem a publicação atual. Indicadores com carga ainda pendente não são apresentados como downloads disponíveis.</p>
+</details>
+<p>Os agregados completos em Parquet e CSV e seus downloads versionados ainda dependem da publicação de dados abertos. Não há Release de dados indicada nesta página.</p>
+</section>
+<section id="versoes-e-reproducao">
+<h2>Versões e reprodução</h2>
+<p>Versão do pipeline registrada na publicação: <code>{manifest.pipeline_version}</code>. O <a href="/dados/manifest.json">manifesto</a> identifica as extrações e os períodos de cada fonte; eles podem ser diferentes entre indicadores.</p>
+<p>Consulte o <a href="https://github.com/kvojps/brazil-cancer-map">repositório e as instruções do projeto</a> e o <a href="https://github.com/kvojps/brazil-cancer-map/tree/main/pipeline">código do pipeline</a>. Os comandos, insumos e históricos já documentados permanecem nas seções de cada indicador. A consolidação da metodologia e dos links oficiais para o lançamento continua pendente.</p>
+</section>
+<section id="reutilizacao-e-citacao">
+<h2>Reutilização e citação</h2>
+<p>Ao reutilizar um resultado, cite a fonte original, o período e a data de extração, além do Observatório do Câncer no Brasil pelos cálculos ou pela apresentação. Cada seção acima identifica a fonte e as orientações disponíveis para aquele indicador.</p>
+<p>Os dados de terceiros seguem as condições de cada fonte; consulte sua documentação oficial. Os textos do Observatório estão sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil. O código está sob AGPL-3.0-or-later; essa licença não cobre os arquivos de dados.</p>
+</section>
+</div>
+</div>
 </div>
 </Base>
 <style>
-.methodology { max-width: 850px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; line-height: 1.6; color: var(--text); }
-li { margin-bottom: 2rem; } code { overflow-wrap: anywhere; }
+.methodology { max-width: 76rem; margin: 1rem auto 3rem; }
+.methodology-header { max-width: 72ch; margin-bottom: 2rem; }
+.eyebrow { color: var(--muted); font-weight: 700; margin-bottom: .25rem; }
+.methodology-header h1 { margin-top: .25rem; }
+.methodology-layout { display: grid; grid-template-columns: minmax(12rem, 17rem) minmax(0, 72ch); gap: 2rem; align-items: start; }
+.methodology-index { background: var(--surface); border: 1px solid var(--border); border-radius: .6rem; padding: 1rem; }
+.methodology-index h2 { font-size: 1.1rem; margin-top: 0; }
+.methodology-index ul { list-style: none; padding: 0; margin: 0; }
+.methodology-index a { display: block; padding: .4rem 0; }
+.methodology-reading { min-width: 0; }
+section { scroll-margin-top: 1rem; border-top: 1px solid var(--border); padding: 1rem 0; }
+section:first-child h2 { margin-top: 0; }
+section > ol { padding-left: 1.5rem; }
+section > ol > li { margin-bottom: 2rem; }
+code { overflow-wrap: anywhere; }
+details { border: 1px solid var(--border); border-radius: .4rem; background: var(--surface); padding: .75rem 1rem; }
+summary { cursor: pointer; font-weight: 650; }
+details li { margin-block: .5rem; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+caption { text-align: left; font-weight: 650; margin-bottom: .5rem; }
+th, td { padding: .5rem; border: 1px solid var(--border); text-align: left; }
+thead { background: var(--soft); }
+@media (max-width: 55rem) {
+  .methodology-layout { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+}
 </style>
