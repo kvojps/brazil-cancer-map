@@ -32,3 +32,9 @@ Não alterar pipeline, JSON publicados, método, classes, Referência, cascata o
 ## Comments
 
 - Criado no handoff do ticket 35 após escolha humana da alternativa A. Entregas anteriores permanecem resolvidas; implementar somente a mudança de composição e comportamento descrita aqui.
+
+### Integração entregue no ticket 37 — 2026-11-04
+
+- Os caminhos `/municipio/<slug>/` já renderizam `MapExperience` com `MunicipalityProfile` no HTML; sem redirecionamento JavaScript. O painel aprimorado carrega o JSON da UF e extrai o perfil do documento municipal, reutilizando os cartões Astro, sem uma segunda implementação editorial no cliente. Entrada por documento selecionado reutiliza seu perfil no HTML.
+- Para não repetir o índice nacional em 5.571 documentos, ele permanece apenas na inicial, com link nativo nos documentos selecionados. A convenção final de histórico/URL, Mapa/Lista, índice sob demanda e verificação da hospedagem continuam neste ticket.
+- [Validação e medição de saída do ticket 37](../../ui-ux-v1/validation-37.md): 763.801.491 bytes de arquivos, aproximadamente 764 MiB em disco. O shell aumenta o HTML por município; JSON e malha não são duplicados. O excesso continua pendente, sem aprovação de orçamento ou publicação.

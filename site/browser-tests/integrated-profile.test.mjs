@@ -16,6 +16,7 @@ test('selection loads four axes, filters all types and distinguishes returning f
     await ready(page);
     const toggle = page.locator('[data-toggle-profile]');
     assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('#municipality-preview').evaluate(el => el.getBoundingClientRect().bottom <= innerHeight), true);
     await toggle.click();
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     assert.equal(await page.locator('[data-profile-axis][open]').getAttribute('id'), 'acesso');
