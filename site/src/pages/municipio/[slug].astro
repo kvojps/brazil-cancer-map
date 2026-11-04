@@ -22,12 +22,25 @@ const { municipality, profile } = Astro.props;
 <Base title={`${municipality.name} (${municipality.uf}) — Meu município`}>
   <MunicipalityProfile municipality={municipality} profile={profile} />
   <script>
-    import { readMapState } from '../../map/map-state';
+    import { readMapState, writeMapState } from '../../map/map-state';
+    import { CANCER_TYPES } from '../../map/indicator-layer';
     const showType = () => {
-      const type = readMapState(new URLSearchParams(location.search)).cancerType;
+      const url = new URL(location.href);
+      const anchorType = url.hash.startsWith('#tipo-') ? url.hash.slice(6) : '';
+      const state = readMapState(url.searchParams);
+      const type = Object.hasOwn(CANCER_TYPES, anchorType) ? anchorType : state.cancerType;
+      url.search = writeMapState({ ...state, cancerType: type }, url.searchParams).toString();
+      history.replaceState(null, '', url);
       for (const section of document.querySelectorAll<HTMLElement>('[data-cancer-type]')) section.hidden = section.dataset.cancerType !== type;
+      for (const link of document.querySelectorAll<HTMLElement>('[data-profile-type]')) {
+        if (link.dataset.profileType === type) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      }
+      window.dispatchEvent(new Event('navigation-state-change'));
+      if (Object.hasOwn(CANCER_TYPES, anchorType)) document.getElementById(`tipo-${type}`)?.scrollIntoView();
     };
     showType();
     window.addEventListener('popstate', showType);
+    window.addEventListener('hashchange', showType);
   </script>
 </Base>

@@ -22,11 +22,20 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
 ---
   <div class="profile" data-code={municipality.code}>
     <nav><a href="/" data-close-profile>Voltar ao mapa do Brasil</a></nav>
-    <h2 tabindex="-1" data-profile-heading>{municipality.name} <small>({municipality.uf})</small></h2>
+    <h1 tabindex="-1" data-profile-heading>{municipality.name} <small>({municipality.uf})</small></h1>
     <p>Meu município — dados sobre o cuidado com o câncer, para entender e agir.</p>
+    <nav aria-label="Tipo de câncer" class="profile-types">
+      {Object.entries(CANCER_TYPES).map(([type, label]) => <a href={`?tipo=${type}#tipo-${type}`} data-profile-type={type}>{label}</a>)}
+    </nav>
     <p>{ALL_CANCERS_NOTE}</p>
+    <nav aria-label="Eixos" class="profile-axes">
+      <a href="#acesso">Acesso ao tratamento</a>
+      <a href="#deteccao">Detecção precoce</a>
+      <a href="#prevencao">Prevenção</a>
+      <a href="#panorama">Panorama</a>
+    </nav>
     <section id="acesso"><h2>Acesso ao tratamento</h2>
-      {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
+      {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section id={`tipo-${cancerType}`} tabindex="-1" data-cancer-type={cancerType}>
         <h3>{label}</h3>
         <TreatmentCard treatment={profile.indicators.within_60_days[cancerType]!} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={manifest.sources.painel.extracted_at} />
       </section>)}
@@ -57,7 +66,7 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
         <AlternativeActionCard label="Pulmão" reason="O indicador de tabagismo na capital do seu estado ainda não está disponível nesta ficha." action={smokingAction} />
       </section>)}
     </section>
-    <section><h2>Panorama</h2>
+    <section id="panorama"><h2>Panorama</h2>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
         <h3>{label}</h3>
         <EstimatedCasesCard data={profile.indicators.estimated_cases?.[cancerType]} uf={municipality.uf} cancerType={cancerType} />

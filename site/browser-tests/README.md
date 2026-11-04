@@ -26,3 +26,9 @@ navegador de teste e não integra o site publicado.
 Esses testes não substituem uma sessão com leitor de tela nem a auditoria de
 acessibilidade do lançamento (ticket 25). Os anúncios usam regiões de status e
 os dados continuam expressos em texto.
+
+A ficha municipal também é verificada em `municipality.test.mjs`: links estáticos
+para os seis Tipos de câncer, âncora direta que prevalece sobre um filtro anterior,
+preservação de tema e retorno, ativação de links e expansões pelo teclado e a
+mesma matriz de temas/larguras/JavaScript, com expansões abertas. Inclui zoom
+nativo de 200% pela extensão de teste.

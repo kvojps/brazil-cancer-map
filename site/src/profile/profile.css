@@ -13,3 +13,20 @@
   table { border-collapse: collapse; width: 100%; } th, td { padding: .4rem; text-align: left; border-bottom: 1px solid var(--border); }
 
 }
+
+.profile {
+  max-width: 76rem;
+  margin-inline: auto;
+  min-width: 0;
+  .profile-types, .profile-axes { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem; }
+  .profile-types a, .profile-axes a { padding: .4rem .65rem; border: 1px solid var(--border); border-radius: .4rem; background: var(--surface); }
+  .profile-types [aria-current="true"] { background: var(--soft); font-weight: 700; }
+  > section { margin-block: 2rem; }
+  [data-cancer-type] { margin-block: 1rem; scroll-margin-top: 1rem; }
+  article + article { margin-top: 1rem; }
+  .treatment-locations { border: 1px solid var(--border); border-radius: .75rem; padding: 1.25rem; background: var(--surface); }
+  details { max-width: 100%; }
+  details:has(> table) { overflow-x: auto; }
+  summary { padding: .3rem; }
+  li + li { margin-top: .5rem; }
+}
