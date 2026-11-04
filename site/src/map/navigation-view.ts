@@ -4,7 +4,6 @@ import { renderMunicipalityPreview } from './municipality-preview';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
-import { navigationUrl } from '../shared/navigation';
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
@@ -89,7 +88,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       button.addEventListener('click', () => select(place));
       const link = document.createElement('a');
       link.textContent = `Ver Meu município: ${place.name} (${place.uf})`;
-      link.href = navigationUrl(new URL(municipalityPath(place), location.href), new URL(location.href)).href;
+      link.href = municipalityPath(place);
       item.append(button, ' ', link);
       return item;
     }));
