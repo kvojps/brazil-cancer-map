@@ -16,7 +16,7 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 
 export interface UfProfile {
   uf: string;
-  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; mortality?: Record<string, MortalityProfile> };
+  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; hpv?: Record<string, HpvProfile>; mortality?: Record<string, MortalityProfile> };
   where_to_treat?: WhereToTreat;
 }
 
@@ -44,3 +44,17 @@ export function municipalityPath(municipality: { code: string; name: string }): 
 }
 
 export interface MortalityProfile extends Omit<ScreeningProfile, 'uf_trend'> { national_trend: TrendClass | null; national_adjustment_note?: string | null }
+
+export interface HpvResult {
+  value: number | null;
+  status: MunicipalityIndicator['status'];
+  status_note: string | null;
+}
+export interface HpvProfile extends Omit<ScreeningProfile, 'municipalities' | 'series'> {
+  municipalities: Record<string, MunicipalityIndicator & {
+    series_id: string | null;
+    denominator_note?: string | null;
+    by_sex: Record<'F' | 'M', HpvResult>;
+  }>;
+  series: Record<string, (SeriesPoint & { by_sex: Record<'F' | 'M', HpvResult>; single_dose: boolean })[]>;
+}

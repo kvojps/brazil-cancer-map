@@ -89,8 +89,9 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           for (const option of modeSelector.options) {
             const [id, mode] = option.value.split(":");
             const presentation = mapOption(id!, state.cancerType, mode as MapState["mode"]);
-            option.disabled = presentation.disabled;
-            option.textContent = presentation.label;
+            const pending = option.dataset.pending === 'true';
+            option.disabled = presentation.disabled || pending;
+            option.textContent = presentation.label + (pending ? ' — dados ainda não disponíveis' : '');
           }
           modeSelector.value = `${state.indicator}:${state.mode}`;
         };

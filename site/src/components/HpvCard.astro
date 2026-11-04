@@ -1,0 +1,70 @@
+---
+import type { HpvProfile } from '../profile/profile';
+import { formatPercent, originText, statusText } from '../map/indicator-layer';
+import { hpvAction as action } from '../content/actions';
+interface Props { data?: HpvProfile; code: string; regionName: string; cancerType: string; updatedAt?: string }
+const { data, code, regionName, cancerType, updatedAt } = Astro.props;
+const entry = data?.municipalities[code];
+const series = entry?.series_id ? data!.series[entry.series_id]! : [];
+const maximum = Math.max(100, ...series.map(point => point.value ?? 0));
+const first = data?.period.first_year ?? 2020;
+const last = data?.period.last_year ?? first;
+const pointX = (year: number) => 42 + 500 * (year - first) / Math.max(1, last - first);
+const pointY = (value: number) => 160 - 130 * value / maximum;
+const sexes: ('F' | 'M')[] = ['F', 'M'];
+const chartId = `hpv-series-${cancerType}`;
+---
+<article class="treatment-card" aria-label="Cobertura da vacina HPV — 9–14 anos">
+  <h3>Cobertura da vacina HPV — meninas e meninos de 9–14 anos</h3>
+  <p><strong>Tendência: série curta, ainda sem direção.</strong> A mudança para dose única em 2024 está marcada na série.</p>
+  {data && entry ? <>
+    <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Último ano consolidado: {data.period.latest}.</strong></p>
+    <p>{originText(entry, regionName)}</p>
+    {entry.denominator_note && <p>{entry.denominator_note}</p>}
+    {entry.origin === 'immediate_region' && !entry.denominator_note && <p>Há menos de 20 pessoas de 9–14 anos no denominador do município; usamos os dados do seu município e vizinhos.</p>}
+    {entry.origin === 'insufficient' ? <p>A população de 9–14 anos é insuficiente aqui e na região para calcular o indicador.</p> : <>
+      <h4>Situação em {data.period.latest}</h4>
+      <p><strong>{formatPercent(entry.value)}</strong> — {statusText(entry, data)}.</p>
+      {entry.value !== null && <meter min="0" max="100" value={entry.value} aria-label="Cobertura HPV em relação à meta de 90%" />}
+      {entry.status_note && <p>{entry.status_note}</p>}
+      <p>Referência: 90% — meta para 2030, para o total e para cada sexo (Plano de Dant). A meta da OMS é para meninas.</p>
+      <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartId}>
+        <title id={chartId}>Cobertura anual da coorte de 9–14 anos com ao menos uma dose; valores na tabela.</title>
+        <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
+        <line x1="42" x2="542" y1={pointY(90)} y2={pointY(90)} stroke="#80868f" stroke-dasharray="3 4" />
+        <text x="0" y="160">0</text><text x="0" y="25">{formatPercent(maximum)}</text>
+        {first <= 2024 && last >= 2024 && <>
+          <line x1={pointX(2024)} x2={pointX(2024)} y1="35" y2="160" stroke="#80868f" stroke-dasharray="3 4" />
+          <text x={Math.min(pointX(2024), 380)} y="18">2024: dose única</text>
+        </>}
+        {series.map((point, index) => {
+          const previous = series[index - 1];
+          return <>
+            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="#315e90" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
+            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="#315e90" />}
+          </>;
+        })}
+        <text x="42" y="185">{first}</text><text x="505" y="185">{last}</text>
+      </svg>
+      <details><summary>Ver detalhes por sexo e série em tabela</summary>
+        <p>Situação em {data.period.latest}: meninas {formatPercent(entry.by_sex.F.value)} ({statusText(entry.by_sex.F, data)}); meninos {formatPercent(entry.by_sex.M.value)} ({statusText(entry.by_sex.M, data)}). Referência para cada sexo: 90% — meta para 2030.</p>
+        {sexes.map(sex => entry.by_sex[sex].status_note && <p>{sex === 'F' ? 'Meninas' : 'Meninos'}: {entry.by_sex[sex].status_note}</p>)}
+        <table><caption>Cobertura HPV com ao menos uma dose</caption>
+          <thead><tr><th scope="col">Ano</th><th scope="col">Total</th><th scope="col">Meninas</th><th scope="col">Meninos</th></tr></thead>
+          <tbody>{series.map(point => <tr><th scope="row">{point.year}{point.single_dose ? ' — dose única' : ''}{point.provisional ? ' (provisório)' : ''}</th><td>{formatPercent(point.value)}</td><td>{formatPercent(point.by_sex.F.value)}</td><td>{formatPercent(point.by_sex.M.value)}</td></tr>)}</tbody>
+        </table>
+      </details>
+    </>}
+    {data.period.provisional.length > 0 && <p>Anos ainda incompletos: {data.period.provisional.join(', ')}. Não são usados na Situação.</p>}
+    <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
+    {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
+  </> : <p>Os dados de cobertura HPV ainda não estão disponíveis nesta ficha.</p>}
+  <p>Contamos pessoas com ao menos uma dose em todos os anos, acumulando as doses enquanto a coorte está entre 9 e 14 anos. Usamos a população do Censo 2022 como referência fixa, conforme o painel oficial. Os outros indicadores usam a estimativa anual POPSVS.</p>
+  <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
+    <details><summary>Saiba mais</summary>
+      {action.reviewedVersion === action.version && action.reviewer && action.details.map(text => <p>{text}</p>)}
+      <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
+    </details><p>{action.disclaimer}</p>
+  </section>
+  <p><a href="/metodologia/#hpv">Como calculamos</a></p>
+</article>

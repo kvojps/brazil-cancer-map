@@ -82,3 +82,17 @@ export const cervicalScreeningAction = {
   verificationNote: 'Transição e periodicidade conferidas no INCA. Revisão clínica dos detalhes pendente.',
   reviewedVersion: null, reviewedAt: null, reviewer: null,
 };
+
+export const hpvAction = {
+  title: 'Confira sua vacinação contra o HPV.',
+  summary: 'Leve sua caderneta à UBS para verificar se há dose indicada para você.',
+  disclaimer: 'Informação geral. A equipe de saúde orienta o cuidado indicado para você.',
+  details: ['A equipe da UBS confere as doses registradas e orienta a vacinação conforme sua idade e condição de saúde.'],
+  audience: 'Pessoas que procuram orientação sobre a vacinação contra o HPV no SUS.',
+  criteria: 'Indicação verificada pela equipe da UBS conforme o calendário do Ministério da Saúde.',
+  exceptions: 'Grupos especiais têm esquemas próprios; a equipe orienta cada situação.',
+  version: '1', checkedAt: '2026-11-04',
+  sources: [{ title: 'Ministério da Saúde — HPV', url: 'https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hpv/hpv' }],
+  verificationNote: 'Texto curto aprovado no ticket 20. Revisão clínica dos detalhes pendente.',
+  reviewedVersion: null, reviewedAt: null, reviewer: null,
+};

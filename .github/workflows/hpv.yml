@@ -1,0 +1,85 @@
+name: HPV annual partitions
+
+on:
+  workflow_dispatch:
+    inputs:
+      year:
+        description: Year to process (blank means all years since 2020)
+        type: string
+        required: false
+  schedule:
+    - cron: '0 6 20 * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hpv-state
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      years: ${{ steps.years.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: years
+        env:
+          SELECTED_YEAR: ${{ inputs.year }}
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os
+          current = datetime.datetime.now(datetime.timezone.utc).year
+          selected = os.environ['SELECTED_YEAR']
+          years = [int(selected)] if selected else list(range(2020, current + 1))
+          if any(year < 2020 or year > current for year in years):
+              raise ValueError('Invalid HPV partition year')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('value=' + json.dumps(years) + '\n')
+          PY
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view hpv-state >/dev/null 2>&1; then
+            gh release create hpv-state --title 'HPV incremental state' --notes 'Monthly reduced SI-PNI state; no raw ZIP collection.' --prerelease
+          fi
+
+  year:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        year: ${{ fromJSON(needs.prepare.outputs.years) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - name: Restore durable reduced state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PARTITION_YEAR: ${{ matrix.year }}
+        run: |
+          if gh release view hpv-state --json assets --jq '.assets[].name' | rg -qx "hpv-${PARTITION_YEAR}.tar.gz"; then
+            gh release download hpv-state --pattern "hpv-${PARTITION_YEAR}.tar.gz" --dir /tmp
+            tar -xzf "/tmp/hpv-${PARTITION_YEAR}.tar.gz"
+          fi
+      - name: Download and reduce one month at a time
+        run: uv run python -m pipeline run --source hpv --step download --year ${{ matrix.year }}
+      - name: Persist only reduced state and measurements
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PARTITION_YEAR: ${{ matrix.year }}
+        run: |
+          tar -czf "/tmp/hpv-${PARTITION_YEAR}.tar.gz" data/clean/hpv
+          test "$(stat -c%s "/tmp/hpv-${PARTITION_YEAR}.tar.gz")" -lt 2147483648
+          gh release upload hpv-state "/tmp/hpv-${PARTITION_YEAR}.tar.gz" --clobber
+      - name: Retain failed-run measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hpv-measurements-${{ matrix.year }}
+          path: data/clean/hpv/months/**/*.json
+          if-no-files-found: ignore

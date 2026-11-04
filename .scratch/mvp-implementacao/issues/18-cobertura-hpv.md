@@ -15,3 +15,17 @@
 - [ ] No mapa, o HPV abre em "como está hoje", com uma nota no seletor explicando por quê
 - [ ] O cartão mostra o detalhe por sexo ao ser aberto, a marca da dose única, a nota do Censo 2022, a menção de que a meta da OMS é para meninas e a Ação aprovada da vacinação
 - [ ] A metodologia ganha a seção do HPV, com a diferença entre o Censo 2022 e o POPSVS
+
+
+## Comments
+
+Implementação iniciada em 04/11/2026. O usuário confirmou os testes no protocolo público `Source` e no estado do mapa e pediu para **manter o método oficial**, sem substituir a coorte por pessoas vacinadas apenas no ano.
+
+- Implementados SI-PNI mensal em fluxo, cache incremental, exclusão do bruto após sucesso, partições anuais, Censo 2022/SIDRA 9514 e histórico D1 consolidado do TabNet 2015–2019. O histórico é necessário às coortes da série exibida desde 2020; não se publica uma série antiga.
+- Cálculo longitudinal por paciente e diagonal de ano/idade, HPV quadrivalente e nonavalente, referência 90%, cascata pelo denominador, ausência de Tendência, detalhe por sexo e saída das coortes após 14 anos. Boa Esperança do Norte usa a região, sem inventar população municipal censitária.
+- Cartão, Ação aprovada, metodologia e catálogo do mapa implementados. A opção permanece desabilitada enquanto não houver JSON publicado; não se apresenta a carga parcial como cobertura oficial.
+- Insumos reais extraídos: 66.840 células do Censo e dez tabelas nacionais do TabNet, com amostra independente de Brasileia/2019 conferida. Dois meses reais foram processados, com exclusões registradas. Maio/2020: 375,23 segundos incluindo download, pico dos diretórios da fonte 1.526.722.929 bytes.
+- [Medição e limites](../../../docs/data/hpv-benchmark.md). A extrapolação local sugere cerca de duas horas para 28 GB/ano, mas não comprova a duração nem o pico total de um job anual no GitHub Actions.
+- **Pendências para resolver o ticket:** carga mensal completa desde 2020, comparação das coberturas com o painel oficial, publicação dos JSON para habilitar o mapa e medição de uma partição anual completa no runner. As caixas continuam abertas porque a entrega pública e a capacidade anual ainda não foram demonstradas. Nenhum dado sintético foi publicado.
+
+Commit desta implementação parcial: `feat: add official HPV cohort pipeline and prevention card`.
