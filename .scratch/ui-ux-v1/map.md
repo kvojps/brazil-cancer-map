@@ -27,9 +27,11 @@ Uma especificação de UI/UX pronta para implementar, sustentada por pesquisa de
 - [Como organizar resumo nacional, mapa e Meu município para os dois públicos?](issues/03-hierarquia-e-navegacao.md): mapa Brasil → prévia → ficha completa, Tipo de câncer preservado e Metodologia própria para validação e reprodução; cartões nacionais adiados.
 - [Qual direção visual torna o dashboard claro, acolhedor e consistente?](issues/04-direcao-visual.md): C (Mapa imersivo) aprovada, com visual de dashboard, temas claro/escuro e painel territorial ocupando a altura do mapa no desktop.
 
+- [Como aplicar a direção às demais páginas e entregar uma especificação verificável?](issues/05-padrao-das-paginas-e-handoff.md): páginas, tema compartilhável, alternativas sem JavaScript e critérios aprovados; [especificação pronta para implementação](spec.md).
+
 ## Not yet specified
 
-- Nenhuma questão adicional identificada após aprovação visual. A aplicação às páginas, critérios verificáveis e verificação dos campos da prévia pertencem ao ticket de handoff já aberto; a aprovação do protótipo não equivale a teste formal de usabilidade nem comprova necessidade de ampliar o contrato.
+- Nenhuma decisão restante. Rota concluída com a [especificação de UI/UX da v1](spec.md); implementação e validações pertencem ao esforço seguinte.
 
 ## Out of scope
 

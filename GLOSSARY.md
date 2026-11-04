@@ -8,7 +8,7 @@
 
 **Tendência de mortalidade**: A variação da taxa de mortalidade ao longo do tempo. É a única forma em que a mortalidade aparece no mapa; contagens absolutas de óbitos não ganham destaque.
 
-**Mapa inicial**: A página de entrada do site: o Brasil por município, pintado pela Tendência do indicador escolhido. A cor nunca expressa posição entre municípios. Clicar num município abre o Meu município.
+**Mapa inicial**: A página de entrada do site: o Brasil por município, pintado pela Tendência do indicador escolhido. A cor nunca expressa posição entre municípios. Clicar num município abre uma prévia com acesso ao Meu município completo.
 
 **Meu município**: A visão centrada num município escolhido pelo cidadão, aberta pelo Mapa inicial ou pela busca. É uma ficha com os quatro eixos empilhados (Acesso ao tratamento primeiro). Reúne os indicadores disponíveis para o município e, quando o dado só existe por UF ou capital, os da sua UF ou capital.
 
