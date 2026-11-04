@@ -62,6 +62,12 @@ function showNotes(layer: IndicatorLayer): void {
 
 if (container && status) {
   const { meshUrl, listingUrl } = container.dataset;
+  const initialUrl = new URL(location.href);
+  const staticCode = document.querySelector<HTMLElement>('.profile[data-code]')?.dataset.code;
+  if (staticCode && !initialUrl.searchParams.has('municipio')) initialUrl.searchParams.set('municipio', staticCode);
+  const anchorType = initialUrl.hash.startsWith('#tipo-') ? initialUrl.hash.slice(6) : '';
+  if (Object.hasOwn(CANCER_TYPES, anchorType)) initialUrl.searchParams.set('tipo', anchorType);
+  history.replaceState(null, '', initialUrl);
   const initial = readMapState(new URLSearchParams(location.search));
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
   const retry = document.querySelector<HTMLButtonElement>('#retry-data')!;
@@ -179,6 +185,12 @@ if (container && status) {
       }
       if (selector) {
         selector.disabled = false;
+        window.addEventListener('hashchange', () => {
+          const type = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
+          if (!Object.hasOwn(CANCER_TYPES, type)) return;
+          selector.value = type;
+          selector.dispatchEvent(new Event('change'));
+        });
         selector.addEventListener("change", () => {
           const { indicator, mode } = current;
           const next = normalizeMapState({ indicator, mode, cancerType: selector.value });

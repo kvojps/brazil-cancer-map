@@ -31,18 +31,19 @@ test('direct types override a conflicting query and preserve theme and map conte
   try {
     await page.goto(`${base}${route}?tipo=breast&theme=dark&indicador=mortality#tipo-prostate`);
     await page.locator('[data-profile-type="prostate"][aria-current="true"]').waitFor();
+    await page.locator('#acesso').evaluate(el => { el.open = true; });
     assert.equal(await page.locator('[data-cancer-type="breast"]').first().isVisible(), false);
     assert.equal(await page.locator('[data-cancer-type="prostate"]').first().isVisible(), true);
-    assert.equal(await page.locator('.profile > section').count(), 4);
-    const back = new URL(await page.locator('[data-close-profile]').getAttribute('href'));
-    assert.equal(back.searchParams.get('tipo'), 'prostate');
-    assert.equal(back.searchParams.get('theme'), 'dark');
+    assert.equal(await page.locator('.profile > [data-profile-axis]').count(), 4);
+    assert.equal(new URL(page.url()).searchParams.get('tipo'), 'prostate');
+    assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
     await page.evaluate(() => { location.hash = 'tipo-cervix'; });
     await page.locator('[data-profile-type="cervix"][aria-current="true"]').waitFor();
     assert.equal(await page.locator('[data-cancer-type="cervix"]').first().isVisible(), true);
     await page.locator('[data-profile-type="lung"]').focus();
     await page.keyboard.press('Enter');
     await page.locator('[data-profile-type="lung"][aria-current="true"]').waitFor();
+    await page.locator('#acesso').evaluate(el => { el.open = true; });
     const summary = page.locator('[data-cancer-type="lung"] details summary').first();
     await summary.focus();
     assert.notEqual(await summary.evaluate(el => getComputedStyle(el).outlineStyle), 'none');
@@ -57,6 +58,11 @@ for (const javaScriptEnabled of [false, true]) {
       const page = await browser.newPage({ javaScriptEnabled, colorScheme });
       try {
         await page.goto(base + route);
+        if (javaScriptEnabled) {
+          await page.locator('[data-toggle-profile]:not([hidden])').waitFor();
+          await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+          if (await page.locator('[data-toggle-profile]').getAttribute('aria-expanded') === 'false') await page.locator('[data-toggle-profile]').click();
+        }
         for (const width of [320, 768, 1280]) {
           await page.setViewportSize({ width, height: 900 });
           for (const zoom of ['100%', '200%']) {
@@ -84,6 +90,10 @@ test('native 200% browser zoom keeps the municipal profile readable in both them
         const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
         const page = await context.newPage();
         await page.goto(base + route);
+        if (javaScriptEnabled) {
+          await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+          await page.locator('[data-toggle-profile]:not([hidden])').waitFor();
+        }
         await page.locator('.profile details').evaluateAll(elements => elements.forEach(el => { el.open = true; }));
         await worker.evaluate(async base => {
           const tabs = await chrome.tabs.query({});

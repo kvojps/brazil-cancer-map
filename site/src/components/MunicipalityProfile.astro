@@ -34,14 +34,14 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
       <a href="#prevencao">Prevenção</a>
       <a href="#panorama">Panorama</a>
     </nav>
-    <section id="acesso"><h2>Acesso ao tratamento</h2>
+    <details id="acesso" data-profile-axis open><summary>Acesso ao tratamento</summary>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section id={`tipo-${cancerType}`} tabindex="-1" data-cancer-type={cancerType}>
         <h3>{label}</h3>
         <TreatmentCard treatment={profile.indicators.within_60_days[cancerType]!} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={manifest.sources.painel.extracted_at} />
       </section>)}
       <WhereToTreat services={profile.where_to_treat} code={municipality.code} />
-    </section>
-    <section id="deteccao"><h2>Detecção precoce</h2>
+    </details>
+    <details id="deteccao" data-profile-axis open><summary>Detecção precoce</summary>
       {['all', 'breast'].map(cancerType => <section data-cancer-type={cancerType}>
         <h3>Mama</h3>
         <ScreeningCard indicator="mammography" data={profile.indicators.mammography?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan?.extracted_at} />
@@ -53,8 +53,8 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
       {Object.entries(earlyDetectionActions).map(([cancerType, action]) => ['all', cancerType].map(selection => <section data-cancer-type={selection}>
         <AlternativeActionCard label={CANCER_TYPES[cancerType as keyof typeof CANCER_TYPES]} reason="Este eixo não tem indicador para este tipo de câncer: não há rastreamento organizado com indicador aberto no MVP." action={action} />
       </section>))}
-    </section>
-    <section id="prevencao"><h2>Prevenção</h2>
+    </details>
+    <details id="prevencao" data-profile-axis open><summary>Prevenção</summary>
       {['all', 'cervix'].map(cancerType => <section data-cancer-type={cancerType}>
         <h3>Colo do útero</h3>
         <HpvCard data={profile.indicators.hpv?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.hpv?.extracted_at} />
@@ -65,13 +65,13 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
       {['all', 'lung'].map(selection => <section data-cancer-type={selection}>
         <AlternativeActionCard label="Pulmão" reason="O indicador de tabagismo na capital do seu estado ainda não está disponível nesta ficha." action={smokingAction} />
       </section>)}
-    </section>
-    <section id="panorama"><h2>Panorama</h2>
+    </details>
+    <details id="panorama" data-profile-axis open><summary>Panorama</summary>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
         <h3>{label}</h3>
         <EstimatedCasesCard data={profile.indicators.estimated_cases?.[cancerType]} uf={municipality.uf} cancerType={cancerType} />
         <MortalityCard data={profile.indicators.mortality?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.sim?.extracted_at} />
       </section>)}
-    </section>
+    </details>
     <p><a href={`/dados/profiles/${municipality.uf}.json`}>Baixar os dados da ficha da UF</a> · <a href="/metodologia/">Como calculamos</a></p>
   </div>

@@ -43,7 +43,8 @@ test('search, direct links and table work when WebGL fails', async () => {
     await page.locator('#municipality-search').press('ArrowDown');
     assert.equal(await page.locator('#municipality-results button').evaluate(el => el === document.activeElement), true);
     await page.keyboard.press('Enter');
-    assert.match(await page.locator('[data-open-profile]').getAttribute('href'), /municipio\/261160-recife/);
+    await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    assert.match(await page.locator('#preview-heading').textContent(), /Recife/);
     await page.locator('.indicator-table summary').click();
     await page.locator('.indicator-table select').selectOption('PE');
     assert.match(await page.locator('.table-count').textContent(), /185 municípios/);
