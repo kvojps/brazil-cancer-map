@@ -1,6 +1,7 @@
 # Dado bruto e intermediário do pipeline: nunca entram no git (spec, seção 14).
 /data/raw/
 /data/clean/
+/data/logs/
 
 # Python
 .venv/

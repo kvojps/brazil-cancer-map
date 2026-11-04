@@ -64,12 +64,12 @@ Verificação final após as correções: **149 testes Python** e **21 testes do
 6. Executar uma partição anual completa no runner e registrar duração e pico de disco do **job inteiro**, incluindo dependências, checkout, restauração e compactação em `/tmp`. As medições atuais só cobrem meses locais e os diretórios da fonte. Avaliar os limites de 14 GB/6 h; se não couber, documentar a execução na máquina do mantenedor conforme a spec.
 7. Reexecutar os testes e a revisão das mudanças finais; marcar as caixas restantes e resolver o ticket no mesmo commit da última mudança, registrando os commits sob `Comments`.
 
-**Estado local disponível nesta máquina (fora do git):**
+**Estado local antes da carga manual (fotografia de 04/11/2026; fora do git):**
 
 - `data/clean/hpv/census.parquet` — 66.840 células, 5.570 municípios; população total 9–14: 16.439.492.
 - `data/clean/hpv/legacy.parquet` e `legacy.json` — histórico consolidado 2015–2019 e procedência.
 - `data/clean/hpv/months/2020/04.{parquet,json}` e `05.{parquet,json}` — somente abril e maio/2020; os ZIPs já foram apagados. Esses extratos foram gerados durante o desenvolvimento, antes da inclusão de `extract_version` no metadado. O cache final pode precisar reprocessá-los; não adicionar a versão manualmente sem verificar a compatibilidade.
-- Os demais meses **não foram processados**. Não há `pipeline/references/hpv.json` real nem JSON HPV publicado. Em outra máquina, os insumos locais também precisarão ser baixados.
+- Nessa fotografia, os demais meses **não haviam sido processados**. O usuário fará a carga manual descrita abaixo; na próxima sessão, conferir os arquivos e logs atuais antes de concluir quais meses ainda faltam. Não havia `pipeline/references/hpv.json` real nem JSON HPV publicado. Em outra máquina, os insumos locais também precisarão ser baixados.
 
 **Comandos para retomar:**
 
@@ -92,3 +92,39 @@ npm run check --prefix site
 A flag `--year` serve apenas para `download`/`clean`; o cálculo usa o histórico completo. O formato das referências está no [README](../../../README.md). A investigação dos dados está em [18-hpv-official-inputs.md](../../mapa-cancer-br/research/18-hpv-official-inputs.md), e os números dos benchmarks em [hpv-benchmark.md](../../../docs/data/hpv-benchmark.md). Maio/2020 mediu 375,23 s incluindo download e 1.526.722.929 bytes nos diretórios HPV; isso não comprova o orçamento anual no runner.
 
 Preferências já confirmadas pelo usuário: manter o método oficial por coorte; testes nas interfaces públicas `Source` e estado do mapa; revisão anterior comparada a `ccbd410`. Commits existentes: `ea0af78` e `1cd1658`.
+
+
+### Carga manual pelo usuário e próxima sessão — 04/11/2026
+
+**Combinado com o usuário:** a carga demorada será executada diretamente no terminal da máquina dele, sem manter uma sessão do agente acompanhando, para evitar consumo de tokens. O usuário permanece na mesma máquina e pasta do repositório; os extratos locais serão usados na sessão seguinte, sem upload nem inclusão de microdados no git.
+
+O script executável [download-hpv.sh](../../../download-hpv.sh), na raiz do repositório, faz a carga:
+
+```sh
+cd ~/Documentos/dev/brazil-cancer-map
+./download-hpv.sh
+```
+
+- Processa um ano por vez, de 2020 até o ano corrente em UTC, chamando apenas a etapa `download` do HPV. Essa etapa também reduz o arquivo mensal e apaga o ZIP após sucesso. O script **não executa cálculo, validação ou publicação**.
+- Exibe no mesmo terminal, a cada cinco segundos, o ano, a etapa inferida dos arquivos presentes (download, processamento do ZIP ou preparação/cache), o arquivo atual, seu tamanho, a quantidade de extratos anuais presentes e o tempo decorrido. Não mostra percentual nem previsão automática de término. “Extratos presentes” é contagem de Parquet no disco, não garantia de que o cache de todos já foi reconferido.
+- Grava e acrescenta a saída do pipeline em `data/logs/hpv-<ano>.log`; esses logs estão ignorados pelo git, assim como os dados brutos e limpos. Em caso de erro, exibe as últimas 20 linhas do log, encerra com falha e não inicia o próximo ano.
+- Usa `flock` para impedir duas instâncias desse script ao mesmo tempo. Requer Bash, `uv` e utilitários Linux `flock`, `stat` e `numfmt`, disponíveis no ambiente usado nesta sessão.
+- Pode ser interrompido com Ctrl+C e executado novamente. Extratos concluídos e compatíveis são reaproveitados; o arquivo mensal interrompido pode precisar ser baixado novamente desde o início. Não se promete retomada por byte.
+- A versão com acompanhamento só aparece ao iniciar o script atualizado. Uma instância antiga já em execução não ganha a nova interface automaticamente.
+
+**Estimativas comunicadas, não medições da carga completa:** até setembro/2026 são 81 meses, dos quais dois tinham sido processados inicialmente: 79 meses novos restantes. Se outubro já estiver disponível, são 80. O script poderá reprocessar os dois extratos antigos por incompatibilidade de versão. O volume restante foi estimado em aproximadamente 212 GB de **tráfego acumulado**, não de ocupação simultânea. Pela amostra de maio e pelo volume total, estimou-se cerca de 11–12 horas de download e 15 horas incluindo processamento sequencial; a rede e os meses variam.
+
+Como os ZIPs são apagados um por vez, foi comunicada uma estimativa de 1–3 GB de extratos permanentes e pico local de 6–9 GB, sugerindo margem de 10–12 GB livres. **Essas estimativas de espaço ainda não foram confirmadas para a carga inteira** e não substituem a medição do job anual exigida pelo ticket. O maior ZIP identificado na pesquisa tinha cerca de 4,9 GB. Os benchmarks efetivamente medidos continuam sendo apenas abril e maio/2020, documentados acima.
+
+**O que a próxima sessão deve fazer:**
+
+1. Perguntar ou verificar se a execução manual terminou ou falhou e conferir `data/logs/hpv-*.log`, os Parquet e seus metadados em `data/clean/hpv/months/`. Não assumir que ainda existem só os dois meses iniciais, nem iniciar uma segunda carga concorrente com a que o usuário deixou rodando.
+2. Identificar lacunas e erros reais. Se o último mês ainda não tiver sido publicado na origem, corrigir a descoberta de disponibilidade conforme a pendência anterior; não transformar mês ausente em zero nem ignorar silenciosamente uma falha.
+3. Completar apenas o que faltar e então executar o cálculo por coorte com os dados locais. O histórico fixo do Censo/TabNet já pode estar disponível e deve ser reaproveitado.
+4. Obter as referências oficiais reais, comparar os resultados e corrigir divergências; manter o bloqueio de exportação sem `pipeline/references/hpv.json` válido.
+5. Validar, exportar e commitar os JSON do mapa, fichas e manifesto, testar o HPV habilitado no site e concluir a medição anual do runner ou documentar a execução local, conforme a spec.
+6. Encerrar o ticket somente depois dessas entregas, com as caixas restantes marcadas e os commits registrados.
+
+Verificação do script: `bash -n download-hpv.sh` passou. Uma execução isolada em diretório temporário com `uv` simulado verificou o acompanhamento, a exibição do erro e a preservação do código de saída 7; não iniciou download real nem alterou os dados locais. Esta mudança não reexecutou as suítes Python/site, pois o cálculo e o front não foram modificados.
+
+Commits de contexto: `ea0af78`, `1cd1658` e `d1cf7c2`. O script, a exclusão dos logs pelo git e este registro entram juntos no commit `chore: add monitored HPV download script and update handoff`.
