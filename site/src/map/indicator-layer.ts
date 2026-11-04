@@ -201,13 +201,6 @@ export interface IndicatorText {
 }
 
 export const INDICATORS: Record<string, IndicatorText> = {
-  mortality: {
-    modes: { all: ['trend'], breast: ['trend'], cervix: ['trend'], prostate: ['trend'], colorectal: ['trend'], lung: ['trend'] },
-    name: 'Tendência da mortalidade padronizada por idade',
-    unit: 'rate', valueLabel: 'Taxa por 100 mil', hasTreatmentQuality: false,
-    improving: 'a taxa de mortalidade padronizada por idade diminuiu.',
-    worsening: 'a taxa de mortalidade padronizada por idade aumentou.',
-  },
   within_60_days: {
     modes: {
       all: ["trend", "status"], breast: ["trend", "status"],
@@ -233,6 +226,13 @@ export const INDICATORS: Record<string, IndicatorText> = {
     unit: 'ratio', valueLabel: 'Razão de mamografias (50–69 anos)', hasTreatmentQuality: false,
     improving: 'a razão de mamografias de rastreamento aumentou.',
     worsening: 'a razão de mamografias de rastreamento diminuiu.',
+  },
+  mortality: {
+    modes: { all: ['trend'], breast: ['trend'], cervix: ['trend'], prostate: ['trend'], colorectal: ['trend'], lung: ['trend'] },
+    name: 'Tendência da mortalidade padronizada por idade',
+    unit: 'rate', valueLabel: 'Taxa por 100 mil', hasTreatmentQuality: false,
+    improving: 'a taxa de mortalidade padronizada por idade diminuiu.',
+    worsening: 'a taxa de mortalidade padronizada por idade aumentou.',
   },
 };
 

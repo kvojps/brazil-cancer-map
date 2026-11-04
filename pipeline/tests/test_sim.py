@@ -147,7 +147,7 @@ def test_clean_matches_cancer_definitions_and_sex_and_excludes_fetal_deaths(tmp_
     source, clean, site = fixture_source(tmp_path, monkeypatch)
     cases = [('C50', '2'), ('C50', '1'), ('C53', '2'), ('C53', '1'), ('C61', '1'), ('C61', '2'),
              ('C33', '1'), ('C34', '2'), ('C18', '1'), ('C19', '2'), ('C20', '1'), ('C21', '2'),
-             ('C26', '1'), ('C44', '1'), ('C73', '1'), ('C76', '2'), ('C97', '1'), ('D00', '2'), ('C55', '2')]
+             ('C26', '1'), ('C44', '1'), ('C73', '1'), ('C76', '2'), ('C97', '1'), ('D00', '2'), ('C55', '2'), ('C1X', '1')]
 
     def records(path):
         if not path.stem.endswith('2014'):
