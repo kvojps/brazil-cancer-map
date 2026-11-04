@@ -2,7 +2,7 @@
 
 Labels: wayfinder:grilling
 Type: grilling
-Status: claimed
+**Status:** resolved
 Assignee: codex
 Parent: ../map.md
 Blocked by: 01, 02
@@ -22,6 +22,10 @@ Registrar expressamente qualquer revisão das decisões anteriores de experiênc
 - Spec §§11.1–11.2 e a decisão [Como a experiência "meu município" deve parecer?](../../mapa-cancer-br/issues/06-experiencia-meu-municipio.md) fixam mapa central, ficha lateral/abaixo no celular e eixos empilhados. O novo esforço pode revisar a apresentação com aprovação explícita, sem alterar significados estatísticos por consequência do layout.
 - A navegação usa seletores DOM e extrai `.profile` do HTML estático municipal. A implementação posterior precisa avaliar esses contratos, a rolagem da ficha e o redimensionamento do mapa.
 - A leitura básica municipal funciona sem JavaScript, mas renderiza conteúdo de vários tipos; avaliar excesso e repetição ao desenhar a nova experiência.
+
+### Resolução — 2026-11-04
+
+Decisão aprovada registrada no commit `4873049` (`docs: record approved UI navigation hierarchy`), que contém a resposta, atualiza o mapa e orienta o próximo protótipo. Este encerramento mantém a implementação para outro esforço.
 
 ## Answer
 
