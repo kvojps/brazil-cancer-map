@@ -1,3 +1,4 @@
+import { navigationUrl } from "../shared/navigation";
 import { municipalityPath } from "../profile/profile";
 import {
   CANCER_TYPES,
@@ -14,7 +15,9 @@ import {
   formatPercent,
   formatIndicatorValue,
   measuredCasesText,
+  trendPeriodText,
   type IndicatorLayer,
+  type MapMode,
   type MunicipalityListing,
 } from "./indicator-layer";
 
@@ -27,7 +30,7 @@ import {
 export function mountIndicatorTable(
   root: HTMLElement,
   listing: MunicipalityListing,
-): (layer: IndicatorLayer) => void {
+): (layer: IndicatorLayer | undefined, mode: MapMode) => void {
   const body = root.querySelector("tbody")!;
   const filter = root.querySelector<HTMLSelectElement>("select")!;
   const count = root.querySelector<HTMLElement>(".table-count")!;
@@ -52,9 +55,9 @@ export function mountIndicatorTable(
         const cells = [
           m.name,
           m.uf,
-          trendText(layer.indicator, entry),
+          entry?.adjustment_note && !entry.trend ? "Ajuste não calculável" : trendText(layer.indicator, entry),
           statusText(entry, layer),
-          entry?.status_note ?? "—",
+          [entry?.status_note, entry?.adjustment_note].filter(Boolean).join(" ") || "—",
           formatIndicatorValue(layer.indicator, entry?.value ?? null),
           formatPercent(entry?.without_treatment_info ?? null),
           originText(entry, immediateRegionName(m, listing)),
@@ -66,7 +69,7 @@ export function mountIndicatorTable(
           if (i === 0) cell.scope = "row";
           if (i === 0) {
             const link = document.createElement("a");
-            link.href = municipalityPath(m) + window.location.search;
+            link.href = navigationUrl(new URL(municipalityPath(m), location.href), new URL(location.href)).href;
             link.textContent = text;
             cell.append(link);
           } else cell.textContent = text;
@@ -79,8 +82,19 @@ export function mountIndicatorTable(
   };
   filter.addEventListener("change", render);
 
-  return (layer) => {
+  return (layer, mode) => {
     current = layer;
+    root.querySelector<HTMLElement>('.scroll')!.hidden = !layer;
+    filter.disabled = !layer;
+    if (!layer) {
+      body.replaceChildren();
+      count.textContent = 'Sem resultados carregados para a seleção atual.';
+      return;
+    }
+    root.querySelector('.trend-period')!.textContent = trendPeriodText(layer.period);
+    root.querySelector('.reference-note')!.textContent = layer.has_status && layer.reference
+      ? `Referência: ${formatIndicatorValue(layer.indicator, layer.reference.value)} — ${layer.reference.label}.` : '';
+    root.querySelector('.table-mode')!.textContent = mode === 'trend' ? 'Tendência' : 'Como está hoje';
     const presentation = INDICATORS[layer.indicator]!;
     root.querySelector('.indicator-name')!.textContent = presentation.name;
     for (const header of root.querySelectorAll<HTMLElement>('[data-treatment-column]')) header.hidden = !presentation.hasTreatmentQuality;

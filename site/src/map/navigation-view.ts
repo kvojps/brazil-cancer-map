@@ -1,13 +1,12 @@
-import type { MapLibreMap } from 'maplibre-gl';
 import { INDICATORS, type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
 import { readMapState, writeMapState, type MapState } from './map-state';
 import { renderMunicipalityPreview } from './municipality-preview';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
-import { clearMunicipality, focusMunicipality, onMunicipalityClick } from './municipality-map';
+import { navigationUrl } from '../shared/navigation';
 
-export function mountMunicipalityNavigation(map: MapLibreMap, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
+export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
@@ -38,7 +37,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
     focus: place => {
       selected = place;
       render();
-      focusMunicipality(map, place.code);
+      map.focus(place.code);
       status.textContent = `${place.name} (${place.uf}) selecionado. Prévia disponível após os controles.`;
     },
     load: async place => {
@@ -64,7 +63,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
       content.innerHTML = '<p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p>';
       link.hidden = true;
       status.textContent = '';
-      clearMunicipality(map);
+      map.focus(undefined);
     },
   });
   const failed = (error: unknown) => {
@@ -88,7 +87,10 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
       button.type = 'button';
       button.textContent = `${place.name} (${place.uf})`;
       button.addEventListener('click', () => select(place));
-      item.append(button);
+      const link = document.createElement('a');
+      link.textContent = `Ver Meu município: ${place.name} (${place.uf})`;
+      link.href = navigationUrl(new URL(municipalityPath(place), location.href), new URL(location.href)).href;
+      item.append(button, ' ', link);
       return item;
     }));
     status.textContent = input.value.trim() ? `${matches.length} municípios encontrados. Use Tab para escolher.` : '';
@@ -105,7 +107,8 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
   results.addEventListener('keydown', event => {
     if (event.key === 'Escape') { results.replaceChildren(); input.focus(); }
   });
-  onMunicipalityClick(map, code => {
+  window.addEventListener('municipality-map-select', event => {
+    const code = (event as CustomEvent<string>).detail;
     const place = listing.municipalities.find(place => place.code === code);
     if (place) select(place);
   });
