@@ -23,6 +23,7 @@ from pipeline.trend import quasi_poisson_trend, trend_window
 YEARS = tuple(range(2014, 2025))
 WEIGHTS = dict(zip(range(0, 81, 5), (12000, 10000, 9000, 9000, 8000, 8000, 6000,
     6000, 6000, 6000, 5000, 4000, 4000, 3000, 2000, 1000, 1000), strict=True))
+ALL_CANCERS = frozenset(f'C{n:02d}' for n in range(98) if n != 44)
 CANCERS = {'all': None, 'breast': 2, 'cervix': 2, 'prostate': 1, 'lung': None, 'colorectal': None}
 CODES = {'breast': {'C50'}, 'cervix': {'C53'}, 'prostate': {'C61'},
          'lung': {'C33', 'C34'}, 'colorectal': {'C18', 'C19', 'C20', 'C21'}}
@@ -98,7 +99,7 @@ class SimSource:
                     elif age[0] == '5':
                         group = 80
                 for cancer, selected_sex in CANCERS.items():
-                    included = ('C00' <= cause <= 'C97' and cause != 'C44') if cancer == 'all' else cause in CODES[cancer]
+                    included = cause in (ALL_CANCERS if cancer == 'all' else CODES[cancer])
                     if included and (selected_sex is None or sex == str(selected_sex)):
                         counts[year, code, cancer, group] += 1
         self._clean_dir.mkdir(parents=True, exist_ok=True)
