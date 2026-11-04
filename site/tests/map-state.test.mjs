@@ -92,3 +92,14 @@ test('mortality is trend-only for every cancer type and rates never use percent 
   assert.match(notes, /mortalidade tem só Tendência/);
   assert.doesNotMatch(notes, /vigilância ativa/);
 });
+
+test('HPV opens status for all and cervix and explains its short series', () => {
+  for (const cancerType of ['all', 'cervix']) {
+    assert.deepEqual(normalizeMapState({ indicator: 'hpv', cancerType, mode: 'trend' }),
+      { indicator: 'hpv', cancerType, mode: 'status' });
+    assert.equal(mapOption('hpv', cancerType, 'trend').disabled, true);
+    assert.match(cancerTypeNotes({ indicator: 'hpv', cancer_type: cancerType, has_status: true }).join(' '), /série curta.*dose única.*2024/);
+  }
+  assert.equal(mapOption('hpv', 'breast', 'status').disabled, true);
+  assert.equal(formatIndicatorValue('hpv', 95), '95,0%');
+});

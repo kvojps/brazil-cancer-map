@@ -90,3 +90,41 @@ fora de 0–10 bloqueiam a publicação (limiares operacionais, não oficiais).
 A validação também confere a presença dos municípios da malha e as séries.
 Os detalhes de campos, fórmula, Tendência, limitações e da diferença para a
 orientação atual de 50–74 estão em `/metodologia/#mamografia` no site.
+
+## Vacina HPV (SI-PNI)
+
+O download é particionado por ano:
+
+```sh
+uv run python -m pipeline run --source hpv --step download --year 2020
+# Repita até o ano corrente; depois use o histórico completo:
+uv run python -m pipeline run --source hpv --step compute
+uv run python -m pipeline run --source hpv --step validate
+uv run python -m pipeline run --source hpv --step export
+```
+
+Cada mês é baixado, lido diretamente do ZIP e reduzido antes do próximo;
+o ZIP é apagado só depois da extração bem-sucedida. Não se grava o CSV inteiro
+descompactado. A redução guarda a primeira dose elegível de cada pessoa no mês;
+o cálculo deduplica também entre meses e anos e acumula as diagonais de idade
+conforme a NT 16/2025. HPV quadrivalente e nonavalente entram, com ao menos uma
+dose. D1 de 2015–2019 do TabNet completa as coortes da série exibida desde 2020;
+não é uma série antiga publicada. O Censo 2022 fixo (SIDRA 9514) fornece os
+12 recortes de sexo e idade por município. O histórico consolidado e o Censo
+são baixados automaticamente na primeira execução. POPSVS não é usado.
+
+Os meses reduzidos e seus metadados ficam em `data/clean/hpv/months/<ano>/`;
+a chave pseudonimizada do paciente é necessária para a deduplicação longitudinal.
+O site recebe apenas cobertura e classes prontas. Meses ausentes impedem o
+cálculo. A ausência de histórico não vira cobertura zero. O ano corrente é
+provisório; a Situação usa o último ano completo. A cascata conta a população,
+e o HPV tem apenas Situação, sem Tendência estatística.
+
+O workflow `HPV annual partitions` processa um ano por job, com limite de seis
+horas, e persiste estado reduzido em assets da Release `hpv-state` (menos de
+2 GiB por arquivo). Não publica os JSON do site automaticamente. Pode ser
+acionado manualmente por ano e é agendado mensalmente; tamanho e data remotos
+permitem reaproveitar meses que não mudaram. A carga inicial pode ser feita
+na máquina do mantenedor. A medição e os limites estão em
+[docs/data/hpv-benchmark.md](docs/data/hpv-benchmark.md); a investigação dos
+insumos está na [pesquisa do HPV](.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).

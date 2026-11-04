@@ -21,7 +21,13 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
     run.add_argument("--source", help="run only this source")
     run.add_argument("--step", choices=list(STEPS), help="run only this step")
     run.add_argument("--list", action="store_true", help="show steps and sources without running")
+    run.add_argument("--year", type=int, help="partition HPV download/clean by year")
     args = parser.parse_args(argv)
+    if args.year is not None:
+        if args.source != 'hpv' or args.step not in ('download', 'clean') or not 2020 <= args.year <= 2100:
+            parser.error('--year requires --source hpv and --step download or clean')
+        from pipeline.sources.hpv import HpvSource
+        sources = [HpvSource(years=(args.year,))]
 
     names = [s.name for s in sources]
 

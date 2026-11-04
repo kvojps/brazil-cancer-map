@@ -22,7 +22,7 @@ import {
   INDICATORS,
   INSUFFICIENT_DOTS,
   TREND_COLORS,
-  TREND_LABELS,
+  trendText,
   QUALITY_WARNING,
   formatPercent,
   formatIndicatorValue,
@@ -228,12 +228,11 @@ function tooltip(
 ): HTMLElement {
   const entry = layer.municipalities[code];
   const place = places.get(code);
-  const state = trendState(entry);
   const indicator = INDICATORS[layer.indicator]?.name ?? layer.indicator;
   const lines: [string, string][] = [
     ["strong", place ? `${place.name} (${place.uf})` : code],
     ["span", `${indicator} · ${CANCER_TYPES[layer.cancer_type] ?? layer.cancer_type}`],
-    ["span", `Tendência ${trendPeriodText(layer.period)}: ${TREND_LABELS[state]}`],
+    ["span", `Tendência${layer.period.trend.length ? ` ${trendPeriodText(layer.period)}` : ''}: ${trendText(layer.indicator, entry)}`],
   ];
   if (mode === "status") {
     lines.push(["strong", `Situação em ${layer.period.latest}: ${statusText(entry, layer)}`]);

@@ -214,6 +214,12 @@ export const INDICATORS: Record<string, IndicatorText> = {
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
   },
+  hpv: {
+    modes: { all: ['status'], cervix: ['status'] },
+    name: 'Cobertura da vacina HPV (9–14 anos)',
+    unit: 'percent', valueLabel: 'Cobertura HPV (9–14 anos)', hasTreatmentQuality: false,
+    improving: '', worsening: '',
+  },
   cytopathology: {
     modes: { all: ['trend', 'status'], cervix: ['trend', 'status'] },
     name: 'Citopatológicos (25–64 anos; série até 2025)',
@@ -287,6 +293,7 @@ export function cancerTypeNotes(layer: Pick<IndicatorLayer, "cancer_type" | "has
   const notes: string[] = [];
   if (layer.cancer_type === ALL_CANCERS) notes.push(ALL_CANCERS_NOTE);
   if (!layer.has_status) notes.push(noStatusNote(layer));
+  if (layer.indicator === 'hpv') notes.push('O HPV abre em “como está hoje”: a série curta e a mudança para dose única em 2024 ainda não permitem calcular a Tendência.');
   return notes;
 }
 
@@ -345,7 +352,12 @@ export function formatIndicatorValue(indicator: string, value: number | null): s
   return INDICATORS[indicator]?.unit === 'ratio' ? value === null ? '—' : ratio.format(value) : formatPercent(value);
 }
 
+export function trendText(indicator: string, entry: MunicipalityIndicator | undefined): string {
+  return indicator === 'hpv' ? 'Série curta, ainda sem direção' : TREND_LABELS[trendState(entry)];
+}
+
 export function trendPeriodText(period: Period): string {
+  if (!period.trend.length) return '';
   return `${period.trend[0]}–${period.trend[1]}`;
 }
 
@@ -357,6 +369,6 @@ export const STATUS_COLORS = { reached: "#54278f", near: "#9e9ac8", far: "#dadae
 export const STATUS_LABELS = { reached: "Alcançou", near: "Perto", far: "Longe", insufficient: "Dado insuficiente" };
 export const STATUS_LEGEND = "A cor mostra a distância até a referência. Não é um ranking entre municípios.";
 
-export function statusText(entry: MunicipalityIndicator | undefined, layer: Pick<IndicatorLayer, "has_status">): string {
+export function statusText(entry: Pick<MunicipalityIndicator, 'status'> | undefined, layer: Pick<IndicatorLayer, "has_status">): string {
   return layer.has_status ? STATUS_LABELS[entry?.status ?? "insufficient"] : "Não se aplica";
 }

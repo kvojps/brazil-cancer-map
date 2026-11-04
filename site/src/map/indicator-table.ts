@@ -10,11 +10,10 @@ import {
   qualityPeriodText,
   qualityText,
   ufQuality,
-  TREND_LABELS,
+  trendText,
   formatPercent,
   formatIndicatorValue,
   measuredCasesText,
-  trendState,
   type IndicatorLayer,
   type MunicipalityListing,
 } from "./indicator-layer";
@@ -53,7 +52,7 @@ export function mountIndicatorTable(
         const cells = [
           m.name,
           m.uf,
-          TREND_LABELS[trendState(entry)],
+          trendText(layer.indicator, entry),
           statusText(entry, layer),
           entry?.status_note ?? "—",
           formatIndicatorValue(layer.indicator, entry?.value ?? null),
