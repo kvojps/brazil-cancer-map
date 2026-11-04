@@ -25,11 +25,11 @@ Uma especificação de UI/UX pronta para implementar, sustentada por pesquisa de
 - [O que aproveitar de sistemas de observabilidade no dashboard do Observatório?](issues/02-observabilidade.md): contexto na URL e panorama → detalhe são transferíveis; tempo real e linguagem de incidentes não se adequam às séries anuais.
 
 - [Como organizar resumo nacional, mapa e Meu município para os dois públicos?](issues/03-hierarquia-e-navegacao.md): mapa Brasil → prévia → ficha completa, Tipo de câncer preservado e Metodologia própria para validação e reprodução; cartões nacionais adiados.
+- [Qual direção visual torna o dashboard claro, acolhedor e consistente?](issues/04-direcao-visual.md): C (Mapa imersivo) aprovada, com visual de dashboard, temas claro/escuro e painel territorial ocupando a altura do mapa no desktop.
 
 ## Not yet specified
 
-- O que os testes dos protótipos revelarão sobre densidade, orientação espacial, descoberta dos filtros e compreensão das ressalvas.
-- Eventuais necessidades de dados da prévia e da ficha que os protótipos revelarem; os cartões nacionais adiados não motivam ampliação do contrato neste esforço.
+- Nenhuma questão adicional identificada após aprovação visual. A aplicação às páginas, critérios verificáveis e verificação dos campos da prévia pertencem ao ticket de handoff já aberto; a aprovação do protótipo não equivale a teste formal de usabilidade nem comprova necessidade de ampliar o contrato.
 
 ## Out of scope
 
