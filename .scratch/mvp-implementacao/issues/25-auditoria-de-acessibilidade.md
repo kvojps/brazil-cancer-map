@@ -27,3 +27,8 @@
 Ampliação aprovada junto da divisão dos tickets 30–34: incorporar os cenários do redesign à auditoria existente, sem criar auditoria duplicada. A aprovação visual não substitui estas verificações nem a revisão clínica das Ações.
 
 - Escopo posterior aprovado no ticket 35: incluir o Console A dos tickets 36–39 na auditoria já prevista — painel inferior resumido/expandido, recolher versus limpar seleção, ajuda por clique/toque/teclado, Mapa/Lista, histórico, links legados e documentos selecionados sem JavaScript. As checagens do protótipo não substituem esta auditoria nem a medição de orçamento; a saída existente de cerca de 675 MB segue como excesso a investigar, sem aprovação implícita.
+
+### Medição do ticket 37 — 2026-11-04
+
+- [Registro da consulta integrada](../../ui-ux-v1/validation-37.md): saída de 763.801.491 bytes de arquivos (aproximadamente 764 MiB em disco), ainda acima da meta de 30 MB. O shell do dashboard acrescenta HTML por município; evitou-se repetir o índice nacional, que levaria a aproximadamente 4,1 GiB. Não se aprova o excesso: o ticket 38 deve avaliar geração/hospedagem e esta auditoria mantém a decisão explícita de orçamento pendente.
+- Carga incremental estimada de uma seleção em PE: documento de Recife ~18 KB gzip mais perfil da UF ~161 KB gzip, com cache durante a visita. Medição local por compressão dos arquivos, sem alegar captura HTTP ou cumprimento do orçamento de primeira visita.

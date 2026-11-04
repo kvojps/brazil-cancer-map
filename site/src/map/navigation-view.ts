@@ -1,4 +1,4 @@
-import { INDICATORS, formatIndicatorValue, originText, statusText, trendText, QUALITY_WARNING, type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
+import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
 import { readMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
@@ -6,6 +6,7 @@ import { createMunicipalityNavigation, searchMunicipalities } from './navigation
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
+  panel.dataset.enhanced = '';
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
   const status = document.querySelector<HTMLElement>('#search-status')!;
@@ -52,8 +53,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const data = indicators[state.indicator as keyof typeof indicators]?.[state.cancerType];
     const entry = data?.municipalities[selected.code];
     summary.textContent = data && entry
-      ? `${INDICATORS[state.indicator]!.name}: ${formatIndicatorValue(state.indicator, entry.value)} · ${data.period.latest}. ${originText(entry, listing.immediate_regions[selected.immediate_region] ?? selected.immediate_region)}. ${state.mode === 'status' && data.has_status ? statusText(entry, data) : state.indicator === 'hpv' ? 'Série curta, ainda sem direção.' : entry.adjustment_note && !entry.trend ? 'Ajuste não calculável' : trendText(state.indicator, entry)}. ${state.indicator === 'within_60_days' && entry.quality_band === 'C' ? QUALITY_WARNING : ''}`
-      : 'Os dados deste indicador não estão disponíveis. Consulte os demais Eixos.';
+      ? 'Consulta pronta: quatro Eixos com resultados, ressalvas e Ações.'
+      : 'Os dados deste indicador não estão disponíveis. Expanda para consultar os demais Eixos e Ações.';
     if (!selected) return;
     if (shownCode !== selected.code || !content.querySelector('.profile')) {
       const document = new DOMParser().parseFromString(html, 'text/html');
@@ -112,8 +113,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         document = fetch(municipalityPath(place)).then(async response => {
           if (!response.ok) throw new Error(`Municipality request failed (${response.status})`);
           const html = await response.text();
-          if (!new DOMParser().parseFromString(html, 'text/html').querySelector('.profile')) throw new Error('Municipal profile is missing');
-          return html;
+          const profile = new DOMParser().parseFromString(html, 'text/html').querySelector('.profile');
+          if (!profile) throw new Error('Municipal profile is missing');
+          return profile.outerHTML;
         });
         documents.set(place.code, document);
         document.catch(() => documents.delete(place.code));
