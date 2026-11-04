@@ -11,19 +11,20 @@
     </select>
   </label>
   <p class="table-count" aria-live="polite">Carregando…</p>
-  <div class="scroll" tabindex="0" role="region" aria-label="Tabela dos municípios">
-    <table>
-      <caption>
+      <p class="table-description" id="table-description">
         <span class="indicator-name"></span>.
         Modo: <span class="table-mode"></span>. Tipo de câncer: <span class="cancer-type"></span>. Indicador em cada
         município, Tendência quando disponível e valor do último ano consolidado (<span class="latest-year"></span>)<span
           class="measured-cases"
         ></span>. <span class="treatment-note">A % sem informação de tratamento é sobre todos os casos diagnosticados.</span>
-        <span class="quality-note"></span>
-        <span class="status-note"></span>
-        <span class="reference-note"></span>
-        Período da Tendência: <span class="trend-period"></span>.
-      </caption>
+        {" "}<span class="quality-note"></span>
+        {" "}<span class="status-note"></span>
+        {" "}<span class="reference-note"></span>
+        {" "}Período da Tendência: <span class="trend-period"></span>.
+      </p>
+  <div class="scroll" tabindex="0" role="region" aria-label="Tabela dos municípios">
+    <table aria-describedby="table-description">
+      <caption>Valores, classes e origem por município</caption>
       <thead>
         <tr>
           <th scope="col">Município</th>
@@ -73,6 +74,7 @@
   table {
     border-collapse: collapse;
     width: 100%;
+    min-width: 65rem;
   }
   caption {
     text-align: left;
@@ -84,6 +86,7 @@
     text-align: left;
     padding: 0.25rem 0.5rem;
     border-bottom: 1px solid var(--border);
+    overflow-wrap: normal;
   }
   thead th {
     position: sticky;

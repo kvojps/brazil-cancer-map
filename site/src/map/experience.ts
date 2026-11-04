@@ -59,7 +59,10 @@ if (container && status) {
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
   const retry = document.querySelector<HTMLButtonElement>('#retry-data')!;
   let started = false;
-  const start = () => getJson<MunicipalityListing>(listingUrl!)
+  const start = async () => {
+    retry.hidden = true;
+    dataStatus.textContent = 'Carregando a lista de municípios…';
+    await getJson<MunicipalityListing>(listingUrl!)
     .then((listing) => {
       started = true;
       let showOnMap = (_layer: IndicatorLayer | undefined, _mode: MapState['mode']) => {};
@@ -174,6 +177,7 @@ if (container && status) {
       dataStatus.textContent = 'Não foi possível carregar a lista de municípios. Tente novamente ou use o índice por UF abaixo.';
       retry.hidden = false;
     });
+  };
   retry.onclick = () => { if (!started) void start(); };
   void start();
 }

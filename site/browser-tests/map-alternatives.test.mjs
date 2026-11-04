@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
+import { fileURLToPath } from 'node:url';
 
 // Run against `npm run dev` or `npm run preview`; supply an installed Chromium.
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
@@ -50,6 +51,21 @@ test('search, direct links and table work when WebGL fails', async () => {
     await page.locator('#map-mode').selectOption('within_60_days:status');
     await waitForData(page);
     assert.equal(await page.locator('.table-mode').textContent(), 'Como está hoje');
+  } finally { await page.close(); }
+});
+
+test('existing search results follow a later change of cancer type', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.goto(`${base}/?tipo=breast&theme=dark`);
+    await waitForData(page);
+    await page.locator('#municipality-search').fill('Recife PE');
+    await page.locator('#municipality-results a').waitFor();
+    await page.locator('#cancer-type').selectOption('lung');
+    await waitForData(page);
+    await page.waitForFunction(() => document.querySelector('#municipality-results a')?.href.includes('tipo=lung'), undefined, { timeout: 5000 });
+    assert.match(await page.locator('#municipality-results a').getAttribute('href'), /theme=dark/);
   } finally { await page.close(); }
 });
 
@@ -153,3 +169,42 @@ for (const javaScriptEnabled of [false, true]) {
     }
   }
 }
+
+// A test-only extension calls Chrome's native tabs.setZoom API, exercising
+// viewport/media-query changes as well as text scaling.
+test('native 200% browser zoom keeps alternatives readable in both themes', async () => {
+  const extension = fileURLToPath(new URL('./zoom-extension', import.meta.url));
+  for (const javaScriptEnabled of [false, true]) {
+    for (const colorScheme of ['light', 'dark']) {
+      const context = await chromium.launchPersistentContext('', {
+        executablePath: process.env.CHROMIUM_PATH ?? '/snap/bin/chromium',
+        headless: true, javaScriptEnabled, colorScheme,
+        ignoreDefaultArgs: ['--disable-extensions'],
+        args: ['--no-sandbox', `--disable-extensions-except=${extension}`, `--load-extension=${extension}`],
+      });
+      try {
+        const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
+        const page = await context.newPage();
+        if (javaScriptEnabled) await disableWebGL(page);
+        await page.goto(base);
+        if (javaScriptEnabled) {
+          await waitForData(page);
+          await page.locator('.indicator-table summary').click();
+        }
+        await page.locator('#municipalities-PE summary').click();
+        await worker.evaluate(async base => {
+          const tabs = await chrome.tabs.query({});
+          const tab = tabs.find(tab => tab.url.startsWith(base));
+          await chrome.tabs.setZoom(tab.id, 2);
+        }, base);
+        for (const width of [320, 768, 1280]) {
+          await page.setViewportSize({ width, height: 900 });
+          assert.equal(await page.evaluate(() => devicePixelRatio), 2);
+          assert.equal(await page.evaluate(() => innerWidth), width / 2);
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true,
+            `native zoom overflow: ${width}px, ${colorScheme}, JavaScript ${javaScriptEnabled}`);
+        }
+      } finally { await context.close(); }
+    }
+  }
+});

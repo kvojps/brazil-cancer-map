@@ -85,6 +85,7 @@ export function mountIndicatorTable(
   return (layer, mode) => {
     current = layer;
     root.querySelector<HTMLElement>('.scroll')!.hidden = !layer;
+    root.querySelector<HTMLElement>('.table-description')!.hidden = !layer;
     filter.disabled = !layer;
     if (!layer) {
       body.replaceChildren();
@@ -93,7 +94,7 @@ export function mountIndicatorTable(
     }
     root.querySelector('.trend-period')!.textContent = trendPeriodText(layer.period);
     root.querySelector('.reference-note')!.textContent = layer.has_status && layer.reference
-      ? `Referência: ${formatIndicatorValue(layer.indicator, layer.reference.value)} — ${layer.reference.label}.` : '';
+      ? `Referência: ${formatIndicatorValue(layer.indicator, layer.reference.value)} — ${layer.reference.label}. ` : '';
     root.querySelector('.table-mode')!.textContent = mode === 'trend' ? 'Tendência' : 'Como está hoje';
     const presentation = INDICATORS[layer.indicator]!;
     root.querySelector('.indicator-name')!.textContent = presentation.name;
@@ -107,9 +108,9 @@ export function mountIndicatorTable(
     const qualityPeriod = qualityPeriodText(layer.period);
     root.querySelector(".quality-note")!.textContent = qualityPeriod
       ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +
-        `de tratamento. Na faixa C: ${QUALITY_WARNING}`
+        `de tratamento. Na faixa C: ${QUALITY_WARNING} `
       : "";
-    root.querySelector(".status-note")!.textContent = noStatusNote(layer);
+    root.querySelector(".status-note")!.textContent = `${noStatusNote(layer)} `;
     render();
   };
 }
