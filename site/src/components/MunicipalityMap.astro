@@ -45,12 +45,16 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
   const notes = document.querySelector<HTMLElement>("#cancer-type-note");
 
   /** One request per cancer type: switching back reuses the layer already loaded. */
-  const layers = new Map<string, Promise<IndicatorLayer>>();
-  function layerOf(state: MapState): Promise<IndicatorLayer> {
+  const layers = new Map<string, Promise<IndicatorLayer | undefined>>();
+  function layerOf(state: MapState): Promise<IndicatorLayer | undefined> {
     const key = `${state.indicator}/${state.cancerType}`;
     let layer = layers.get(key);
     if (!layer) {
-      layer = getJson<IndicatorLayer>(`${container!.dataset.layersUrl}${key}.json`);
+      layer = fetch(`${container!.dataset.layersUrl}${key}.json`).then(response => {
+        if (response.status === 404) return undefined;
+        if (!response.ok) throw new Error(`Layer request failed (${response.status})`);
+        return response.json() as Promise<IndicatorLayer>;
+      });
       layer.catch(() => layers.delete(key));
       layers.set(key, layer);
     }
@@ -80,7 +84,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
         const showOnMap = mountIndicatorPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
         const notice = document.querySelector<HTMLElement>("#map-selection-notice");
-        let updatePreview = (_layer: IndicatorLayer, _state: MapState) => {};
+        let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
         let current = initial;
         let request = 0;
         const syncControls = (state: MapState) => {
@@ -94,20 +98,24 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           }
           modeSelector.value = `${state.indicator}:${state.mode}`;
         };
-        const show = (shown: IndicatorLayer, state: MapState) => {
+        const show = (shown: IndicatorLayer | undefined, state: MapState, push = false) => {
           current = state;
           syncControls(state);
           showOnMap(shown, state.mode);
-          updateLegend(document.querySelector<HTMLElement>('.legend')!, shown, state.mode);
-          showNotes(shown);
+          const legend = document.querySelector<HTMLElement>('.legend')!;
+          legend.hidden = !shown;
+          if (shown) { updateLegend(legend, shown, state.mode); showNotes(shown); }
+          else if (notes) notes.replaceChildren();
           const url = new URL(location.href);
           url.search = writeMapState(state, url.searchParams).toString();
-          history.replaceState(null, "", url);
+          if (push) history.pushState(null, "", url);
+          else history.replaceState(null, "", url);
           window.dispatchEvent(new Event('navigation-state-change'));
-          showInTable(shown);
+          if (shown) showInTable(shown);
+          if (table) table.hidden = !shown;
           updatePreview(shown, state);
         };
-        const selectState = async (next: MapState, message = "") => {
+        const selectState = async (next: MapState, message = "", push = true) => {
           const pending = ++request;
           status.textContent = "Carregando o mapa…";
           status.hidden = false;
@@ -115,8 +123,9 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           try {
             const nextLayer = await layerOf(next);
             if (pending !== request) return;
-            show(nextLayer, next);
-            status.hidden = true;
+            show(nextLayer, next, push);
+            status.hidden = !!nextLayer;
+            if (!nextLayer) status.textContent = "Os dados desta seleção ainda não estão disponíveis. Busque um município para acessar sua ficha.";
             if (notice) {
               notice.textContent = message;
               notice.hidden = !message;
@@ -131,7 +140,8 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
         show(layer, initial);
         updatePreview = mountMunicipalityNavigation(map, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
         updatePreview(layer, initial);
-        status.hidden = true;
+        status.hidden = !!layer;
+        if (!layer) status.textContent = "Os dados desta seleção ainda não estão disponíveis. Busque um município para acessar sua ficha.";
         if (modeSelector) {
           modeSelector.disabled = false;
           modeSelector.addEventListener("change", () => {
@@ -150,7 +160,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           });
         }
         window.addEventListener("popstate", () => {
-          void selectState(readMapState(new URLSearchParams(location.search)));
+          void selectState(readMapState(new URLSearchParams(location.search)), "", false);
         });
       })
       .catch((error: unknown) => {
