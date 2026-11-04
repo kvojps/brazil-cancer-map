@@ -165,6 +165,20 @@ export async function mountMunicipalityMap(
 
   map.addLayer({ id: "municipality-selected", type: "line", source: SOURCE_ID,
     filter: codeFilter([]), paint: { "line-color": "#142f55", "line-width": 3 } });
+  const syncTheme = () => {
+    const colors = getComputedStyle(document.documentElement);
+    map.setPaintProperty('background', 'background-color', colors.getPropertyValue('--mesh').trim());
+    map.setPaintProperty(BORDER_LAYER, 'line-color', colors.getPropertyValue('--mesh-border').trim());
+    for (const layer of ['municipality-hover', 'municipality-selected']) {
+      map.setPaintProperty(layer, 'line-color', colors.getPropertyValue('--selection').trim());
+    }
+  };
+  syncTheme();
+  const observer = new MutationObserver(syncTheme);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  const preference = matchMedia('(prefers-color-scheme: dark)');
+  preference.addEventListener('change', syncTheme);
+  map.on('remove', () => { observer.disconnect(); preference.removeEventListener('change', syncTheme); });
   highlightOnHover(map);
   return map;
 }

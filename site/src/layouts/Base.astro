@@ -1,4 +1,5 @@
 ---
+import "../shared/theme.css";
 interface Props {
   title: string;
 }
@@ -13,8 +14,13 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <script is:inline>
+      const theme = new URLSearchParams(location.search).get('theme');
+      if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+    </script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
     <!-- Under-construction notice, not dismissible (spec, section 2; decision ticket 29).
          Blue keeps it apart from the Tendência palette and from red. -->
     <aside class="construction-notice" aria-label="Aviso">
@@ -23,7 +29,19 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
         passaram por uma validação completa: podem conter erros e mudar.
       </p>
     </aside>
-    <main>
+    <header class="site-header">
+      <a class="identity" href="/">Observatório do Câncer no Brasil</a>
+      <nav aria-label="Navegação principal">
+        <a href="/">Mapa do Brasil</a>
+        <a href="/#municipality-search">Meu município</a>
+        <a href="/metodologia/">Como calculamos</a>
+      </nav>
+      <nav aria-label="Tema" class="theme-switcher">
+        <a href="?theme=light" data-theme-choice="light">Claro</a>
+        <a href="?theme=dark" data-theme-choice="dark">Escuro</a>
+      </nav>
+    </header>
+    <main id="main-content">
       <slot />
     </main>
     <footer>
@@ -38,9 +56,9 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
 
 <style>
   .construction-notice {
-    background: #e8f0fb;
-    border-bottom: 1px solid #9db7dc;
-    color: #1e3a5f;
+    background: var(--notice-bg);
+    border-bottom: 1px solid var(--border);
+    color: var(--notice-text);
     padding: 0.5rem 1rem;
     overflow-wrap: break-word;
   }
@@ -48,3 +66,8 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
     margin: 0;
   }
 </style>
+
+<script>
+  import { mountSharedNavigation } from '../shared/navigation';
+  mountSharedNavigation();
+</script>

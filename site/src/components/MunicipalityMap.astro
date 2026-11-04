@@ -103,6 +103,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           const url = new URL(location.href);
           url.search = writeMapState(state, url.searchParams).toString();
           history.replaceState(null, "", url);
+          window.dispatchEvent(new Event('navigation-state-change'));
           showInTable(shown);
           updateProfileType();
         };
