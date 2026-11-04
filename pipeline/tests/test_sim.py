@@ -196,3 +196,15 @@ def test_clean_reads_projected_dbf_fields_with_unrelated_columns_and_deleted_row
         counts = dict(db.execute('SELECT cancer_type,sum(deaths) FROM read_parquet(?) GROUP BY cancer_type',
                                  [str(clean / 'deaths.parquet')]).fetchall())
     assert counts == {'all': 11, 'breast': 11}
+
+
+def test_atlas_tolerance_is_relative_to_the_official_rate(tmp_path, monkeypatch):
+    source, clean, site = fixture_source(tmp_path, monkeypatch)
+    source.clean()
+    source.compute()
+    path = tmp_path / 'atlas.json'
+    reference = json.loads(path.read_text())
+    reference['checks'][0]['rate'] /= 1.0305  # Computed rate is 3.05% above the official reference.
+    path.write_text(json.dumps(reference))
+    with pytest.raises(ValueError, match='differs from Atlas'):
+        source.validate()

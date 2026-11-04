@@ -176,3 +176,26 @@ test('mortality cards keep the approved action available without a Situação or
   assert.match(cards[1], /−10%/);
   assert.match(cards[2], /−20%.*30–69/);
 });
+
+test('published mortality cards render national context and the standardized series without a status', {
+  skip: !manifest.indicators.mortality && 'Initial SIM publication is pending Atlas validation.',
+}, () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const cards = [...page(municipality).matchAll(/<article[^>]*aria-label="Tendência da mortalidade"[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
+  for (const [index, cancerType] of ['all', 'breast', 'cervix', 'prostate', 'colorectal', 'lung'].entries()) {
+    const data = profile.indicators.mortality[cancerType];
+    const entry = data.municipalities[municipality.code];
+    assert.match(cards[index], /Tendência do Brasil, apenas como contexto/);
+    assert.doesNotMatch(cards[index], /<h4>Situação|<meter/);
+    for (const point of data.series[entry.series_id] ?? []) {
+      assert.ok(cards[index].includes(`<th scope="row">${point.year}</th>`));
+      const value = point.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      assert.ok(cards[index].includes(`${value} por 100 mil`));
+    }
+    const layer = JSON.parse(readFileSync(new URL(`../public/dados/map/mortality/${cancerType}.json`, import.meta.url)));
+    assert.equal(layer.has_status, false);
+    assert.equal(layer.reference, null);
+    assert.deepEqual(layer.municipalities[municipality.code].trend, entry.trend);
+  }
+});

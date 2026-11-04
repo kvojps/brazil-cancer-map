@@ -198,7 +198,10 @@ class SimSource:
         validation = json.loads((self._clean_dir / 'validation.json').read_text())
         for check in checks:
             value = validation[f"{check['cancer_type']}/{check['area']}/{check['year']}"]
-            if value['deaths'] != check['deaths'] or not math.isclose(value['rate'], check['rate'], rel_tol=0.03):
+            official_rate = check['rate']
+            if (value['deaths'] != check['deaths'] or not math.isfinite(official_rate)
+                    or official_rate < 0 or not math.isfinite(value['rate'])
+                    or abs(value['rate'] - official_rate) > 0.03 * official_rate):
                 raise ValueError(f'SIM differs from Atlas: {check}')
         computed = json.loads((self._clean_dir / 'computed.json').read_text())
         listing = json.loads((self._site_data_dir / 'municipalities.json').read_text())
