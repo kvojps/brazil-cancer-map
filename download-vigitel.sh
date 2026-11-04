@@ -13,7 +13,8 @@ exec > >(tee -a data/logs/vigitel-download.log) 2>&1
 trap 'printf "Download interrupted; rerun to retry incomplete files.\n"; exit 130' INT
 page_url="${VIGITEL_PAGE_URL:-https://svs.aids.gov.br/daent/cgdnt/vigitel/}"
 printf '[%s] Discovering Vigitel inputs: %s\n' "$(date -u +%FT%TZ)" "$page_url"
-curl --fail --location --retry 3 --connect-timeout 30 --max-time 180 \
+# Avoid cancelled HTTP/2 streams and retry interrupted transfers as well as HTTP errors.
+curl --http1.1 --fail --location --retry 8 --retry-all-errors --connect-timeout 30 --max-time 180 \
   "$page_url" -o data/raw/vigitel/index.html.part
 python3 - "$page_url" <<'PY'
 import os
@@ -104,7 +105,7 @@ while IFS= read -r url; do
     continue
   fi
   printf '\nDownloading %s -> %s\n' "$url" "$destination"
-  curl --fail --location --retry 3 --connect-timeout 30 --continue-at - --progress-bar \
+  curl --http1.1 --fail --location --retry 8 --retry-all-errors --connect-timeout 30 --continue-at - --progress-bar \
     "$url" -o "$destination.part"
   validate_file "$destination.part" "$input_index"
   mv -- "$destination.part" "$destination"
