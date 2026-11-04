@@ -85,6 +85,7 @@ if (container && status) {
       let request = 0;
       const syncControls = (state: MapState) => {
         if (selector) selector.value = state.cancerType;
+        document.querySelector<HTMLElement>('#cancer-scope-note')!.hidden = state.cancerType !== 'all';
         if (indicatorSelector && readingSelector) {
           indicatorSelector.value = state.indicator;
           readingSelector.value = state.mode;
