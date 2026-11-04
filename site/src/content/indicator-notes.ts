@@ -1,0 +1,9 @@
+export const TREATMENT_SCOPE = 'Os números deste cartão vêm dos casos tratados com quimioterapia ou radioterapia, cujo registro não mudou desde 2014. Os demais casos tiveram mudanças de registro em 2018 e em 2024, quando muitas cirurgias deixaram de aparecer no painel do Ministério da Saúde.';
+export const INSUFFICIENT_CASES = 'Poucos casos aqui para dizer a direção. Isso é comum em municípios pequenos e não é um problema do seu município.';
+export const MAMMOGRAPHY_AGES = 'Este indicador acompanha exames entre 50 e 69 anos para preservar a comparação histórica. A orientação atual do SUS abrange 50 a 74 anos (NT 626/2025).';
+export const CYTOPATHOLOGY_TRANSITION = 'Série encerrada em 2025 pela mudança no rastreamento';
+export const SCREENING_SCOPE = 'Conta exames realizados no SUS, não mulheres únicas. Não mede a cobertura de toda a população nem estima seu risco individual.';
+export const HPV_DIRECTION = 'Tendência: série curta, ainda sem direção.';
+export const HPV_DOSE = 'A mudança para dose única em 2024 está marcada na série.';
+export const HPV_DENOMINATOR = 'Contamos pessoas com ao menos uma dose em todos os anos, acumulando as doses enquanto a coorte está entre 9 e 14 anos. Usamos a população do Censo 2022 como referência fixa, conforme o painel oficial. Os outros indicadores usam a estimativa anual POPSVS.';
+export const C55_NOTE = 'Estimativa ajustada para registros sem localização definida; pode diferir do INCA.';

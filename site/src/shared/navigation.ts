@@ -15,12 +15,16 @@ export function navigationUrl(destination: URL, current: URL): URL {
   const cancerType = ownType ? readMapState(new URLSearchParams({ tipo: ownType })).cancerType : state.cancerType;
   result.searchParams.delete('theme');
   for (const key of ['indicador', 'tipo', 'modo']) result.searchParams.delete(key);
-  // Municipal routes still contain a live map until the dedicated profile redesign.
-  const sameMunicipalMap = result.pathname.startsWith('/municipio/') && result.pathname === current.pathname;
-  if (result.pathname === '/' || sameMunicipalMap) {
+  // Municipal pages carry the map context for their return link, but filter only by type.
+  if (result.pathname === '/' || result.pathname.startsWith('/municipio/')) {
     result.search = writeMapState({ ...state, cancerType }, result.searchParams).toString();
   } else {
     if (cancerType !== 'all') result.searchParams.set('tipo', cancerType);
+  }
+  result.searchParams.delete('municipio');
+  if (result.pathname === '/') {
+    const code = current.pathname.match(/^\/municipio\/(\d+)-/)?.[1] ?? current.searchParams.get('municipio');
+    if (code) result.searchParams.set('municipio', code);
   }
   if (theme) result.searchParams.set('theme', theme);
   return result;

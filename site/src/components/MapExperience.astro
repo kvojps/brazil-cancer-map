@@ -16,20 +16,25 @@ const period = manifest.indicators[indicator].all;
   </header>
   <div class="map-and-profile">
     <MunicipalityMap />
-    <aside id="municipality-profile" aria-label="Meu município" hidden={!Astro.slots.has('default')}><slot /></aside>
+    <aside id="municipality-preview" aria-labelledby="preview-heading">
+      <h2 id="preview-heading" tabindex="-1">Seu território</h2>
+      <div data-preview-content><p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p></div>
+      <a data-open-profile href="/" hidden>Ver Meu município</a>
+    </aside>
   </div>
   <TrendLegend indicator={indicator} period={period} />
   <IndicatorTable />
 </div>
 <style>
-  #municipality-profile :global(.profile) { margin: 1rem auto; padding: 0 1rem; color: var(--text); font-family: system-ui, sans-serif; line-height: 1.55; }
-  #municipality-profile :global(section), #municipality-profile :global(aside) { margin: 2rem 0; }
-  .home { display: flex; flex-direction: column; min-height: 85vh; }
-  .map-and-profile { display: flex; align-items: stretch; min-height: 60vh; }
-  #municipality-profile { width: min(48%, 850px); max-height: 85vh; overflow: auto; }
-  #municipality-profile[hidden] { display: none; }
-  @media (max-width: 700px) {
-    .map-and-profile { flex-direction: column; }
-    #municipality-profile { width: 100%; max-height: none; }
+  .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }
+  .home header h1 { margin: 0; }
+  .home header > p { margin: .25rem 0 .75rem; }
+  .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); align-items: stretch; gap: 1rem; }
+  #municipality-preview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: .6rem; background: var(--surface); }
+  #municipality-preview h2 { margin-top: 0; }
+  #municipality-preview :global(.warning) { padding: .75rem; border-left: 4px solid var(--muted); background: var(--soft); }
+  #municipality-preview :global(h3) { font-size: 1.1rem; }
+  @media (max-width: 767px) {
+    .map-and-profile { grid-template-columns: minmax(0, 1fr); }
   }
 </style>

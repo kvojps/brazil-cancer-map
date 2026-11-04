@@ -1,4 +1,5 @@
 ---
+import { C55_NOTE } from '../content/indicator-notes';
 import type { MortalityProfile } from '../profile/profile';
 import { formatIndicatorValue, originText, TREND_LABELS } from '../map/indicator-layer';
 interface Props { data?: MortalityProfile; code: string; regionName: string; cancerType: string; updatedAt?: string }
@@ -51,7 +52,7 @@ const titleId = `mortality-series-${cancerType}`;
   {cancerType === 'breast' && <p>Meta nacional: redução de 10% (−10%) da mortalidade prematura por câncer de mama (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>}
   {cancerType === 'cervix' && <>
     <p>Meta nacional: redução de 20% (−20%) da mortalidade prematura por câncer do colo do útero (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>
-    <p>Estimativa ajustada para registros sem localização definida; pode diferir do INCA.</p>
+    <p>{C55_NOTE}</p>
   </>}
   <section aria-label="Ação"><h4>Veja os caminhos de prevenção e cuidado.</h4>
     <p>Este dado descreve o território e não determina seu risco individual.</p>

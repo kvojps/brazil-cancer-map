@@ -1,34 +1,49 @@
 import type { MapLibreMap } from 'maplibre-gl';
-import type { MunicipalityListing } from './indicator-layer';
+import { INDICATORS, type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
+import { readMapState, type MapState } from './map-state';
+import { renderMunicipalityPreview } from './municipality-preview';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
 import { clearMunicipality, focusMunicipality, onMunicipalityClick } from './municipality-map';
 
-export function mountMunicipalityNavigation(map: MapLibreMap, listing: MunicipalityListing, dataBase: string): () => void {
-  const panel = document.querySelector<HTMLElement>('#municipality-profile')!;
+export function mountMunicipalityNavigation(map: MapLibreMap, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer, state: MapState) => void {
+  const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
   const status = document.querySelector<HTMLElement>('#search-status')!;
   const profiles = new Map<string, Promise<UfProfile>>();
-  const showType = () => {
-    const type = new URLSearchParams(location.search).get('tipo') ?? 'all';
-    for (const section of panel.querySelectorAll<HTMLElement>('[data-cancer-type]')) {
-      section.hidden = section.dataset.cancerType !== type;
-    }
-    const close = panel.querySelector<HTMLAnchorElement>('[data-close-profile]');
-    if (close) close.href = `/${location.search}`;
+  const content = panel.querySelector<HTMLElement>('[data-preview-content]')!;
+  let link = panel.querySelector<HTMLAnchorElement>('[data-open-profile]')!;
+  let selected: MunicipalityListing['municipalities'][number] | undefined;
+  let layer: IndicatorLayer | undefined;
+  let state: MapState = readMapState(new URLSearchParams(location.search));
+  const render = (details?: UfProfile) => {
+    if (!selected) return;
+    content.innerHTML = renderMunicipalityPreview(selected, listing.immediate_regions[selected.immediate_region] ?? selected.immediate_region, layer, state.mode, details, state.indicator);
+    const url = new URL(municipalityPath(selected), location.href);
+    url.search = location.search;
+    url.searchParams.delete('municipio');
+    const nextLink = document.createElement('a');
+    nextLink.dataset.openProfile = '';
+    nextLink.textContent = 'Ver Meu município';
+    nextLink.href = url.href;
+    link.replaceWith(nextLink);
+    link = nextLink;
   };
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
     getUrl: () => new URL(location.href),
     setUrl: url => { history.pushState(null, '', url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
-      panel.hidden = false;
+      selected = place;
+      render();
       focusMunicipality(map, place.code);
+      status.textContent = `${place.name} (${place.uf}) selecionado. Prévia disponível após os controles.`;
     },
     load: async place => {
-      status.textContent = 'Carregando a ficha…';
+      // Only HPV needs a field exclusive to the UF profile (denominator_note).
+      if (state.indicator !== 'hpv' || !layer?.municipalities[place.code]) return undefined;
       let profile = profiles.get(place.uf);
       if (!profile) {
         profile = fetch(`${dataBase}/profiles/${place.uf}.json`).then(response => {
@@ -38,36 +53,29 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
         profiles.set(place.uf, profile);
         profile.catch(() => profiles.delete(place.uf));
       }
-      const data = await profile;
-      if (!data.indicators.within_60_days.all?.municipalities[place.code]) throw new Error('Missing municipality profile');
-      const existing = panel.querySelector<HTMLElement>('.profile');
-      if (existing?.dataset.code === place.code) return existing;
-      const response = await fetch(municipalityPath(place));
-      if (!response.ok) throw new Error(`Page request failed (${response.status})`);
-      const document = new DOMParser().parseFromString(await response.text(), 'text/html');
-      const content = document.querySelector<HTMLElement>('.profile');
-      if (!content) throw new Error('Missing profile content');
-      content.dataset.code = place.code;
-      return content;
+      return profile;
     },
-    show: content => {
-      panel.replaceChildren(content);
-      panel.hidden = false;
-      showType();
-      status.textContent = '';
-      panel.querySelector<HTMLElement>('[data-profile-heading]')?.focus({ preventScroll: true });
+    show: details => {
+      render(details);
+      status.textContent = `${selected!.name} (${selected!.uf}): prévia de ${INDICATORS[state.indicator]!.name} atualizada.`;
     },
     clear: () => {
-      panel.hidden = true;
+      selected = undefined;
+      content.innerHTML = '<p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p>';
+      link.hidden = true;
       status.textContent = '';
       clearMunicipality(map);
     },
   });
   const failed = (error: unknown) => {
     console.error(error);
-    status.textContent = 'Não foi possível carregar a ficha. Tente de novo.';
+    status.textContent = 'Não foi possível carregar os detalhes. A prévia e o acesso a Meu município continuam disponíveis. Tente de novo.';
+    const note = document.createElement('p');
+    note.textContent = status.textContent;
+    content.append(note);
   };
   const select = (place: MunicipalityListing['municipalities'][number]) => {
+    input.focus({ preventScroll: true });
     results.replaceChildren();
     void navigation.select(place).catch(failed);
   };
@@ -97,16 +105,13 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
   results.addEventListener('keydown', event => {
     if (event.key === 'Escape') { results.replaceChildren(); input.focus(); }
   });
-  panel.addEventListener('click', event => {
-    if ((event.target as Element).closest('[data-close-profile]')) {
-      event.preventDefault(); navigation.close(); input.focus();
-    }
-  });
   onMunicipalityClick(map, code => {
     const place = listing.municipalities.find(place => place.code === code);
     if (place) select(place);
   });
-  window.addEventListener('popstate', () => { void Promise.resolve(navigation.restore()).catch(failed); });
-  void Promise.resolve(navigation.restore()).catch(failed);
-  return showType;
+  return (nextLayer: IndicatorLayer, nextState: MapState) => {
+    layer = nextLayer;
+    state = nextState;
+    void Promise.resolve(navigation.restore()).catch(failed);
+  };
 }

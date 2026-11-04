@@ -1,4 +1,5 @@
 ---
+import { MAMMOGRAPHY_AGES, CYTOPATHOLOGY_TRANSITION, SCREENING_SCOPE } from '../content/indicator-notes';
 import type { ScreeningProfile } from '../profile/profile';
 import { formatIndicatorValue, originText, statusText, TREND_LABELS } from '../map/indicator-layer';
 import { mammographyAction, cervicalScreeningAction } from '../content/actions';
@@ -20,8 +21,8 @@ const pointY = (value: number) => 160 - 130 * value / maximum;
 <article class="treatment-card" aria-label={cervical ? 'Citopatológicos — 25–64 anos' : 'Mamografias de rastreamento — 50–69 anos'}>
   <h3>{title}</h3>
   {cervical ? <>
-    <p><strong>Série encerrada em 2025 pela mudança no rastreamento</strong></p>
-  </> : <p>Este indicador acompanha exames entre 50 e 69 anos para preservar a comparação histórica. A orientação atual do SUS abrange 50 a 74 anos (NT 626/2025).</p>}
+    <p><strong>{CYTOPATHOLOGY_TRANSITION}</strong></p>
+  </> : <p>{MAMMOGRAPHY_AGES}</p>}
   {data && entry ? <>
     <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Último ano consolidado: {data.period.latest}.</strong></p>
     <p>{originText(entry, regionName)}</p>
@@ -64,7 +65,7 @@ const pointY = (value: number) => 160 - 130 * value / maximum;
     <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
     {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
   </> : <p>Os dados de {chartLabel} ainda não estão disponíveis nesta ficha.</p>}
-  <p>Conta exames realizados no SUS, não mulheres únicas. Não mede a cobertura de toda a população nem estima seu risco individual.</p>
+  <p>{SCREENING_SCOPE}</p>
   <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     {cervical && <p>{cervicalScreeningAction.transition}</p>}
     <details><summary>Saiba mais</summary>{action.reviewedVersion === action.version && action.reviewer && action.details.map(text => <p>{text}</p>)}

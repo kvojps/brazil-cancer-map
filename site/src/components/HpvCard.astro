@@ -1,4 +1,5 @@
 ---
+import { HPV_DIRECTION, HPV_DOSE, HPV_DENOMINATOR } from '../content/indicator-notes';
 import type { HpvProfile } from '../profile/profile';
 import { formatPercent, originText, statusText } from '../map/indicator-layer';
 import { hpvAction as action } from '../content/actions';
@@ -16,7 +17,7 @@ const chartId = `hpv-series-${cancerType}`;
 ---
 <article class="treatment-card" aria-label="Cobertura da vacina HPV — 9–14 anos">
   <h3>Cobertura da vacina HPV — meninas e meninos de 9–14 anos</h3>
-  <p><strong>Tendência: série curta, ainda sem direção.</strong> A mudança para dose única em 2024 está marcada na série.</p>
+  <p><strong>{HPV_DIRECTION}</strong> {HPV_DOSE}</p>
   {data && entry ? <>
     <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Último ano consolidado: {data.period.latest}.</strong></p>
     <p>{originText(entry, regionName)}</p>
@@ -59,7 +60,7 @@ const chartId = `hpv-series-${cancerType}`;
     <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
     {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
   </> : <p>Os dados de cobertura HPV ainda não estão disponíveis nesta ficha.</p>}
-  <p>Contamos pessoas com ao menos uma dose em todos os anos, acumulando as doses enquanto a coorte está entre 9 e 14 anos. Usamos a população do Censo 2022 como referência fixa, conforme o painel oficial. Os outros indicadores usam a estimativa anual POPSVS.</p>
+  <p>{HPV_DENOMINATOR}</p>
   <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     <details><summary>Saiba mais</summary>
       {action.reviewedVersion === action.version && action.reviewer && action.details.map(text => <p>{text}</p>)}
