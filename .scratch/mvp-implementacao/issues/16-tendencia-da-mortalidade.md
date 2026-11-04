@@ -4,9 +4,9 @@
 
 **Blocked by:** 10 — Ficha do Meu município com o cartão do 60 dias; 13 — Denominador POPSVS no pipeline
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] O pipeline baixa os `DOBR<ano>.dbc` de 2014–2024 (sem os preliminares) e usa residência e causa básica
+- [x] O pipeline baixa os `DOBR<ano>.dbc` de 2014–2024 (sem os preliminares) e usa residência e causa básica
 - [x] "Todos" é C00–C97 sem C44; mama C50 (mulheres), colo C53, próstata C61, pulmão C33–C34, colorretal C18–C21 (o ajuste do C55 vem no ticket 17)
 - [x] Padronização direta pela população mundial de Segi/Doll, faixas quinquenais de 0–4 a 75–79 e 80+
 - [x] Tendência por quasi-Poisson com offset; mínimo e cascata contam os óbitos
@@ -60,3 +60,20 @@ Commits desta implementação:
 - `3ce05b0` — `fix: match exact mortality ICD categories`.
 - `b465de0` — `test: exercise SIM through real DBF fixtures`.
 - Commit deste registro de retomada — `docs: record SIM progress and remaining ticket 16 work`.
+
+
+### Conclusão da carga e publicação — 2026-11-04
+
+Retomada executada por `scripts/resume-sim.py`, sem repetir a limpeza de 2014–2023. O arquivo final `DOBR2024.dbc` foi baixado do FTP, conferido pelo cache remoto e limpo. Os onze Parquet foram reunidos; `SimSource.compute`, `validate` e `export` concluíram com sucesso. A amostra do Atlas manteve contagens exatas e taxas dentro de ±3%, sem alterar referências ou tolerância.
+
+Publicado em `site/public/dados/`: seis mapas de mortalidade, fichas das 27 UFs e manifesto com extração em 2026-11-04. Séries 2014–2024; Tendência 2015–2024; nenhum ano preliminar, nenhuma Situação. Contexto nacional presente nos seis tipos. Auditoria confirmou igualdade entre mapa e ficha, cascata e preservação integral dos indicadores anteriores.
+
+A cobertura é de **5.571 municípios**, conforme a correção da malha oficial registrada no ticket 02, incluindo Boa Esperança do Norte. Não foram reconstruídos dados municipais anteriores à criação; a cascata usa a Região imediata quando atende ao mínimo. A metodologia agora menciona a cobertura da malha publicada, sem repetir a contagem desatualizada da spec.
+
+Verificações: 136 testes Python passaram (246 avisos de previsão perfeita em séries sintéticas); mypy sem erros; 20 testes do site passaram, incluindo build e cartão com dados reais publicados, sem skips. Astro check sem erros, avisos ou hints. O primeiro teste do site foi bloqueado pelo sandbox ao criar o subprocesso de build; a execução autorizada fora dele passou.
+
+Revisão independente: Standards — nenhuma violação ou sugestão de refatoração acionável; Spec — nenhuma lacuna ou desvio de escopo. A divergência da contagem antiga de municípios foi resolvida pela decisão já registrada no ticket 02.
+
+O ajuste C55 continua reservado ao ticket 17; esta publicação usa C53 sem redistribuição, conforme o escopo deste ticket.
+
+Commit final desta publicação (o mesmo que encerra o ticket): `feat: publish validated SIM mortality series for 2014-2024`.
