@@ -58,7 +58,7 @@ export function renderMunicipalityPreview(place: Place, region: string, layer: I
     for (const source of action.sources) lines.push(`<li><a href="${escape(source.url)}">${escape(source.title)}</a></li>`);
     lines.push('</ul></details>');
   } else {
-    lines.push(p('Veja os caminhos de prevenção e cuidado.'), p('Este dado descreve o território e não determina seu risco individual.'));
+    lines.push(p('Veja os caminhos de prevenção e cuidado.'), p('Este dado descreve o território e não determina seu risco individual.'), p(treatmentAction.disclaimer));
     const path = escape(municipalityPath(place));
     lines.push(`<p><a href="${path}#prevencao">Prevenção</a> · <a href="${path}#deteccao">Detecção precoce</a> · <a href="${path}#acesso">Acesso ao tratamento</a> — veja os caminhos para o tipo de câncer selecionado.</p>`);
   }
