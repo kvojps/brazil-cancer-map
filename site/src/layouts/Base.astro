@@ -30,21 +30,22 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
       </p>
     </aside>
     <header class="site-header">
-      <a class="identity" href="/">Observatório do Câncer no Brasil</a>
+      <a class="identity" href="/"><span class="identity-symbol" aria-hidden="true">◈</span> Observatório do Câncer no Brasil</a>
       <nav aria-label="Navegação principal">
-        <a href="/">Mapa do Brasil</a>
-        <a href="/#municipality-search">Meu município</a>
+        <a href="/">Mapa</a>
         <a href="/metodologia/">Como calculamos</a>
       </nav>
       <nav aria-label="Tema" class="theme-switcher">
-        <a href="?theme=light" data-theme-choice="light">Claro</a>
-        <a href="?theme=dark" data-theme-choice="dark">Escuro</a>
+        <a href="?theme=light" data-theme-choice="light" aria-label="Usar tema claro">☀</a>
+        <a href="?theme=dark" data-theme-choice="dark" aria-label="Usar tema escuro">☾</a>
       </nav>
     </header>
     <main id="main-content">
       <slot />
     </main>
     <footer>
+      <strong>◈ Observatório do Câncer no Brasil</strong>
+      <a href="/metodologia/#dados-e-fontes">Fontes e condições de reutilização</a>
       <p>
         <a href={SOURCE_CODE_URL}>Código-fonte</a> sob a licença AGPL-3.0-or-later.
         Textos sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil.

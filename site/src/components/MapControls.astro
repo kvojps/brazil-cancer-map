@@ -1,6 +1,7 @@
 ---
+import ContextHelp from './ContextHelp.astro';
 import manifest from '../../public/dados/manifest.json';
-import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes, mapOption } from "../map/indicator-layer";
+import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes } from "../map/indicator-layer";
 
 // Controls become available once their data is ready.
 const hpvPending = !Object.hasOwn(manifest.indicators, 'hpv');
@@ -8,16 +9,10 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
 ---
 
 <form class="map-controls" aria-label="O que o mapa mostra" onsubmit="return false">
-  <div class="municipality-search">
-    <label for="municipality-search">Buscar município</label>
-    <input id="municipality-search" type="search" placeholder="Nome do município e UF" aria-controls="municipality-results" disabled />
-    <p id="search-status" role="status"></p>
-    <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
-  </div>
   <div class="cancer-type">
     <label>
       Tipo de câncer
-      <select id="cancer-type" name="cancer-type" aria-describedby="cancer-type-note" disabled>
+      <select id="cancer-type" name="cancer-type" aria-describedby="cancer-help-description" disabled>
         {
           Object.entries(CANCER_TYPES).map(([value, label]) => (
             <option value={value} selected={value === DEFAULT_CANCER_TYPE}>
@@ -27,29 +22,42 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
         }
       </select>
     </label>
-    <div id="cancer-type-note" class="note" aria-live="polite">
+    <ContextHelp id="cancer-help" label="Sobre o Tipo de câncer">
+      <div id="cancer-type-note" class="note" aria-live="polite">
       {notes.map((note) => <p>{note}</p>)}
-    </div>
+      </div>
+    </ContextHelp>
   </div>
   <label>
-    O que o mapa mostra
-    <select id="map-mode" disabled>
-      {Object.entries(INDICATORS).map(([id, text]) => (
-        <optgroup label={text.name}>
-          {([...new Set(Object.values(text.modes).flat())]).map((mode) => {
-            const pending = id === 'hpv' && hpvPending;
-            const option = mapOption(id, DEFAULT_CANCER_TYPE, mode, pending);
-            return <option value={`${id}:${mode}`} data-pending={pending ? 'true' : undefined} disabled={option.disabled}>{option.label}</option>;
-          })}
-        </optgroup>
-      ))}
+    Indicador
+    <select id="map-indicator" disabled>
+      {Object.entries(INDICATORS).map(([id, text]) => <option value={id} data-pending={id === "hpv" && hpvPending ? "true" : undefined} disabled={id === "hpv" && hpvPending}>{text.name}</option>)}
     </select>
   </label>
+  <label>
+    Leitura
+    <select id="map-reading" disabled>
+      <option value="trend">Tendência</option>
+      <option value="status">Como está hoje</option>
+    </select>
+  </label>
+  <div class="municipality-search">
+    <label for="municipality-search">Buscar município</label>
+    <input id="municipality-search" type="search" placeholder="Nome do município e UF" aria-controls="municipality-results" disabled />
+    <p id="search-status" role="status"></p>
+    <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
+  </div>
+  <a class="list-shortcut" href="#indicator-table">☷ Explorar em lista</a>
+  <p id="indicator-caveat" class="note" role="status" hidden></p>
   <p id="map-selection-notice" class="note" role="status" hidden></p>
-  <a href="#preview-heading" data-preview-shortcut>Ir para a prévia municipal</a>
+  <a href="#preview-heading" data-preview-shortcut hidden>Ir para a prévia municipal</a>
 </form>
 
 <script>
+  document.querySelector('.list-shortcut')?.addEventListener('click', () => {
+    const table = document.querySelector<HTMLDetailsElement>('.indicator-table');
+    if (table) { table.open = true; table.querySelector('summary')?.focus(); }
+  });
   document.querySelector('[data-preview-shortcut]')?.addEventListener('click', event => {
     const heading = document.getElementById('preview-heading');
     if (!heading) return;
@@ -64,7 +72,11 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
-    padding: 0.75rem 0;
+    padding: .85rem;
+    border: 1px solid var(--border);
+    border-radius: .6rem;
+    background: var(--surface);
+    align-items: start;
   }
   label,
   .cancer-type {
@@ -72,7 +84,7 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     flex-direction: column;
     gap: 0.25rem;
     font-size: 0.875rem;
-    flex: 1 1 14rem;
+    flex: 1 1 12rem;
   }
   .cancer-type label {
     flex: none;
@@ -86,6 +98,12 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
+  .municipality-search { flex: 1 1 16rem; position: relative; }
+  .municipality-search label { display: block; }
+  input { width: 100%; }
+  #search-status:empty, #municipality-results:empty { display: none; }
+  #municipality-results { padding-left: 1.2rem; max-height: 18rem; overflow: auto; }
+  .list-shortcut { align-self: center; font-size: .875rem; padding: .4rem; }
   .note {
     color: var(--muted);
     font-size: 0.8125rem;
