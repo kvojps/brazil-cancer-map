@@ -24,6 +24,8 @@ export type QualityBand = "A" | "B" | "C";
 
 export interface MunicipalityIndicator {
   origin: Origin;
+  /** Present for cervical mortality when C55 cannot be allocated. */
+  adjustment_note?: string | null;
   trend: TrendClass | null;
   status: StatusClass | null;
   status_note: string | null;
@@ -319,6 +321,7 @@ export function immediateRegionName(
  * a Tendência class it reads as "dado insuficiente", like its color.
  */
 export function originText(entry: MunicipalityIndicator | undefined, region: string | undefined): string {
+  if (entry?.adjustment_note) return "Ajuste não calculável: faltam registros para estimar a redistribuição do C55";
   if (!entry || entry.origin === "insufficient") return "Poucos casos no município e na sua região para calcular o indicador";
   if (entry?.origin === "immediate_region") {
     return region ? `Seu município e vizinhos — região de ${region}` : "Seu município e vizinhos";

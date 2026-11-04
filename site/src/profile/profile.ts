@@ -43,4 +43,4 @@ export function municipalityPath(municipality: { code: string; name: string }): 
   return `/municipio/${municipality.code}-${name}/`;
 }
 
-export interface MortalityProfile extends Omit<ScreeningProfile, 'uf_trend'> { national_trend: TrendClass | null }
+export interface MortalityProfile extends Omit<ScreeningProfile, 'uf_trend'> { national_trend: TrendClass | null; national_adjustment_note?: string | null }

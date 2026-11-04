@@ -78,7 +78,8 @@ class SimSource:
             fetch(FTP_ROOT + name, self._raw_dir / name, transport=self._transport)
 
     def clean(self) -> None:
-        counts: dict[tuple[int, str, str, int], int] = defaultdict(int)
+        counts: dict[tuple[int, str, str, int], float] = defaultdict(float)
+        uterus: dict[tuple[int, str, int], dict[str, int]] = defaultdict(lambda: defaultdict(int))
         for year in YEARS:
             path = self._raw_dir / f'DOBR{year}.dbc'
             for row in read_records(path):
@@ -98,14 +99,47 @@ class SimSource:
                         group = min(int(age[1:]) // 5 * 5, 80)
                     elif age[0] == '5':
                         group = 80
+                if cause in {'C53', 'C54', 'C55'} and sex == '2':
+                    uterus[year, code, group][cause] += 1
                 for cancer, selected_sex in CANCERS.items():
                     included = cause in (ALL_CANCERS if cancer == 'all' else CODES[cancer])
                     if included and (selected_sex is None or sex == str(selected_sex)):
                         counts[year, code, cancer, group] += 1
+        proportions: dict[tuple[int, str, int], dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        for (year, code, group), causes in uterus.items():
+            for area in (code[:2], 'BR'):
+                for cause in ('C53', 'C54'):
+                    proportions[year, area, group][cause] += causes[cause]
+        original = counts.copy()
+        calculable = {}
+        audit = []
+        for (year, code, group), causes in uterus.items():
+            source = 'uf'
+            cell = proportions[year, code[:2], group]
+            if not cell['C53'] + cell['C54']:
+                cell = proportions[year, 'BR', group]
+                source = 'national'
+            denominator = cell['C53'] + cell['C54']
+            ok = not causes['C55'] or denominator > 0
+            share = cell['C53'] / denominator if denominator else None
+            allocated = causes['C55'] * share if share is not None else 0
+            key = (year, code, 'cervix', group)
+            if causes['C55']:
+                counts[key] += allocated
+            calculable[key] = ok
+            audit.append({'year': year, 'municipality': code, 'age_group': group,
+                'c53': causes['C53'], 'c54': causes['C54'], 'c55': causes['C55'],
+                'c53_adjusted': causes['C53'] + allocated if ok else None,
+                'c54_adjusted': causes['C54'] + causes['C55'] - allocated if ok else None,
+                'proportion_source': source if denominator else None,
+                'adjustment_calculable': ok})
         self._clean_dir.mkdir(parents=True, exist_ok=True)
+        (self._clean_dir / 'c55-adjustment.json').write_text(json.dumps({'cells': audit}, allow_nan=False))
         with duckdb.connect() as db:
-            db.execute('CREATE TABLE deaths(year INTEGER, municipality VARCHAR, cancer_type VARCHAR, age_group INTEGER, deaths BIGINT)')
-            db.executemany('INSERT INTO deaths VALUES (?, ?, ?, ?, ?)', [(*key, value) for key, value in counts.items()])
+            db.execute('CREATE TABLE deaths(year INTEGER, municipality VARCHAR, cancer_type VARCHAR, age_group INTEGER, deaths DOUBLE, unadjusted_deaths BIGINT, adjustment_calculable BOOLEAN)')
+            if counts:
+                db.executemany('INSERT INTO deaths VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    [(*key, value, original.get(key, 0), calculable.get(key, True)) for key, value in counts.items()])
             db.execute('COPY deaths TO ? (FORMAT PARQUET)', [str(self._clean_dir / 'deaths.parquet')])
         (self._clean_dir / 'extract.json').write_text(json.dumps({
             'extracted_at': datetime.now(UTC).date().isoformat(), 'files': [f'DOBR{y}.dbc' for y in YEARS]}))
@@ -120,16 +154,23 @@ class SimSource:
         validation: dict[str, Any] = {}
         for cancer, sex in CANCERS.items():
             # Aggregate deaths and denominators before standardizing, including for regional fallback.
-            deaths: dict[tuple[str, int, int], int] = defaultdict(int)
+            deaths: dict[tuple[str, int, int], float] = defaultdict(float)
+            unadjusted: dict[tuple[str, int, int], float] = defaultdict(float)
+            unadjusted_totals: dict[tuple[str, int], float] = defaultdict(float)
+            unavailable: set[tuple[str, int]] = set()
             denominators: dict[tuple[str, int, int], int] = defaultdict(int)
-            totals: dict[tuple[str, int], int] = defaultdict(int)
-            for year, code, kind, age, n in rows:
+            totals: dict[tuple[str, int], float] = defaultdict(float)
+            for year, code, kind, age, n, raw_n, calculable in rows:
                 if kind != cancer:
                     continue
                 keys = ['BR', f'uf:{code[:2]}']
                 if code in regions:
                     keys += [f'municipality:{code}', f'immediate_region:{regions[code]}']
                 for key in keys:
+                    unadjusted[key, year, age] += raw_n
+                    unadjusted_totals[key, year] += raw_n
+                    if not calculable:
+                        unavailable.add((key, year))
                     deaths[key, year, age] += n
                     totals[key, year] += n
             provisional: set[int] = set()
@@ -164,17 +205,20 @@ class SimSource:
                     rate = sum(WEIGHTS[age] * deaths[key, year, age] / denominators[key, year, age]
                                for age in WEIGHTS)
                     total_population = sum(cells)
-                    points.append({'year': year, 'value': rate, 'provisional': year in provisional,
+                    points.append({'year': year, 'value': rate if (key, year) not in unavailable else None, 'provisional': year in provisional,
                                    'without_treatment_info': None})
                     # Standardized deaths retain the rate with a population offset.
                     events.append(rate * total_population / 100000)
                     exposures.append(total_population)
                     fitted_years.append(year)
                     if key == 'BR' or key.startswith('uf:'):
-                        validation[f'{cancer}/{key}/{year}'] = {'deaths': totals[key, year], 'rate': rate}
+                        validation[f'{cancer}/{key}/{year}'] = {
+                            'deaths': unadjusted_totals[key, year],
+                            'rate': sum(WEIGHTS[age] * unadjusted[key, year, age] / denominators[key, year, age]
+                                        for age in WEIGHTS)}
                 fit = quasi_poisson_trend(fitted_years, events, exposures, higher_is_better=False, provisional=provisional)
                 series[key] = points
-                trends[key] = fit.trend_class.value if fit else None
+                trends[key] = fit.trend_class.value if fit and not any((key, y) in unavailable for y in YEARS) else None
             entries = {}
             for code, origin in origins.items():
                 series_key = (f'municipality:{code}' if origin is Origin.MUNICIPALITY else
@@ -183,13 +227,81 @@ class SimSource:
                 entries[code] = {'origin': origin.value, 'value': next((p['value'] for p in reversed(points)
                     if not p['provisional']), None), 'trend': trends[series_key] if series_key else None,
                     'status': None, 'status_note': None, 'quality_band': None,
+                    **({'adjustment_note': 'ajuste não calculável' if any(
+                        (key, y) in unavailable for key in (series_key, f'municipality:{code}') for y in YEARS) else None}
+                       if cancer == 'cervix' else {}),
                     'without_treatment_info': None, 'series_id': series_key}
             consolidated = [y for y in YEARS if y not in provisional]
             computed[cancer] = {'period': {'first_year': 2014, 'last_year': 2024,
                 'latest': consolidated[-1], 'trend': [years[0], years[-1]], 'provisional': sorted(provisional)},
-                'municipalities': entries, 'series': series, 'national_trend': trends['BR']}
+                'municipalities': entries, 'series': series, 'national_trend': trends['BR'],
+                **({'national_adjustment_note': 'ajuste não calculável' if any(
+                    ('BR', y) in unavailable for y in YEARS) else None} if cancer == 'cervix' else {})}
         (self._clean_dir / 'computed.json').write_text(json.dumps(computed, allow_nan=False))
         (self._clean_dir / 'validation.json').write_text(json.dumps(validation, allow_nan=False))
+
+    def _validate_c55(self, computed: dict[str, Any], regions: dict[str, str]) -> None:
+        report: dict[str, Any] = {'passed': False, 'years': list(YEARS)}
+        path = self._clean_dir / 'c55-validation.json'
+        try:
+            audit = json.loads((self._clean_dir / 'c55-adjustment.json').read_text())['cells']
+            unavailable: set[tuple[str, int]] = set()
+            expected: dict[tuple[int, str, int], float] = {}
+            for cell in audit:
+                year, code, age = cell['year'], cell['municipality'], cell['age_group']
+                if cell['adjustment_calculable']:
+                    a, b = cell['c53_adjusted'], cell['c54_adjusted']
+                    total = cell['c53'] + cell['c54'] + cell['c55']
+                    if (not all(math.isfinite(n) and n >= 0 for n in (a, b))
+                            or not math.isclose(a + b, total, abs_tol=1e-9)
+                            or a < cell['c53'] or b < cell['c54']):
+                        raise ValueError('C55 allocation does not conserve uterine deaths')
+                    expected[year, code, age] = a
+                else:
+                    keys = ['BR', f'uf:{code[:2]}']
+                    if code in regions:
+                        keys += [f'municipality:{code}', f'immediate_region:{regions[code]}']
+                    unavailable.update((key, year) for key in keys)
+            with duckdb.connect() as db:
+                rows = db.execute('SELECT * FROM read_parquet(?)',
+                                  [str(self._clean_dir / 'deaths.parquet')]).fetchall()
+            for year, code, cancer, age, n, raw_n, ok in rows:
+                if cancer == 'cervix' and ok:
+                    if not math.isclose(n, expected[year, code, age], abs_tol=1e-9):
+                        raise ValueError('C55 adjusted count differs from allocation')
+                elif cancer != 'cervix' and n != raw_n:
+                    raise ValueError('C55 changed another cancer type, including all cancers')
+            cervix = computed['cervix']
+            checked = 0
+            if set(cervix['series']) != set(computed['breast']['series']):
+                raise ValueError('C55 missing geographic series')
+            for key, points in cervix['series'].items():
+                years = [p['year'] for p in points]
+                if years != [p['year'] for p in computed['breast']['series'][key]]:
+                    raise ValueError('C55 adjusted series is incomplete')
+                if years != sorted(set(years)) or not set(years) <= set(YEARS):
+                    raise ValueError('C55 invalid series years')
+                if key == 'BR' and years != list(YEARS):
+                    raise ValueError('C55 national series is incomplete')
+                for point in points:
+                    value = point['value']
+                    if ((value is None) != ((key, point['year']) in unavailable)
+                            or value is not None and (not math.isfinite(value) or not 0 <= value <= 10000)):
+                        raise ValueError('C55 adjusted series has invalid or unflagged rates')
+                    checked += 1
+            report.update({'passed': True, 'cells': len(audit), 'series_points': checked,
+                'uncalculable_cells': sum(not c['adjustment_calculable'] for c in audit),
+                'national_fallback_cells': sum(c['proportion_source'] == 'national' and c['c55'] > 0 for c in audit),
+                'annual_counts': {str(year): {
+                    'c53': sum(c['c53'] for c in audit if c['year'] == year),
+                    'c55': sum(c['c55'] for c in audit if c['year'] == year),
+                    'c53_adjusted': sum(c['c53_adjusted'] or 0 for c in audit if c['year'] == year),
+                    'c54_adjusted': sum(c['c54_adjusted'] or 0 for c in audit if c['year'] == year)} for year in YEARS}})
+        except (ValueError, KeyError) as error:
+            report['error'] = str(error)
+            raise ValueError(f'C55 validation failed: {error}') from error
+        finally:
+            path.write_text(json.dumps(report, allow_nan=False))
 
     def validate(self) -> None:
         reference = json.loads(self._reference_path.read_text())
@@ -209,11 +321,12 @@ class SimSource:
         codes = {m['code'] for m in listing['municipalities']}
         if set(computed) != set(CANCERS):
             raise ValueError('SIM missing cancer types')
+        self._validate_c55(computed, {m['code']: m['immediate_region'] for m in listing['municipalities']})
         for data in computed.values():
             if set(data['municipalities']) != codes:
                 raise ValueError('SIM missing mesh municipalities')
             for points in data['series'].values():
-                if any(not math.isfinite(p['value']) or not 0 <= p['value'] <= 10000 for p in points):
+                if any(p['value'] is not None and (not math.isfinite(p['value']) or not 0 <= p['value'] <= 10000) for p in points):
                     raise ValueError('SIM rate outside plausible range')
 
     def export(self) -> None:
@@ -237,6 +350,7 @@ class SimSource:
                 keys = {e['series_id'] for e in entries.values()} - {None}
                 profile['indicators']['mortality'][cancer] = {'source': SOURCE, 'has_status': False,
                     'reference': None, 'period': data['period'], 'national_trend': data['national_trend'],
+                    **({'national_adjustment_note': data['national_adjustment_note']} if cancer == 'cervix' else {}),
                     'municipalities': entries, 'series': {key: data['series'][key] for key in sorted(keys)}}
             files[name] = profile
         files[MANIFEST] = updated_manifest(self._site_data_dir, source=self.name,

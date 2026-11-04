@@ -16,9 +16,10 @@ const titleId = `mortality-series-${cancerType}`;
     <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Tendência: {data.period.trend.join('–')}.</strong></p>
     <p>{originText(entry, regionName)}</p>
     {entry.origin === 'immediate_region' && <p>Há poucos óbitos no município; usamos os dados do seu município e vizinhos.</p>}
-    {entry.origin === 'insufficient' ? <p>Poucos óbitos aqui e na região para calcular a Tendência.</p> : <>
+    {entry.adjustment_note && <p><strong>Ajuste não calculável:</strong> faltam registros de colo e corpo do útero para estimar a proporção estadual e nacional em pelo menos um ano e faixa etária. A Tendência não foi calculada.</p>}
+    {entry.origin === 'insufficient' && !entry.adjustment_note ? <p>Poucos óbitos aqui e na região para calcular a Tendência.</p> : <>
       <h4>Tendência ({data.period.trend.join('–')})</h4>
-      <p><strong>{TREND_LABELS[entry.trend ?? 'insufficient']}</strong></p>
+      <p><strong>{entry.adjustment_note ? 'Ajuste não calculável' : TREND_LABELS[entry.trend ?? 'insufficient']}</strong></p>
       {entry.trend === 'improving' && <p>A taxa de mortalidade padronizada por idade diminuiu.</p>}
       {entry.trend === 'worsening' && <p>A taxa de mortalidade padronizada por idade aumentou.</p>}
       {entry.trend === 'stable' && <p>Quase não mudou, menos de 1% por ano em relação ao próprio valor.</p>}
@@ -42,7 +43,7 @@ const titleId = `mortality-series-${cancerType}`;
         <tbody>{series.map(point => <tr><th scope="row">{point.year}{point.provisional ? ' (provisório)' : ''}</th><td>{formatIndicatorValue('mortality', point.value)}</td></tr>)}</tbody>
       </table></details>
     </>}
-    <p>Tendência do Brasil, apenas como contexto: <strong>{TREND_LABELS[data.national_trend ?? 'insufficient']}</strong> ({data.period.trend.join('–')}).</p>
+    <p>Tendência do Brasil, apenas como contexto: <strong>{data.national_adjustment_note ? 'Ajuste não calculável' : TREND_LABELS[data.national_trend ?? 'insufficient']}</strong> ({data.period.trend.join('–')}).</p>
     {data.period.provisional.length > 0 && <p>Anos provisórios por uso da população do ano anterior: {data.period.provisional.join(', ')}. Não entram na Tendência.</p>}
     <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
     {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
@@ -50,7 +51,7 @@ const titleId = `mortality-series-${cancerType}`;
   {cancerType === 'breast' && <p>Meta nacional: redução de 10% (−10%) da mortalidade prematura por câncer de mama (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>}
   {cancerType === 'cervix' && <>
     <p>Meta nacional: redução de 20% (−20%) da mortalidade prematura por câncer do colo do útero (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>
-    <p>Esta série usa C53, sem redistribuição dos registros de útero sem localização definida (C55). O ajuste está previsto separadamente e pode mudar a Tendência.</p>
+    <p>Estimativa ajustada para registros sem localização definida; pode diferir do INCA.</p>
   </>}
   <section aria-label="Ação"><h4>Veja os caminhos de prevenção e cuidado.</h4>
     <p>Este dado descreve o território e não determina seu risco individual.</p>
