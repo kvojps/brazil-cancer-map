@@ -304,3 +304,26 @@ def test_adjusted_series_validates_against_unadjusted_atlas_and_records_full_che
     with pytest.raises(ValueError, match='C55'):
         source.validate()
     assert json.loads((clean / 'c55-validation.json').read_text())['passed'] is False
+
+
+@pytest.mark.parametrize('unavailable_year', [2014, 2024])
+def test_uncalculable_year_outside_fitting_window_keeps_valid_trend(tmp_path, monkeypatch, unavailable_year):
+    source, clean, _ = fixture_source(tmp_path, monkeypatch)
+    uterus_records(tmp_path, [('261160', 'C539', '450', 20), ('261160', 'C559', '450', 10)])
+    write_dbf(tmp_path / 'raw' / f'DOBR{unavailable_year}.dbc', [
+        {'CODMUNRES': '261160', 'CAUSABAS': 'C559', 'SEXO': '2', 'IDADE': '450',
+         'DTOBITO': f'0101{unavailable_year}', 'TIPOBITO': '2'}])
+    if unavailable_year == 2024:
+        population = tmp_path / 'population.parquet'
+        with duckdb.connect() as db:
+            db.execute('CREATE TABLE available AS SELECT * FROM read_parquet(?) WHERE year < 2024', [str(population)])
+            db.execute('COPY available TO ? (FORMAT PARQUET)', [str(population)])
+    source.clean()
+    source.compute()
+    data = json.loads((clean / 'computed.json').read_text())['cervix']
+    entry = data['municipalities']['261160']
+    assert entry['adjustment_note'] == 'ajuste não calculável'
+    assert entry['trend'] == 'stable'
+    assert entry['value'] == pytest.approx(30)
+    assert data['national_trend'] == 'stable'
+    assert next(p for p in data['series']['municipality:261160'] if p['year'] == unavailable_year)['value'] is None
