@@ -1,0 +1,60 @@
+---
+import type { MortalityProfile } from '../profile/profile';
+import { formatIndicatorValue, originText, TREND_LABELS } from '../map/indicator-layer';
+interface Props { data?: MortalityProfile; code: string; regionName: string; cancerType: string; updatedAt?: string }
+const { data, code, regionName, cancerType, updatedAt } = Astro.props;
+const entry = data?.municipalities[code];
+const series = entry?.series_id ? data!.series[entry.series_id]! : [];
+const maximum = Math.max(1, ...series.map(point => point.value ?? 0));
+const pointX = (year: number) => 42 + 500 * (year - 2014) / 10;
+const pointY = (value: number) => 160 - 130 * value / maximum;
+const titleId = `mortality-series-${cancerType}`;
+---
+<article class="treatment-card" aria-label="Tendência da mortalidade">
+  <h3>Tendência da mortalidade padronizada por idade</h3>
+  {data && entry ? <>
+    <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Tendência: {data.period.trend.join('–')}.</strong></p>
+    <p>{originText(entry, regionName)}</p>
+    {entry.origin === 'immediate_region' && <p>Há poucos óbitos no município; usamos os dados do seu município e vizinhos.</p>}
+    {entry.origin === 'insufficient' ? <p>Poucos óbitos aqui e na região para calcular a Tendência.</p> : <>
+      <h4>Tendência ({data.period.trend.join('–')})</h4>
+      <p><strong>{TREND_LABELS[entry.trend ?? 'insufficient']}</strong></p>
+      {entry.trend === 'improving' && <p>A taxa de mortalidade padronizada por idade diminuiu.</p>}
+      {entry.trend === 'worsening' && <p>A taxa de mortalidade padronizada por idade aumentou.</p>}
+      {entry.trend === 'stable' && <p>Quase não mudou, menos de 1% por ano em relação ao próprio valor.</p>}
+      {entry.trend === 'no_clear_direction' && <p>Pode ter subido ou caído; os dados não bastam para dizer.</p>}
+      <svg viewBox="0 0 570 200" role="img" aria-labelledby={titleId}>
+        <title id={titleId}>Taxa de mortalidade anual por 100 mil, padronizada por idade; valores na tabela abaixo.</title>
+        <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
+        <text x="0" y="160">0</text>
+        {series.map((point, index) => {
+          const previous = series[index - 1];
+          return <>
+            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="#315e90" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
+            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="#315e90" />}
+          </>;
+        })}
+        <text x="42" y="185">2014</text><text x="505" y="185">2024</text>
+      </svg>
+      <details><summary>Ver a série em tabela</summary><table>
+        <caption>Taxa de mortalidade padronizada por idade</caption>
+        <thead><tr><th scope="col">Ano</th><th scope="col">Taxa por 100 mil</th></tr></thead>
+        <tbody>{series.map(point => <tr><th scope="row">{point.year}{point.provisional ? ' (provisório)' : ''}</th><td>{formatIndicatorValue('mortality', point.value)}</td></tr>)}</tbody>
+      </table></details>
+    </>}
+    <p>Tendência do Brasil, apenas como contexto: <strong>{TREND_LABELS[data.national_trend ?? 'insufficient']}</strong> ({data.period.trend.join('–')}).</p>
+    {data.period.provisional.length > 0 && <p>Anos provisórios por uso da população do ano anterior: {data.period.provisional.join(', ')}. Não entram na Tendência.</p>}
+    <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
+    {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
+  </> : <p>Os dados de mortalidade ainda não estão disponíveis nesta ficha.</p>}
+  {cancerType === 'breast' && <p>Meta nacional: redução de 10% (−10%) da mortalidade por câncer de mama até 2030. É contexto, sem comparação do município com a meta.</p>}
+  {cancerType === 'cervix' && <>
+    <p>Meta nacional: redução de 20% (−20%) da mortalidade prematura por câncer do colo do útero (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>
+    <p>Esta série usa C53, sem redistribuição dos registros de útero sem localização definida (C55). O ajuste está previsto separadamente e pode mudar a Tendência.</p>
+  </>}
+  <section aria-label="Ação"><h4>Veja os caminhos de prevenção e cuidado.</h4>
+    <p>Este dado descreve o território e não determina seu risco individual.</p>
+    <p><a href="#prevencao">Prevenção</a> · <a href="#deteccao">Detecção precoce</a> · <a href="#acesso">Acesso ao tratamento</a> — veja os caminhos para o tipo de câncer selecionado.</p>
+  </section>
+  <p><a href="/metodologia/#mortalidade">Como calculamos</a></p>
+</article>

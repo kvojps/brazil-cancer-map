@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeMapState, readMapState, writeMapState } from '../src/map/map-state.ts';
-import { formatIndicatorValue, mapOption } from '../src/map/indicator-layer.ts';
+import { formatIndicatorValue, mapOption, cancerTypeNotes } from '../src/map/indicator-layer.ts';
 
 test('mammography is available for breast and all in both modes, formatted as a ratio', () => {
   for (const cancerType of ['all', 'breast']) {
@@ -79,4 +79,16 @@ test('cytopathology is selectable for cervix and all, in both modes, as a ratio'
     assert.equal(mapOption('cytopathology', cancerType, 'trend').disabled, true);
   }
   assert.equal(formatIndicatorValue('cytopathology', 0.8), '0,80');
+});
+
+test('mortality is trend-only for every cancer type and rates never use percent units', () => {
+  for (const cancerType of ['all', 'breast', 'cervix', 'prostate', 'lung', 'colorectal']) {
+    assert.deepEqual(normalizeMapState({ indicator: 'mortality', cancerType, mode: 'status' }),
+      { indicator: 'mortality', cancerType, mode: 'trend' });
+    assert.equal(mapOption('mortality', cancerType, 'status').disabled, true);
+  }
+  assert.equal(formatIndicatorValue('mortality', 4.75), '4,75 por 100 mil');
+  const notes = cancerTypeNotes({ indicator: 'mortality', cancer_type: 'prostate', has_status: false }).join(' ');
+  assert.match(notes, /mortalidade tem só Tendência/);
+  assert.doesNotMatch(notes, /vigilância ativa/);
 });

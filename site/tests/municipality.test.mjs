@@ -162,3 +162,17 @@ test('published cytopathology covers the mesh in both cancer selections and rend
   assert.equal(all.municipalities[municipality.code].value, entry.value);
   assert.equal(manifest.indicators.cytopathology.all.last_year, 2025);
 });
+
+test('mortality cards keep the approved action available without a Situação or prostate treatment caveat', () => {
+  const html = page(listing.municipalities.find(m => m.code === '261160'));
+  const cards = [...html.matchAll(/<article[^>]*aria-label="Tendência da mortalidade"[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
+  assert.equal(cards.length, 6);
+  for (const card of cards) {
+    assert.match(card, /Veja os caminhos de prevenção e cuidado/);
+    assert.match(card, /Este dado descreve o território e não determina seu risco individual/);
+    assert.match(card, /#acesso|#prevencao|#deteccao/);
+    assert.doesNotMatch(card, /<h4>Situação|<meter|vigilância ativa/);
+  }
+  assert.match(cards[1], /−10%/);
+  assert.match(cards[2], /−20%.*30–69/);
+});

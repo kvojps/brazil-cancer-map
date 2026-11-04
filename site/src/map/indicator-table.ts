@@ -3,7 +3,7 @@ import {
   CANCER_TYPES,
   INDICATORS,
   statusText,
-  NO_STATUS_NOTE,
+  noStatusNote,
   QUALITY_WARNING,
   immediateRegionName,
   originText,
@@ -96,7 +96,7 @@ export function mountIndicatorTable(
       ? `A qualidade do registro é a faixa da UF, pela % de casos de ${qualityPeriod} sem informação ` +
         `de tratamento. Na faixa C: ${QUALITY_WARNING}`
       : "";
-    root.querySelector(".status-note")!.textContent = layer.has_status ? "" : NO_STATUS_NOTE;
+    root.querySelector(".status-note")!.textContent = noStatusNote(layer);
     render();
   };
 }
