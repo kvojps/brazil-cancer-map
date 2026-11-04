@@ -180,7 +180,7 @@ def test_clean_matches_cancer_definitions_and_sex_and_excludes_fetal_deaths(tmp_
     with duckdb.connect() as db:
         counts = dict(db.execute('SELECT cancer_type,sum(deaths) FROM read_parquet(?) GROUP BY cancer_type',
                                  [str(clean / 'deaths.parquet')]).fetchall())
-    assert counts == {'all': 17, 'breast': 1, 'cervix': 1, 'prostate': 1, 'lung': 2, 'colorectal': 4}
+    assert counts == {'all': 17, 'breast': 1, 'cervix': 2, 'prostate': 1, 'lung': 2, 'colorectal': 4}
 
 
 def test_clean_reads_projected_dbf_fields_with_unrelated_columns_and_deleted_rows(tmp_path, monkeypatch):
@@ -218,3 +218,89 @@ def test_atlas_tolerance_is_relative_to_the_official_rate(tmp_path, monkeypatch)
     path.write_text(json.dumps(reference))
     with pytest.raises(ValueError, match='differs from Atlas'):
         source.validate()
+
+
+def uterus_records(tmp_path, cells):
+    for year in range(2014, 2025):
+        records: list[dict[str, str]] = []
+        for code, cause, age, count in cells:
+            records.extend({'CODMUNRES': code, 'CAUSABAS': cause, 'SEXO': '2',
+                            'IDADE': age, 'DTOBITO': f'0101{year}', 'TIPOBITO': '2'}
+                           for _ in range(count))
+        write_dbf(tmp_path / 'raw' / f'DOBR{year}.dbc', records)
+
+
+def test_clean_redistributes_by_residence_state_year_and_age_without_rounding(tmp_path, monkeypatch):
+    source, clean, _ = fixture_source(tmp_path, monkeypatch)
+    uterus_records(tmp_path, [('261160', 'C539', '450', 2), ('260005', 'C549', '450', 1),
+                             ('260020', 'C559', '450', 1), ('260020', 'C559', '460', 1),
+                             ('261160', 'C549', '460', 1)])
+    source.clean()
+    with duckdb.connect() as db:
+        rows = db.execute('SELECT municipality, age_group, deaths FROM read_parquet(?) '
+                          "WHERE year=2022 AND cancer_type='cervix' ORDER BY 1,2",
+                          [str(clean / 'deaths.parquet')]).fetchall()
+        total = db.execute("SELECT sum(deaths) FROM read_parquet(?) WHERE year=2022 AND cancer_type='all'",
+                           [str(clean / 'deaths.parquet')]).fetchall()[0][0]
+    assert rows == [('260020', 50, pytest.approx(2 / 3)), ('260020', 60, 0), ('261160', 50, 2)]
+    assert total == 6
+    audit = json.loads((clean / 'c55-adjustment.json').read_text())
+    cell = next(c for c in audit['cells'] if c['year'] == 2022 and c['municipality'] == '260020' and c['age_group'] == 50)
+    assert cell['c54_adjusted'] == pytest.approx(1 / 3)
+    assert cell['proportion_source'] == 'uf'
+
+
+def test_clean_falls_back_to_national_proportion_at_the_same_age_and_year(tmp_path, monkeypatch):
+    source, clean, _ = fixture_source(tmp_path, monkeypatch)
+    uterus_records(tmp_path, [('261160', 'C559', '450', 3), ('355030', 'C539', '450', 1),
+                             ('355030', 'C549', '450', 3), ('261160', 'C539', '460', 10)])
+    source.clean()
+    audit = json.loads((clean / 'c55-adjustment.json').read_text())
+    cell = next(c for c in audit['cells'] if c['year'] == 2022 and c['municipality'] == '261160' and c['age_group'] == 50)
+    assert cell['proportion_source'] == 'national'
+    assert cell['c53_adjusted'] == .75
+    assert cell['c54_adjusted'] == 2.25
+
+
+def test_uncalculable_adjustment_is_flagged_in_map_and_profile_and_not_fitted(tmp_path, monkeypatch):
+    source, clean, site = fixture_source(tmp_path, monkeypatch)
+    uterus_records(tmp_path, [('261160', 'C559', '450', 30), ('261160', 'C539', '460', 30)])
+    source.clean()
+    source.compute()
+    # This fixture's external reference checks breast, which has no deaths here.
+    (tmp_path / 'atlas.json').write_text(json.dumps({'source': 'https://mortalidade.inca.gov.br/',
+        'checks': [{'year': 2022, 'cancer_type': 'breast', 'area': 'BR', 'deaths': 0, 'rate': 0}]}))
+    source.export()
+    layer = json.loads((site / 'map/mortality/cervix.json').read_text())
+    entry = layer['municipalities']['261160']
+    assert entry['adjustment_note'] == 'ajuste não calculável'
+    assert entry['trend'] is None
+    assert entry['value'] is None
+    profile = json.loads((site / 'profiles/PE.json').read_text())['indicators']['mortality']['cervix']
+    assert profile['municipalities']['261160']['adjustment_note'] == 'ajuste não calculável'
+    assert all(point['value'] is None for point in profile['series']['municipality:261160'])
+    assert profile['national_trend'] is None
+
+
+def test_adjusted_series_validates_against_unadjusted_atlas_and_records_full_check(tmp_path, monkeypatch):
+    source, clean, _ = fixture_source(tmp_path, monkeypatch)
+    uterus_records(tmp_path, [('261160', 'C539', '450', 30), ('261160', 'C549', '450', 10),
+                             ('261160', 'C559', '450', 20)])
+    source.clean()
+    source.compute()
+    (tmp_path / 'atlas.json').write_text(json.dumps({'source': 'https://mortalidade.inca.gov.br/',
+        'checks': [{'year': 2022, 'cancer_type': 'cervix', 'area': 'BR', 'deaths': 30, 'rate': 10}]}))
+    source.validate()
+    report = json.loads((clean / 'c55-validation.json').read_text())
+    assert report['passed'] is True
+    assert report['years'] == list(range(2014, 2025))
+    assert report['uncalculable_cells'] == 0
+    data = json.loads((clean / 'computed.json').read_text())['cervix']
+    assert data['municipalities']['261160']['value'] == pytest.approx(45)
+    data['series']['municipality:261160'][0]['value'] = None
+    computed = json.loads((clean / 'computed.json').read_text())
+    computed['cervix'] = data
+    (clean / 'computed.json').write_text(json.dumps(computed))
+    with pytest.raises(ValueError, match='C55'):
+        source.validate()
+    assert json.loads((clean / 'c55-validation.json').read_text())['passed'] is False

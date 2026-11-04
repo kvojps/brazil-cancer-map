@@ -175,6 +175,8 @@ test('mortality cards keep the approved action available without a Situação or
   }
   assert.match(cards[1], /−10%/);
   assert.match(cards[2], /−20%.*30–69/);
+  assert.ok(cards[2].includes('Estimativa ajustada para registros sem localização definida; pode diferir do INCA.'));
+  assert.doesNotMatch(cards[2], /sem redistribuição/);
 });
 
 test('published mortality cards render national context and the standardized series without a status', {
