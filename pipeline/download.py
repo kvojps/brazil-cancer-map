@@ -161,8 +161,9 @@ def _connect_ftp(url: str, timeout: float) -> tuple[ftplib.FTP, str]:
 class FtpTransport:
     """Transport over anonymous FTP (DATASUS), using SIZE and MDTM for the cache check."""
 
-    def __init__(self, timeout: float = 120) -> None:
+    def __init__(self, timeout: float = 120, *, workers: int = 4) -> None:
         self._timeout = timeout
+        self._workers = workers
 
     def head(self, url: str) -> RemoteInfo:
         ftp, path = _connect_ftp(url, self._timeout)
@@ -181,7 +182,7 @@ class FtpTransport:
                 with dest.open("wb") as file:
                     ftp.retrbinary(f"RETR {path}", file.write, blocksize=_CHUNK_BYTES)
                 return
-        download_ranges(lambda offset: self._open_range(url, offset), size, dest)
+        download_ranges(lambda offset: self._open_range(url, offset), size, dest, workers=self._workers)
 
     @contextmanager
     def _open_range(self, url: str, offset: int) -> Iterator[BinaryIO]:
