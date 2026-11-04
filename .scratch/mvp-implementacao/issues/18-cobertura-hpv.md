@@ -28,4 +28,12 @@ Implementação iniciada em 04/11/2026. O usuário confirmou os testes no protoc
 - [Medição e limites](../../../docs/data/hpv-benchmark.md). A extrapolação local sugere cerca de duas horas para 28 GB/ano, mas não comprova a duração nem o pico total de um job anual no GitHub Actions.
 - **Pendências para resolver o ticket:** carga mensal completa desde 2020, comparação das coberturas com o painel oficial, publicação dos JSON para habilitar o mapa e medição de uma partição anual completa no runner. As caixas continuam abertas porque a entrega pública e a capacidade anual ainda não foram demonstradas. Nenhum dado sintético foi publicado.
 
-Commit desta implementação parcial: `feat: add official HPV cohort pipeline and prevention card`.
+Commits desta implementação parcial:
+
+- `ea0af78` — `feat: add official HPV cohort pipeline and prevention card`.
+- Commit da revisão — `fix: require official HPV coverage checks before publication`.
+
+Revisão pela skill `code-review`, base `ccbd410`: Standards encontrou uma duplicação pequena no rótulo de disponibilidade do seletor, removida na revisão. Spec apontou a ausência de comparação oficial obrigatória, corrigida com referências que bloqueiam a publicação se ausentes ou divergentes, e confirmou as pendências públicas e de capacidade anual acima. O ticket não foi marcado como resolvido.
+
+
+Verificação final após as correções: **149 testes Python** e **21 testes do site** passaram; a suíte do site executou o build estático. `mypy` e `astro check` sem erros. Os avisos de separação perfeita do statsmodels vêm das amostras sintéticas existentes. Os dois revisores reconferiram as correções: Standards sem achados pendentes; Spec com a comparação obrigatória corrigida, restando as pendências de carga, referências oficiais reais, publicação e capacidade anual.
