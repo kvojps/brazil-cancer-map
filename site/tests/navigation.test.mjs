@@ -28,10 +28,31 @@ test('selection focuses the state before loading its profile and closing retains
   assert.deepEqual(events, []);
   await navigation.select(places[0]);
   assert.deepEqual(events, ['focus:PE', 'load:PE', 'São João']);
-  assert.equal(url.pathname, '/municipio/1-sao-joao/');
-  assert.equal(url.search, '?tipo=breast&modo=hoje');
+  assert.equal(url.pathname, '/');
+  assert.equal(url.search, '?tipo=breast&modo=hoje&municipio=1');
   navigation.close();
   assert.equal(url.pathname, '/');
   assert.equal(url.search, '?tipo=breast&modo=hoje');
   assert.equal(events.at(-1), 'closed');
+});
+
+test('preview selection stays on the map and ignores late results and failures', async () => {
+  const { createMunicipalityNavigation } = await import('../src/map/navigation.ts');
+  let url = new URL('https://example.org/?tipo=breast&theme=dark');
+  const pending = [];
+  const shown = [];
+  const navigation = createMunicipalityNavigation({ places, getUrl: () => new URL(url), setUrl: next => { url = next; }, focus() {}, clear() {},
+    load: place => new Promise((resolve, reject) => pending.push({ resolve, reject, place })), show: value => shown.push(value) });
+  const first = navigation.select(places[0]);
+  assert.equal(url.pathname, '/');
+  assert.equal(url.searchParams.get('municipio'), '1');
+  assert.equal(url.searchParams.get('theme'), 'dark');
+  const second = navigation.select(places[1]);
+  pending[1].resolve('PR'); await second;
+  pending[0].reject(new Error('Late failure')); await first;
+  assert.deepEqual(shown, ['PR']);
+  const third = navigation.select(places[0]); navigation.close();
+  pending[2].resolve('PE'); await third;
+  assert.deepEqual(shown, ['PR']);
+  assert.equal(url.searchParams.get('municipio'), null);
 });

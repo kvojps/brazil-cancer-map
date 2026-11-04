@@ -3,9 +3,9 @@ import { test } from 'node:test';
 import { navigationUrl, readTheme } from '../src/shared/navigation.ts';
 
 const current = new URL('https://example.org/?indicador=mammography&tipo=breast&modo=hoje&theme=dark');
-test('municipality links carry type and theme while indicator and mode belong to the map', () => {
+test('municipality links carry map context for return without filtering the profile axes', () => {
   assert.equal(navigationUrl(new URL('/municipio/1-example/#acesso', current), current).href,
-    'https://example.org/municipio/1-example/?tipo=breast&theme=dark#acesso');
+    'https://example.org/municipio/1-example/?indicador=mammography&tipo=breast&modo=hoje&theme=dark#acesso');
 });
 
 test('section links and methodology carry explicit theme and cancer type', () => {
@@ -26,7 +26,7 @@ test('invalid themes follow the system and invalid cancer selections use MVP def
 
 test('explicit cancer links override inherited type and return links retain map eligibility', () => {
   assert.equal(navigationUrl(new URL('/municipio/1-example/?tipo=cervix#acesso', current), current).href,
-    'https://example.org/municipio/1-example/?tipo=cervix&theme=dark#acesso');
+    'https://example.org/municipio/1-example/?indicador=mammography&tipo=cervix&modo=hoje&theme=dark#acesso');
   const prostate = new URL('https://example.org/metodologia/?tipo=prostate&theme=light');
   assert.equal(navigationUrl(new URL('/', current), prostate).href,
     'https://example.org/?tipo=prostate&theme=light');
@@ -43,4 +43,15 @@ test('section links within an existing municipal map preserve its displayed sele
   const municipalMap = new URL('https://example.org/municipio/1-example/?indicador=mammography&tipo=breast&modo=hoje&theme=dark');
   assert.equal(navigationUrl(new URL('#acesso', municipalMap), municipalMap).href,
     'https://example.org/municipio/1-example/?indicador=mammography&tipo=breast&modo=hoje&theme=dark#acesso');
+});
+
+test('preview to profile and return preserve selection, map context and theme', () => {
+ const map = new URL('https://example.org/?municipio=261160&indicador=mammography&tipo=breast&modo=hoje&theme=dark');
+ const profile = navigationUrl(new URL('/municipio/261160-recife/', map), map);
+ assert.equal(profile.search, '?indicador=mammography&tipo=breast&modo=hoje&theme=dark');
+ const back = navigationUrl(new URL('/', map), profile);
+ assert.equal(back.searchParams.get('municipio'), '261160');
+ assert.equal(back.searchParams.get('indicador'), 'mammography');
+ assert.equal(back.searchParams.get('modo'), 'hoje');
+ assert.equal(back.searchParams.get('theme'), 'dark');
 });

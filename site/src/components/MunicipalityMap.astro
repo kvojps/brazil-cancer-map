@@ -80,7 +80,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
         const showOnMap = mountIndicatorPaint(map, listing);
         const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
         const notice = document.querySelector<HTMLElement>("#map-selection-notice");
-        let updateProfileType = () => {};
+        let updatePreview = (_layer: IndicatorLayer, _state: MapState) => {};
         let current = initial;
         let request = 0;
         const syncControls = (state: MapState) => {
@@ -105,7 +105,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           history.replaceState(null, "", url);
           window.dispatchEvent(new Event('navigation-state-change'));
           showInTable(shown);
-          updateProfileType();
+          updatePreview(shown, state);
         };
         const selectState = async (next: MapState, message = "") => {
           const pending = ++request;
@@ -129,7 +129,8 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           }
         };
         show(layer, initial);
-        updateProfileType = mountMunicipalityNavigation(map, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
+        updatePreview = mountMunicipalityNavigation(map, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
+        updatePreview(layer, initial);
         status.hidden = true;
         if (modeSelector) {
           modeSelector.disabled = false;

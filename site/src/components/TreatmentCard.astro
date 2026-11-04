@@ -1,4 +1,5 @@
 ---
+import { TREATMENT_SCOPE, INSUFFICIENT_CASES } from '../content/indicator-notes';
 import type { TreatmentProfile } from '../profile/profile';
 import { ALL_CANCERS_NOTE, CANCER_TYPES, formatPercent, HATCH_CSS, NO_STATUS_NOTE, QUALITY_WARNING, qualityText, statusText, TREND_LABELS, trendSwatch } from '../map/indicator-layer';
 import { treatmentAction as action } from '../content/actions';
@@ -20,7 +21,7 @@ const chartTitle = `series-${cancerType}`;
   {entry.origin === 'immediate_region' && <p>Há poucos casos no município; usamos os dados da Região imediata para mostrar uma direção mais confiável.</p>}
   {cancerType === 'prostate' && <p>{NO_STATUS_NOTE}</p>}
   {entry.origin === 'insufficient' ? <div>
-    <p>Poucos casos aqui para dizer a direção. Isso é comum em municípios pequenos e não é um problema do seu município.</p>
+    <p>{INSUFFICIENT_CASES}</p>
     <p>Tendência no seu estado: <strong>{treatment.uf_trend ? TREND_LABELS[treatment.uf_trend] : 'Dado insuficiente'}</strong> ({period.trend.join('–')}).</p>
   </div> : <>
     <div class="numbers">
@@ -60,7 +61,7 @@ const chartTitle = `series-${cancerType}`;
     </table></details>
   </>}
   <p>Qualidade do registro no estado: {qualityText(treatment.quality)}, período {period.quality_years?.join('–')}.</p>
-  <p>Os números deste cartão vêm dos casos tratados com quimioterapia ou radioterapia, cujo registro não mudou desde 2014. Os demais casos tiveram mudanças de registro em 2018 e em 2024, quando muitas cirurgias deixaram de aparecer no painel do Ministério da Saúde.</p>
+  <p>{TREATMENT_SCOPE}</p>
   <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     <details><summary>Saiba mais</summary>
       {action.details.map(text => <p>{text}</p>)}

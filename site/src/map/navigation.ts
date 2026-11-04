@@ -1,5 +1,4 @@
 import type { MunicipalityListing } from './indicator-layer.ts';
-import { municipalityPath } from '../profile/profile.ts';
 
 type Municipality = MunicipalityListing['municipalities'][number];
 const normalized = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -27,23 +26,29 @@ export function createMunicipalityNavigation<T>(options: {
       options.focus(place);
       if (push) {
         const url = options.getUrl();
-        url.pathname = municipalityPath(place);
+        url.pathname = '/';
+        url.searchParams.set('municipio', place.code);
         options.setUrl(url);
       }
-      const content = await options.load(place);
-      if (pending === request) options.show(content);
+      try {
+        const content = await options.load(place);
+        if (pending === request) options.show(content);
+      } catch (error) {
+        if (pending === request) throw error;
+      }
     },
     close(push = true) {
       ++request;
       if (push) {
         const url = options.getUrl();
         url.pathname = '/';
+        url.searchParams.delete('municipio');
         options.setUrl(url);
       }
       options.clear();
     },
     restore() {
-      const place = options.places.find(place => municipalityPath(place) === options.getUrl().pathname);
+      const place = options.places.find(place => place.code === options.getUrl().searchParams.get('municipio'));
       return place ? this.select(place, false) : this.close(false);
     },
   };

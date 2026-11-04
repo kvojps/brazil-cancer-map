@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import MapExperience from '../../components/MapExperience.astro';
+import '../../profile/profile.css';
 import MunicipalityProfile from '../../components/MunicipalityProfile.astro';
 import listing from '../../../public/dados/municipalities.json';
 import { municipalityPath, type UfProfile } from '../../profile/profile';
@@ -20,5 +20,14 @@ interface Props {
 const { municipality, profile } = Astro.props;
 ---
 <Base title={`${municipality.name} (${municipality.uf}) — Meu município`}>
-  <MapExperience><MunicipalityProfile municipality={municipality} profile={profile} /></MapExperience>
+  <MunicipalityProfile municipality={municipality} profile={profile} />
+  <script>
+    import { readMapState } from '../../map/map-state';
+    const showType = () => {
+      const type = readMapState(new URLSearchParams(location.search)).cancerType;
+      for (const section of document.querySelectorAll<HTMLElement>('[data-cancer-type]')) section.hidden = section.dataset.cancerType !== type;
+    };
+    showType();
+    window.addEventListener('popstate', showType);
+  </script>
 </Base>
