@@ -1,4 +1,6 @@
 ---
+import AlternativeActionCard from './AlternativeActionCard.astro';
+import { earlyDetectionActions, preventionActions, smokingAction } from '../content/actions';
 import EstimatedCasesCard from './EstimatedCasesCard.astro';
 import TreatmentCard from './TreatmentCard.astro';
 import HpvCard from './HpvCard.astro';
@@ -32,15 +34,27 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
     </section>
     <section id="deteccao"><h2>Detecção precoce</h2>
       {['all', 'breast'].map(cancerType => <section data-cancer-type={cancerType}>
+        <h3>Mama</h3>
         <ScreeningCard indicator="mammography" data={profile.indicators.mammography?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan?.extracted_at} />
       </section>)}
       {['all', 'cervix'].map(cancerType => <section data-cancer-type={cancerType}>
+        <h3>Colo do útero</h3>
         <ScreeningCard indicator="cytopathology" data={profile.indicators.cytopathology?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan_cytopathology?.extracted_at} />
       </section>)}
+      {Object.entries(earlyDetectionActions).map(([cancerType, action]) => ['all', cancerType].map(selection => <section data-cancer-type={selection}>
+        <AlternativeActionCard label={CANCER_TYPES[cancerType as keyof typeof CANCER_TYPES]} reason="Este eixo não tem indicador para este tipo de câncer: não há rastreamento organizado com indicador aberto no MVP." action={action} />
+      </section>))}
     </section>
     <section id="prevencao"><h2>Prevenção</h2>
       {['all', 'cervix'].map(cancerType => <section data-cancer-type={cancerType}>
+        <h3>Colo do útero</h3>
         <HpvCard data={profile.indicators.hpv?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.hpv?.extracted_at} />
+      </section>)}
+      {Object.entries(preventionActions).map(([cancerType, action]) => ['all', cancerType].map(selection => <section data-cancer-type={selection}>
+        <AlternativeActionCard label={CANCER_TYPES[cancerType as keyof typeof CANCER_TYPES]} reason="Este eixo não tem indicador com dado aberto para este tipo de câncer no MVP." action={action} />
+      </section>))}
+      {['all', 'lung'].map(selection => <section data-cancer-type={selection}>
+        <AlternativeActionCard label="Pulmão" reason="O indicador de tabagismo na capital do seu estado ainda não está disponível nesta ficha." action={smokingAction} />
       </section>)}
     </section>
     <section><h2>Panorama</h2>
