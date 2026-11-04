@@ -38,3 +38,9 @@ test('external resources and data downloads retain their own URL', () => {
     assert.equal(navigationUrl(url, current).href, url.href);
   }
 });
+
+test('section links within an existing municipal map preserve its displayed selection', () => {
+  const municipalMap = new URL('https://example.org/municipio/1-example/?indicador=mammography&tipo=breast&modo=hoje&theme=dark');
+  assert.equal(navigationUrl(new URL('#acesso', municipalMap), municipalMap).href,
+    'https://example.org/municipio/1-example/?indicador=mammography&tipo=breast&modo=hoje&theme=dark#acesso');
+});
