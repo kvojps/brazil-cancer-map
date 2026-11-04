@@ -1,6 +1,7 @@
 """Source registry. Each new source is added to `SOURCES`, after the sources it reads from."""
 
 from pipeline.source import Source
+from pipeline.sources.inca import IncaSource
 from pipeline.sources.hpv import HpvSource
 from pipeline.sources.mesh import MeshSource
 from pipeline.sources.painel import PainelSource
@@ -9,5 +10,5 @@ from pipeline.sources.popsvs import PopsvsSource
 from pipeline.sources.siscan import SiscanSource
 from pipeline.sources.sim import SimSource
 
-SOURCES: list[Source] = [MeshSource(), PopsvsSource(), PainelSource(), CnesSource(), SiscanSource(), SiscanSource(indicator='cytopathology'), SimSource(), HpvSource()]
+SOURCES: list[Source] = [MeshSource(), PopsvsSource(), PainelSource(), CnesSource(), SiscanSource(), SiscanSource(indicator='cytopathology'), SimSource(), HpvSource(), IncaSource()]
 """The mesh comes first: health sources cover the municipalities it publishes."""

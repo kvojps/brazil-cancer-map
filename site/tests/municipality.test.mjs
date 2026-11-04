@@ -205,3 +205,26 @@ test('published mortality cards render national context and the standardized ser
     assert.deepEqual(layer.municipalities[municipality.code].trend, entry.trend);
   }
 });
+
+test('estimated cases show annual state and capital context for every cancer type', () => {
+  const municipality = listing.municipalities.find(m => m.code === '261160');
+  const html = page(municipality);
+  const cards = html.split('aria-label="Casos novos estimados"').slice(1).map(part => part.split('</article>')[0]);
+  assert.equal(cards.length, 6);
+  assert.match(cards[0], /19\.790/);
+  assert.match(cards[0], /4\.400/);
+  for (const card of cards) {
+    assert.match(card, /Na sua UF \(PE\)/);
+    assert.match(card, /Na capital do seu estado \(Recife\)/);
+    assert.match(card, /por ano/);
+    assert.match(card, /2026–2028/);
+    assert.match(card, /Explore as orientações de prevenção e detecção precoce/);
+    assert.match(card, /A estimativa do estado não prevê quem terá câncer/);
+    assert.doesNotMatch(card, /<meter|<svg|Referência:|Tendência:|Situação:/);
+    assert.match(card, /\/metodologia\/#casos-estimados/);
+  }
+  assert.match(cards[0], /exceto pele não melanoma/);
+  const df = listing.municipalities.find(m => m.uf === 'DF');
+  const dfCard = page(df).split('aria-label="Casos novos estimados"')[1].split('</article>')[0];
+  assert.match(dfCard, /Brasília.*Distrito Federal/s);
+});
