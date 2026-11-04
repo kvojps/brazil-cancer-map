@@ -25,3 +25,5 @@
 - Checagem Astro sem erros, avisos ou sugestões; build estático concluído (5.573 páginas); 37 testes do site e 151 testes do pipeline aprovados. O build mantém o aviso de tamanho do chunk do mapa; o pipeline mantém os avisos de separação perfeita dos modelos nas amostras de teste.
 - Revisão `code-review`: padrões e spec revisados separadamente. Corrigidos o link de busca com Tipo de câncer anterior e a falta de verificação de zoom nativo; sem pendências na revisão final. A sessão com leitor de tela e a auditoria de lançamento permanecem no ticket 25; os anúncios desta entrega usam regiões de status, sem alegação de certificação.
 - Reprodução dos testes: `site/browser-tests/README.md`.
+
+- Revisão posterior (ticket 35, 2026-11-04): alternativa A aprovada. Esta entrega permanece resolvida como histórico; sua composição é adaptada pelo ticket 38 e pelos demais tickets 36–39, conforme a [spec vigente](../../ui-ux-v1/spec.md), sem perder os requisitos de dados/acessibilidade/resiliência.

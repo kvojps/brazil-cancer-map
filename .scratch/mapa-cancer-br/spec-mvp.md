@@ -210,11 +210,13 @@ O "Saiba mais" do 60 dias traz os direitos e canais: Lei 12.732/2012 (60 dias), 
 
 Fontes: [Como a experiência "meu município" deve parecer?](issues/06-experiencia-meu-municipio.md) (protótipo no branch `prototype/06-meu-municipio`, nunca mergeado), [Como classificar a Tendência e tratar municípios pequenos no mapa?](issues/12-tendencia-e-municipios-pequenos.md), [Qual é a Referência de cada indicador?](issues/18-referencia-de-cada-indicador.md), [Que regras de método e ressalvas a mortalidade e o Acesso ao tratamento mostram?](issues/19-metodo-e-ressalvas.md).
 
+A apresentação desta seção é revisada pela alternativa **A — Console horizontal**, aprovada no [ticket 35](../mvp-implementacao/issues/35-prototipo-dashboard-de-observabilidade.md); ver [spec de UI/UX vigente](../ui-ux-v1/spec.md). Essa decisão substitui a separação prévia/ficha e orienta a navegação; preserva todas as regras estatísticas abaixo.
+
 ### 11.1 Mapa inicial
 
 - A página inicial é o mapa do Brasil por município. No topo ficam a busca de município, o seletor de Tipo de câncer e o seletor do que o mapa mostra (indicador e modo).
 - **Estado inicial:** até 60 dias × Todos os cânceres × Tendência, com a hachura da faixa C já na primeira impressão ([Com que indicador, tipo e modo o Mapa inicial abre?](issues/26-estado-inicial-do-mapa.md)).
-- **Estado na URL:** o município no caminho (`/municipio/<slug>/`); indicador, tipo e modo na query string, omitindo os valores padrão. Nada é lembrado entre visitas: sem parâmetros, o site abre no estado inicial.
+- **Estado na URL:** seleção municipal no dashboard, com indicador, tipo, modo, tema e visualização pertinentes compartilháveis, sem persistência entre visitas. Os links `/municipio/<slug>/` continuam acessíveis e devem entregar o dashboard com a seleção, inclusive sem JavaScript; a convenção final de caminhos será registrada no ticket de implementação 38. Sem seleção ou parâmetros, o site abre no estado inicial.
 - **Combinações que não existem:** ao trocar para um tipo sem aquele indicador, o mapa volta para o até 60 dias com um aviso de uma linha, e o seletor mostra os indicadores que não se aplicam desabilitados, com o motivo. Um link inválido é corrigido em silêncio, campo a campo (valor desconhecido → padrão; modo impossível → o modo que o indicador tem), e a URL é reescrita para o estado mostrado.
 - Indicadores que pintam o mapa: até 60 dias, mamografia, citopatológico, HPV e tendência da mortalidade, filtrados pelo tipo. Tabagismo, Onde se tratar e Casos estimados ficam só na ficha.
 - **Modo padrão: Tendência.** "Como está hoje" é opcional. A mortalidade só tem Tendência. O HPV abre em "como está hoje", com uma nota no seletor explicando por quê.
@@ -225,11 +227,11 @@ Fontes: [Como a experiência "meu município" deve parecer?](issues/06-experienc
   - Tendência: "A cor mostra como o indicador mudou ao longo dos anos. Não é um ranking entre municípios." (5 entradas). Entre elas: "**Estável**: quase não mudou, menos de 1% por ano em relação ao próprio valor." e "**Sem direção clara**: pode ter subido ou caído; os dados não bastam para dizer." Os mesmos textos valem no cartão, que mostra a classe e a série, sem o número da variação.
   - Situação: "A cor mostra a distância até a referência. Não é um ranking entre municípios."
 - **Tooltip:** nome do lugar, indicador, período, classe e origem geográfica do dado. Quando usa a região: **"Seu município e vizinhos — região de X"**.
-- **Interação:** clicar num município ou buscá-lo aproxima o mapa no estado, contorna o município e abre a ficha ao lado (embaixo, no celular).
+- **Interação:** clicar num município, buscá-lo ou abrir seu link seleciona e destaca o município, abrindo a consulta completa no dashboard, sem tela municipal separada. Painel lateral no desktop; inferior, resumido e expansível no celular. Sem seleção, Brasil inteiro e nenhum painel vazio. Lista substitui o mapa na mesma área e preserva filtros e seleção; busca/lista independem do mapa.
 
-### 11.2 Meu município (ficha)
+### 11.2 Meu município (consulta integrada)
 
-- Os quatro eixos ficam empilhados, com o **Acesso ao tratamento primeiro**. Onde se tratar fica junto do 60 dias.
+- Os quatro Eixos ficam em seções expansíveis no painel do dashboard, com **Acesso ao tratamento primeiro** e abertura inicial do Eixo do indicador selecionado no mapa. Onde se tratar fica junto do 60 dias. Voltar ao mapa mantém seleção; limpar/fechar a seleção é uma ação distinta.
 - **Cartão de indicador:** Situação (valor e barra contra a Referência), Tendência (série com os anos provisórios tracejados) e Ação. Também há "O que é este número?" (explicação e fonte), "Como calculamos" (link para a metodologia, seção 12), o **período dos dados em destaque** e a data de atualização nos detalhes.
 - **Dado da região:** "Seu município e vizinhos (região de X)", com a série e a Situação da região e uma nota de uma linha com o motivo.
 - **Dado insuficiente:** "Poucos casos aqui para dizer a direção. Isso é comum em municípios pequenos e não é um problema do seu município." O cartão mostra a Tendência da UF como contexto ("no seu estado") e mantém a Ação.

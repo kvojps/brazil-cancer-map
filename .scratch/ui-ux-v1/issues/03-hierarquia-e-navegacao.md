@@ -1,5 +1,6 @@
 # Como organizar resumo nacional, mapa e Meu município para os dois públicos?
 
+> Registro histórico: a apresentação e a hierarquia foram substituídas pela alternativa A aprovada no [ticket 35](../../mvp-implementacao/issues/35-prototipo-dashboard-de-observabilidade.md). Consultar a [spec vigente](../spec.md) e o [handoff aprovado](../observability-handoff.md); o status deste ticket registra a entrega anterior.
 Labels: wayfinder:grilling
 Type: grilling
 **Status:** resolved

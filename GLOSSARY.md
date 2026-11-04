@@ -8,9 +8,9 @@
 
 **Tendência de mortalidade**: A variação da taxa de mortalidade ao longo do tempo. É a única forma em que a mortalidade aparece no mapa; contagens absolutas de óbitos não ganham destaque.
 
-**Mapa inicial**: A página de entrada do site: o Brasil por município, pintado pela Tendência do indicador escolhido. A cor nunca expressa posição entre municípios. Clicar num município abre uma prévia com acesso ao Meu município completo.
+**Mapa inicial**: O panorama do Brasil por município, com a Tendência do indicador escolhido como leitura padrão e acesso à consulta municipal completa no próprio dashboard. A cor nunca expressa posição entre municípios.
 
-**Meu município**: A visão centrada num município escolhido pelo cidadão, aberta pelo Mapa inicial ou pela busca. É uma ficha com os quatro eixos empilhados (Acesso ao tratamento primeiro). Reúne os indicadores disponíveis para o município e, quando o dado só existe por UF ou capital, os da sua UF ou capital.
+**Meu município**: A consulta de um município no próprio Mapa inicial, reunindo os quatro Eixos e os indicadores disponíveis para o município ou, quando pertinente, para sua região, UF ou capital. É a visão local completa do cuidado com o câncer, para entender e agir.
 
 **Tendência**: A direção recente de um indicador, em uma de quatro classes: melhorando, piorando, estável (sabemos que quase não mudou) ou sem direção clara (a mudança é incerta demais para dizer). Quando nem há casos suficientes para calcular, o indicador fica como dado insuficiente, que não é uma Tendência. Aparece em todo cartão e é a cor padrão do Mapa inicial. "Melhorando" depende do indicador: para a mortalidade, é cair; para a cobertura, é subir. É sempre medida como variação percentual anual, em relação ao próprio valor do indicador. _Evitar_: pontos percentuais para expressar a Tendência. _Evitar_: "estável" para uma série que só não mostrou mudança significativa.
 
