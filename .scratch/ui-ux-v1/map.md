@@ -10,7 +10,7 @@ Uma especificação de UI/UX pronta para implementar, sustentada por pesquisa de
 
 - Alinhamento com o responsável em 2026-11-04: pesquisa + protótipos + especificação; implementação fica para outro esforço.
 - Equilibrar cidadão e público técnico. Esta orientação revisa a prioridade de público do mapa original; linguagem simples, Ação e acesso aos detalhes técnicos devem coexistir. Não implica criar entradas por perfil.
-- Explorar resumo do Brasil com indicadores ao redor do mapa central; selecionar município muda para contexto local. Cada número identifica território e período.
+- Foco inicial no Brasil pelo mapa central; selecionar município abre prévia e acesso ao Meu município completo. Cartões de resumo numérico nacional foram adiados. Cada número identifica território e período.
 - Há liberdade para renovar o visual, preservando nome, tom acolhedor e significados das cores e texturas dos dados.
 - Consultar `GLOSSARY.md`, a spec do MVP e os tickets que a fundamentam. O novo esforço reabre a apresentação; não altera silenciosamente método, Referência, Tendência, Situação, qualidade ou recorte dos indicadores.
 - Skills: `grilling` + `domain-modeling` nas decisões; `research` nas investigações; `prototype` nas propostas concretas.
@@ -24,13 +24,16 @@ Uma especificação de UI/UX pronta para implementar, sustentada por pesquisa de
 - [Quais padrões de painéis territoriais e de saúde ajudam a entender e explorar um município?](issues/01-paineis-territoriais.md): seis referências apoiam orientação territorial e aprofundamento progressivo, com limites e hipóteses para protótipos.
 - [O que aproveitar de sistemas de observabilidade no dashboard do Observatório?](issues/02-observabilidade.md): contexto na URL e panorama → detalhe são transferíveis; tempo real e linguagem de incidentes não se adequam às séries anuais.
 
+- [Como organizar resumo nacional, mapa e Meu município para os dois públicos?](issues/03-hierarquia-e-navegacao.md): mapa Brasil → prévia → ficha completa, Tipo de câncer preservado e Metodologia própria para validação e reprodução; cartões nacionais adiados.
+
 ## Not yet specified
 
 - O que os testes dos protótipos revelarão sobre densidade, orientação espacial, descoberta dos filtros e compreensão das ressalvas.
-- Ajustes no contrato de dados que só poderão ser especificados depois da escolha dos resumos e comparações.
+- Eventuais necessidades de dados da prévia e da ficha que os protótipos revelarem; os cartões nacionais adiados não motivam ampliação do contrato neste esforço.
 
 ## Out of scope
 
 - Implementar ou publicar o redesign neste esforço.
 - Novos indicadores, mudanças estatísticas e resolução das cargas de dados pendentes do MVP.
 - Orientação médica personalizada, ranking de municípios e infraestrutura paga.
+- Cartões de resumo numérico nacional: adiados por ausência de conjunto adequado de dados, conforme [Como organizar resumo nacional, mapa e Meu município para os dois públicos?](issues/03-hierarquia-e-navegacao.md); eventual retomada em outro esforço.
