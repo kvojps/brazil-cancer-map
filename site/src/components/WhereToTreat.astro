@@ -5,7 +5,7 @@ interface Props { services?: WhereToTreat; code: string }
 const { services, code } = Astro.props;
 const nearby = services?.municipalities[code] ?? [];
 ---
-<aside aria-label="Onde se tratar">
+<aside class="treatment-locations" aria-label="Onde se tratar">
   <h3>Onde se tratar</h3>
   {services ? <>
     <p><strong>Competência do CNES: {services.period.slice(4)}/{services.period.slice(0, 4)}.</strong></p>
