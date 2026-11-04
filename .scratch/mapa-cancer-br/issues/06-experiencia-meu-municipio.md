@@ -30,3 +30,7 @@ O motivo de a tendência ser o padrão: com a Referência de 100% da lei, o "at�
 **O que isto deixa em aberto (vai para a Apresentação responsável):**
 - A regra da Tendência deixou de ser detalhe: agora ela pinta a página inicial. Ver [Como classificar a Tendência e tratar municípios pequenos no mapa?](12-tendencia-e-municipios-pequenos.md).
 - No mapa, o município pequeno aparece com a cor do próprio dado, enquanto a ficha diz que o dado é agregado com os vizinhos. A mesma regra precisa valer nos dois lugares.
+
+## Revisão de apresentação — 2026-11-04
+
+A alternativa A aprovada no [ticket 35](../../mvp-implementacao/issues/35-prototipo-dashboard-de-observabilidade.md) substitui a apresentação/hierarquia anterior por consulta completa no dashboard. Ver [spec de UI/UX vigente](../../ui-ux-v1/spec.md). Preservar os requisitos estatísticos e editoriais; não interpretar este registro histórico como exigência de ficha em tela separada.

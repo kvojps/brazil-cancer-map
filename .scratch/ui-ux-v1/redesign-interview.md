@@ -1,6 +1,6 @@
 # Revisão visual da v1 — entrevista
 
-Entrevista em andamento. Não substitui integralmente a especificação anterior nem autoriza implementação antes da confirmação do entendimento compartilhado.
+Entrevista concluída com escolha da alternativa A em 2026-11-04. A decisão foi consolidada na [spec vigente](spec.md) e no [handoff aprovado](observability-handoff.md); a implementação segue pelos tickets 36–39, sem promoção do protótipo ou publicação.
 
 ## Decisões confirmadas pelo responsável
 
@@ -22,12 +22,13 @@ A consulta municipal integrada substitui a hierarquia de `issues/03-hierarquia-e
 
 Tabela e índice por UF cumprem requisitos de acessibilidade e resiliência do ticket 32 da implementação. Seu desenho e sua posição podem mudar; a alternativa de acesso precisa ser preservada ou explicitamente revista.
 
-## Pendências da entrevista
+## Aprovação visual e pendências técnicas
 
-- Identidade, navegação e comportamento inicial dos temas.
-- Conteúdo do dashboard antes de selecionar um município.
-- Solução técnica para links municipais e consulta sem JavaScript, respeitando a remoção da tela municipal.
-- Identidade, navegação, rodapé e critérios para aprovação visual.
+O responsável respondeu “A” à proposta navegável do ticket 35: **Console horizontal** aprovado, incluindo navegação, mapa, painel completo, legenda, lista, rodapé e Como calculamos. A aprovação confirma a hierarquia integrada e substitui a direção C anterior; não altera métodos ou dados.
+
+A identidade, temas, abertura sem seleção, ajuda contextual e consulta responsiva seguem A. A aprovação não elimina as limitações conhecidas: três fichas de amostra, filtro Todos os cânceres, demonstração HPV explicitamente sem números e ausência de redirects no protótipo. A implementação deve atender todos os municípios/Tipos e preservar os estados reais de ausência de carga.
+
+Pendências técnicas: convenção final de URL/documentos estáticos, links legados sem dependência de JavaScript, geração nacional e tamanho da saída; matriz de regressão, auditoria e revisão clínica permanecem nos respectivos tickets. Preferir reutilizar os caminhos municipais atuais como documentos do dashboard com seleção, sem ficha separada.
 
 ## Comments
 
@@ -36,3 +37,5 @@ Primeira rodada: responsável priorizou panorama nacional, dashboard de observab
 Segunda rodada: confirmou remoção da tela municipal, direção de observabilidade e inclusão de “Como calculamos”. A pergunta Q4 sobre ocupação da primeira tela não recebeu resposta explícita.
 
 Terceira rodada: aprovou Q4, Q8, Q9 e Q10. Ressalva explícita: a alternativa em lista não pode prejudicar a visualização principal.
+
+Quarta rodada: escolha humana “A”, sem ajustes adicionais. Spec e handoff consolidados; tickets 36–39 criados para implementação posterior.

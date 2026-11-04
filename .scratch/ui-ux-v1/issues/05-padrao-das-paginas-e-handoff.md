@@ -1,5 +1,6 @@
 # Como aplicar a direção às demais páginas e entregar uma especificação verificável?
 
+> Registro histórico: a apresentação e a hierarquia foram substituídas pela alternativa A aprovada no [ticket 35](../../mvp-implementacao/issues/35-prototipo-dashboard-de-observabilidade.md). Consultar a [spec vigente](../spec.md) e o [handoff aprovado](../observability-handoff.md); o status deste ticket registra a entrega anterior.
 Labels: wayfinder:grilling
 Type: grilling
 **Status:** resolved

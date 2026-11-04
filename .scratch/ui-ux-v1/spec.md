@@ -1,32 +1,38 @@
 # Especificação de UI/UX da v1
 
-Especificação de apresentação pronta para implementação, aprovada em rodadas com o responsável em 2026-11-04. Não constitui implementação, auditoria ou autorização de publicação. Método e contrato continuam regidos pela [spec do MVP](../mapa-cancer-br/spec-mvp.md) e seus tickets de decisão.
+Direção vigente: **A — Console horizontal**, aprovada pelo responsável em 2026-11-04 ao responder “A” à proposta do [ticket 35](../mvp-implementacao/issues/35-prototipo-dashboard-de-observabilidade.md). A aprovação cobre a composição apresentada, incluindo navegação, mapa, painel, legenda, lista, rodapé e Metodologia. Não constitui implementação, publicação, revisão clínica ou auditoria. Método e contrato continuam regidos pela [spec do MVP](../mapa-cancer-br/spec-mvp.md) e seus tickets de decisão.
 
 ## Decisões e referência visual
 
-- [Hierarquia e navegação](issues/03-hierarquia-e-navegacao.md): mapa Brasil → prévia → Meu município completo; cartões nacionais adiados.
-- [Direção visual](issues/04-direcao-visual.md): Mapa imersivo (C), claro/escuro e painel territorial com altura da linha do mapa no desktop. Referência descartável: branch `prototype/ui-ux-v1`, commit `2225bdd`, componente `site/src/components/VisualPrototype.astro`. Não promover o protótipo diretamente ao produto.
-- [Padrão das páginas e handoff](issues/05-padrao-das-paginas-e-handoff.md): temas, páginas, acesso sem JavaScript e critérios de aceite.
+Fonte primária: branch descartável `prototype/35-observability-dashboard`, commit `86a8d87`, rota `/prototype/observability?variant=A`. Capturas e instruções estão em `site/src/prototypes/observability/` nessa branch; consultar com `git show prototype/35-observability-dashboard:site/src/prototypes/observability/README.md`. O commit `ce023a9` registra o vínculo da fonte no ticket. Não integrar código do protótipo ao produto.
+
+O [handoff aprovado](observability-handoff.md) consolida escopo, evidência e limitações. A direção A substitui a direção C de `prototype/ui-ux-v1` (`2225bdd`), a separação mapa → prévia → ficha dos tickets de UI/UX 03–05 e a composição anterior dos tickets de implementação 30–34. Suas entregas continuam resolvidas e devem ser reaproveitadas; as diferenças estão nos tickets 36–39.
 
 ## Páginas e navegação
 
-A inicial mantém mapa central do Brasil, controles compactos e prévia lateral. Sem seleção, o painel orienta a buscar ou selecionar um município. Seleção aproxima o mapa no estado, contorna o município e abre a prévia; “Ver Meu município” leva à página municipal própria. No celular, mapa e prévia se empilham com altura natural. No desktop, o painel preenche a altura da linha do mapa, sem ficar fixo na rolagem.
+O Mapa inicial é um dashboard com Brasil inteiro, mapa dominante e cabeçalho compacto. Abre em tratamento em até 60 dias × Todos os cânceres × Tendência, sem município selecionado e sem painel vazio. Mantém o recorte quimio/radio e não acrescenta cartões numéricos nacionais nem apresentação longa.
 
-Meu município mantém quatro Eixos empilhados, Acesso ao tratamento primeiro e Onde se tratar junto do tratamento. O Tipo de câncer persiste entre inicial e ficha; indicador e modo restringem apenas o mapa. A prévia não é a ficha completa. Ação, origem territorial, período e ressalvas essenciais permanecem visíveis; detalhes extensos usam expansões ou links à Metodologia.
+A identidade combina o nome Observatório do Câncer no Brasil e símbolo simples. Navegação principal: “Mapa” e “Como calculamos”. A busca municipal integra a barra horizontal de controles, com filtros agrupados e “Explorar em lista” como botão secundário com ícone, próximo à busca. Tema por sol/lua com nome acessível. Claro e escuro compartilham tipografia precisa, superfícies definidas, controles compactos e acentos luminosos discretos; cores semânticas permanecem intactas.
 
-Metodologia mantém página própria, sumário por indicador e coluna de leitura. Navegação principal e links de cada indicador levam à página e às seções pertinentes. Dados, fontes, versões, condições de reutilização, citação e reprodução ficam acessíveis por ela, conforme MVP §§2, 12 e 15. Preservar as rotas existentes: inicial, Metodologia e municípios; não criar página adicional de downloads como requisito deste esforço.
+Selecionar um município no mapa, na busca, na lista ou por link direto abre Meu município no próprio dashboard, sem etapa de prévia nem navegação a uma ficha separada. No desktop, painel lateral com nome/UF e quatro Eixos expansíveis, inicialmente aberto no Eixo do indicador do mapa. A ordem mantém Acesso ao tratamento primeiro e Onde se tratar junto dele. Indicador e modo restringem o mapa, não os quatro Eixos; Tipo de câncer restringe o conteúdo pertinente.
 
-Todas as páginas compartilham navegação, tipografia sem serifa, hierarquia compacta, superfícies, controles, bordas discretas e temas. O aviso de construção, identidade e licenças continuam sujeitos ao MVP. A composição das páginas de leitura se adapta ao conteúdo, sem obrigá-las a ocupar a grade do mapa.
+No celular, o painel é inferior, expansível e inicialmente resumido. Há fechamento explícito. Voltar ao mapa recolhe o painel e mantém a seleção, com ação de reabrir; limpar/fechar a seleção é uma ação distinta. Oferecer foco visível, ordem lógica, anúncios de resultado e acesso direto ao painel pelo teclado, sem aprisionamento indevido de foco.
+
+Resultado, classificação, período, origem regional, Referência quando aplicável, Ação e ressalvas essenciais ficam junto do resultado. Explicações extensas ficam em expansões. Ajuda dos controles usa popover acionável por clique, toque e teclado com descrição acessível; nenhuma ressalva essencial pode depender só de hover. A legenda compacta integra o mapa com cores/texturas e explicações sob demanda, distinguindo Tendência, Situação, qualidade C e dado insuficiente.
+
+“Explorar em lista” substitui o mapa na mesma área, com alternância “Mapa | Lista”, preservando filtros e seleção. Não há tabela ou índice por UF permanentemente abaixo do mapa. O rodapé compacto vem depois da área principal, com identidade, fontes/condições, licenças e código. O aviso integral de construção permanece em todas as páginas, conforme MVP §2.
+
+Metodologia mantém `/metodologia/` e suas âncoras: sumário, coluna de leitura, seções e detalhes expansíveis no mesmo sistema visual. Preservar fontes, dados, versões, condições de reutilização, citação e reprodução, sem resumir o conteúdo de produção ao texto ilustrativo do protótipo.
 
 ## Tema e estado
 
-Escolha explícita em `theme=light|dark`, preservada na navegação interna junto do estado pertinente. Sem parâmetro válido, acompanhar a preferência do sistema. Não persistir escolha entre visitas. Sem JavaScript, o tema do sistema deve funcionar por CSS; aplicar a escolha explícita da URL depende do aprimoramento por JavaScript, sem impedir leitura básica.
+Escolha explícita em `theme=light|dark`, preservada na navegação interna junto de seleção, indicador, Tipo de câncer, modo e visualização Mapa/Lista pertinentes. Sem tema válido, acompanhar o sistema; sem persistência entre visitas. Sem JavaScript, tema do sistema por CSS; a escolha explícita da URL pode ser aprimorada por JavaScript sem impedir leitura básica.
 
-Preservar Tipo de câncer e as regras existentes de elegibilidade, padrões e correção de URLs do MVP. Fundos, textos, controles e malha neutra mudam com o tema. Cores e significados de Tendência/Situação, pontos de dado insuficiente e hachura de faixa C são preservados; não inverter globalmente o mapa.
+Preservar elegibilidade, padrões e correções de URL do MVP e o comportamento de Voltar/Avançar. Trocas rápidas não exibem resultados da seleção anterior como atuais. Fundos, textos, controles e malha neutra acompanham o tema; não inverter as cores estatísticas do mapa.
 
-## Prévia e contrato existente
+## Painel e contrato existente
 
-A prévia usa resultados prontos do pipeline, sem estatística no front. Esta conferência identifica fontes disponíveis, sem afirmar que todas as cargas estejam publicadas.
+O painel usa resultados prontos do pipeline. A aprovação visual não declara concluídas cargas ainda ausentes.
 
 | Informação | Fonte existente |
 | --- | --- |
@@ -41,54 +47,49 @@ A prévia usa resultados prontos do pipeline, sem estatística no front. Esta co
 | Fonte e atualização | `source` e `manifest.json` |
 | Ação e ressalvas editoriais fixas | `site/src/content/actions.ts` e cartões existentes |
 
-Interfaces de referência: `site/src/map/indicator-layer.ts` e `site/src/profile/profile.ts`. Consultar ficha por UF sob demanda quando a prévia precisar de campos exclusivos dela; não ampliar o contrato por conveniência visual.
+Interfaces de referência: `site/src/map/indicator-layer.ts` e `site/src/profile/profile.ts`. Consultar ficha por UF sob demanda quando o painel precisar de campos exclusivos dela; não ampliar o contrato por conveniência visual.
 
 Exceções obrigatórias:
 
 - Mortalidade tem apenas Tendência, sem Situação ou Referência; metas são contexto. Ajuste C55 não calculável não pode virar automaticamente dado insuficiente.
 - HPV tem apenas Situação e a explicação “série curta, ainda sem direção”, sem inventar classe de Tendência. Preservar notas de denominador e dose única quando pertinentes.
 - Tratamento/próstata não tem Situação: respeitar `has_status`.
-- Dado regional identifica “seu município e vizinhos” e nome da região junto do resultado. Dado insuficiente mantém explicação, Ação e acesso à ficha.
+- Dado regional identifica “seu município e vizinhos” e nome da região junto do resultado. Dado insuficiente mantém explicação e Ação no painel.
 - Faixa C mantém aviso e percentual sem informação; hachura apenas no tratamento correspondente. Preservar distinção entre período da qualidade e ano do valor.
 - Recorte quimio/radio, diferenças etárias de mamografia, transição DNA-HPV e demais ressalvas do MVP acompanham o resultado pertinente. Não substituir textos clínicos por exemplos do protótipo.
 
-Nenhuma ampliação estatística do contrato foi identificada como necessária. A implementação deve reutilizar as regras editoriais dos cartões para evitar divergências entre prévia e ficha.
+Nenhuma ampliação estatística do contrato foi identificada como necessária. A implementação deve reutilizar as regras editoriais dos cartões para evitar divergências entre mapa, painel e alternativa textual.
 
-## Acesso sem mapa ou JavaScript
+## Acesso sem mapa ou JavaScript e links antigos
 
-Com JavaScript, busca e tabela são alternativas ao mapa e devem funcionar mesmo quando WebGL ou a inicialização do mapa falhar. Tabela mantém classes, valores, origens e avisos do estado indicador × tipo × modo.
+Busca e lista inicializam independentemente do mapa/WebGL, com carregamento, falha e nova tentativa próprios. A lista mantém valores, classes, períodos, origens e avisos do estado indicador × Tipo × modo. A falha cartográfica mantém busca e consulta utilizáveis.
 
-Sem JavaScript, a inicial oferece lista estática de municípios organizada por UF, com links para fichas. Meu município e Metodologia entregam conteúdo básico no HTML: indicadores, ressalvas, Ações, fontes, navegação e links aos Tipos de câncer. Em site estático, links por âncoras aos blocos de cada tipo são uma forma de cumprir o acesso sem depender de interpretar query string no servidor. Não exigir interatividade do mapa sem JavaScript.
+Sem JavaScript, a alternativa textual continua no HTML do dashboard: índice por UF em expansão sob demanda e links nativos para documentos com seleção municipal já renderizada, seus quatro Eixos, Ações, ressalvas, fontes e Tipos. Query string sozinha não seleciona conteúdo num servidor estático; usar caminhos pré-gerados ou blocos/âncoras presentes no documento.
 
-Lacuna atual verificada: busca inicia desabilitada e tabela tem corpo vazio; a inicialização de ambas aguarda também o mapa. A ficha já é renderizada no build, mas contém todos os tipos e seu filtro depende de JavaScript. O índice estático e os links de tipos são trabalho novo do front.
+As rotas antigas `/municipio/<slug>/` devem entregar o dashboard com seleção equivalente, sem ficha com navegação própria. A solução proposta é reutilizar essas rotas como documentos selecionados do dashboard, reduzindo migração; se a implementação optar por nova rota canônica, usar redirects HTTP da hospedagem, preservando parâmetros e âncoras compatíveis, ou entregar o mesmo HTML do dashboard na rota antiga. Redirecionamento apenas por JavaScript não atende. A convenção técnica final e seu custo devem ser registrados no ticket 38 antes de concluir a mudança.
 
 ## Critérios verificáveis para a implementação
 
-Os itens abaixo são critérios futuros, não verificações já executadas neste esforço.
-
-- [ ] Conferir mapa → prévia → ficha → retorno, Tipo de câncer preservado, links técnicos e URLs compartilháveis nos dois temas.
-- [ ] Conferir seleção municipal, origem regional, dado insuficiente, faixa C, ausência de carga, períodos distintos, HPV sem Tendência, mortalidade sem Situação e ajuste não calculável.
-- [ ] Verificar inicial, ficha e Metodologia a 320, 768 e 1280 px e zoom de 200%, em ambos os temas: sem conteúdo cortado; rolagem horizontal limitada às tabelas; no celular, blocos com altura natural.
-- [ ] Percorrer controles, busca, tabela, prévia, ficha, expansões e Metodologia só pelo teclado, com foco visível e ordem lógica. Ao selecionar, manter foco no controle e oferecer acesso direto à prévia.
-- [ ] Verificar anúncios de resultados com leitor de tela; classes, avisos e origem compreensíveis em texto, sem depender só de cor. Conferir contraste e distinção das texturas nos dois temas.
-- [ ] Desativar JavaScript e conferir lista por UF, links para fichas e tipos, indicadores, ressalvas, Ações, fontes e Metodologia. Simular falha de WebGL com JavaScript ativo e confirmar busca/tabela utilizáveis.
-- [ ] Executar checagem automatizada de acessibilidade, sem erros graves, e revisão manual nos dois temas. Registrar ferramenta, páginas, estados e limitações; sem alegar certificação formal.
-- [ ] Medir primeira visita com cache vazio e transferência comprimida, com orçamento em torno de 1,3 MB; medir saída estática total abaixo de 30 MB. Registrar cenário, recursos e método, investigar excessos e evitar fontes externas. Carregar detalhes sob demanda. Divergência de orçamento requer justificativa e decisão explícita, não omissão.
+- Brasil inteiro sem seleção na abertura; consulta integrada, quatro Eixos, mapa/lista, tema e estado compartilhável, Voltar/Avançar e links legados.
+- Origem municipal/regional, insuficiência, qualidade C, ausência/falha de carga, períodos distintos, HPV sem Tendência, mortalidade sem Situação, C55 não calculável e tratamento/próstata sem Situação.
+- Dois temas em 320/768/1280 px e zoom de 200%, sem cortes ou rolagem horizontal fora de tabelas; painel inferior resumido/expandido e fechamento/reabertura distinguíveis.
+- Teclado, foco, anúncios, ajuda por toque/clique, contraste e texturas; matriz sem JavaScript e com falha de WebGL. Registrar cenários e limitações sem alegar certificação.
+- Preservar carregamento sob demanda; medir primeira visita com cache vazio e transferência comprimida (orçamento em torno de 1,3 MB) e saída estática (meta inferior a 30 MB). Os cerca de 675 MB já observados na saída existente são uma pendência, não um orçamento aprovado. Medir, investigar e registrar decisão explícita para qualquer excesso.
 
 ## Dependências e fronteira da implementação
 
-| Trabalho | Tratamento no handoff |
+| Trabalho | Ticket / reaproveitamento |
 | --- | --- |
-| Novo padrão visual, temas, prévia separada, navegação, índice sem JS e independência do mapa | Trabalho novo do redesign |
-| Estado na URL já implementado | Preservar e adaptar ao tema e à separação prévia/ficha; [ticket existente](../mvp-implementacao/issues/09-estado-na-url.md) |
-| Metodologia completa e reprodução | Dependência já aberta: [Metodologia consolidada](../mvp-implementacao/issues/24-metodologia-consolidada.md) |
-| Downloads versionados | Dependência já aberta: [Dados abertos na GitHub Release](../mvp-implementacao/issues/22-dados-abertos-na-release.md) |
-| Auditoria e medição de orçamento | Dependência já aberta: [Auditoria de acessibilidade do lançamento](../mvp-implementacao/issues/25-auditoria-de-acessibilidade.md); incluir os cenários deste redesign |
-| Aprovação dos textos de Ação | Dependência humana: [Revisão clínica das Ações](../mvp-implementacao/issues/26-revisao-clinica-das-acoes.md) |
-| Cargas HPV, tabagismo e atualização | Pendências próprias do MVP; o layout deve representar ausência sem presumir conclusão |
+| Console A: identidade, cabeçalho, controles, legenda e rodapé | [36](../mvp-implementacao/issues/36-console-horizontal-e-sistema-visual.md); reaproveita 30 e 31 |
+| Meu município completo integrado e responsivo | [37](../mvp-implementacao/issues/37-consulta-municipal-integrada.md); reaproveita 31 e 33 |
+| Mapa/Lista, links municipais e acesso sem mapa/JavaScript | [38](../mvp-implementacao/issues/38-navegacao-resiliente-e-links-municipais.md); reaproveita 09, 32 e 33 |
+| Como calculamos no Console A | [39](../mvp-implementacao/issues/39-metodologia-no-console-horizontal.md); reaproveita 34 |
+| Conteúdo técnico / dados versionados | Tickets 24 / 22; continuam independentes |
+| Auditoria de lançamento / orçamento | Ticket 25; incluir os novos fluxos, sem duplicar auditoria |
+| Revisão clínica / cargas HPV e tabagismo | Tickets próprios; aprovação visual não os encerra |
 
 ## Revisões explícitas da spec anterior
 
-Esta especificação complementa o MVP, revisando a apresentação do §11: seleção abre prévia; Meu município completo fica em página própria; mantém-se o caminho municipal e acrescenta-se tema compartilhável à política de estado. Explicita padrão visual comum, alternativas sem mapa/JavaScript e critérios de verificação. Os tickets de hierarquia e direção visual registram as aprovações que sustentam essas mudanças.
+A consulta completa passa a integrar o dashboard e substitui a prévia seguida de ficha própria. O painel vazio inicial desaparece; o painel móvel é inferior e expansível. A lista ocupa a área do mapa, e o índice estático fica sob demanda. A direção A substitui C e a direção editorial rejeitada. A Metodologia permanece uma página de leitura e as rotas antigas mantêm acesso funcional sem JavaScript.
 
-Não altera método, indicadores, recortes, Referência, classes de Tendência/Situação ou cascata. Implementação, publicação, cartões numéricos nacionais, novos indicadores e resolução das cargas pendentes permanecem fora deste esforço. Aprovação visual não substitui teste formal de usabilidade, auditoria, medição ou revisão clínica.
+Nenhuma mudança de método, indicadores, recortes, Referência, classes, cascata ou contrato estatístico foi aprovada. Os exemplos do protótipo não substituem textos clínicos nem resultados publicados.
