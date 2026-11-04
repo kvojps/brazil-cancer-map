@@ -1,4 +1,8 @@
 import json
+import shutil
+import struct
+
+import datasus_dbc
 
 import duckdb
 import pytest
@@ -6,7 +10,27 @@ import pytest
 from pipeline.sources.sim import SimSource
 
 
-def fixture_source(tmp_path, monkeypatch):
+def write_dbf(path, records):
+    fields = [('CODMUNRES', 6), ('CODMUNOCOR', 6), ('CAUSABAS', 4), ('SEXO', 1),
+              ('IDADE', 3), ('DTOBITO', 8), ('TIPOBITO', 1)]
+    records = list(records)
+    header = bytearray(32)
+    header[0] = 3
+    struct.pack_into('<IHH', header, 4, len(records), 32 + 32 * len(fields) + 1,
+                     1 + sum(width for _, width in fields))
+    body = bytes(header)
+    for name, width in fields:
+        descriptor = bytearray(32)
+        descriptor[:len(name)] = name.encode()
+        descriptor[11], descriptor[16] = ord('C'), width
+        body += descriptor
+    body += b'\r'
+    for row in records:
+        body += b' ' + b''.join(row.get(name, '').encode().ljust(width) for name, width in fields)
+    path.write_bytes(body + b'\x1a')
+
+
+def fixture_source(tmp_path, monkeypatch, *, annual_deaths=None):
     raw, clean, site = (tmp_path / name for name in ('raw', 'clean', 'site'))
     raw.mkdir()
     site.mkdir()
@@ -20,11 +44,8 @@ def fixture_source(tmp_path, monkeypatch):
             FROM (VALUES ('261160'), ('260005'), ('260020')) m(municipality),
             range(2014,2025) y(year), range(1,3) s(sex), range(0,81) a(age))
             TO ? (FORMAT PARQUET)''', [str(population)])
-    for year in range(2014, 2025):
-        (raw / f'DOBR{year}.dbc').touch()
-    def records(path):
-        year = int(path.stem[4:])
-        for _ in range(100):
+    def records(year):
+        for _ in range(100 if annual_deaths is None else annual_deaths[year]):
             yield {'CODMUNRES': '261160', 'CODMUNOCOR': '355030', 'CAUSABAS': 'C509',
                    'SEXO': '2', 'IDADE': '450', 'DTOBITO': f'0101{year}', 'TIPOBITO': '2'}
         yield {'CODMUNRES': '261160', 'CAUSABAS': 'C509', 'SEXO': '1', 'IDADE': '450',
@@ -32,7 +53,9 @@ def fixture_source(tmp_path, monkeypatch):
         for cause, age in [('C449', '450'), ('C539', '999'), ('C539', '301'), ('C539', '580')]:
             yield {'CODMUNRES': '260020', 'CAUSABAS': cause, 'SEXO': '2', 'IDADE': age,
                    'DTOBITO': f'0101{year}', 'TIPOBITO': '2'}
-    monkeypatch.setattr('pipeline.sources.sim.read_records', records)
+    for year in range(2014, 2025):
+        write_dbf(raw / f'DOBR{year}.dbc', records(year))
+    monkeypatch.setattr(datasus_dbc, 'decompress', lambda src, dest: shutil.copyfile(src, dest))
     reference = tmp_path / 'atlas.json'
     reference.write_text(json.dumps({'source': 'https://mortalidade.inca.gov.br/MortalidadeWeb/',
         'checks': [{'year': 2022, 'cancer_type': 'breast', 'area': 'BR', 'deaths': 100,
@@ -121,16 +144,9 @@ def test_trend_uses_population_offset_and_decreasing_mortality_is_improving(tmp_
 
 
 def test_population_fallback_uses_the_same_ten_year_window_for_cascade_and_trend(tmp_path, monkeypatch):
-    from pipeline.sources import sim
-
-    source, clean, site = fixture_source(tmp_path, monkeypatch)
-    original = sim.read_records
-
-    def records(path):
-        # 29 + nine years × 19 = 200: the municipality meets the 20/year minimum.
-        return iter(list(original(path))[:29 if path.stem.endswith('2014') else 19])
-
-    monkeypatch.setattr(sim, 'read_records', records)
+    # 29 + nine years × 19 = 200: the municipality meets the 20/year minimum.
+    annual_deaths = {year: 29 if year == 2014 else 19 for year in range(2014, 2025)}
+    source, clean, site = fixture_source(tmp_path, monkeypatch, annual_deaths=annual_deaths)
     path = tmp_path / 'population.parquet'
     with duckdb.connect() as db:
         db.execute('CREATE TABLE available AS SELECT * FROM read_parquet(?) WHERE year < 2024', [str(path)])
@@ -149,8 +165,8 @@ def test_clean_matches_cancer_definitions_and_sex_and_excludes_fetal_deaths(tmp_
              ('C33', '1'), ('C34', '2'), ('C18', '1'), ('C19', '2'), ('C20', '1'), ('C21', '2'),
              ('C26', '1'), ('C44', '1'), ('C73', '1'), ('C76', '2'), ('C97', '1'), ('D00', '2'), ('C55', '2'), ('C1X', '1')]
 
-    def records(path):
-        if not path.stem.endswith('2014'):
+    def records(year):
+        if year != 2014:
             return
         for cause, sex in cases:
             yield {'CODMUNRES': '261160', 'CAUSABAS': cause + '9', 'SEXO': sex, 'IDADE': '450',
@@ -158,7 +174,8 @@ def test_clean_matches_cancer_definitions_and_sex_and_excludes_fetal_deaths(tmp_
         yield {'CODMUNRES': '261160', 'CAUSABAS': 'C509', 'SEXO': '2', 'IDADE': '450',
                'DTOBITO': '01012014', 'TIPOBITO': '1'}
 
-    monkeypatch.setattr('pipeline.sources.sim.read_records', records)
+    for year in range(2014, 2025):
+        write_dbf(tmp_path / 'raw' / f'DOBR{year}.dbc', records(year))
     source.clean()
     with duckdb.connect() as db:
         counts = dict(db.execute('SELECT cancer_type,sum(deaths) FROM read_parquet(?) GROUP BY cancer_type',
@@ -167,14 +184,7 @@ def test_clean_matches_cancer_definitions_and_sex_and_excludes_fetal_deaths(tmp_
 
 
 def test_clean_reads_projected_dbf_fields_with_unrelated_columns_and_deleted_rows(tmp_path, monkeypatch):
-    import shutil
-    import struct
-
     source, clean, site = fixture_source(tmp_path, monkeypatch)
-    # Exercise the real reader; only the DBC compression boundary is substituted.
-    import datasus_dbc
-    monkeypatch.undo()
-    monkeypatch.setattr(datasus_dbc, 'decompress', lambda src, dest: shutil.copyfile(src, dest))
     fields = [('UNUSED', 20), ('CAUSABAS', 4), ('CODMUNRES', 6), ('SEXO', 1),
               ('IDADE', 3), ('DTOBITO', 8), ('TIPOBITO', 1)]
     for year in range(2014, 2025):
