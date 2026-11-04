@@ -245,13 +245,13 @@ export const INDICATORS: Record<string, IndicatorText> = {
 };
 
 /** The same option label and availability for static rendering and selection changes. */
-export function mapOption(indicator: string, cancerType: string, mode: MapMode): { label: string; disabled: boolean } {
+export function mapOption(indicator: string, cancerType: string, mode: MapMode, pending = false): { label: string; disabled: boolean } {
   const text = INDICATORS[indicator]!;
   const modes = text.modes[cancerType];
   const disabled = !modes?.includes(mode);
   const reason = !modes ? "não se aplica a este tipo de câncer" : "modo indisponível para este indicador e tipo";
   const label = `${text.name} · ${mode === "trend" ? "Tendência" : "Como está hoje"}${disabled ? ` — ${reason}` : ""}`;
-  return { label, disabled };
+  return { label: label + (pending ? ' — dados ainda não disponíveis' : ''), disabled: disabled || pending };
 }
 
 /** The cancer types of the selector, in its order; "all" is the default view (spec, section 3). */

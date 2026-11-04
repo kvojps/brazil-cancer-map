@@ -37,9 +37,9 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
       {Object.entries(INDICATORS).map(([id, text]) => (
         <optgroup label={text.name}>
           {([...new Set(Object.values(text.modes).flat())]).map((mode) => {
-            const option = mapOption(id, DEFAULT_CANCER_TYPE, mode);
             const pending = id === 'hpv' && hpvPending;
-            return <option value={`${id}:${mode}`} data-pending={pending ? 'true' : undefined} disabled={option.disabled || pending}>{option.label}{pending ? ' — dados ainda não disponíveis' : ''}</option>;
+            const option = mapOption(id, DEFAULT_CANCER_TYPE, mode, pending);
+            return <option value={`${id}:${mode}`} data-pending={pending ? 'true' : undefined} disabled={option.disabled}>{option.label}</option>;
           })}
         </optgroup>
       ))}

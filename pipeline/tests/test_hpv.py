@@ -75,7 +75,15 @@ def prepared_source(tmp_path, last_year=2021):
     (clean / 'legacy.json').write_text(json.dumps({
         'source_url': 'https://tabnet.datasus.gov.br/', 'complete_years': list(range(2015, 2020)),
         'extracted_at': '2026-11-04', 'dose': 'D1'}))
-    source = HpvSource(clean_dir=clean, site_data_dir=site, years=tuple(range(2020, last_year + 1)))
+    reference_path = tmp_path / 'references.json'
+    reference_path.write_text(json.dumps({
+        'source_url': 'https://example.test/official-fixture', 'extracted_at': '2026-11-04',
+        'tolerance_pp': 0.01,
+        'observations': [{'municipality': '110001', 'year': 2021, 'sex': sex, 'value': 1.67}
+                         for sex in (None, 'F', 'M')],
+    }))
+    source = HpvSource(clean_dir=clean, site_data_dir=site, years=tuple(range(2020, last_year + 1)),
+                       validation_path=reference_path)
     return source, site, clean
 
 
@@ -122,6 +130,11 @@ def test_above_100_is_kept_and_invalid_export_preserves_previous_files(tmp_path)
         db.execute('CREATE TABLE legacy AS SELECT * FROM read_parquet(?)', [str(path)])
         db.execute('UPDATE legacy SET vaccinated=120')
         db.execute('COPY legacy TO ? (FORMAT PARQUET)', [str(path)])
+    reference_path = tmp_path / 'references.json'
+    reference = json.loads(reference_path.read_text())
+    for observation in reference['observations']:
+        observation['value'] = 200 if observation['sex'] == 'F' else 1.67 if observation['sex'] == 'M' else 100.83
+    reference_path.write_text(json.dumps(reference))
     source.compute()
     source.export()
     layer = json.loads((site / 'map/hpv/all.json').read_text())
@@ -170,3 +183,24 @@ def test_cohort_leaves_the_age_range_and_current_year_does_not_set_status(tmp_pa
     series = profile['series']['municipality:110001']
     assert next(p for p in series if p['year'] == 2026)['value'] == 0
     assert next(p for p in series if p['year'] == 2024)['single_dose'] is True
+
+
+def test_official_comparison_is_required_and_divergence_blocks_publication(tmp_path):
+    import pytest
+    source, site, _ = prepared_source(tmp_path)
+    source.compute()
+    path = tmp_path / 'references.json'
+    original = path.read_bytes()
+    path.unlink()
+    with pytest.raises(ValueError, match='official HPV coverage references are required'):
+        source.export()
+    assert not (site / 'map/hpv/all.json').exists()
+    path.write_bytes(original)
+    source.export()
+    previous = (site / 'manifest.json').read_bytes()
+    reference = json.loads(original)
+    reference['observations'][0]['value'] = 50
+    path.write_text(json.dumps(reference))
+    with pytest.raises(ValueError, match='differs from official reference'):
+        source.export()
+    assert (site / 'manifest.json').read_bytes() == previous

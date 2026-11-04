@@ -128,3 +128,13 @@ permitem reaproveitar meses que não mudaram. A carga inicial pode ser feita
 na máquina do mantenedor. A medição e os limites estão em
 [docs/data/hpv-benchmark.md](docs/data/hpv-benchmark.md); a investigação dos
 insumos está na [pesquisa do HPV](.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).
+
+Antes de exportar HPV, registre referências de cobertura conferidas no painel
+oficial em `pipeline/references/hpv.json`: `source_url`, `extracted_at`,
+`tolerance_pp` (entre 0 e 1 ponto percentual) e `observations`, com município
+(`municipality`, seis dígitos), ano consolidado (`year`), sexo (`sex`: `F`,
+`M` ou `null` para o total) e cobertura percentual (`value`). A amostra deve
+incluir total e ambos os sexos, em municípios com dado próprio. O arquivo não
+é fornecido com valores inventados: sua ausência ou qualquer divergência além
+da tolerância impede `validate` e `export`. Essa conferência permanece pendente
+até a carga nacional e a extração das coberturas oficiais correspondentes.
