@@ -1,0 +1,194 @@
+{
+  "passed": true,
+  "years": [
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "cells": 64304,
+  "series_points": 67188,
+  "uncalculable_cells": 5,
+  "complete_adjustment": false,
+  "national_fallback_cells": 36,
+  "annual_counts": {
+    "2014": {
+      "c53": 5448,
+      "c55": 2116,
+      "c53_adjusted": 7057.348934773077,
+      "c54_adjusted": 1872.6510652269224
+    },
+    "2015": {
+      "c53": 5727,
+      "c55": 2150,
+      "c53_adjusted": null,
+      "c54_adjusted": null
+    },
+    "2016": {
+      "c53": 5847,
+      "c55": 2143,
+      "c53_adjusted": 7424.672956688062,
+      "c54_adjusted": 2141.3270433119383
+    },
+    "2017": {
+      "c53": 6385,
+      "c55": 2114,
+      "c53_adjusted": 7906.913866779605,
+      "c54_adjusted": 2419.086133220395
+    },
+    "2018": {
+      "c53": 6526,
+      "c55": 2090,
+      "c53_adjusted": 8054.064020472969,
+      "c54_adjusted": 2304.9359795270307
+    },
+    "2019": {
+      "c53": 6596,
+      "c55": 1929,
+      "c53_adjusted": 7989.839995590477,
+      "c54_adjusted": 2471.1600044095226
+    },
+    "2020": {
+      "c53": 6627,
+      "c55": 1823,
+      "c53_adjusted": null,
+      "c54_adjusted": null
+    },
+    "2021": {
+      "c53": 6606,
+      "c55": 1915,
+      "c53_adjusted": null,
+      "c54_adjusted": null
+    },
+    "2022": {
+      "c53": 6983,
+      "c55": 1927,
+      "c53_adjusted": 8319.320701444636,
+      "c54_adjusted": 2874.6792985553643
+    },
+    "2023": {
+      "c53": 7209,
+      "c55": 1770,
+      "c53_adjusted": null,
+      "c54_adjusted": null
+    },
+    "2024": {
+      "c53": 7493,
+      "c55": 1830,
+      "c53_adjusted": 8715.540084137374,
+      "c54_adjusted": 3333.4599158626265
+    }
+  },
+  "uncalculable_cells_details": [
+    {
+      "year": 2015,
+      "municipality": "240800",
+      "age_group": 10,
+      "c53": 0,
+      "c54": 0,
+      "c55": 1,
+      "c53_adjusted": null,
+      "c54_adjusted": null,
+      "proportion_source": null,
+      "adjustment_calculable": false
+    },
+    {
+      "year": 2015,
+      "municipality": "355030",
+      "age_group": 10,
+      "c53": 0,
+      "c54": 0,
+      "c55": 1,
+      "c53_adjusted": null,
+      "c54_adjusted": null,
+      "proportion_source": null,
+      "adjustment_calculable": false
+    },
+    {
+      "year": 2020,
+      "municipality": "330455",
+      "age_group": -1,
+      "c53": 0,
+      "c54": 0,
+      "c55": 1,
+      "c53_adjusted": null,
+      "c54_adjusted": null,
+      "proportion_source": null,
+      "adjustment_calculable": false
+    },
+    {
+      "year": 2021,
+      "municipality": "412800",
+      "age_group": 10,
+      "c53": 0,
+      "c54": 0,
+      "c55": 1,
+      "c53_adjusted": null,
+      "c54_adjusted": null,
+      "proportion_source": null,
+      "adjustment_calculable": false
+    },
+    {
+      "year": 2023,
+      "municipality": "160030",
+      "age_group": 15,
+      "c53": 0,
+      "c54": 0,
+      "c55": 1,
+      "c53_adjusted": null,
+      "c54_adjusted": null,
+      "proportion_source": null,
+      "adjustment_calculable": false
+    }
+  ],
+  "extracted_at": "2026-11-04",
+  "pipeline_commit": "ddbacb4",
+  "municipalities": 5571,
+  "other_cancer_types_unchanged": true,
+  "other_indicators_unchanged": true,
+  "map_profile_agreement": true,
+  "atlas_checks": [
+    {
+      "year": 2022,
+      "cancer_type": "cervix",
+      "area": "BR",
+      "deaths": 6983,
+      "rate": 4.79
+    },
+    {
+      "year": 2022,
+      "cancer_type": "cervix",
+      "area": "uf:31",
+      "deaths": 466,
+      "rate": 2.97
+    },
+    {
+      "year": 2022,
+      "cancer_type": "cervix",
+      "area": "uf:33",
+      "deaths": 543,
+      "rate": 4.22
+    },
+    {
+      "year": 2022,
+      "cancer_type": "cervix",
+      "area": "uf:15",
+      "deaths": 417,
+      "rate": 9.11
+    },
+    {
+      "year": 2022,
+      "cancer_type": "cervix",
+      "area": "uf:35",
+      "deaths": 1107,
+      "rate": 3.25
+    }
+  ]
+}
