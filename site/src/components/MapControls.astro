@@ -34,7 +34,7 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     <select id="map-mode" disabled>
       {Object.entries(INDICATORS).map(([id, text]) => (
         <optgroup label={text.name}>
-          {(["trend", "status"] as const).map((mode) => {
+          {(id === "mortality" ? ["trend"] as const : ["trend", "status"] as const).map((mode) => {
             const option = mapOption(id, DEFAULT_CANCER_TYPE, mode);
             return <option value={`${id}:${mode}`} disabled={option.disabled}>{option.label}</option>;
           })}

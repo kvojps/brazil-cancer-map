@@ -16,7 +16,7 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 
 export interface UfProfile {
   uf: string;
-  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile> };
+  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; mortality?: Record<string, MortalityProfile> };
   where_to_treat?: WhereToTreat;
 }
 
@@ -42,3 +42,5 @@ export function municipalityPath(municipality: { code: string; name: string }): 
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   return `/municipio/${municipality.code}-${name}/`;
 }
+
+export interface MortalityProfile extends Omit<ScreeningProfile, 'uf_trend'> { national_trend: TrendClass | null }

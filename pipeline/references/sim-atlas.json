@@ -1,0 +1,11 @@
+{
+  "source": "https://mortalidade.inca.gov.br/MortalidadeWeb/",
+  "note": "Amostra do Atlas citada em Controle do câncer do colo do útero no Brasil: dados e números 2025, tabela 2. Transcrição e conferência em .scratch/mapa-cancer-br/research/15-metodos-mortalidade.md. C53, mulheres, residência, 2022, Segi/Doll. Contagens incluem idade ignorada; taxas excluem idade ignorada. POPSVS revisto: tolerância relativa de 3%.",
+  "checks": [
+    {"year": 2022, "cancer_type": "cervix", "area": "BR", "deaths": 6983, "rate": 4.79},
+    {"year": 2022, "cancer_type": "cervix", "area": "uf:31", "deaths": 466, "rate": 2.97},
+    {"year": 2022, "cancer_type": "cervix", "area": "uf:33", "deaths": 543, "rate": 4.22},
+    {"year": 2022, "cancer_type": "cervix", "area": "uf:15", "deaths": 417, "rate": 9.11},
+    {"year": 2022, "cancer_type": "cervix", "area": "uf:35", "deaths": 1107, "rate": 3.25}
+  ]
+}

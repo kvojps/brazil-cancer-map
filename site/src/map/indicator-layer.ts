@@ -192,7 +192,7 @@ export interface IndicatorText {
   /** Available modes by cancer type; first is the indicator default. */
   modes: Record<string, readonly MapMode[]>;
   name: string;
-  unit: 'percent' | 'ratio';
+  unit: 'percent' | 'ratio' | 'rate';
   valueLabel: string;
   hasTreatmentQuality: boolean;
   /** What "melhorando" and "piorando" mean for this indicator. */
@@ -201,6 +201,13 @@ export interface IndicatorText {
 }
 
 export const INDICATORS: Record<string, IndicatorText> = {
+  mortality: {
+    modes: { all: ['trend'], breast: ['trend'], cervix: ['trend'], prostate: ['trend'], colorectal: ['trend'], lung: ['trend'] },
+    name: 'Tendência da mortalidade padronizada por idade',
+    unit: 'rate', valueLabel: 'Taxa por 100 mil', hasTreatmentQuality: false,
+    improving: 'a taxa de mortalidade padronizada por idade diminuiu.',
+    worsening: 'a taxa de mortalidade padronizada por idade aumentou.',
+  },
   within_60_days: {
     modes: {
       all: ["trend", "status"], breast: ["trend", "status"],
@@ -268,11 +275,16 @@ export const NO_STATUS_NOTE =
   "Por isso, começar o tratamento depois de 60 dias não indica, sozinho, falta de acesso, e este " +
   "indicador não é comparado ao prazo da lei: o mapa mostra só a Tendência.";
 
+export function noStatusNote(layer: Pick<IndicatorLayer, 'has_status'> & { indicator?: string }): string {
+  if (layer.has_status) return '';
+  return layer.indicator === 'mortality' ? 'A mortalidade tem só Tendência, sem Situação. A Tendência do Brasil aparece como contexto na ficha.' : NO_STATUS_NOTE;
+}
+
 /** The notes shown beside the cancer type selector for a layer. */
-export function cancerTypeNotes(layer: Pick<IndicatorLayer, "cancer_type" | "has_status">): string[] {
+export function cancerTypeNotes(layer: Pick<IndicatorLayer, "cancer_type" | "has_status"> & { indicator?: string }): string[] {
   const notes: string[] = [];
   if (layer.cancer_type === ALL_CANCERS) notes.push(ALL_CANCERS_NOTE);
-  if (!layer.has_status) notes.push(NO_STATUS_NOTE);
+  if (!layer.has_status) notes.push(noStatusNote(layer));
   return notes;
 }
 
@@ -326,6 +338,7 @@ export function formatPercent(value: number | null): string {
 const ratio = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function formatIndicatorValue(indicator: string, value: number | null): string {
+  if (INDICATORS[indicator]?.unit === 'rate') return value === null ? '—' : `${ratio.format(value)} por 100 mil`;
   return INDICATORS[indicator]?.unit === 'ratio' ? value === null ? '—' : ratio.format(value) : formatPercent(value);
 }
 

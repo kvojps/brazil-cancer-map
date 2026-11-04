@@ -1,5 +1,6 @@
 ---
 import TreatmentCard from './TreatmentCard.astro';
+import MortalityCard from './MortalityCard.astro';
 import ScreeningCard from './ScreeningCard.astro';
 import WhereToTreat from './WhereToTreat.astro';
 import listing from '../../public/dados/municipalities.json';
@@ -20,14 +21,14 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
     <h2 tabindex="-1" data-profile-heading>{municipality.name} <small>({municipality.uf})</small></h2>
     <p>Meu município — dados sobre o cuidado com o câncer, para entender e agir.</p>
     <p>{ALL_CANCERS_NOTE}</p>
-    <section><h2>Acesso ao tratamento</h2>
+    <section id="acesso"><h2>Acesso ao tratamento</h2>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
         <h3>{label}</h3>
         <TreatmentCard treatment={profile.indicators.within_60_days[cancerType]!} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={manifest.sources.painel.extracted_at} />
       </section>)}
       <WhereToTreat services={profile.where_to_treat} code={municipality.code} />
     </section>
-    <section><h2>Detecção precoce</h2>
+    <section id="deteccao"><h2>Detecção precoce</h2>
       {['all', 'breast'].map(cancerType => <section data-cancer-type={cancerType}>
         <ScreeningCard indicator="mammography" data={profile.indicators.mammography?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan?.extracted_at} />
       </section>)}
@@ -35,7 +36,12 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
         <ScreeningCard indicator="cytopathology" data={profile.indicators.cytopathology?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.siscan_cytopathology?.extracted_at} />
       </section>)}
     </section>
-    <section><h2>Prevenção</h2><p>Espaço reservado para os indicadores de prevenção e suas orientações.</p></section>
-    <section><h2>Panorama</h2><p>Espaço reservado para a Tendência de mortalidade e os casos novos estimados.</p></section>
+    <section id="prevencao"><h2>Prevenção</h2><p>Espaço reservado para os indicadores de prevenção e suas orientações.</p></section>
+    <section><h2>Panorama</h2>
+      {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
+        <h3>{label}</h3>
+        <MortalityCard data={profile.indicators.mortality?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.sim?.extracted_at} />
+      </section>)}
+    </section>
     <p><a href={`/dados/profiles/${municipality.uf}.json`}>Baixar os dados da ficha da UF</a> · <a href="/metodologia/">Como calculamos</a></p>
   </div>
