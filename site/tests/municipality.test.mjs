@@ -39,7 +39,7 @@ test('every municipality has a static page with four axes and the treatment acti
   assert.equal(readdirSync(new URL('../dist/municipio/', import.meta.url)).length, listing.municipalities.length);
   const html = readFileSync(new URL('../dist/municipio/110020-porto-velho/index.html', import.meta.url), 'utf8');
   assert.match(html, /Casos tratados com quimioterapia ou radioterapia: % que começou em até 60 dias/);
-  const axes = ['Acesso ao tratamento', 'Detecção precoce', 'Prevenção', 'Panorama'].map(label => html.indexOf(`>${label}</h2>`));
+  const axes = ['Acesso ao tratamento', 'Detecção precoce', 'Prevenção', 'Panorama'].map(label => html.indexOf(`>${label}</summary>`));
   assert.ok(axes.every((position, i) => position >= 0 && (i === 0 || position > axes[i - 1])));
   assert.match(html, /Conheça seus direitos e acompanhe seu encaminhamento/);
   assert.match(html, /Como calculamos/);

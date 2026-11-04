@@ -21,7 +21,8 @@
   .profile-types, .profile-axes { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem; }
   .profile-types a, .profile-axes a { padding: .4rem .65rem; border: 1px solid var(--border); border-radius: .4rem; background: var(--surface); }
   .profile-types [aria-current="true"] { background: var(--soft); font-weight: 700; }
-  > section { margin-block: 2rem; }
+  > [data-profile-axis] { margin-block: 1rem; }
+  > [data-profile-axis] > summary { font-size: 1.2rem; }
   [data-cancer-type] { margin-block: 1rem; scroll-margin-top: 1rem; }
   article + article { margin-top: 1rem; }
   .treatment-locations { border: 1px solid var(--border); border-radius: .75rem; padding: 1.25rem; background: var(--surface); }

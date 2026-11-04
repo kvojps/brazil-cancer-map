@@ -6,6 +6,8 @@ import MapControls from './MapControls.astro';
 import MunicipalityMap from './MunicipalityMap.astro';
 import TrendLegend from './TrendLegend.astro';
 import manifest from '../../public/dados/manifest.json';
+interface Props { selected?: boolean }
+const { selected = false } = Astro.props;
 const indicator = 'within_60_days';
 const period = manifest.indicators[indicator].all;
 ---
@@ -21,23 +23,29 @@ const period = manifest.indicators[indicator].all;
       <MunicipalityMap />
       <TrendLegend indicator={indicator} period={period} />
     </div>
-    <aside hidden id="municipality-preview" aria-labelledby="preview-heading">
-      <h2 id="preview-heading" tabindex="-1">Seu território</h2>
-      <a data-open-profile href="/" hidden>Ver Meu município</a>
-      <div data-preview-content><p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p></div>
+    <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading">
+      <h2 id="preview-heading" tabindex="-1">Meu município</h2>
+      <p data-profile-summary role="status"></p>
+      <div class="panel-actions">
+        <button type="button" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Expandir consulta</button>
+        <button type="button" data-collapse-profile hidden>Voltar ao mapa</button>
+        <button type="button" data-clear-profile hidden>Limpar seleção</button>
+      </div>
+      <div id="municipality-content" data-preview-content><slot /></div>
     </aside>
+    <button type="button" data-reopen-profile hidden>Reabrir Meu município</button>
   </div>
   <div class="data-feedback">
     <p id="data-status" role="status">Com JavaScript, carregamos os dados da seleção. Você também pode usar o índice por UF.</p>
     <button id="retry-data" type="button" hidden>Tentar novamente</button>
   </div>
   <IndicatorTable />
-  <MunicipalityIndex />
+  {selected ? <p><a href="/#municipality-index-heading">Consultar outro município no índice por UF</a></p> : <MunicipalityIndex />}
 </div>
 <style>
   .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }
   .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1rem; }
-  .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); }
+  .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem); }
   .map-with-legend { min-width: 0; border: 1px solid var(--border); border-radius: .6rem; overflow: clip; }
   .map-heading { padding: 1rem 1rem 0; }
   .map-heading h2 { margin: .25rem 0; }
@@ -46,7 +54,11 @@ const period = manifest.indicators[indicator].all;
   #municipality-preview h2 { margin-top: 0; }
   #municipality-preview :global(.warning) { padding: .75rem; border-left: 4px solid var(--muted); background: var(--soft); }
   #municipality-preview :global(h3) { font-size: 1.1rem; }
+  .panel-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
+  #municipality-preview { max-height: 85vh; overflow: auto; }
+  #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
   @media (max-width: 767px) {
+    #municipality-preview { position: sticky; bottom: 0; z-index: 2; max-height: 75vh; }
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
   }
 </style>
