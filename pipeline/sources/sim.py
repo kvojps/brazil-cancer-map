@@ -18,7 +18,7 @@ from pipeline.download import FtpTransport, Transport, fetch
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.population import Population
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
-from pipeline.trend import quasi_poisson_trend
+from pipeline.trend import quasi_poisson_trend, trend_window
 
 YEARS = tuple(range(2014, 2025))
 WEIGHTS = dict(zip(range(0, 81, 5), (12000, 10000, 9000, 9000, 8000, 8000, 6000,
@@ -37,9 +37,27 @@ def read_records(path: Path) -> Iterator[dict[str, str]]:
     with tempfile.TemporaryDirectory() as workdir:
         dbf = Path(workdir) / 'deaths.dbf'
         datasus_dbc.decompress(str(path), str(dbf))
-        for row in dbfread.DBF(str(dbf), encoding='latin-1', char_decode_errors='replace'):
-            yield {key: str(row.get(key) or '').strip() for key in
-                   ('CODMUNRES', 'CAUSABAS', 'SEXO', 'IDADE', 'DTOBITO', 'TIPOBITO')}
+        table = dbfread.DBF(str(dbf), encoding='latin-1')
+        required = {'CODMUNRES', 'CAUSABAS', 'SEXO', 'IDADE', 'DTOBITO', 'TIPOBITO'}
+        columns = {}
+        offset = 1  # Each fixed-width record starts with its deletion marker.
+        for field in table.fields:
+            if field.name in required:
+                if field.type != 'C':
+                    raise ValueError(f'{path.name}: expected character field {field.name}')
+                columns[field.name] = slice(offset, offset + field.length)
+            offset += field.length
+        if set(columns) != required:
+            raise ValueError(f'{path.name}: missing SIM fields')
+        # Project the six character columns without parsing the many unused DBF fields.
+        with dbf.open('rb') as stream:
+            stream.seek(table.header.headerlen)
+            for _ in range(table.header.numrecords):
+                record = stream.read(table.header.recordlen)
+                if len(record) != table.header.recordlen:
+                    raise ValueError(f'{path.name}: truncated DBF record')
+                if record[:1] == b' ':
+                    yield {name: record[span].decode('latin-1').strip() for name, span in columns.items()}
 
 
 class SimSource:
@@ -124,7 +142,10 @@ class SimSource:
                         provisional.add(year)
                     for key in ('BR', f'uf:{code[:2]}', f'municipality:{code}', f'immediate_region:{regions[code]}'):
                         denominators[key, year, age] += result.population
-            years = [year for year in YEARS[-10:] if year not in provisional]
+            window = trend_window(YEARS, provisional)
+            if window is None:
+                raise ValueError('SIM requires consolidated years')
+            years = [year for year in YEARS if window[0] <= year <= window[1] and year not in provisional]
             origins = data_origins({code: sum(totals[f'municipality:{code}', y] for y in years)
                                     for code in regions}, regions, years=len(years))
             all_keys = {key for key, _, _ in denominators}

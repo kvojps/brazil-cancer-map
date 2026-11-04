@@ -47,7 +47,7 @@ const titleId = `mortality-series-${cancerType}`;
     <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
     {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
   </> : <p>Os dados de mortalidade ainda não estão disponíveis nesta ficha.</p>}
-  {cancerType === 'breast' && <p>Meta nacional: redução de 10% (−10%) da mortalidade por câncer de mama até 2030. É contexto, sem comparação do município com a meta.</p>}
+  {cancerType === 'breast' && <p>Meta nacional: redução de 10% (−10%) da mortalidade prematura por câncer de mama (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>}
   {cancerType === 'cervix' && <>
     <p>Meta nacional: redução de 20% (−20%) da mortalidade prematura por câncer do colo do útero (30–69 anos) até 2030. A série exibida abrange todas as idades; a meta é apenas contexto.</p>
     <p>Esta série usa C53, sem redistribuição dos registros de útero sem localização definida (C55). O ajuste está previsto separadamente e pode mudar a Tendência.</p>
