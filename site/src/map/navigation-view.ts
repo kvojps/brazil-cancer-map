@@ -22,7 +22,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
     getUrl: () => new URL(location.href),
-    setUrl: url => history.pushState(null, '', url),
+    setUrl: url => { history.pushState(null, '', url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
       panel.hidden = false;
       focusMunicipality(map, place.code);
