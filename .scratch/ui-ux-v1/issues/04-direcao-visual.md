@@ -13,3 +13,8 @@ Criar alternativas descartáveis para avaliação humana da inicial e Meu munic�
 Validar com o responsável a direção e as interações; documentar os padrões reutilizáveis e o que permanece em aberto. Nenhuma alternativa está aprovada sem essa avaliação.
 
 ## Comments
+
+### Diretriz da hierarquia — 2026-11-04
+
+Seguir [Como organizar resumo nacional, mapa e Meu município para os dois públicos?](03-hierarquia-e-navegacao.md): inicial Brasil sem cartões numéricos nacionais, prévia municipal e ficha completa em página própria, Tipo de câncer preservado e Metodologia acessível. Prototipar também o estado sem seleção e o acesso aos detalhes técnicos sem esconder ressalvas essenciais. A proposta de cartões ao redor do mapa fica adiada.
+
