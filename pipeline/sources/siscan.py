@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 
 from pipeline.cascade import Origin, data_origins
-from pipeline.download import Transport, fetch, transport_for, with_retries
+from pipeline.download import FtpTransport, Transport, fetch, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.population import Population
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
@@ -119,7 +119,7 @@ class SiscanSource:
         self._clean_dir = clean_dir or CLEAN_DIR / self.name
         self._site_data_dir = site_data_dir
         self._population_path = population_path
-        self._transport = transport or transport_for(FTP_ROOT)
+        self._transport = transport or FtpTransport(timeout=30, workers=8)
 
     def download(self) -> None:
         """Download and reduce one file at a time, keeping at most one raw CSV on disk."""
