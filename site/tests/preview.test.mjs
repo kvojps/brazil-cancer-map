@@ -36,3 +36,11 @@ test('missing publication retains an explanation and action; screening caveats r
  assert.match(render({ indicator: 'mammography' }), /50 e 69.*50 a 74/s);
  assert.match(render({ indicator: 'cytopathology' }), /DNA-HPV/);
 });
+
+test('an unpublished selection keeps its cancer type and offers care paths in the municipal page', () => {
+ const html = renderMunicipalityPreview(place, 'Recife', undefined, 'trend', undefined, 'mortality', 'cervix');
+ assert.match(html, /Colo do útero/);
+ assert.match(html, /ainda não estão disponíveis/);
+ assert.match(html, /href="\/municipio\/261160-recife\/#prevencao"/);
+ assert.match(html, /href="\/municipio\/261160-recife\/#deteccao"/);
+});

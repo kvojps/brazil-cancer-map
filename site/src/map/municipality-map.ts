@@ -192,7 +192,7 @@ export async function mountMunicipalityMap(
 export function mountIndicatorPaint(
   map: MapLibreMap,
   listing: MunicipalityListing,
-): (layer: IndicatorLayer, mode?: MapMode) => void {
+): (layer: IndicatorLayer | undefined, mode?: MapMode) => void {
   addInsufficientDots(map);
   addQualityHatch(map);
 
@@ -212,10 +212,15 @@ export function mountIndicatorPaint(
 
   return (layer, mode = "trend") => {
     currentMode = mode;
-    map.setPaintProperty(FILL_LAYER, "fill-color", mode === "status" ? STATUS_FILL : TREND_FILL);
+    map.setPaintProperty(FILL_LAYER, "fill-color", layer ? (mode === "status" ? STATUS_FILL : TREND_FILL) : getComputedStyle(document.documentElement).getPropertyValue("--mesh").trim());
+    if (!layer) {
+      for (const item of meshes.get(map)?.features ?? []) {
+        map.removeFeatureState({ source: SOURCE_ID, id: String(item.properties?.CD_MUN) });
+      }
+    }
     const insufficient: string[] = [];
     const hatched: string[] = [];
-    for (const [code, entry] of Object.entries(layer.municipalities)) {
+    for (const [code, entry] of Object.entries(layer?.municipalities ?? {})) {
       const state = mode === "status" ? entry.status ?? "insufficient" : trendState(entry);
       map.setFeatureState({ source: SOURCE_ID, id: code }, { trend: trendState(entry), status: entry.status ?? "insufficient" });
       if (state === "insufficient") insufficient.push(code);

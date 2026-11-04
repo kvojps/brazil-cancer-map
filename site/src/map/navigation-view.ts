@@ -7,7 +7,7 @@ import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
 import { clearMunicipality, focusMunicipality, onMunicipalityClick } from './municipality-map';
 
-export function mountMunicipalityNavigation(map: MapLibreMap, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer, state: MapState) => void {
+export function mountMunicipalityNavigation(map: MapLibreMap, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
@@ -20,7 +20,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
   let state: MapState = readMapState(new URLSearchParams(location.search));
   const render = (details?: UfProfile) => {
     if (!selected) return;
-    content.innerHTML = renderMunicipalityPreview(selected, listing.immediate_regions[selected.immediate_region] ?? selected.immediate_region, layer, state.mode, details, state.indicator);
+    content.innerHTML = renderMunicipalityPreview(selected, listing.immediate_regions[selected.immediate_region] ?? selected.immediate_region, layer, state.mode, details, state.indicator, state.cancerType);
     const url = new URL(municipalityPath(selected), location.href);
     url.search = location.search;
     url.searchParams.delete('municipio');
@@ -109,7 +109,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
     const place = listing.municipalities.find(place => place.code === code);
     if (place) select(place);
   });
-  return (nextLayer: IndicatorLayer, nextState: MapState) => {
+  return (nextLayer: IndicatorLayer | undefined, nextState: MapState) => {
     layer = nextLayer;
     state = nextState;
     void Promise.resolve(navigation.restore()).catch(failed);
