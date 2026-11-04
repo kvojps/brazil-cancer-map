@@ -1,0 +1,526 @@
+{
+  "edition": "2026–2028",
+  "annual_year": 2026,
+  "extracted_at": "2026-11-04",
+  "source": {
+    "name": "INCA — Estimativa 2026–2028",
+    "url": "https://www.gov.br/inca/pt-br/assuntos/cancer/numeros/estimativa/estado-capital/brasil",
+    "conditions": "Dados públicos; reutilização com citação do INCA."
+  },
+  "extraction_note": "Transcrição manual das tabelas de casos novos por Estado e Capital. Números anuais arredondados pelo INCA para múltiplos de 10. Todos exclui pele não melanoma. Mama feminina. Para Brasília, usa-se o Distrito Federal da tabela de UFs, pois o INCA não publica Brasília na tabela de capitais.",
+  "states": {
+    "AC": {
+      "capital_name": "Rio Branco",
+      "state": {
+        "breast": 100,
+        "prostate": 90,
+        "colorectal": 60,
+        "lung": 90,
+        "cervix": 90,
+        "all": 970
+      },
+      "capital": {
+        "breast": 60,
+        "prostate": 50,
+        "colorectal": 30,
+        "lung": 50,
+        "cervix": 60,
+        "all": 660
+      }
+    },
+    "AP": {
+      "capital_name": "Macapá",
+      "state": {
+        "breast": 110,
+        "prostate": 120,
+        "colorectal": 50,
+        "lung": 60,
+        "cervix": 120,
+        "all": 1000
+      },
+      "capital": {
+        "breast": 80,
+        "prostate": 80,
+        "colorectal": 40,
+        "lung": 40,
+        "cervix": 80,
+        "all": 770
+      }
+    },
+    "AM": {
+      "capital_name": "Manaus",
+      "state": {
+        "breast": 600,
+        "prostate": 490,
+        "colorectal": 380,
+        "lung": 320,
+        "cervix": 620,
+        "all": 5000
+      },
+      "capital": {
+        "breast": 410,
+        "prostate": 340,
+        "colorectal": 350,
+        "lung": 210,
+        "cervix": 430,
+        "all": 3650
+      }
+    },
+    "PA": {
+      "capital_name": "Belém",
+      "state": {
+        "breast": 1320,
+        "prostate": 1310,
+        "colorectal": 670,
+        "lung": 770,
+        "cervix": 900,
+        "all": 10280
+      },
+      "capital": {
+        "breast": 520,
+        "prostate": 210,
+        "colorectal": 270,
+        "lung": 200,
+        "cervix": 200,
+        "all": 2960
+      }
+    },
+    "RO": {
+      "capital_name": "Porto Velho",
+      "state": {
+        "breast": 360,
+        "prostate": 310,
+        "colorectal": 210,
+        "lung": 210,
+        "cervix": 160,
+        "all": 2490
+      },
+      "capital": {
+        "breast": 120,
+        "prostate": 70,
+        "colorectal": 60,
+        "lung": 60,
+        "cervix": 60,
+        "all": 820
+      }
+    },
+    "RR": {
+      "capital_name": "Boa Vista",
+      "state": {
+        "breast": 110,
+        "prostate": 100,
+        "colorectal": 50,
+        "lung": 50,
+        "cervix": 70,
+        "all": 840
+      },
+      "capital": {
+        "breast": 80,
+        "prostate": 70,
+        "colorectal": 40,
+        "lung": 30,
+        "cervix": 50,
+        "all": 680
+      }
+    },
+    "TO": {
+      "capital_name": "Palmas",
+      "state": {
+        "breast": 350,
+        "prostate": 430,
+        "colorectal": 190,
+        "lung": 140,
+        "cervix": 190,
+        "all": 2370
+      },
+      "capital": {
+        "breast": 70,
+        "prostate": 50,
+        "colorectal": 40,
+        "lung": 20,
+        "cervix": 20,
+        "all": 550
+      }
+    },
+    "AL": {
+      "capital_name": "Maceió",
+      "state": {
+        "breast": 880,
+        "prostate": 880,
+        "colorectal": 370,
+        "lung": 310,
+        "cervix": 350,
+        "all": 5480
+      },
+      "capital": {
+        "breast": 380,
+        "prostate": 290,
+        "colorectal": 140,
+        "lung": 110,
+        "cervix": 130,
+        "all": 2070
+      }
+    },
+    "BA": {
+      "capital_name": "Salvador",
+      "state": {
+        "breast": 4480,
+        "prostate": 6540,
+        "colorectal": 2170,
+        "lung": 1590,
+        "cervix": 1370,
+        "all": 30760
+      },
+      "capital": {
+        "breast": 1340,
+        "prostate": 1070,
+        "colorectal": 590,
+        "lung": 380,
+        "cervix": 250,
+        "all": 7080
+      }
+    },
+    "CE": {
+      "capital_name": "Fortaleza",
+      "state": {
+        "breast": 3250,
+        "prostate": 3050,
+        "colorectal": 1380,
+        "lung": 1460,
+        "cervix": 1150,
+        "all": 21720
+      },
+      "capital": {
+        "breast": 1200,
+        "prostate": 670,
+        "colorectal": 510,
+        "lung": 450,
+        "cervix": 310,
+        "all": 6700
+      }
+    },
+    "MA": {
+      "capital_name": "São Luís",
+      "state": {
+        "breast": 1130,
+        "prostate": 1700,
+        "colorectal": 510,
+        "lung": 600,
+        "cervix": 1020,
+        "all": 9630
+      },
+      "capital": {
+        "breast": 320,
+        "prostate": 270,
+        "colorectal": 160,
+        "lung": 130,
+        "cervix": 160,
+        "all": 2150
+      }
+    },
+    "PB": {
+      "capital_name": "João Pessoa",
+      "state": {
+        "breast": 1640,
+        "prostate": 1790,
+        "colorectal": 530,
+        "lung": 580,
+        "cervix": 420,
+        "all": 9880
+      },
+      "capital": {
+        "breast": 460,
+        "prostate": 350,
+        "colorectal": 160,
+        "lung": 130,
+        "cervix": 100,
+        "all": 2380
+      }
+    },
+    "PE": {
+      "capital_name": "Recife",
+      "state": {
+        "breast": 3190,
+        "prostate": 2640,
+        "colorectal": 1460,
+        "lung": 1380,
+        "cervix": 850,
+        "all": 19790
+      },
+      "capital": {
+        "breast": 850,
+        "prostate": 490,
+        "colorectal": 380,
+        "lung": 320,
+        "cervix": 160,
+        "all": 4400
+      }
+    },
+    "PI": {
+      "capital_name": "Teresina",
+      "state": {
+        "breast": 850,
+        "prostate": 1110,
+        "colorectal": 440,
+        "lung": 380,
+        "cervix": 410,
+        "all": 6360
+      },
+      "capital": {
+        "breast": 330,
+        "prostate": 220,
+        "colorectal": 160,
+        "lung": 100,
+        "cervix": 110,
+        "all": 1910
+      }
+    },
+    "RN": {
+      "capital_name": "Natal",
+      "state": {
+        "breast": 1160,
+        "prostate": 1190,
+        "colorectal": 580,
+        "lung": 520,
+        "cervix": 330,
+        "all": 7840
+      },
+      "capital": {
+        "breast": 350,
+        "prostate": 310,
+        "colorectal": 200,
+        "lung": 140,
+        "cervix": 70,
+        "all": 2240
+      }
+    },
+    "SE": {
+      "capital_name": "Aracaju",
+      "state": {
+        "breast": 550,
+        "prostate": 720,
+        "colorectal": 360,
+        "lung": 250,
+        "cervix": 230,
+        "all": 4260
+      },
+      "capital": {
+        "breast": 260,
+        "prostate": 170,
+        "colorectal": 130,
+        "lung": 80,
+        "cervix": 50,
+        "all": 1450
+      }
+    },
+    "DF": {
+      "capital_name": "Brasília",
+      "state": {
+        "breast": 1410,
+        "prostate": 940,
+        "colorectal": 760,
+        "lung": 490,
+        "cervix": 300,
+        "all": 7600
+      },
+      "capital": {
+        "breast": 1410,
+        "prostate": 940,
+        "colorectal": 760,
+        "lung": 490,
+        "cervix": 300,
+        "all": 7600
+      }
+    },
+    "GO": {
+      "capital_name": "Goiânia",
+      "state": {
+        "breast": 2150,
+        "prostate": 2610,
+        "colorectal": 1840,
+        "lung": 1080,
+        "cervix": 840,
+        "all": 15750
+      },
+      "capital": {
+        "breast": 620,
+        "prostate": 670,
+        "colorectal": 530,
+        "lung": 260,
+        "cervix": 200,
+        "all": 4190
+      }
+    },
+    "MT": {
+      "capital_name": "Cuiabá",
+      "state": {
+        "breast": 930,
+        "prostate": 970,
+        "colorectal": 520,
+        "lung": 490,
+        "cervix": 250,
+        "all": 6140
+      },
+      "capital": {
+        "breast": 240,
+        "prostate": 210,
+        "colorectal": 150,
+        "lung": 90,
+        "cervix": 70,
+        "all": 1470
+      }
+    },
+    "MS": {
+      "capital_name": "Campo Grande",
+      "state": {
+        "breast": 930,
+        "prostate": 1400,
+        "colorectal": 780,
+        "lung": 490,
+        "cervix": 340,
+        "all": 7090
+      },
+      "capital": {
+        "breast": 390,
+        "prostate": 360,
+        "colorectal": 330,
+        "lung": 150,
+        "cervix": 90,
+        "all": 2520
+      }
+    },
+    "ES": {
+      "capital_name": "Vitória",
+      "state": {
+        "breast": 950,
+        "prostate": 1920,
+        "colorectal": 980,
+        "lung": 590,
+        "cervix": 380,
+        "all": 9750
+      },
+      "capital": {
+        "breast": 110,
+        "prostate": 170,
+        "colorectal": 100,
+        "lung": 60,
+        "cervix": 30,
+        "all": 950
+      }
+    },
+    "MG": {
+      "capital_name": "Belo Horizonte",
+      "state": {
+        "breast": 8430,
+        "prostate": 10290,
+        "colorectal": 6160,
+        "lung": 3580,
+        "cervix": 1610,
+        "all": 58490
+      },
+      "capital": {
+        "breast": 1350,
+        "prostate": 1030,
+        "colorectal": 1130,
+        "lung": 510,
+        "cervix": 190,
+        "all": 8140
+      }
+    },
+    "RJ": {
+      "capital_name": "Rio de Janeiro",
+      "state": {
+        "breast": 10360,
+        "prostate": 9090,
+        "colorectal": 6520,
+        "lung": 3160,
+        "cervix": 1710,
+        "all": 52900
+      },
+      "capital": {
+        "breast": 4510,
+        "prostate": 3570,
+        "colorectal": 3030,
+        "lung": 1370,
+        "cervix": 620,
+        "all": 22470
+      }
+    },
+    "SP": {
+      "capital_name": "São Paulo",
+      "state": {
+        "breast": 20820,
+        "prostate": 19590,
+        "colorectal": 16130,
+        "lung": 8570,
+        "cervix": 2750,
+        "all": 132500
+      },
+      "capital": {
+        "breast": 5840,
+        "prostate": 4580,
+        "colorectal": 4630,
+        "lung": 2140,
+        "cervix": 760,
+        "all": 37030
+      }
+    },
+    "PR": {
+      "capital_name": "Curitiba",
+      "state": {
+        "breast": 4300,
+        "prostate": 3370,
+        "colorectal": 3620,
+        "lung": 2410,
+        "cervix": 1120,
+        "all": 30650
+      },
+      "capital": {
+        "breast": 820,
+        "prostate": 370,
+        "colorectal": 690,
+        "lung": 460,
+        "cervix": 140,
+        "all": 5240
+      }
+    },
+    "RS": {
+      "capital_name": "Porto Alegre",
+      "state": {
+        "breast": 3790,
+        "prostate": 3350,
+        "colorectal": 3690,
+        "lung": 3570,
+        "cervix": 700,
+        "all": 29990
+      },
+      "capital": {
+        "breast": 620,
+        "prostate": 400,
+        "colorectal": 570,
+        "lung": 530,
+        "cervix": 90,
+        "all": 4410
+      }
+    },
+    "SC": {
+      "capital_name": "Florianópolis",
+      "state": {
+        "breast": 4460,
+        "prostate": 1920,
+        "colorectal": 3400,
+        "lung": 2240,
+        "cervix": 1030,
+        "all": 28240
+      },
+      "capital": {
+        "breast": 400,
+        "prostate": 270,
+        "colorectal": 270,
+        "lung": 190,
+        "cervix": 70,
+        "all": 2550
+      }
+    }
+  }
+}

@@ -16,7 +16,7 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 
 export interface UfProfile {
   uf: string;
-  indicators: { within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; hpv?: Record<string, HpvProfile>; mortality?: Record<string, MortalityProfile> };
+  indicators: { estimated_cases?: Record<string, EstimatedCasesProfile>; within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; hpv?: Record<string, HpvProfile>; mortality?: Record<string, MortalityProfile> };
   where_to_treat?: WhereToTreat;
 }
 
@@ -57,4 +57,15 @@ export interface HpvProfile extends Omit<ScreeningProfile, 'municipalities' | 's
     by_sex: Record<'F' | 'M', HpvResult>;
   }>;
   series: Record<string, (SeriesPoint & { by_sex: Record<'F' | 'M', HpvResult>; single_dose: boolean })[]>;
+}
+
+export interface EstimatedCasesProfile {
+  edition: string;
+  annual_year: number;
+  extracted_at: string;
+  source: { name: string; url: string; conditions: string };
+  state_cases: number;
+  capital_cases: number;
+  capital_name: string;
+  capital_is_df: boolean;
 }

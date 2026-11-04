@@ -1,4 +1,5 @@
 ---
+import EstimatedCasesCard from './EstimatedCasesCard.astro';
 import TreatmentCard from './TreatmentCard.astro';
 import HpvCard from './HpvCard.astro';
 import MortalityCard from './MortalityCard.astro';
@@ -45,6 +46,7 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
     <section><h2>Panorama</h2>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section data-cancer-type={cancerType}>
         <h3>{label}</h3>
+        <EstimatedCasesCard data={profile.indicators.estimated_cases?.[cancerType]} uf={municipality.uf} cancerType={cancerType} />
         <MortalityCard data={profile.indicators.mortality?.[cancerType]} code={municipality.code} cancerType={cancerType} regionName={regions[municipality.immediate_region] ?? municipality.immediate_region} updatedAt={sources.sim?.extracted_at} />
       </section>)}
     </section>
