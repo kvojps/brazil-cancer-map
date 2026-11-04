@@ -192,6 +192,10 @@ test('published mortality cards render national context and the standardized ser
     assert.doesNotMatch(cards[index], /<h4>Situação|<meter/);
     for (const point of data.series[entry.series_id] ?? []) {
       assert.ok(cards[index].includes(`<th scope="row">${point.year}</th>`));
+      if (point.value === null) {
+        assert.match(cards[index], /Ajuste não calculável/);
+        continue;
+      }
       const value = point.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       assert.ok(cards[index].includes(`${value} por 100 mil`));
     }

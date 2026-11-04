@@ -61,6 +61,13 @@ def read_records(path: Path) -> Iterator[dict[str, str]]:
                     yield {name: record[span].decode('latin-1').strip() for name, span in columns.items()}
 
 
+def geographic_keys(code: str, regions: dict[str, str]) -> list[str]:
+    keys = ['BR', f'uf:{code[:2]}']
+    if code in regions:
+        keys += [f'municipality:{code}', f'immediate_region:{regions[code]}']
+    return keys
+
+
 class SimSource:
     name = 'sim'
 
@@ -163,10 +170,7 @@ class SimSource:
             for year, code, kind, age, n, raw_n, calculable in rows:
                 if kind != cancer:
                     continue
-                keys = ['BR', f'uf:{code[:2]}']
-                if code in regions:
-                    keys += [f'municipality:{code}', f'immediate_region:{regions[code]}']
-                for key in keys:
+                for key in geographic_keys(code, regions):
                     unadjusted[key, year, age] += raw_n
                     unadjusted_totals[key, year] += raw_n
                     if not calculable:
@@ -182,7 +186,7 @@ class SimSource:
                         raise ValueError(f'SIM: nonpositive population for {code}/{year}/{age}')
                     if result.provisional:
                         provisional.add(year)
-                    for key in ('BR', f'uf:{code[:2]}', f'municipality:{code}', f'immediate_region:{regions[code]}'):
+                    for key in geographic_keys(code, regions):
                         denominators[key, year, age] += result.population
             window = trend_window(YEARS, provisional)
             if window is None:
@@ -216,9 +220,10 @@ class SimSource:
                             'deaths': unadjusted_totals[key, year],
                             'rate': sum(WEIGHTS[age] * unadjusted[key, year, age] / denominators[key, year, age]
                                         for age in WEIGHTS)}
-                fit = quasi_poisson_trend(fitted_years, events, exposures, higher_is_better=False, provisional=provisional)
+                fit = (quasi_poisson_trend(fitted_years, events, exposures, higher_is_better=False, provisional=provisional)
+                       if not any((key, y) in unavailable for y in years) else None)
                 series[key] = points
-                trends[key] = fit.trend_class.value if fit and not any((key, y) in unavailable for y in YEARS) else None
+                trends[key] = fit.trend_class.value if fit else None
             entries = {}
             for code, origin in origins.items():
                 series_key = (f'municipality:{code}' if origin is Origin.MUNICIPALITY else
@@ -258,10 +263,7 @@ class SimSource:
                         raise ValueError('C55 allocation does not conserve uterine deaths')
                     expected[year, code, age] = a
                 else:
-                    keys = ['BR', f'uf:{code[:2]}']
-                    if code in regions:
-                        keys += [f'municipality:{code}', f'immediate_region:{regions[code]}']
-                    unavailable.update((key, year) for key in keys)
+                    unavailable.update((key, year) for key in geographic_keys(code, regions))
             with duckdb.connect() as db:
                 rows = db.execute('SELECT * FROM read_parquet(?)',
                                   [str(self._clean_dir / 'deaths.parquet')]).fetchall()
@@ -291,12 +293,15 @@ class SimSource:
                     checked += 1
             report.update({'passed': True, 'cells': len(audit), 'series_points': checked,
                 'uncalculable_cells': sum(not c['adjustment_calculable'] for c in audit),
+                'complete_adjustment': all(c['adjustment_calculable'] for c in audit),
                 'national_fallback_cells': sum(c['proportion_source'] == 'national' and c['c55'] > 0 for c in audit),
                 'annual_counts': {str(year): {
                     'c53': sum(c['c53'] for c in audit if c['year'] == year),
                     'c55': sum(c['c55'] for c in audit if c['year'] == year),
-                    'c53_adjusted': sum(c['c53_adjusted'] or 0 for c in audit if c['year'] == year),
-                    'c54_adjusted': sum(c['c54_adjusted'] or 0 for c in audit if c['year'] == year)} for year in YEARS}})
+                    'c53_adjusted': (sum(c['c53_adjusted'] for c in audit if c['year'] == year)
+                        if all(c['adjustment_calculable'] for c in audit if c['year'] == year) else None),
+                    'c54_adjusted': (sum(c['c54_adjusted'] for c in audit if c['year'] == year)
+                        if all(c['adjustment_calculable'] for c in audit if c['year'] == year) else None)} for year in YEARS}})
         except (ValueError, KeyError) as error:
             report['error'] = str(error)
             raise ValueError(f'C55 validation failed: {error}') from error

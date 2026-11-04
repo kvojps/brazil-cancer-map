@@ -16,10 +16,10 @@ const titleId = `mortality-series-${cancerType}`;
     <p><strong>Período dos dados: {data.period.first_year}–{data.period.last_year}. Tendência: {data.period.trend.join('–')}.</strong></p>
     <p>{originText(entry, regionName)}</p>
     {entry.origin === 'immediate_region' && <p>Há poucos óbitos no município; usamos os dados do seu município e vizinhos.</p>}
-    {entry.adjustment_note && <p><strong>Ajuste não calculável:</strong> faltam registros de colo e corpo do útero para estimar a proporção estadual e nacional em pelo menos um ano e faixa etária. A Tendência não foi calculada.</p>}
+    {entry.adjustment_note && <p><strong>Ajuste não calculável:</strong> faltam registros de colo e corpo do útero para estimar a proporção estadual e nacional em pelo menos um ano e faixa etária. Os anos afetados ficam sem taxa na tabela. {entry.trend === null && 'A Tendência não foi calculada porque há anos com ajuste não calculável na janela ou faltam dados para o modelo.'}</p>}
     {entry.origin === 'insufficient' && !entry.adjustment_note ? <p>Poucos óbitos aqui e na região para calcular a Tendência.</p> : <>
       <h4>Tendência ({data.period.trend.join('–')})</h4>
-      <p><strong>{entry.adjustment_note ? 'Ajuste não calculável' : TREND_LABELS[entry.trend ?? 'insufficient']}</strong></p>
+      <p><strong>{entry.trend ? TREND_LABELS[entry.trend] : entry.adjustment_note ? 'Ajuste não calculável' : TREND_LABELS.insufficient}</strong></p>
       {entry.trend === 'improving' && <p>A taxa de mortalidade padronizada por idade diminuiu.</p>}
       {entry.trend === 'worsening' && <p>A taxa de mortalidade padronizada por idade aumentou.</p>}
       {entry.trend === 'stable' && <p>Quase não mudou, menos de 1% por ano em relação ao próprio valor.</p>}
@@ -40,10 +40,10 @@ const titleId = `mortality-series-${cancerType}`;
       <details><summary>Ver a série em tabela</summary><table>
         <caption>Taxa de mortalidade padronizada por idade</caption>
         <thead><tr><th scope="col">Ano</th><th scope="col">Taxa por 100 mil</th></tr></thead>
-        <tbody>{series.map(point => <tr><th scope="row">{point.year}{point.provisional ? ' (provisório)' : ''}</th><td>{formatIndicatorValue('mortality', point.value)}</td></tr>)}</tbody>
+        <tbody>{series.map(point => <tr><th scope="row">{point.year}{point.provisional ? ' (provisório)' : ''}</th><td>{point.value === null && cancerType === 'cervix' ? 'Ajuste não calculável' : formatIndicatorValue('mortality', point.value)}</td></tr>)}</tbody>
       </table></details>
     </>}
-    <p>Tendência do Brasil, apenas como contexto: <strong>{data.national_adjustment_note ? 'Ajuste não calculável' : TREND_LABELS[data.national_trend ?? 'insufficient']}</strong> ({data.period.trend.join('–')}).</p>
+    <p>Tendência do Brasil, apenas como contexto: <strong>{data.national_trend ? TREND_LABELS[data.national_trend] : data.national_adjustment_note ? 'Ajuste não calculável' : TREND_LABELS.insufficient}</strong> ({data.period.trend.join('–')}).</p>
     {data.period.provisional.length > 0 && <p>Anos provisórios por uso da população do ano anterior: {data.period.provisional.join(', ')}. Não entram na Tendência.</p>}
     <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
     {updatedAt && <p>Data de extração: <time datetime={updatedAt}>{updatedAt}</time>.</p>}
