@@ -1,8 +1,8 @@
 ---
-// The same content as the map, as a table: filled by the map island once the data loads.
+// Text alternative populated independently of the optional map renderer.
 ---
 
-<details class="indicator-table">
+<details class="indicator-table" hidden>
   <summary>Ver os dados do mapa em tabela</summary>
   <label>
     UF
@@ -15,12 +15,14 @@
     <table>
       <caption>
         <span class="indicator-name"></span>.
-        Tipo de câncer: <span class="cancer-type"></span>. Indicador em cada
+        Modo: <span class="table-mode"></span>. Tipo de câncer: <span class="cancer-type"></span>. Indicador em cada
         município, Tendência quando disponível e valor do último ano consolidado (<span class="latest-year"></span>)<span
           class="measured-cases"
         ></span>. <span class="treatment-note">A % sem informação de tratamento é sobre todos os casos diagnosticados.</span>
         <span class="quality-note"></span>
         <span class="status-note"></span>
+        <span class="reference-note"></span>
+        Período da Tendência: <span class="trend-period"></span>.
       </caption>
       <thead>
         <tr>

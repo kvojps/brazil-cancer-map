@@ -1,0 +1,155 @@
+import assert from 'node:assert/strict';
+import { after, before, test } from 'node:test';
+import { chromium } from 'playwright-core';
+
+// Run against `npm run dev` or `npm run preview`; supply an installed Chromium.
+const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
+let browser;
+before(async () => {
+  browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH ?? '/snap/bin/chromium',
+    headless: true,
+    args: ['--no-sandbox'],
+  });
+});
+after(async () => { await browser?.close(); });
+
+async function waitForData(page) {
+  await page.waitForFunction(() => document.querySelector('.indicator-table tbody')?.children.length > 0);
+}
+
+async function disableWebGL(page) {
+  await page.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      return type.includes('webgl') ? null : getContext.call(this, type, ...args);
+    };
+  });
+}
+
+test('search, direct links and table work when WebGL fails', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.goto(`${base}/?tipo=breast&theme=dark`);
+    await waitForData(page);
+    await page.waitForFunction(() => document.querySelector('.map-status').textContent.includes('Não foi possível'));
+    await page.locator('#municipality-search').fill('Recife PE');
+    const result = page.locator('#municipality-results a');
+    await result.waitFor();
+    assert.match(await result.getAttribute('href'), /tipo=breast/);
+    assert.match(await result.getAttribute('href'), /theme=dark/);
+    await page.locator('#municipality-search').press('ArrowDown');
+    assert.equal(await page.locator('#municipality-results button').evaluate(el => el === document.activeElement), true);
+    await page.keyboard.press('Enter');
+    assert.match(await page.locator('[data-open-profile]').getAttribute('href'), /municipio\/261160-recife/);
+    await page.locator('.indicator-table summary').click();
+    await page.locator('.indicator-table select').selectOption('PE');
+    assert.match(await page.locator('.table-count').textContent(), /185 municípios/);
+    assert.match(await page.locator('.indicator-table tbody').textContent(), /Seu município e vizinhos/);
+    await page.locator('#map-mode').selectOption('within_60_days:status');
+    await waitForData(page);
+    assert.equal(await page.locator('.table-mode').textContent(), 'Como está hoje');
+  } finally { await page.close(); }
+});
+
+test('a pending map never blocks loading text alternatives', async () => {
+  const page = await browser.newPage();
+  let release;
+  const pending = new Promise(resolve => { release = resolve; });
+  try {
+    await page.route('**/municipalities.topojson', async route => { await pending; await route.abort(); });
+    await page.goto(base, { waitUntil: 'domcontentloaded' });
+    await waitForData(page);
+    assert.equal(await page.locator('#municipality-search').isEnabled(), true);
+  } finally { release(); await page.close(); }
+});
+
+test('layer failure clears old results, retries and respects the selected cancer type', async () => {
+  const page = await browser.newPage();
+  let fail = true;
+  try {
+    await disableWebGL(page);
+    await page.route('**/map/within_60_days/breast.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.goto(base);
+    await waitForData(page);
+    await page.locator('.indicator-table summary').click();
+    await page.locator('#cancer-type').selectOption('breast');
+    await page.locator('#retry-data').waitFor();
+    assert.equal(await page.locator('.indicator-table tbody tr').count(), 0);
+    assert.match(await page.locator('#data-status').textContent(), /Não foi possível carregar/);
+    fail = false;
+    await page.locator('#retry-data').click();
+    await waitForData(page);
+    assert.equal(await page.locator('.indicator-table .cancer-type').textContent(), 'Mama');
+    await page.locator('#cancer-type').selectOption('prostate');
+    await waitForData(page);
+    assert.match(await page.locator('.indicator-table tbody tr').first().textContent(), /Não se aplica/);
+    await page.locator('#map-mode').selectOption('mortality:trend');
+    await waitForData(page);
+    assert.match(await page.locator('.indicator-table .status-note').textContent(), /mortalidade/i);
+  } finally { await page.close(); }
+});
+
+test('municipality listing failure explains recovery and retry enables search', async () => {
+  const page = await browser.newPage();
+  let fail = true;
+  try {
+    await disableWebGL(page);
+    await page.route('**/dados/municipalities.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.goto(base);
+    await page.locator('#retry-data').waitFor();
+    assert.match(await page.locator('#data-status').textContent(), /lista de municípios/);
+    assert.equal(await page.locator('.municipality-index a[href*="261160-recife"]').count(), 1);
+    fail = false;
+    await page.locator('#retry-data').click();
+    await waitForData(page);
+    assert.equal(await page.locator('#municipality-search').isEnabled(), true);
+  } finally { await page.close(); }
+});
+
+test('an uncomputable C55 adjustment is distinct from insufficient data in the table', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.route('**/map/mortality/cervix.json', async route => {
+      const response = await route.fetch();
+      const layer = await response.json();
+      layer.municipalities['261160'] = {
+        ...layer.municipalities['261160'], origin: 'municipality', trend: null,
+        value: null, adjustment_note: 'Ajuste não calculável',
+      };
+      await route.fulfill({ json: layer });
+    });
+    await page.goto(`${base}/?indicador=mortality&tipo=cervix`);
+    await waitForData(page);
+    await page.locator('.indicator-table summary').click();
+    const row = page.locator('.indicator-table tbody tr').filter({ has: page.getByRole('link', { name: 'Recife', exact: true }) });
+    assert.equal(await row.locator('td').nth(1).textContent(), 'Ajuste não calculável');
+  } finally { await page.close(); }
+});
+
+for (const javaScriptEnabled of [false, true]) {
+  for (const colorScheme of ['light', 'dark']) {
+    for (const width of [320, 768, 1280]) {
+      test(`alternatives fit at ${width}px in ${colorScheme}, JavaScript ${javaScriptEnabled}`, async () => {
+        const page = await browser.newPage({ javaScriptEnabled, colorScheme, viewport: { width, height: 900 } });
+        try {
+          if (javaScriptEnabled) await disableWebGL(page);
+          await page.goto(base);
+          if (javaScriptEnabled) {
+            await waitForData(page);
+            await page.locator('.indicator-table summary').click();
+          }
+          await page.locator('#municipalities-PE summary').click();
+          const link = page.locator('#municipalities-PE a').filter({ hasText: /^Recife$/ });
+          assert.match(await link.getAttribute('href'), /261160-recife/);
+          for (const zoom of ['100%', '200%']) {
+            await page.locator('body').evaluate((el, zoom) => { el.style.zoom = zoom; }, zoom);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `page overflow at zoom ${zoom}`);
+          }
+        } finally { await page.close(); }
+      });
+    }
+  }
+}

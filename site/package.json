@@ -12,7 +12,8 @@
     "test": "node --test --test-isolation=none tests/*.test.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test:browser": "node --test browser-tests/*.test.mjs"
   },
   "dependencies": {
     "astro": "^7.4.5",
@@ -24,6 +25,7 @@
     "@types/geojson": "^7946.0.16",
     "@types/topojson-client": "^3.1.5",
     "@types/topojson-specification": "^1.0.5",
+    "playwright-core": "^1.64.1",
     "typescript": "^6.0.3"
   }
 }
