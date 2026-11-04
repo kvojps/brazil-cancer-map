@@ -58,22 +58,15 @@ for pattern, override in [
     if urlparse(url).scheme != 'https':
         raise SystemExit('Input URLs must use HTTPS')
     urls.append(url)
-(root / 'urls.txt').write_text('\n'.join(urls) + '\n')
+manifest = root / 'urls.txt'
+contents = '\n'.join(urls) + '\n'
+if manifest.exists() and manifest.read_text() != contents:
+    raise SystemExit('Input URLs changed; move existing Vigitel files to another directory before downloading the new release.')
+manifest.write_text(contents)
 (root / 'index.html.part').replace(root / 'index.html')
 PY
-input_index=0
-while IFS= read -r url; do
-  # Stable local names keep configurable URLs independent of their remote paths.
-  input_index=$((input_index + 1))
-  case "$input_index" in
-    1) destination='data/raw/vigitel/microdata.zip' ;;
-    2) destination='data/raw/vigitel/dictionary.xlsx' ;;
-    3) destination='data/raw/vigitel/methodology.pdf' ;;
-  esac
-  printf '\nDownloading %s -> %s\n' "$url" "$destination"
-  curl --fail --location --retry 3 --connect-timeout 30 --progress-bar \
-    "$url" -o "$destination.part"
-  python3 - "$destination.part" "$input_index" <<'PY'
+validate_file() {
+  python3 - "$1" "$2" <<'PY'
 import sys
 import zipfile
 from pathlib import Path
@@ -88,8 +81,33 @@ else:
     with path.open('rb') as stream:
         if stream.read(5) != b'%PDF-':
             raise SystemExit('Invalid methodology PDF')
-path.replace(path.with_suffix(''))
 PY
+}
+input_index=0
+while IFS= read -r url; do
+  # Stable local names keep configurable URLs independent of their remote paths.
+  input_index=$((input_index + 1))
+  case "$input_index" in
+    1) destination='data/raw/vigitel/microdata.zip' ;;
+    2) destination='data/raw/vigitel/dictionary.xlsx' ;;
+    3) destination='data/raw/vigitel/methodology.pdf' ;;
+  esac
+  if [[ -f "$destination" ]]; then
+    validate_file "$destination" "$input_index"
+    printf 'Already complete: %s\n' "$destination"
+    continue
+  fi
+  # A completed transfer may have been interrupted just before the rename.
+  if [[ "$input_index" != 3 && -f "$destination.part" ]] && validate_file "$destination.part" "$input_index" 2>/dev/null; then
+    mv -- "$destination.part" "$destination"
+    printf 'Recovered complete download: %s\n' "$destination"
+    continue
+  fi
+  printf '\nDownloading %s -> %s\n' "$url" "$destination"
+  curl --fail --location --retry 3 --connect-timeout 30 --continue-at - --progress-bar \
+    "$url" -o "$destination.part"
+  validate_file "$destination.part" "$input_index"
+  mv -- "$destination.part" "$destination"
 done < data/raw/vigitel/urls.txt
 python3 - <<'PY'
 import hashlib
