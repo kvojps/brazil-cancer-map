@@ -77,7 +77,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
     const initial = readMapState(new URLSearchParams(location.search));
     Promise.all([
       mountMunicipalityMap(container, meshUrl!),
-      layerOf(initial),
+      layerOf(initial).catch(error => { console.error(error); return undefined; }),
       getJson<MunicipalityListing>(listingUrl!),
     ])
       .then(([map, layer, listing]) => {
@@ -115,8 +115,13 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           if (table) table.hidden = !shown;
           updatePreview(shown, state);
         };
+        const showAvailability = (available: boolean) => {
+          status.hidden = available;
+          if (!available) status.textContent = "Os dados desta seleção não estão disponíveis. Busque um município para acessar sua ficha.";
+        };
         const selectState = async (next: MapState, message = "", push = true) => {
           const pending = ++request;
+          updatePreview(undefined, next);
           status.textContent = "Carregando o mapa…";
           status.hidden = false;
           if (notice) notice.hidden = true;
@@ -124,8 +129,7 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
             const nextLayer = await layerOf(next);
             if (pending !== request) return;
             show(nextLayer, next, push);
-            status.hidden = !!nextLayer;
-            if (!nextLayer) status.textContent = "Os dados desta seleção ainda não estão disponíveis. Busque um município para acessar sua ficha.";
+            showAvailability(!!nextLayer);
             if (notice) {
               notice.textContent = message;
               notice.hidden = !message;
@@ -133,15 +137,15 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
           } catch (error) {
             if (pending !== request) return;
             console.error(error);
-            syncControls(current);
+            show(undefined, next, push);
+            status.hidden = false;
             status.textContent = "Não foi possível carregar esta seleção. Tente de novo.";
           }
         };
         show(layer, initial);
         updatePreview = mountMunicipalityNavigation(map, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
         updatePreview(layer, initial);
-        status.hidden = !!layer;
-        if (!layer) status.textContent = "Os dados desta seleção ainda não estão disponíveis. Busque um município para acessar sua ficha.";
+        showAvailability(!!layer);
         if (modeSelector) {
           modeSelector.disabled = false;
           modeSelector.addEventListener("change", () => {

@@ -46,8 +46,18 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     </select>
   </label>
   <p id="map-selection-notice" class="note" role="status" hidden></p>
-  <a href="#preview-heading">Ir para a prévia municipal</a>
+  <a href="#preview-heading" data-preview-shortcut>Ir para a prévia municipal</a>
 </form>
+
+<script>
+  document.querySelector('[data-preview-shortcut]')?.addEventListener('click', event => {
+    const heading = document.getElementById('preview-heading');
+    if (!heading) return;
+    event.preventDefault();
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ block: 'start' });
+  });
+</script>
 
 <style>
   .map-controls {

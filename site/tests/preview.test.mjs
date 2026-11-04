@@ -44,3 +44,7 @@ test('an unpublished selection keeps its cancer type and offers care paths in th
  assert.match(html, /href="\/municipio\/261160-recife\/#prevencao"/);
  assert.match(html, /href="\/municipio\/261160-recife\/#deteccao"/);
 });
+
+test('mortality action retains the shared care disclaimer', () => {
+ assert.match(render({ indicator: 'mortality', has_status: false }), /Informação geral\. A equipe de saúde orienta o cuidado indicado para você\./);
+});

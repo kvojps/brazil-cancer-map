@@ -1,6 +1,6 @@
 import type { MapLibreMap } from 'maplibre-gl';
 import { INDICATORS, type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
-import { readMapState, type MapState } from './map-state';
+import { readMapState, writeMapState, type MapState } from './map-state';
 import { renderMunicipalityPreview } from './municipality-preview';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
@@ -22,7 +22,7 @@ export function mountMunicipalityNavigation(map: MapLibreMap, listing: Municipal
     if (!selected) return;
     content.innerHTML = renderMunicipalityPreview(selected, listing.immediate_regions[selected.immediate_region] ?? selected.immediate_region, layer, state.mode, details, state.indicator, state.cancerType);
     const url = new URL(municipalityPath(selected), location.href);
-    url.search = location.search;
+    url.search = writeMapState(state, new URLSearchParams(location.search)).toString();
     url.searchParams.delete('municipio');
     const nextLink = document.createElement('a');
     nextLink.dataset.openProfile = '';
