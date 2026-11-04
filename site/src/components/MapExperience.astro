@@ -10,20 +10,23 @@ const indicator = 'within_60_days';
 const period = manifest.indicators[indicator].all;
 ---
 <div class="home">
-  <header>
-    <h1>Observatório do Câncer no Brasil</h1>
-    <p>Dados sobre o câncer no seu município, para entender e agir</p>
-    <MapControls />
-  </header>
+  <h1 class="visually-hidden">Mapa do câncer no Brasil</h1>
+  <MapControls />
   <div class="map-and-profile">
-    <MunicipalityMap />
-    <aside id="municipality-preview" aria-labelledby="preview-heading">
+    <div class="map-with-legend">
+      <header class="map-heading">
+        <span class="eyebrow">Panorama territorial · Brasil</span>
+        <h2 id="map-indicator-heading">Tratamento em até 60 dias</h2>
+      </header>
+      <MunicipalityMap />
+      <TrendLegend indicator={indicator} period={period} />
+    </div>
+    <aside hidden id="municipality-preview" aria-labelledby="preview-heading">
       <h2 id="preview-heading" tabindex="-1">Seu território</h2>
       <a data-open-profile href="/" hidden>Ver Meu município</a>
       <div data-preview-content><p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p></div>
     </aside>
   </div>
-  <TrendLegend indicator={indicator} period={period} />
   <div class="data-feedback">
     <p id="data-status" role="status">Com JavaScript, carregamos os dados da seleção. Você também pode usar o índice por UF.</p>
     <button id="retry-data" type="button" hidden>Tentar novamente</button>
@@ -33,14 +36,17 @@ const period = manifest.indicators[indicator].all;
 </div>
 <style>
   .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }
-  .home header h1 { margin: 0; }
-  .home header > p { margin: .25rem 0 .75rem; }
-  .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); align-items: stretch; gap: 1rem; }
+  .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1rem; }
+  .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem); }
+  .map-with-legend { min-width: 0; border: 1px solid var(--border); border-radius: .6rem; overflow: clip; }
+  .map-heading { padding: 1rem 1rem 0; }
+  .map-heading h2 { margin: .25rem 0; }
+  .eyebrow { font: .75rem ui-monospace, monospace; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
   #municipality-preview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: .6rem; background: var(--surface); }
   #municipality-preview h2 { margin-top: 0; }
   #municipality-preview :global(.warning) { padding: .75rem; border-left: 4px solid var(--muted); background: var(--soft); }
   #municipality-preview :global(h3) { font-size: 1.1rem; }
   @media (max-width: 767px) {
-    .map-and-profile { grid-template-columns: minmax(0, 1fr); }
+    .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
   }
 </style>

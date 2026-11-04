@@ -48,7 +48,7 @@ test('search, direct links and table work when WebGL fails', async () => {
     await page.locator('.indicator-table select').selectOption('PE');
     assert.match(await page.locator('.table-count').textContent(), /185 municípios/);
     assert.match(await page.locator('.indicator-table tbody').textContent(), /Seu município e vizinhos/);
-    await page.locator('#map-mode').selectOption('within_60_days:status');
+    await page.locator('#map-reading').selectOption('status');
     await waitForData(page);
     assert.equal(await page.locator('.table-mode').textContent(), 'Como está hoje');
   } finally { await page.close(); }
@@ -101,7 +101,7 @@ test('layer failure clears old results, retries and respects the selected cancer
     await page.locator('#cancer-type').selectOption('prostate');
     await waitForData(page);
     assert.match(await page.locator('.indicator-table tbody tr').first().textContent(), /Não se aplica/);
-    await page.locator('#map-mode').selectOption('mortality:trend');
+    await page.locator('#map-indicator').selectOption('mortality');
     await waitForData(page);
     assert.match(await page.locator('.indicator-table .status-note').textContent(), /mortalidade/i);
   } finally { await page.close(); }

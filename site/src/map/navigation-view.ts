@@ -34,6 +34,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     getUrl: () => new URL(location.href),
     setUrl: url => { history.pushState(null, '', url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
+      panel.hidden = false;
+      document.querySelector<HTMLElement>('[data-preview-shortcut]')!.hidden = false;
       selected = place;
       render();
       map.focus(place.code);
@@ -58,6 +60,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       status.textContent = `${selected!.name} (${selected!.uf}): prévia de ${INDICATORS[state.indicator]!.name} atualizada.`;
     },
     clear: () => {
+      panel.hidden = true;
+      document.querySelector<HTMLElement>('[data-preview-shortcut]')!.hidden = true;
       selected = undefined;
       content.innerHTML = '<p>Busque ou selecione um município no mapa para ver a prévia do indicador.</p>';
       link.hidden = true;

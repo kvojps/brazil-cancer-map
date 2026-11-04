@@ -1,0 +1,15 @@
+---
+interface Props { id: string; label: string; }
+const { id, label } = Astro.props;
+---
+<button type="button" class="help-trigger" popovertarget={id} aria-describedby={`${id}-description`}>{label}</button>
+<div id={id} class="help-popover" popover>
+  <div id={`${id}-description`}><slot /></div>
+  <button type="button" popovertarget={id} popovertargetaction="hide">Fechar ajuda</button>
+</div>
+<style>
+  .help-trigger { font-size: .8125rem; color: var(--link); padding: .2rem .4rem; }
+  .help-popover { max-width: min(32rem, calc(100vw - 2rem)); max-height: 80vh; overflow: auto; padding: 1rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: .5rem; box-shadow: 0 8px 32px #0004; }
+  .help-popover::backdrop { background: #0003; }
+  .help-popover > button { margin-top: .75rem; }
+</style>

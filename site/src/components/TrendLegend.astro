@@ -1,4 +1,5 @@
 ---
+import ContextHelp from "./ContextHelp.astro";
 import {
   HATCH_CSS,
   STATUS_STATES, STATUS_COLORS, STATUS_LABELS, STATUS_LEGEND, INSUFFICIENT_CSS,
@@ -37,9 +38,9 @@ const qualityPeriod = qualityPeriodText(period);
         TREND_STATES.map((state) => (
           <li>
             <span class="swatch" style={`background: ${trendSwatch(state)}`} aria-hidden="true" />
-            <span>
-              <strong>{TREND_LABELS[state]}</strong>: <span data-trend-description={state}>{descriptions[state]}</span>
-            </span>
+            <ContextHelp id={`legend-${state}`} label={TREND_LABELS[state]}>
+              <span data-trend-description={state}>{descriptions[state]}</span>
+            </ContextHelp>
           </li>
         ))
       }
@@ -64,27 +65,32 @@ const qualityPeriod = qualityPeriodText(period);
       <ul class="quality">
         <li>
           <span class="swatch" style={`background: ${HATCH_CSS}`} aria-hidden="true" />
-          <span>
-            <strong>Hachura (faixa C)</strong>: {QUALITY_WARNING} Vale para todo o estado, com 35% ou mais
+          <details class="context-help">
+            <summary>Hachura (faixa C) — {QUALITY_WARNING}</summary> Vale para todo o estado, com 35% ou mais
             dos casos de {qualityPeriod} sem informação de tratamento. As faixas A (até 15%) e B (acima de
             15% e abaixo de 35%) não têm hachura.
-          </span>
+          </details>
         </li>
       </ul>
     )
   }
-  <p>{REGION_NOTE}</p>
+  <details class="context-help legend-method">
+    <summary>Origem e período dos dados</summary>
+    <p>{REGION_NOTE}</p>
   <p class="note">
     Anos de diagnóstico {period.first_year}–{period.last_year}. {provisional} ainda são provisórios e
     não entram na tendência.
   </p>
+  </details>
 </section>
 
 <style>
   .quality[hidden] { display: none; }
   .legend {
     font-size: 0.875rem;
-    padding: 0.5rem 0;
+    padding: .75rem 1rem;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
   h2 {
     font-size: 1rem;
@@ -97,8 +103,9 @@ const qualityPeriod = qualityPeriodText(period);
     list-style: none;
     padding: 0;
     margin: 0.5rem 0;
-    display: grid;
-    gap: 0.35rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
   }
   li {
     display: flex;

@@ -6,6 +6,7 @@ import {
   INDICATORS,
   mapOption,
   cancerTypeNotes,
+  noStatusNote,
   type IndicatorLayer,
   type MunicipalityListing,
 } from "../map/indicator-layer";
@@ -22,7 +23,8 @@ const container = document.querySelector<HTMLElement>(".map[data-mesh-url]");
 const status = document.querySelector<HTMLElement>(".map-status");
 const table = document.querySelector<HTMLElement>(".indicator-table");
 const selector = document.querySelector<HTMLSelectElement>("#cancer-type");
-const modeSelector = document.querySelector<HTMLSelectElement>("#map-mode");
+const indicatorSelector = document.querySelector<HTMLSelectElement>('#map-indicator');
+const readingSelector = document.querySelector<HTMLSelectElement>('#map-reading');
 const notes = document.querySelector<HTMLElement>("#cancer-type-note");
 
 /** One request per cancer type: switching back reuses the layer already loaded. */
@@ -43,6 +45,11 @@ function layerOf(state: MapState): Promise<IndicatorLayer | undefined> {
 }
 
 function showNotes(layer: IndicatorLayer): void {
+  const caveat = document.querySelector<HTMLElement>('#indicator-caveat');
+  if (caveat) {
+    caveat.textContent = !layer.has_status ? noStatusNote(layer) : layer.indicator === 'hpv' ? 'Série curta, ainda sem direção: o HPV tem apenas Situação.' : '';
+    caveat.hidden = !caveat.textContent;
+  }
   if (!notes) return;
   notes.replaceChildren(
     ...cancerTypeNotes(layer).map((text) => {
@@ -78,25 +85,36 @@ if (container && status) {
       let request = 0;
       const syncControls = (state: MapState) => {
         if (selector) selector.value = state.cancerType;
-        if (!modeSelector) return;
-        for (const option of modeSelector.options) {
-          const [id, mode] = option.value.split(":");
-          const presentation = mapOption(id!, state.cancerType, mode as MapState["mode"], option.dataset.pending === 'true');
-          option.disabled = presentation.disabled;
-          option.textContent = presentation.label;
+        if (indicatorSelector && readingSelector) {
+          indicatorSelector.value = state.indicator;
+          readingSelector.value = state.mode;
+          for (const option of indicatorSelector.options) {
+            const modes = [...new Set(Object.values(INDICATORS[option.value]!.modes).flat())];
+            const choices = modes.map(mode => mapOption(option.value, state.cancerType, mode, option.dataset.pending === 'true'));
+            option.disabled = choices.every(choice => choice.disabled);
+            option.textContent = INDICATORS[option.value]!.name + (option.disabled ? ' — indisponível para esta seleção' : '');
+          }
+          for (const option of readingSelector.options) {
+            const presentation = mapOption(state.indicator, state.cancerType, option.value as MapState['mode']);
+            option.disabled = presentation.disabled;
+          }
         }
-        modeSelector.value = `${state.indicator}:${state.mode}`;
       };
       const show = (shown: IndicatorLayer | undefined, state: MapState, push = false) => {
         current = state;
         syncControls(state);
+        document.querySelector('#map-indicator-heading')!.textContent = INDICATORS[state.indicator]!.name;
         mapLayer = shown;
         mapState = state;
         showOnMap(shown, state.mode);
         const legend = document.querySelector<HTMLElement>('.legend')!;
         legend.hidden = !shown;
         if (shown) { updateLegend(legend, shown, state.mode); showNotes(shown); }
-        else if (notes) notes.replaceChildren();
+        else {
+          notes?.replaceChildren();
+          const caveat = document.querySelector<HTMLElement>('#indicator-caveat');
+          if (caveat) { caveat.textContent = ''; caveat.hidden = true; }
+        }
         const url = new URL(location.href);
         url.search = writeMapState(state, url.searchParams).toString();
         if (push) history.pushState(null, "", url);
@@ -151,17 +169,17 @@ if (container && status) {
         status.hidden = false;
         status.textContent = 'Não foi possível carregar o mapa. A busca, a tabela e o índice por UF continuam disponíveis.';
       });
-      if (modeSelector) {
-        modeSelector.disabled = false;
-        modeSelector.addEventListener("change", () => {
-          const [indicator, mode] = modeSelector.value.split(":");
-          void selectState(normalizeMapState({ indicator, mode, cancerType: selector?.value ?? current.cancerType }));
+      for (const control of [indicatorSelector, readingSelector]) {
+        if (!control) continue;
+        control.disabled = false;
+        control.addEventListener('change', () => {
+          void selectState(normalizeMapState({ indicator: indicatorSelector!.value, mode: readingSelector!.value, cancerType: current.cancerType }));
         });
       }
       if (selector) {
         selector.disabled = false;
         selector.addEventListener("change", () => {
-          const [indicator, mode] = modeSelector?.value.split(":") ?? [current.indicator, current.mode];
+          const { indicator, mode } = current;
           const next = normalizeMapState({ indicator, mode, cancerType: selector.value });
           const message = next.indicator !== indicator
             ? `${INDICATORS[indicator!]?.name} não se aplica a ${CANCER_TYPES[next.cancerType]}; mostrando até 60 dias.` : "";
