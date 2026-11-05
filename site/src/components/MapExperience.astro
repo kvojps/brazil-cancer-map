@@ -1,6 +1,5 @@
 ---
 import '../profile/profile.css';
-import MunicipalityIndex from './MunicipalityIndex.astro';
 import IndicatorTable from './IndicatorTable.astro';
 import MapControls from './MapControls.astro';
 import MunicipalityMap from './MunicipalityMap.astro';
@@ -41,10 +40,9 @@ const period = manifest.indicators[indicator].all;
     <button type="button" data-reopen-profile hidden>Reabrir Meu município</button>
   </div>
   <div class="data-feedback">
-    <p id="data-status" role="status">Com JavaScript, carregamos os dados da seleção. Você também pode usar o índice por UF.</p>
+    <p id="data-status" role="status">Use a busca para encontrar seu município ou consulte a lista por UF.</p>
     <button id="retry-data" type="button" hidden>Tentar novamente</button>
   </div>
-  {selected ? <p><a href="/#municipality-index-heading">Consultar outro município no índice por UF</a></p> : <MunicipalityIndex />}
 </div>
 <style>
   .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }

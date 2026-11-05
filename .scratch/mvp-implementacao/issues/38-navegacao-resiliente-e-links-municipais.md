@@ -46,3 +46,11 @@ Não alterar pipeline, JSON publicados, método, classes, Referência, cascata o
 - [Registro completo de validação, revisões e custos](../../ui-ux-v1/validation-38.md): 40 testes do site, 34 testes de navegador na saída estática, check sem erros/avisos/hints e build integral passaram. Matriz claro/escuro × 320/768/1280, com/sem JavaScript, WebGL indisponível e zoom nativo 200%. Não equivale a auditoria com leitor de tela ou revisão clínica.
 - Saída de 765.046.511 bytes; primeira visita estimada em 1.388.885 bytes gzip. Excessos registrados no ticket 25, sem aprovação nem publicação. Malha/JSON não são duplicados por município; o índice nacional permanece somente na inicial. Configuração remota do provedor não foi acessada.
 - Commits que resolveram o ticket: `c6a1c7e` (`feat: preserve resilient dashboard navigation and municipal links`) e `b08f7ce` (`fix: keep the static index reachable from municipal dashboards`). O commit de encerramento reúne este status, critérios, registro de validação e atualização do orçamento no ticket 25.
+
+### Revisão aprovada — 2026-11-05
+
+O índice por UF passa para a página estática `/municipios/`, com expansões nativas, nomes completos das UFs e contagem de municípios. Dashboard inicial, documentos municipais e Metodologia apontam para ela. Esta decisão substitui a localização anterior na inicial; preserva consulta sem JavaScript e os caminhos municipais. A âncora antiga da inicial continua levando ao acesso para a nova página.
+
+Validação da revisão: Astro check sem erros, avisos ou hints; build estático e 42 testes do site passaram, além do novo teste unitário de contexto da página de municípios. Os 22 cenários de navegador passaram (21 na rodada inicial e o cenário de recuperação repetido após corrigir sua expectativa de link), incluindo claro/escuro, 320/768/1280 px, com/sem JavaScript, zoom nativo 200% e navegação municipal com tema.
+
+Posição final aprovada em 2026-11-05: acesso “Municípios por UF” na navegação principal compartilhada, entre “Mapa” e “Como calculamos”; removido o link abaixo do mapa. A âncora antiga aponta para o item de navegação nos dashboards.

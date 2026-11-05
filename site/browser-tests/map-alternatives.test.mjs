@@ -117,7 +117,7 @@ test('municipality listing failure explains recovery and retry enables search', 
     await page.goto(base);
     await page.locator('#retry-data').waitFor();
     assert.match(await page.locator('#data-status').textContent(), /lista de municípios/);
-    assert.equal(await page.locator('.municipality-index a[href*="261160-recife"]').count(), 1);
+    assert.equal(new URL(await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Municípios por UF', exact: true }).getAttribute('href'), base).pathname, '/municipios/');
     fail = false;
     await page.locator('#retry-data').click();
     await waitForData(page);
@@ -158,7 +158,7 @@ for (const javaScriptEnabled of [false, true]) {
             await waitForData(page);
             await page.locator('.list-shortcut').click();
           }
-          await page.locator('.municipality-index > summary').click();
+          await page.goto(`${base}/municipios/`);
           await page.locator('#municipalities-PE summary').click();
           const link = page.locator('#municipalities-PE a').filter({ hasText: /^Recife$/ });
           assert.match(await link.getAttribute('href'), /261160-recife/);
@@ -193,7 +193,7 @@ test('native 200% browser zoom keeps alternatives readable in both themes', asyn
           await waitForData(page);
           await page.locator('.list-shortcut').click();
         }
-        await page.locator('.municipality-index > summary').click();
+        await page.goto(`${base}/municipios/`);
           await page.locator('#municipalities-PE summary').click();
         await worker.evaluate(async base => {
           const tabs = await chrome.tabs.query({});
@@ -267,20 +267,22 @@ test('invalid state is corrected field by field and legacy queries become static
   } finally { await page.close(); }
 });
 
-test('the index link from a selected document survives reload and preserves its native anchor', async () => {
+test('the directory link from a selected document survives reload and keeps the theme', async () => {
   const page = await browser.newPage();
   try {
     await disableWebGL(page);
     await page.goto(`${base}/municipio/261160-recife/?visualizacao=lista&theme=dark`);
     await page.locator('#municipality-search:enabled').waitFor();
-    await page.getByRole('link', { name: 'Consultar outro município no índice por UF' }).click();
-    await page.locator('#municipality-search:enabled').waitFor();
-    assert.equal(new URL(page.url()).pathname, '/');
+    await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Municípios por UF', exact: true }).click();
+    assert.equal(new URL(page.url()).pathname, '/municipios/');
     assert.equal(new URL(page.url()).searchParams.has('municipio'), false);
+    assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
     await page.reload();
-    await page.locator('#municipality-search:enabled').waitFor();
-    assert.equal(new URL(page.url()).pathname, '/');
-    assert.equal(await page.locator('.municipality-index').getAttribute('open'), '');
     assert.equal(await page.locator('#municipality-index-heading').isVisible(), true);
+    await page.locator('#municipalities-PE summary').focus();
+    await page.keyboard.press('Enter');
+    await page.getByRole('link', { name: 'Recife', exact: true }).click();
+    assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/');
+    assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
   } finally { await page.close(); }
 });

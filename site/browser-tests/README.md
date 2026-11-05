@@ -43,5 +43,5 @@ verificam Mapa/Lista, seleção e filtros ao usar Voltar/Avançar. A seleção
 aprimorada usa o caminho estático `/municipio/<código>-<nome>/`; links antigos
 com `?municipio=` são normalizados com JavaScript. A recarga desse caminho
 continua entregando quatro Eixos e seis Tipos sem JavaScript. O índice por UF
-fica numa expansão nativa na inicial; sua âncora abre a expansão e preserva o
-destino após navegação a partir de um documento municipal e recarga.
+fica na página `/municipios/`, com expansões nativas por UF; os testes verificam
+o acesso pelos documentos municipais, recarga, tema e navegação pelo teclado.

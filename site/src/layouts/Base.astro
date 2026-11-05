@@ -33,6 +33,7 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
       <a class="identity" href="/"><span class="identity-symbol" aria-hidden="true">◈</span> Observatório do Câncer no Brasil</a>
       <nav aria-label="Navegação principal">
         <a href="/">Mapa</a>
+        <a href="/municipios/" id={Astro.url.pathname === "/" || Astro.url.pathname.startsWith("/municipio/") ? "municipality-index-heading" : undefined}>Municípios por UF</a>
         <a href="/metodologia/">Como calculamos</a>
       </nav>
       <nav aria-label="Tema" class="theme-switcher">
