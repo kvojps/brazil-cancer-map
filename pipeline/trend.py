@@ -112,3 +112,23 @@ def quasi_poisson_trend(
         first_year=points[0][0],
         last_year=points[-1][0],
     )
+
+
+def weighted_prevalence_trend(years: Sequence[int], prevalence: Sequence[float],
+                              standard_errors: Sequence[float]) -> Trend | None:
+    """Fit log prevalence with inverse delta-method log-variance weights."""
+    window = trend_window(years, ())
+    if window is None:
+        return None
+    points = sorted((year, p, se) for year, p, se in zip(years, prevalence, standard_errors, strict=True)
+                    if window[0] <= year <= window[1] and p > 0 and se > 0)
+    if len(points) < 3:
+        return None
+    t, p, se = np.array(points, dtype=float).T
+    fit = sm.WLS(np.log(p), sm.add_constant(t - t[0]), weights=(p / se)**2).fit()
+    # The survey SEs are known inputs: preserve their scale, including exact lines.
+    slope = float(fit.params[1])
+    margin = 1.959963984540054 * math.sqrt(float(fit.normalized_cov_params[1, 1]))
+    low, high = 100 * math.expm1(slope - margin), 100 * math.expm1(slope + margin)
+    return Trend(100 * math.expm1(slope), low, high,
+                 classify(low, high, higher_is_better=False), int(t[0]), int(t[-1]))

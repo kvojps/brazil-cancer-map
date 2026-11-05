@@ -16,7 +16,7 @@ for (const javaScriptEnabled of [false, true]) {
       try {
         await page.goto(base + '/metodologia/');
         const links = page.getByRole('navigation', { name: 'Nesta página' }).getByRole('link');
-        assert.equal(await links.count(), 10);
+        assert.equal(await links.count(), 11);
         for (const link of await links.all()) {
           await link.focus();
           await page.keyboard.press('Enter');
