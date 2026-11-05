@@ -4,7 +4,7 @@
 
 **Blocked by:** 36 — Console horizontal e sistema visual.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## Referências
 
@@ -15,13 +15,13 @@
 
 ## Critérios de aceite
 
-- [ ] Preservar /metodologia/ e âncoras técnicas existentes, com identidade, navegação, temas e rodapé compartilhados do Console A
-- [ ] Aplicar sumário, seções numeradas/organizadas, coluna de leitura e detalhes expansíveis no sistema aprovado, sem obrigar a página à altura do mapa
-- [ ] Manter integralmente fontes, método, ressalvas, versões, condições de uso, citação, dados e reprodução existentes; o resumo do protótipo não substitui o conteúdo de produção
-- [ ] Links dos indicadores chegam às seções pertinentes; navegação preserva tema e retorno ao dashboard com seleção/estado pertinentes, quando disponíveis
-- [ ] Conteúdo básico, sumário, links e expansões funcionam sem JavaScript; foco visível, teclado e tabelas com rolagem contida nos dois temas
-- [ ] Verificar 320/768/1280 px e zoom 200%, com/sem JavaScript; checagem/build e regressões de âncoras/conteúdo passam, sem acrescentar fontes externas
-- [ ] Não encerrar nem duplicar os tickets 22 (releases), 24 (conteúdo técnico) ou 25 (auditoria); registrar apenas as verificações do novo desenho
+- [x] Preservar /metodologia/ e âncoras técnicas existentes, com identidade, navegação, temas e rodapé compartilhados do Console A
+- [x] Aplicar sumário, seções numeradas/organizadas, coluna de leitura e detalhes expansíveis no sistema aprovado, sem obrigar a página à altura do mapa
+- [x] Manter integralmente fontes, método, ressalvas, versões, condições de uso, citação, dados e reprodução existentes; o resumo do protótipo não substitui o conteúdo de produção
+- [x] Links dos indicadores chegam às seções pertinentes; navegação preserva tema e retorno ao dashboard com seleção/estado pertinentes, quando disponíveis
+- [x] Conteúdo básico, sumário, links e expansões funcionam sem JavaScript; foco visível, teclado e tabelas com rolagem contida nos dois temas
+- [x] Verificar 320/768/1280 px e zoom 200%, com/sem JavaScript; checagem/build e regressões de âncoras/conteúdo passam, sem acrescentar fontes externas
+- [x] Não encerrar nem duplicar os tickets 22 (releases), 24 (conteúdo técnico) ou 25 (auditoria); registrar apenas as verificações do novo desenho
 
 ## Limites
 
@@ -30,3 +30,8 @@ Não alterar pipeline, JSON publicados, método, classes, Referência, cascata o
 ## Comments
 
 - Criado no handoff do ticket 35 após escolha humana da alternativa A. Entregas anteriores permanecem resolvidas; implementar somente a mudança de composição e comportamento descrita aqui.
+
+- Implementação: `5575044` — `feat(site): apply console layout to methodology and preserve return state (#39)`.
+- Encerramento, registro de validação e revisão: `docs: record methodology validation and close ticket 39` (este commit).
+- [Verificação do novo desenho e limites](../../ui-ux-v1/validation-39.md): checagem sem erros, build, 41 testes do site e 40 testes de navegador contra a saída estática; 320/768/1280 px, claro/escuro, com/sem JavaScript e zoom nativo 200%. Conteúdo técnico e âncoras preservados; retorno ao dashboard conserva o contexto disponível pela URL.
+- Revisão em dois eixos: nenhuma pendência de código em Standards ou desvio de Spec. O apontamento de encerramento documental foi atendido neste commit. Tickets 22, 24 e 25 permanecem independentes.
