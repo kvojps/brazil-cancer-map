@@ -54,6 +54,8 @@ function showNotes(layer: IndicatorLayer): void {
   if (caveat) {
     caveat.textContent = !layer.has_status ? noStatusNote(layer) : layer.indicator === 'hpv' ? 'Série curta, ainda sem direção: o HPV tem apenas Situação.' : '';
     caveat.hidden = !caveat.textContent;
+    // On a phone with a municipality selected, the panel says this one: short collapsed and whole open.
+    caveat.toggleAttribute('data-in-panel', layer.indicator === 'within_60_days' && !layer.has_status);
   }
   if (!notes) return;
   notes.replaceChildren(
@@ -174,7 +176,7 @@ if (container && status) {
         showOnMap(mapLayer, mapState.mode);
         // The list view hides the map, which cannot be framed until it comes back.
         let frameWhenShown = false;
-        const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle };
+        const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
         selectOnMap = code => {
           frameWhenShown = !!code && !container.clientWidth;
           if (code) renderer.focusMunicipality(map, code, overlays);

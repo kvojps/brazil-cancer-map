@@ -70,3 +70,15 @@ rola até o rodapé; e, em janelas baixas ou muito estreitas e no zoom nativo de
 controles saem de cima do mapa. O teclado virtual é uma altura típica descontada da
 tela, pois a emulação do Chromium não o abre. O enquadramento dentro do WebGL é
 conferido em capturas; a conta da área reservada está em `tests/framing.test.mjs`.
+
+`municipal-panel.test.mjs` verifica o painel Meu município com os casos difíceis: Balsas
+(faixa C), Alcântara (Região imediata e faixa C, o bloco mais longo, a 320 × 568), Araioses
+(Dado insuficiente) e próstata (ressalva curta e integral). Cobre o mesmo bloco recolhido e
+aberto, a folha de ponta a ponta que abre até o aviso, Filtros, menu e busca no lugar da
+folha, a coluna de 400 e 480 px com o nome fixo, os Eixos com resultado no título e um aberto
+por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensagem de status só
+para leitores de tela e a página comum em janelas baixas, no zoom nativo de 200% e sem
+JavaScript. Nenhuma UF tem HPV publicado: o cartão com dado só é coberto pelo teste de
+`tests/panel-result.test.mjs` e pela leitura do código. O contorno e o enquadramento dentro
+do WebGL são conferidos em capturas; a conta da área reservada à folha está em
+`tests/framing.test.mjs`.

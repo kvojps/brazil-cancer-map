@@ -10,7 +10,7 @@ const { label, reason, action } = Astro.props;
 <article class="indicator-card" aria-label={`${label} — orientação`}>
   <h3>{label}</h3>
   <p>{reason}</p>
-  <section aria-label="Ação">
+  <section class="card-action" aria-label="Ação">
     <h4>{action.title}</h4>
     <p>{action.summary}</p>
     <details><summary>Saiba mais</summary>

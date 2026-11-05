@@ -5,8 +5,9 @@ import MapControls from './MapControls.astro';
 import MapLegend from './MapLegend.astro';
 import MunicipalityMap from './MunicipalityMap.astro';
 import manifest from '../../public/dados/manifest.json';
-interface Props { selected?: boolean }
-const { selected = false } = Astro.props;
+import { CANCER_TYPES, STATUS_STATES, statusSwatch, TREND_STATES, trendSwatch } from '../map/indicator-layer';
+interface Props { selected?: boolean; heading?: string }
+const { selected = false, heading = 'Meu município' } = Astro.props;
 const indicator = 'within_60_days';
 const period = manifest.indicators[indicator].all;
 ---
@@ -27,19 +28,40 @@ const period = manifest.indicators[indicator].all;
       </div>
     </div>
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading" tabindex="0">
-      <h2 id="preview-heading" tabindex="-1">Meu município</h2>
-      <p data-profile-summary role="status"></p>
-      <div class="panel-actions">
-        <button type="button" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Expandir consulta</button>
-        <button type="button" data-collapse-profile hidden>Voltar ao mapa</button>
-        <button type="button" data-clear-profile hidden>Limpar seleção</button>
-        <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>Legenda</button>
+      <div class="panel-bar">
+        <h2 id="preview-heading" tabindex="-1">{heading}</h2>
+        <button type="button" class="panel-icon" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" aria-label="Expandir Meu município" hidden><span aria-hidden="true"></span></button>
+        <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
       </div>
-      <div id="municipality-content" data-preview-content><slot /></div>
+      <div class="panel-result" data-profile-result></div>
+      <div id="municipality-content" data-preview-content>
+        <label class="panel-type" hidden>Tipo de câncer
+          <select data-panel-cancer-type>
+            {Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}
+          </select>
+        </label>
+        <div data-profile-slot><slot /></div>
+      </div>
     </aside>
-    <button type="button" class="reopen-profile" data-reopen-profile hidden>Reabrir Meu município</button>
+    <!-- Over the map, above the sheet: the card it replaces would not fit there on a phone. -->
+    <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>
+      <span class="panel-legend-swatches" data-mode="trend" aria-hidden="true">{TREND_STATES.map(state => <span style={`background: ${trendSwatch(state)}`} />)}</span>
+      <span class="panel-legend-swatches" data-mode="status" aria-hidden="true">{STATUS_STATES.map(state => <span style={`background: ${statusSwatch(state)}`} />)}</span>
+      Legenda
+    </button>
   </div>
 </div>
+{selected && <noscript><style is:inline>
+  /* Without JavaScript the map and the filters do nothing here: on a phone the municipality is a plain page. */
+  @media (max-width: 767px) {
+    body:has(.home) { display: block !important; }
+    body:has(.home)::before { display: none !important; }
+    body:has(.home) > main { display: block !important; }
+    body:has(.home) > .site-header { margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+    .home .map-controls, .home .map-with-legend { display: none !important; }
+    .home .map-and-profile { display: block !important; }
+  }
+</style></noscript>}
 <style>
   .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }
   .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1rem; }
@@ -48,15 +70,18 @@ const period = manifest.indicators[indicator].all;
   .map-heading { padding: 1rem 1rem 0; }
   .map-heading h2 { margin: .25rem 0; }
   .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
-  #municipality-preview { min-width: 0; padding: 1rem; border-radius: var(--card-radius); background: var(--surface); }
-  #municipality-preview h2 { margin-top: 0; }
-  #municipality-preview :global(.warning) { padding: .75rem; border-radius: var(--control-radius); background: var(--soft); }
-  #municipality-preview :global(h3) { font-size: var(--text-16); }
-  .panel-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
-  #municipality-preview { max-height: 85vh; overflow: auto; }
-  #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
+  #municipality-preview { min-width: 0; padding: 0 1rem 1rem; background: var(--surface); }
+  .panel-bar { display: flex; align-items: center; gap: .25rem; min-height: 3rem; background: var(--surface); }
+  .panel-bar h2 { flex: 1; min-width: 0; margin: 0; }
+  .panel-icon, .panel-icon:hover:not(:disabled) { flex: none; display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; font-size: var(--text-16); color: var(--text); background: transparent; }
+  .panel-icon:hover:not(:disabled) { background: var(--soft); }
+  [data-toggle-profile] span::before { content: "⌃"; }
+  [data-toggle-profile][aria-expanded="true"] span::before { content: "⌄"; }
+  /* The control only exists on the sheet: anywhere else the panel is always whole. */
+  [data-toggle-profile], .panel-legend { display: none; }
+  .panel-type { display: flex; align-items: center; gap: .75rem; margin-block: 0 .75rem; font-size: var(--text-14); font-weight: 500; }
+  .panel-type select { flex: 1; min-width: 0; }
   .data-feedback:has(#data-status:empty):has(#retry-data[hidden]) { display: none; }
-  .panel-legend { display: none; }
   @media (min-width: 768px) {
     .home { --panel-width: min(25rem, 60%); flex: 1; gap: 0; min-width: 0; min-height: 0; }
     /* Size containment: the panel and the list scroll inside instead of growing the first screen.
@@ -67,8 +92,8 @@ const period = manifest.indicators[indicator].all;
     .map-with-legend > [data-map-view] { position: relative; height: 100%; }
     /* The selector already names the indicator: the heading stays for screen readers only. */
     .map-heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    #municipality-preview { contain: size; min-height: 0; max-height: none; border-radius: 0; border-left: 1px solid var(--border); }
-    .reopen-profile { position: absolute; top: .5rem; right: 3.5rem; z-index: 3; }
+    #municipality-preview { contain: size; min-height: 0; overflow: auto; border-left: 1px solid var(--border); }
+    .panel-bar { position: sticky; top: 0; z-index: 2; }
     .data-feedback { position: absolute; top: 1rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: var(--control-radius); }
     .data-feedback p { margin: 0; }
     .data-feedback button { margin-top: .5rem; }
@@ -76,10 +101,9 @@ const period = manifest.indicators[indicator].all;
   @media (min-width: 1920px) {
     .home { --panel-width: 30rem; }
   }
+  /* In flow, the panel and everything else are a plain page, also under 200% zoom. */
   @media (max-width: 767px) {
-    #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 25; max-height: 75vh; overscroll-behavior: contain; box-shadow: var(--card-shadow); }
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
-    .panel-legend { display: block; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
     .home { position: relative; flex: 1; gap: 0; min-height: 0; }
@@ -90,10 +114,27 @@ const period = manifest.indicators[indicator].all;
     .data-feedback { position: absolute; top: 8rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
     .data-feedback p { margin: 0; }
     .data-feedback button { margin-top: .5rem; }
-    /* Above Mapa/Lista, which stays in reach while the panel is open. */
-    #municipality-preview[data-enhanced] { bottom: 5.5rem; max-height: 65dvh; }
-    /* Collapsed, it passes under Filtros on a short screen; expanded, it takes the screen until collapsed. */
-    #municipality-preview[data-enhanced][data-collapsed] { z-index: 4; }
-    .reopen-profile { position: fixed; right: .5rem; bottom: 5.5rem; z-index: 7; box-shadow: var(--card-shadow); }
+    /* The sheet: edge to edge at the bottom, opening up to the notice, which always paints above it. */
+    #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 0; z-index: 25; max-height: calc(100dvh - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
+    #municipality-preview[data-enhanced] .panel-bar { position: sticky; top: 0; z-index: 2; }
+    #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
+    #municipality-preview[data-collapsed] { z-index: 4; cursor: pointer; padding-bottom: .5rem; }
+    #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
+    /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
+    :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),
+    :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .map-controls),
+    :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .panel-legend) { visibility: hidden; }
+    /* Filters, menu and search take the place of the sheet while open. It keeps its box for the framing. */
+    :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) #municipality-preview[data-enhanced]),
+    :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) .panel-legend) { visibility: hidden; }
+    /* Level with Mapa/Lista, which leave the map's attribution uncovered under them. */
+    .panel-legend:not([hidden]) { position: fixed; left: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem); z-index: 7; display: inline-flex; align-items: center; gap: .5rem; padding-inline: .75rem; background-color: var(--surface); box-shadow: var(--card-shadow); }
+    .panel-legend:hover:not(:disabled) { background-color: var(--surface); }
+    :global(.home:has(.indicator-table:not([hidden]))) .panel-legend { display: none; }
+    .panel-legend-swatches { display: inline-flex; gap: 2px; }
+    .panel-legend-swatches span { width: .625rem; height: .875rem; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--swatch-border); }
+    .panel-legend[data-reading="trend"] [data-mode="status"], .panel-legend[data-reading="status"] [data-mode="trend"] { display: none; }
+    /* The list rows must end above the sheet. */
+    :global(.home:has(#municipality-preview[data-enhanced]:not([hidden])) .indicator-table) { padding-bottom: calc(var(--sheet-height, 0px) + 4rem); }
   }
 </style>

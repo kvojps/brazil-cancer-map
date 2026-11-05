@@ -256,4 +256,6 @@ footer p { margin: 0; flex-basis: 100%; }
   html:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
   body:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) > footer { display: none; }
   .maplibregl-map .maplibregl-ctrl-top-right { top: 3.25rem; }
+  /* The attribution stays clear of the sheet. */
+  .maplibregl-map .maplibregl-ctrl-bottom-right, .maplibregl-map .maplibregl-ctrl-bottom-left { bottom: var(--sheet-height, 0px); }
 }

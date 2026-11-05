@@ -262,7 +262,7 @@ test('the search expands over the header and closes when a municipality is chose
     assert.ok((await result.boundingBox()).height >= 44);
     await result.click();
     assert.equal(await input.isVisible(), false);
-    assert.equal(await isFocused(page.locator('.search-toggle')), true);
+    assert.equal(await isFocused(page.locator('#preview-heading')), true, 'focus goes to the name of the municipality');
     await page.waitForURL(/\/municipio\/261160-recife\//);
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     await page.locator('[data-clear-profile]').click();
@@ -336,12 +336,13 @@ test('a caveat floats under Filtros and follows its height', async () => {
   } finally { await page.close(); }
 });
 
-test('the open panel leaves Mapa/Lista in reach and the full legend one button away', async () => {
+test('the full legend is one button away above the sheet, and the notice is never covered', async () => {
   const page = await open({ viewport: { width: 390, height: 664 } }, RECIFE);
   try {
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     const panel = await box(page, '#municipality-preview');
-    assert.ok(panel.bottom <= (await box(page, '.view-controls')).top, 'above Mapa/Lista');
+    assert.ok((await box(page, '.view-controls')).bottom <= panel.top, 'Mapa/Lista above the sheet');
+    assert.ok((await box(page, '[data-panel-legend]')).bottom <= panel.top, 'Legenda above the sheet');
     assert.ok(panel.top >= (await box(page, '.construction-notice')).bottom, 'the notice is never covered');
     await page.locator('[data-panel-legend]').click();
     assert.match(await page.locator('#legend-full').innerText(), /Origem e período dos dados/);

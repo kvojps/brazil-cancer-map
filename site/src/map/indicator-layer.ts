@@ -145,10 +145,14 @@ export const INSUFFICIENT_CSS =
  */
 export const HATCH = { color: "var(--quality-hatch)", spacing: 6, width: 1.5 };
 
+/** The hatching as CSS, over a class color. */
+export function hatchCss(color: string): string {
+  return `repeating-linear-gradient(-45deg, ${HATCH.color} 0 ${HATCH.width}px, ` +
+    `transparent ${HATCH.width}px ${HATCH.spacing}px), ${color}`;
+}
+
 /** The hatched fill as CSS, for the legend swatch, over the most common class. */
-export const HATCH_CSS =
-  `repeating-linear-gradient(-45deg, ${HATCH.color} 0 ${HATCH.width}px, ` +
-  `transparent ${HATCH.width}px ${HATCH.spacing}px), ${TREND_COLORS.no_clear_direction}`;
+export const HATCH_CSS = hatchCss(TREND_COLORS.no_clear_direction);
 
 /** The approved warning of band C (spec, section 6.3). */
 export const QUALITY_WARNING =

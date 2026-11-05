@@ -6,7 +6,8 @@
   <label for="municipality-search">Buscar município</label>
   <input id="municipality-search" type="search" placeholder="Nome do município e UF" aria-controls="municipality-results" disabled />
   <button type="button" class="search-close" aria-label="Fechar a busca"><span aria-hidden="true">×</span></button>
-  <p id="search-status" role="status"></p>
+  <!-- For screen readers only, at every width: selecting must not reshape the bars. An empty search says so in the list. -->
+  <p id="search-status" class="visually-hidden" role="status"></p>
   <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
 </div>
 
@@ -24,9 +25,10 @@
     });
     document.querySelector('.search-close')?.addEventListener('click', closeAndReturn);
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && 'searchOpen' in header.dataset) closeAndReturn(); });
+    // Before the button acts: the panel waits behind the open search, and the selection takes focus to its name.
     document.querySelector('#municipality-results')?.addEventListener('click', event => {
-      if (event.target instanceof Element && event.target.closest('button') && 'searchOpen' in header.dataset) closeAndReturn();
-    });
+      if (event.target instanceof Element && event.target.closest('button')) close();
+    }, { capture: true });
     window.addEventListener('municipality-map-select', close);
   }
 </script>
@@ -37,7 +39,7 @@
   label { font-weight: 500; line-height: 1.5rem; }
   input { width: 100%; }
   #search-status { margin: 0; }
-  #search-status:empty, #municipality-results:empty { display: none; }
+  #municipality-results:empty { display: none; }
   #municipality-results { margin: 0; padding-left: 1.25rem; max-height: 18rem; overflow: auto; }
   @media (max-width: 767px) {
     .municipality-search { padding: 0 .25rem .25rem; }
@@ -49,7 +51,7 @@
     .search-toggle { display: grid; place-items: center; flex: none; width: var(--control-height); height: var(--control-height); color: var(--text); border-radius: var(--control-radius); }
     .municipality-search { display: none; position: absolute; inset: 0 0 auto; z-index: 1; padding: 0; background: var(--surface); border-radius: var(--control-radius); }
     :global(.site-header[data-search-open]) .municipality-search { display: block; }
-    label, #search-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     input { display: block; padding-right: var(--control-height); }
     input::-webkit-search-cancel-button { display: none; }
     .search-close, .search-close:hover:not(:disabled) { display: grid; place-items: center; position: absolute; top: 0; right: 0; width: var(--control-height); padding: 0; font-size: var(--text-24); background: transparent; }
@@ -60,7 +62,7 @@
   }
   @media (min-width: 768px) {
     .municipality-search { flex: 0 1 15rem; }
-    label, #search-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     /* Results float over the bars, and step aside while focus and pointer are elsewhere. */
     #municipality-results { position: absolute; top: calc(100% + .25rem); right: 0; z-index: 25; width: min(24rem, calc(100vw - 2rem)); padding: .5rem 1rem; list-style: none; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
     #municipality-results :global(li) { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; padding-block: .25rem; }

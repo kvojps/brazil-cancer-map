@@ -22,13 +22,10 @@ const regions: Record<string, string> = listing.immediate_regions;
 const sources: Record<string, { extracted_at: string }> = manifest.sources;
 ---
   <div class="profile" data-code={municipality.code}>
-    <nav><a href="/" data-close-profile>Voltar ao mapa do Brasil</a></nav>
-    <h1 tabindex="-1" data-profile-heading>{municipality.name} <small>({municipality.uf})</small></h1>
-    <p>Meu município — dados sobre o cuidado com o câncer, para entender e agir.</p>
     <nav aria-label="Tipo de câncer" class="profile-types">
       {Object.entries(CANCER_TYPES).map(([type, label]) => <a class="control-link" href={`?tipo=${type}#tipo-${type}`} data-profile-type={type}>{label}</a>)}
     </nav>
-    <p>{ALL_CANCERS_NOTE}</p>
+    <details class="all-cancers-note"><summary>Por que "Todos os cânceres" muda entre os Eixos?</summary><p>{ALL_CANCERS_NOTE}</p></details>
     <nav aria-label="Eixos" class="profile-axes">
       <a class="control-link" href="#acesso">Acesso ao tratamento</a>
       <a class="control-link" href="#deteccao">Detecção precoce</a>

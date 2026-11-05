@@ -31,7 +31,8 @@ test('direct types override a conflicting query and preserve theme and map conte
   const page = await browser.newPage();
   try {
     await page.goto(`${base}${route}?tipo=breast&theme=dark&indicador=mortality#tipo-prostate`);
-    await page.locator('[data-profile-type="prostate"][aria-current="true"]').waitFor();
+    const typeShown = type => page.waitForFunction(type => document.querySelector('[data-panel-cancer-type]').value === type, type);
+    await typeShown('prostate');
     await page.locator('#acesso').evaluate(el => { el.open = true; });
     assert.equal(await page.locator('[data-cancer-type="breast"]').first().isVisible(), false);
     assert.equal(await page.locator('[data-cancer-type="prostate"]').first().isVisible(), true);
@@ -39,11 +40,12 @@ test('direct types override a conflicting query and preserve theme and map conte
     assert.equal(new URL(page.url()).searchParams.get('tipo'), 'prostate');
     assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
     await page.evaluate(() => { location.hash = 'tipo-cervix'; });
-    await page.locator('[data-profile-type="cervix"][aria-current="true"]').waitFor();
+    await typeShown('cervix');
     assert.equal(await page.locator('[data-cancer-type="cervix"]').first().isVisible(), true);
-    await page.locator('[data-profile-type="lung"]').focus();
-    await page.keyboard.press('Enter');
-    await page.locator('[data-profile-type="lung"][aria-current="true"]').waitFor();
+    await page.locator('[data-panel-cancer-type]').focus();
+    await page.locator('[data-panel-cancer-type]').selectOption('lung');
+    await typeShown('lung');
+    assert.equal(await page.locator('#cancer-type').inputValue(), 'lung', 'the select of the panel drives the one of the map');
     await page.locator('#acesso').evaluate(el => { el.open = true; });
     const summary = page.locator('[data-cancer-type="lung"] details summary').first();
     await summary.focus();
@@ -60,15 +62,15 @@ for (const javaScriptEnabled of [false, true]) {
       try {
         await page.goto(base + route);
         if (javaScriptEnabled) {
-          await page.locator('[data-toggle-profile]:not([hidden])').waitFor();
+          await page.locator('[data-toggle-profile]:not([hidden])').waitFor({ state: 'attached' });
           await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-          if (await page.locator('[data-toggle-profile]').getAttribute('aria-expanded') === 'false') await page.locator('[data-toggle-profile]').click();
+          if (await page.locator('[data-toggle-profile]').isVisible() && await page.locator('[data-toggle-profile]').getAttribute('aria-expanded') === 'false') await page.locator('[data-toggle-profile]').click();
         }
         for (const width of [320, 768, 1280]) {
           await page.setViewportSize({ width, height: 900 });
           for (const zoom of ['100%', '200%']) {
             await page.locator('body').evaluate((el, zoom) => { el.style.zoom = zoom; }, zoom);
-            await page.locator('.profile details').evaluateAll(elements => elements.forEach(el => { el.open = true; }));
+            await page.locator('.profile details').evaluateAll(elements => elements.forEach(el => { el.removeAttribute('name'); el.open = true; }));
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `${width}px, zoom ${zoom}`);
           }
         }
@@ -93,9 +95,9 @@ test('native 200% browser zoom keeps the municipal profile readable in both them
         await page.goto(base + route);
         if (javaScriptEnabled) {
           await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-          await page.locator('[data-toggle-profile]:not([hidden])').waitFor();
+          await page.locator('[data-toggle-profile]:not([hidden])').waitFor({ state: 'attached' });
         }
-        await page.locator('.profile details').evaluateAll(elements => elements.forEach(el => { el.open = true; }));
+        await page.locator('.profile details').evaluateAll(elements => elements.forEach(el => { el.removeAttribute('name'); el.open = true; }));
         await worker.evaluate(async base => {
           const tabs = await chrome.tabs.query({});
           const tab = tabs.find(tab => tab.url.startsWith(base));

@@ -27,6 +27,23 @@ test('a legend or caveat outside the map, as around it on small screens, reserve
   assert.deepEqual(framingPaddings(MAP, { legend, note }, 24), NOTHING);
 });
 
+test('what rests on the bottom of a phone map is reserved from its topmost edge, whatever else is on the map', () => {
+  const map = { left: 0, top: 80, right: 390, bottom: 844 };
+  const sheet = { left: 0, top: 600, right: 390, bottom: 844 };
+  const button = { left: 8, top: 548, right: 120, bottom: 592 };
+  const controls = { left: 8, top: 140, right: 340, bottom: 184 };
+  assert.deepEqual(framingPaddings(map, { floor: [sheet, button] }, 24), [{ top: 24, right: 24, bottom: 320, left: 24 }]);
+  assert.deepEqual(framingPaddings(map, { controls, floor: [sheet, button] }, 24), [
+    { top: 24, right: 24, bottom: 320, left: 364 },
+    { top: 128, right: 24, bottom: 320, left: 24 },
+  ]);
+});
+
+test('a floor beside the map, as the panel on a desktop, or with no box reserves nothing', () => {
+  const beside = { left: 880, top: 104, right: 1280, bottom: 757 };
+  assert.deepEqual(framingPaddings(MAP, { floor: [beside, { left: 0, top: 0, right: 0, bottom: 0 }] }, 24), NOTHING);
+});
+
 test('hidden elements, with no box, reserve nothing', () => {
   const empty = { left: 0, top: 0, right: 0, bottom: 0 };
   assert.deepEqual(framingPaddings(MAP, { legend: empty, note: empty }, 24), NOTHING);

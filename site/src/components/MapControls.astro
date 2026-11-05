@@ -58,18 +58,9 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     <p id="indicator-caveat" class="note" role="status" hidden></p>
     <p id="map-selection-notice" class="note" role="status" hidden></p>
   </div>
-  <a href="#preview-heading" class="preview-shortcut" data-preview-shortcut hidden>Ir para Meu município</a>
 </form>
 
 <script>
-  document.querySelector('[data-preview-shortcut]')?.addEventListener('click', event => {
-    const heading = document.getElementById('preview-heading');
-    if (!heading) return;
-    event.preventDefault();
-    heading.focus({ preventScroll: true });
-    heading.scrollIntoView({ block: 'start' });
-  });
-
   const sheet = document.querySelector<HTMLElement>('#map-filters');
   const closeSheet = () => { if (sheet?.matches(':popover-open')) sheet.hidePopover(); };
   // Unlike an auto popover, a manual one does not give focus back when it closes.
@@ -123,9 +114,6 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     margin-top: 0.25rem;
   }
   .filters-toggle, .filters-close, .filters-noscript { display: none; }
-  /* A keyboard shortcut only: the panel is in reach, and the link must not reshape the controls. */
-  .preview-shortcut { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .preview-shortcut:focus { top: 100%; right: 1rem; width: auto; height: auto; padding: .5rem .75rem; clip-path: none; background: var(--surface); }
   /* From 768 px and in the in-flow composition the selectors are always in place, and the sheet does not exist. */
   @media (min-width: 768px), (max-width: 299px), (max-height: 519px) {
     .filters-sheet:not(:popover-open) { display: contents; }
@@ -148,8 +136,11 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     .filters-toggle strong { flex: none; font-size: var(--text-14); }
     .filters-toggle span { font-size: var(--text-12); font-weight: 400; line-height: 1.25; color: var(--muted); }
     .map-notes { flex: none; padding: .25rem .5rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    .view-controls { position: fixed; right: .5rem; bottom: 2rem; z-index: 7; padding: .25rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .view-controls { position: fixed; right: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem); z-index: 7; padding: .25rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
     .view-controls button { min-width: 3.5rem; padding-inline: .5rem; font-size: var(--text-14); }
+    /* With a municipality selected, the panel carries the long caveat of the prostate. */
+    :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) #indicator-caveat[data-in-panel] { display: none; }
+    :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) .map-notes:has(#indicator-caveat[data-in-panel]):has(#map-selection-notice[hidden]) { display: none; }
     /* In the list the column enters the flow, above the rows it would otherwise cover. */
     :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
   }

@@ -23,5 +23,5 @@ const { municipality, profile } = Astro.props;
 ---
 <Base title={`${municipality.name} (${municipality.uf}) — Meu município`}>
   <MunicipalitySearch slot="header-tools" />
-  <MapExperience selected><MunicipalityProfile municipality={municipality} profile={profile} /></MapExperience>
+  <MapExperience selected heading={`${municipality.name} (${municipality.uf})`}><MunicipalityProfile municipality={municipality} profile={profile} /></MapExperience>
 </Base>
