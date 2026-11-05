@@ -2,7 +2,7 @@
 import ContextHelp from "./ContextHelp.astro";
 import {
   HATCH_CSS,
-  STATUS_STATES, STATUS_COLORS, STATUS_LABELS, STATUS_LEGEND, INSUFFICIENT_CSS,
+  STATUS_STATES, STATUS_LABELS, STATUS_LEGEND, statusSwatch,
   INDICATORS,
   QUALITY_WARNING,
   REGION_NOTE,
@@ -54,7 +54,7 @@ const qualityPeriod = qualityPeriodText(period);
     <ul>
       {STATUS_STATES.map(state => (
         <li>
-          <span class="swatch" style={`background: ${state === "insufficient" ? INSUFFICIENT_CSS : STATUS_COLORS[state]}`} aria-hidden="true" />
+          <span class="swatch" style={`background: ${statusSwatch(state)}`} aria-hidden="true" />
           <ContextHelp id={`status-legend-${state}`} label={STATUS_LABELS[state]}>
             {{ reached: "100% ou mais da referência.", near: "de 80% a menos de 100% da referência.", far: "menos de 80% da referência.", insufficient: "poucos casos no município e na sua região para calcular a Situação." }[state]}
           </ContextHelp>

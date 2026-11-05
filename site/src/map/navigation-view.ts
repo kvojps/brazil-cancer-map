@@ -186,6 +186,13 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   input.disabled = false;
   input.addEventListener('input', () => {
     const matches = searchMunicipalities(listing.municipalities, input.value);
+    if (input.value.trim() && !matches.length) {
+      const empty = document.createElement('li');
+      empty.textContent = 'Nenhum município encontrado.';
+      results.replaceChildren(empty);
+      status.textContent = empty.textContent;
+      return;
+    }
     results.replaceChildren(...matches.map(place => {
       const item = document.createElement('li');
       const button = document.createElement('button');

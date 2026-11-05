@@ -35,7 +35,16 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
       </p>
     </aside>
     <header class="site-header">
+      <details class="site-menu">
+        <summary aria-label="Menu"><span aria-hidden="true">☰</span></summary>
+        <nav aria-label="Menu">
+          <a href="/">Mapa</a>
+          <a href="/municipios/">Municípios por UF</a>
+          <a href="/metodologia/">Como calculamos</a>
+        </nav>
+      </details>
       <a class="identity" href="/"><BrandMark /> Observatório do Câncer no Brasil</a>
+      <slot name="header-tools" />
       <nav aria-label="Navegação principal">
         <a href="/">Mapa</a>
         <a href="/municipios/" id={Astro.url.pathname === "/" || Astro.url.pathname.startsWith("/municipio/") ? "municipality-index-heading" : undefined}>Municípios por UF</a>
@@ -75,6 +84,10 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
   }
   .construction-notice p {
     margin: 0;
+  }
+  @media (min-width: 768px) {
+    /* The height the desktop decision measured the map against; longer text still grows it. */
+    .construction-notice { display: grid; align-items: center; min-height: 43px; }
   }
 </style>
 

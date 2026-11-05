@@ -368,6 +368,11 @@ export type MapMode = "trend" | "status";
 export type StatusClass = "reached" | "near" | "far";
 export const STATUS_STATES: (StatusClass | "insufficient")[] = ["reached", "near", "far", "insufficient"];
 export const STATUS_COLORS = { reached: "var(--status-reached)", near: "var(--status-near)", far: "var(--status-far)", insufficient: TREND_COLORS.insufficient };
+/** The swatch of a Situação legend entry, as `trendSwatch` does for the Tendência. */
+export function statusSwatch(state: keyof typeof STATUS_COLORS): string {
+  return state === "insufficient" ? INSUFFICIENT_CSS : STATUS_COLORS[state];
+}
+
 export const STATUS_LABELS = { reached: "Alcançou", near: "Perto", far: "Longe", insufficient: "Dado insuficiente" };
 export const STATUS_LEGEND = "A cor mostra a distância até a referência. Não é um ranking entre municípios.";
 

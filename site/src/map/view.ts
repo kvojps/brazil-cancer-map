@@ -17,21 +17,16 @@ export function mountVisualization(): void {
     }
     window.dispatchEvent(new Event('resize'));
   };
-  const choose = (view: string, focus = false) => {
+  const choose = (view: string) => {
     const url = new URL(location.href);
     if (view === 'lista') url.searchParams.set('visualizacao', 'lista');
     else url.searchParams.delete('visualizacao');
     if (url.href !== location.href) history.pushState(null, '', url);
     sync();
     window.dispatchEvent(new Event('navigation-state-change'));
-    if (focus) list.querySelector<HTMLElement>('h3')!.focus();
   };
   controls.hidden = false;
   for (const button of controls.querySelectorAll<HTMLButtonElement>('[data-view]')) button.onclick = () => choose(button.dataset.view!);
-  document.querySelector('.list-shortcut')!.addEventListener('click', event => {
-    event.preventDefault();
-    choose('lista', true);
-  });
   window.addEventListener('popstate', sync);
   sync();
 }

@@ -45,7 +45,7 @@ test('search, direct links and table work when WebGL fails', async () => {
     await page.keyboard.press('Enter');
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     assert.match(await page.locator('#preview-heading').textContent(), /Recife/);
-    await page.locator('.list-shortcut').click();
+    await page.locator('[data-view="lista"]').click();
     await page.locator('.indicator-table select').selectOption('PE');
     assert.match(await page.locator('.table-count').textContent(), /185 municípios/);
     assert.match(await page.locator('.indicator-table tbody').textContent(), /Seu município e vizinhos/);
@@ -90,7 +90,7 @@ test('layer failure clears old results, retries and respects the selected cancer
     await page.route('**/map/within_60_days/breast.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
     await page.goto(base);
     await waitForData(page);
-    await page.locator('.list-shortcut').click();
+    await page.locator('[data-view="lista"]').click();
     await page.locator('#cancer-type').selectOption('breast');
     await page.locator('#retry-data').waitFor();
     assert.equal(await page.locator('.indicator-table tbody tr').count(), 0);
@@ -140,7 +140,7 @@ test('an uncomputable C55 adjustment is distinct from insufficient data in the t
     });
     await page.goto(`${base}/?indicador=mortality&tipo=cervix`);
     await waitForData(page);
-    await page.locator('.list-shortcut').click();
+    await page.locator('[data-view="lista"]').click();
     const row = page.locator('.indicator-table tbody tr').filter({ has: page.getByRole('link', { name: 'Recife', exact: true }) });
     assert.equal(await row.locator('td').nth(1).textContent(), 'Ajuste não calculável');
   } finally { await page.close(); }
@@ -156,7 +156,7 @@ for (const javaScriptEnabled of [false, true]) {
           await page.goto(base);
           if (javaScriptEnabled) {
             await waitForData(page);
-            await page.locator('.list-shortcut').click();
+            await page.locator('[data-view="lista"]').click();
           }
           await page.goto(`${base}/municipios/`);
           await page.locator('#municipalities-PE summary').click();
@@ -191,7 +191,7 @@ test('native 200% browser zoom keeps alternatives readable in both themes', asyn
         await page.goto(base);
         if (javaScriptEnabled) {
           await waitForData(page);
-          await page.locator('.list-shortcut').click();
+          await page.locator('[data-view="lista"]').click();
         }
         await page.goto(`${base}/municipios/`);
           await page.locator('#municipalities-PE summary').click();
@@ -218,7 +218,7 @@ test('list replaces the map and restores selection and filters through history',
     await disableWebGL(page);
     await page.goto(`${base}/?tipo=breast&theme=dark`);
     await waitForData(page);
-    await page.locator('.list-shortcut').click();
+    await page.locator('[data-view="lista"]').click();
     assert.equal(await page.locator('.map-frame').isVisible(), false);
     assert.equal(await page.locator('.indicator-table').isVisible(), true);
     assert.equal(new URL(page.url()).searchParams.get('visualizacao'), 'lista');

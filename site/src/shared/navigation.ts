@@ -32,7 +32,22 @@ function isPage(path: string): boolean {
   return path === '/municipios/' || path === '/' || path === '/metodologia/' || path.startsWith('/municipio/');
 }
 
+/** The native disclosure opens without JavaScript; with it, Escape and an outside click also close it. */
+function mountSiteMenu(): void {
+  const menu = document.querySelector<HTMLDetailsElement>('.site-menu');
+  if (!menu) return;
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !menu.open) return;
+    menu.open = false;
+    menu.querySelector('summary')!.focus();
+  });
+  document.addEventListener('click', event => {
+    if (menu.open && !(event.target instanceof Node && menu.contains(event.target))) menu.open = false;
+  });
+}
+
 export function mountSharedNavigation(): void {
+  mountSiteMenu();
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   const destinations = new WeakMap<HTMLAnchorElement, string>();
   const destination = (link: HTMLAnchorElement) => {

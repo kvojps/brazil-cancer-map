@@ -1,0 +1,54 @@
+---
+import TrendLegend from './TrendLegend.astro';
+import {
+  HATCH_CSS, STATUS_LABELS, STATUS_STATES,
+  TREND_LABELS, TREND_STATES, qualityPeriodText, statusSwatch, trendPeriodText, trendSwatch, type Period,
+} from '../map/indicator-layer';
+import { CORNER_CAVEAT } from '../map/legend';
+
+interface Props { indicator: string; period: Period }
+const { indicator, period } = Astro.props;
+const classes = {
+  trend: TREND_STATES.map(state => ({ label: TREND_LABELS[state], swatch: trendSwatch(state) })),
+  status: STATUS_STATES.map(state => ({ label: STATUS_LABELS[state], swatch: statusSwatch(state) })),
+};
+---
+<!-- From 768 px the map shows this summary in its corner and the full legend opens from ⓘ; below that, the full legend stays under the map. -->
+<section class="legend-corner" aria-label="Legenda do mapa">
+  <p class="legend-corner-title">Tendência {trendPeriodText(period)}</p>
+  <p class="legend-corner-caveat">{CORNER_CAVEAT.trend}</p>
+  {Object.entries(classes).map(([mode, items]) => (
+    <ul data-corner-mode={mode} hidden={mode !== 'trend'}>
+      {items.map(item => <li><span class="swatch" style={`background: ${item.swatch}`} aria-hidden="true" />{item.label}</li>)}
+      <li data-corner-quality hidden={!qualityPeriodText(period)}><span class="swatch" style={`background: ${HATCH_CSS}`} aria-hidden="true" />Faixa C</li>
+    </ul>
+  ))}
+  <button type="button" class="legend-corner-more" popovertarget="legend-full" aria-label="Abrir a legenda completa e as ressalvas">ⓘ</button>
+</section>
+<div id="legend-full" class="legend-full" popover>
+  <TrendLegend indicator={indicator} period={period} />
+  <button type="button" class="legend-full-close" popovertarget="legend-full" popovertargetaction="hide">Fechar legenda</button>
+</div>
+
+<style>
+  .legend-corner, .legend-full-close { display: none; }
+  /* The summary replaces the inline legend only from 768 px. */
+  @media (max-width: 767px) {
+    .legend-full:not(:popover-open) { display: block; position: static; inset: auto; width: auto; height: auto; margin: 0; padding: 0; overflow: visible; color: inherit; background: none; border: 0; }
+  }
+  @media (min-width: 768px) {
+    .legend-corner { display: block; position: absolute; left: 0; bottom: 0; z-index: 3; width: 13.5rem; max-height: 100%; overflow: auto; padding: .5rem .75rem .75rem; font-size: var(--text-14); line-height: 1.3; background: var(--surface); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-top-right-radius: var(--card-radius); }
+    .legend-corner[hidden] { display: none; }
+    .legend-corner-title { margin: 0; padding-right: 2rem; font-weight: 600; }
+    .legend-corner-caveat { margin: 0 0 .25rem; font-size: var(--text-12); color: var(--muted); }
+    /* With a municipality selected, the panel beside the map already explains the result. */
+    :global(.map-and-profile:has(#municipality-preview:not([hidden]))) .legend-corner-caveat { display: none; }
+    ul { display: flex; flex-direction: column; gap: .25rem; margin: .25rem 0 0; padding: 0; list-style: none; }
+    li { display: flex; align-items: center; gap: .5rem; }
+    .swatch { flex: none; width: .875rem; height: .875rem; border: 1px solid var(--swatch-border); }
+    .legend-corner-more, .legend-corner-more:hover:not(:disabled) { position: absolute; top: 0; right: 0; width: var(--control-height); padding: 0; font-size: var(--text-16); color: var(--muted); background: transparent; }
+    .legend-full:popover-open { width: min(32rem, calc(100vw - 2rem)); max-height: 80dvh; overflow: auto; padding: 0 0 .75rem; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .legend-full::backdrop { background: var(--backdrop); }
+    .legend-full-close { display: block; margin-left: 1rem; }
+  }
+</style>
