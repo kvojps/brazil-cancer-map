@@ -23,24 +23,19 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     </select>
   </label>
   <div class="cancer-type">
-    <label>
-      Tipo de câncer
-      <select id="cancer-type" name="cancer-type" aria-describedby="cancer-scope-note cancer-help-description" disabled>
-        {
-          Object.entries(CANCER_TYPES).map(([value, label]) => (
-            <option value={value} selected={value === DEFAULT_CANCER_TYPE}>
-              {label}
-            </option>
-          ))
-        }
-      </select>
-    </label>
-    <p id="cancer-scope-note" class="note">“Todos os cânceres” usa conjuntos de registros diferentes em cada eixo.</p>
-    <ContextHelp id="cancer-help" label="Sobre o Tipo de câncer">
-      <div id="cancer-type-note" class="note" aria-live="polite">
-      {notes.map((note) => <p>{note}</p>)}
-      </div>
-    </ContextHelp>
+    <div class="cancer-type-heading">
+      <label for="cancer-type">Tipo de câncer</label>
+      <ContextHelp id="cancer-help" label="Sobre o Tipo de câncer" icon>
+        <div id="cancer-type-note" class="note" aria-live="polite">
+          {notes.map((note) => <p>{note}</p>)}
+        </div>
+      </ContextHelp>
+    </div>
+    <select id="cancer-type" name="cancer-type" aria-describedby="cancer-help-description" disabled>
+      {Object.entries(CANCER_TYPES).map(([value, label]) => (
+        <option value={value} selected={value === DEFAULT_CANCER_TYPE}>{label}</option>
+      ))}
+    </select>
   </div>
   <div class="municipality-search">
     <label for="municipality-search">Buscar município</label>
@@ -100,7 +95,8 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
   input { width: 100%; }
   #search-status:empty, #municipality-results:empty { display: none; }
   #municipality-results { padding-left: 1.2rem; max-height: 18rem; overflow: auto; }
-  #cancer-scope-note { margin: .2rem 0; }
+  .cancer-type-heading { display: flex; align-items: center; gap: .25rem; }
+  .cancer-type-heading label { display: block; }
   .list-shortcut { align-self: center; font-size: .875rem; padding: .4rem; }
   .note {
     color: var(--muted);

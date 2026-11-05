@@ -1,15 +1,54 @@
 ---
-interface Props { id: string; label: string; }
-const { id, label } = Astro.props;
+interface Props { id: string; label: string; icon?: boolean; }
+const { id, label, icon = false } = Astro.props;
 ---
-<button type="button" class="help-trigger" popovertarget={id} aria-describedby={`${id}-description`}>{label}</button>
+<button type="button" class="help-trigger" popovertarget={id} aria-describedby={`${id}-description`} aria-label={icon ? label : undefined} data-hover-help={icon || undefined}>{icon ? "ⓘ" : label}</button>
 <div id={id} class="help-popover" popover>
   <div id={`${id}-description`}><slot /></div>
-  <button type="button" popovertarget={id} popovertargetaction="hide">Fechar ajuda</button>
+  {!icon && <button type="button" popovertarget={id} popovertargetaction="hide">Fechar ajuda</button>}
 </div>
 <style>
   .help-trigger { font-size: .8125rem; color: var(--link); padding: .2rem .4rem; }
+  .help-trigger[data-hover-help] { background: transparent; border: 0; border-radius: 0; }
   .help-popover { max-width: min(32rem, calc(100vw - 2rem)); max-height: 80vh; overflow: auto; padding: 1rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: .5rem; box-shadow: 0 8px 32px #0004; }
   .help-popover::backdrop { background: #0003; }
   .help-popover > button { margin-top: .75rem; }
 </style>
+
+<script>
+  for (const trigger of document.querySelectorAll<HTMLButtonElement>('[data-hover-help]')) {
+    const popup = document.getElementById(trigger.getAttribute('popovertarget')!)!;
+    let timer: ReturnType<typeof setTimeout>;
+    let restoringFocus = false;
+    const cancel = () => clearTimeout(timer);
+    const open = () => {
+      cancel();
+      if (!popup.matches(':popover-open')) popup.showPopover();
+      const rect = trigger.getBoundingClientRect();
+      popup.style.margin = '0';
+      popup.style.top = `${Math.max(8, Math.min(rect.bottom + 4, innerHeight - popup.offsetHeight - 8))}px`;
+      popup.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8))}px`;
+    };
+    const dismiss = () => {
+      cancel();
+      timer = setTimeout(() => {
+        if (!popup.matches(':hover') && !trigger.matches(':hover') &&
+            !popup.contains(document.activeElement) && document.activeElement !== trigger) popup.hidePopover();
+      }, 180);
+    };
+    trigger.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') open(); });
+    popup.addEventListener('beforetoggle', event => {
+      if ((event as ToggleEvent).newState === 'closed') {
+        restoringFocus = true;
+        setTimeout(() => { restoringFocus = false; }, 0);
+      }
+    });
+    trigger.addEventListener('focus', () => { if (!restoringFocus) open(); });
+    trigger.addEventListener('click', event => { event.preventDefault(); open(); });
+    for (const element of [trigger, popup]) {
+      element.addEventListener('pointerleave', dismiss);
+      element.addEventListener('focusout', dismiss);
+      element.addEventListener('pointerenter', cancel);
+    }
+  }
+</script>

@@ -38,6 +38,7 @@ function isPage(path: string): boolean {
 }
 
 export function mountSharedNavigation(): void {
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   const destinations = new WeakMap<HTMLAnchorElement, string>();
   const destination = (link: HTMLAnchorElement) => {
     if (!destinations.has(link)) destinations.set(link, link.getAttribute('href')!);
@@ -45,10 +46,19 @@ export function mountSharedNavigation(): void {
   };
   const updateLink = (link: HTMLAnchorElement, current: URL) => {
     if (link.dataset.themeChoice) {
+      if (link.hasAttribute('data-theme-toggle')) {
+        const active = readTheme(current.searchParams) ?? (systemTheme.matches ? 'dark' : 'light');
+        const next = active === 'dark' ? 'light' : 'dark';
+        link.dataset.themeChoice = next;
+        link.setAttribute('aria-label', next === 'light' ? 'Usar tema claro' : 'Usar tema escuro');
+        const icon = link.querySelector('span')!;
+        const symbol = next === 'light' ? '☀' : '☾';
+        if (icon.textContent !== symbol) icon.textContent = symbol;
+      }
       const target = new URL(current);
       target.searchParams.set('theme', link.dataset.themeChoice);
       link.href = target.href;
-      link.setAttribute('aria-current', readTheme(current.searchParams) === link.dataset.themeChoice ? 'true' : 'false');
+
     } else link.href = navigationUrl(destination(link), current).href;
   };
   const sync = () => {
@@ -70,6 +80,7 @@ export function mountSharedNavigation(): void {
     for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) updateLink(link, current);
   };
   sync();
+  systemTheme.addEventListener('change', sync);
   // Resolve at activation too: map selections and fetched profiles can change state or links.
   document.addEventListener('click', event => {
     const target = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
