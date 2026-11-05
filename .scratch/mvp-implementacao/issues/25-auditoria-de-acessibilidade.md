@@ -32,3 +32,9 @@ Ampliação aprovada junto da divisão dos tickets 30–34: incorporar os cenár
 
 - [Registro da consulta integrada](../../ui-ux-v1/validation-37.md): saída de 763.801.491 bytes de arquivos (aproximadamente 764 MiB em disco), ainda acima da meta de 30 MB. O shell do dashboard acrescenta HTML por município; evitou-se repetir o índice nacional, que levaria a aproximadamente 4,1 GiB. Não se aprova o excesso: o ticket 38 deve avaliar geração/hospedagem e esta auditoria mantém a decisão explícita de orçamento pendente.
 - Carga incremental estimada de uma seleção em PE: documento de Recife ~18 KB gzip mais perfil da UF ~161 KB gzip, com cache durante a visita. Medição local por compressão dos arquivos, sem alegar captura HTTP ou cumprimento do orçamento de primeira visita.
+
+### Medição do ticket 38 — 2026-11-04
+
+- [Validação da navegação resiliente](../../ui-ux-v1/validation-38.md): 5.626 arquivos e **765.046.511 bytes** de saída estática, +1.245.020 bytes sobre o ticket 37; sem repetir malha/JSON ou índice nacional por município. O HTML mantém os seis Tipos para leitura sem JavaScript. Build inicial medido em 21,84 s; suíte final com build integral em 18,46 s.
+- Primeira visita estimada por compressão gzip local do HTML inicial, assets compartilhados, worker, lista, camada padrão e malha: **1.388.885 bytes gzip** (6.119.249 bytes sem compressão), acima da meta aproximada de 1,3 MB. Não é captura HTTP e não comprova compressão no provedor. Seleção de Recife acrescenta aproximadamente 179 KB gzip de HTML e perfil PE, com cache durante a visita.
+- O excesso de saída (>30 MB) e de transferência estimada continua **sem aprovação**; requer investigação e decisão explícita nesta auditoria. A prévia estática local verifica documentos municipais sem redirect JavaScript; configuração do provedor remoto não foi acessada e não houve publicação.
