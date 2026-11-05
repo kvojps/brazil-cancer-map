@@ -2,6 +2,7 @@
 /data/raw/
 /data/clean/
 /data/logs/
+/data/release/
 
 # Python
 .venv/
