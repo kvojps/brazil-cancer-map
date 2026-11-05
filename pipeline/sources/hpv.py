@@ -27,6 +27,7 @@ SOURCE = {'name': 'SI-PNI/RNDS e TabNet (Ministério da Saúde)',
           'url': 'https://www.gov.br/saude/pt-br/vacinacao',
           'conditions': 'Dados abertos; reutilização com citação da fonte.',
           'period': 'Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente.'}
+CATALOG_ROOT = 'https://dadosabertos.saude.gov.br/dataset/doses-aplicadas-pelo-programa-de-nacional-de-imunizacoes-pni-'
 S3_ROOT = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/PNI/csv/'
 
 
@@ -53,10 +54,28 @@ class HpvSource:
         download_fixed_inputs(self._raw_dir, self._clean_dir)
         today = datetime.now(UTC)
         for year in self._years:
-            for month in range(1, 13):
-                if (year, month) >= (today.year, today.month):
-                    break
+            months = self._discover_months(year) if year == today.year else list(range(1, 13))
+            for month in months:
                 self.download_month(year, month)
+
+    def _discover_months(self, year: int) -> list[int]:
+        """Use advertised resources, never interpret an S3 access error as absence."""
+        self._clean_dir.mkdir(parents=True, exist_ok=True)
+        page = self._clean_dir / 'catalog.html.part'
+        url = CATALOG_ROOT + str(year)
+        try:
+            with_retries(lambda: self._transport.get(url, page), f'read HPV catalog for {year}')
+            names = set(re.findall(r'vacinacao_([a-z]{3})_' + str(year) + r'_csv\.zip', page.read_text()))
+            months = [index for index, name in enumerate(MONTHS, 1) if name in names]
+            if not months or months != list(range(1, max(months) + 1)):
+                raise ValueError('HPV catalog has no monthly CSV resources or has internal gaps')
+            (self._clean_dir / 'availability.json').write_text(json.dumps({
+                'year': year, 'months': months, 'source_url': url,
+                'checked_at': datetime.now(UTC).date().isoformat(),
+            }))
+            return months
+        finally:
+            page.unlink(missing_ok=True)
 
     def download_month(self, year: int, month: int) -> None:
         """Process one month, also used for a representative production benchmark."""
@@ -154,9 +173,18 @@ class HpvSource:
         if self._years != tuple(range(2020, max(self._years) + 1)):
             raise ValueError('compute requires the complete history starting in 2020; use partitions only for download/clean')
         today = datetime.now(UTC)
+        current_months = list(range(1, today.month))
+        if today.year in self._years:
+            availability = json.loads((self._clean_dir / 'availability.json').read_text())
+            current_months = availability['months']
+            if (availability.get('year') != today.year or not availability.get('source_url')
+                    or not availability.get('checked_at') or not current_months
+                    or current_months != list(range(1, max(current_months) + 1))
+                    or max(current_months) > today.month):
+                raise ValueError('invalid HPV catalog availability; refresh download')
         files = [self._clean_dir / 'months' / str(year) / f'{month:02}.parquet'
                  for year in self._years for month in range(1, 13)
-                 if (year, month) < (today.year, today.month)]
+                 if year < today.year or month in current_months]
         if any(not path.exists() for path in files):
             raise ValueError('HPV requires every published monthly extract; missing months are never zeros')
         for path in files:
@@ -246,7 +274,8 @@ class HpvSource:
                              'quality_band': None, 'without_treatment_info': None, 'series_id': key}
         period = {'first_year': 2020, 'last_year': max(self._years), 'latest': latest,
                   'trend': [], 'provisional': provisional, 'single_dose_year': 2024,
-                  'denominator_year': 2022}
+                  'denominator_year': 2022,
+                  'last_month': max(current_months) if max(self._years) == today.year else 12}
         data = {'period': period, 'reference': {'value': 90, 'label': 'meta para 2030'},
                 'municipalities': entries, 'series': displayed}
         self._clean_dir.mkdir(parents=True, exist_ok=True)

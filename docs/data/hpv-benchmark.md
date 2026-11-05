@@ -45,3 +45,38 @@ Boa Esperança do Norte (`510183`) não existe no Censo 2022: seu volume municip
 A carga completa dos meses de 2020 até o último disponível e a comparação das coberturas finais com o painel oficial **ainda não foram executadas**. Portanto não há JSON de HPV publicado em `site/public/dados/` nesta mudança. O seletor indica dados ainda não disponíveis. A exportação exige referências oficiais com fonte e data, para total e dois sexos; sem `pipeline/references/hpv.json` ou com divergência além da tolerância registrada (máximo de um ponto percentual), falha sem alterar a publicação anterior. As interfaces de cálculo/publicação foram verificadas com arquivos pequenos, incluindo deduplicação entre anos, saída da coorte, Censo fixo, cascata, valores acima de 100% e preservação da publicação anterior quando a validação falha.
 
 Fontes: [NT 16/2025-DPNI](https://infoms.saude.gov.br/content/Default/SEI_0045605478_Nota_Tecnica_16.pdf), [SIDRA 9514](https://sidra.ibge.gov.br/tabela/9514), [TabNet](http://tabnet.datasus.gov.br/cgi/dhdat.exe?bd_pni/dpnibr.def), [pesquisa de volume do SI-PNI](../../.scratch/mapa-cancer-br/research/17-calendario-das-fontes.md), [pesquisa dos insumos oficiais](../../.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).
+
+
+## Carga nacional local — 05/11/2026
+
+A carga manual gerou **81 extratos**, janeiro/2020 a setembro/2026, todos com
+`extract_version=1`. O catálogo oficial de 2026 foi reconferido em 05/11/2026:
+anuncia CSV de janeiro a setembro; outubro ainda não é anunciado e a URL
+presumida responde HTTP 403. Esse código não é usado como sinal de ausência:
+a descoberta lê os nomes mensais anunciados no catálogo e rejeita lacunas
+internas. Um recurso anunciado que falhe continua interrompendo a carga.
+
+| Ano | Meses | Soma dos tempos mensais (s) | Maior pico dos diretórios HPV (bytes) | ZIPs transferidos (bytes acumulados) |
+|---|---:|---:|---:|---:|
+| 2020 | 12 | 4.659,92 | 2.386.178.166 | 14.977.611.105 |
+| 2021 | 12 | 21.721,66 | 7.954.461.694 | 58.553.412.318 |
+| 2022 | 12 | 11.719,21 | 5.868.527.923 | 39.760.655.313 |
+| 2023 | 12 | 6.641,68 | 4.817.732.437 | 25.478.794.683 |
+| 2024 | 12 | 8.613,34 | 5.666.290.088 | 26.073.801.684 |
+| 2025 | 12 | 6.784,39 | 6.431.623.090 | 27.297.474.063 |
+| 2026 | 9 | 7.221,97 | 5.969.769.292 | 23.063.110.273 |
+
+Valores somados dos metadados mensais locais, preservados em
+`data/clean/hpv/months/<ano>/<mes>.json`. Medem as execuções bem-sucedidas
+registradas; não incluem tentativas anteriores, pausas, instalação, checkout,
+restauração, compactação ou disco fora dos diretórios da fonte. Portanto **não
+são duração nem pico do job inteiro**. O diretório limpo completo ocupa cerca
+de 1,6 GiB. O cálculo nacional concluiu com os 81 meses, sem publicar os JSON.
+
+A partição de 2021 levou pelo menos **6 h 02 min** na máquina do mantenedor,
+somando apenas as etapas mensais. A extrapolação inicial de duas horas por
+ano não se confirmou nesse ano, cujo tráfego foi 58,6 GB. Até medir no runner,
+a execução local permanece necessária para a carga inicial; não se declara
+que a matriz anual cabe em 6 h/14 GB. A medição do job inteiro continua pendente.
+
+Fonte de disponibilidade: [catálogo oficial PNI 2026](https://dadosabertos.saude.gov.br/dataset/doses-aplicadas-pelo-programa-de-nacional-de-imunizacoes-pni-2026).
