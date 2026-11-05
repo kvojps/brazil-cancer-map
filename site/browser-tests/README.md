@@ -82,3 +82,14 @@ JavaScript. Nenhuma UF tem HPV publicado: o cartão com dado só é coberto pelo
 `tests/panel-result.test.mjs` e pela leitura do código. O contorno e o enquadramento dentro
 do WebGL são conferidos em capturas; a conta da área reservada à folha está em
 `tests/framing.test.mjs`.
+
+`list.test.mjs` verifica a Lista: abaixo de 640 px da própria largura, linhas com nome,
+classe com a textura do mapa, Faixa C e valor em 20 px, com o ⌄ abrindo os demais campos em
+texto real e `aria-expanded`; a forma larga, com cabeçalho e município fixos, rolando por dentro
+da área do mapa, também a 1280 px com o painel aberto; a troca de forma pela largura da Lista,
+e não da janela; UF e contagem fixas no celular, com Mapa/Lista e o aviso; a folha sem cobrir as
+últimas linhas nem o foco do teclado; ordem por UF e nome; próstata e mortalidade sem Situação;
+HPV sem Tendência, com camada montada no teste, pois nenhuma UF tem HPV publicado; e falha de
+carga com nova tentativa. A semântica de tabela é conferida na árvore de acessibilidade do
+Chromium, o que não substitui uma sessão com leitor de tela. Com os arquivos em paralelo, o
+servidor de desenvolvimento pode estourar os tempos de espera: use a saída estática.

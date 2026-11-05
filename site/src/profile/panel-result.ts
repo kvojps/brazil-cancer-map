@@ -63,18 +63,23 @@ const UNAVAILABLE_LABEL = 'Sem dado neste recorte';
 const NO_CLASS_SWATCH = 'var(--soft)';
 
 /** The reading a result is shown in: HPV has only Situação, whatever the map's mode, and mortality only Tendência. */
-function readingMode(indicator: string, mode: MapMode, data: Pick<IndicatorData, 'has_status'>): MapMode {
+export function readingMode(indicator: string, mode: MapMode, data: Pick<IndicatorData, 'has_status'>): MapMode {
   if (indicator === 'hpv') return 'status';
   return mode === 'status' && data.has_status ? 'status' : 'trend';
 }
 
+/** Whether a result carries the band C of the map, which only the treatment indicator has (spec, section 11.1). */
+export function showsBandC(indicator: string, entry: MunicipalityIndicator | undefined, mode: MapMode): boolean {
+  return indicator === TREATMENT && isHatched(entry, mode);
+}
+
 /** The class of a result with a number, in the colors and the band C texture of the map. */
-function classOf(indicator: string, entry: MunicipalityIndicator, mode: MapMode): { label: string; swatch: string } {
+export function classOf(indicator: string, entry: MunicipalityIndicator, mode: MapMode): { label: string; swatch: string } {
   if (mode === 'trend' && !entry.trend && entry.adjustment_note) return { label: ADJUSTMENT_LABEL, swatch: NO_CLASS_SWATCH };
   const shown = mode === 'status'
     ? { label: STATUS_LABELS[entry.status ?? 'insufficient'], swatch: statusSwatch(entry.status ?? 'insufficient') }
     : { label: TREND_LABELS[trendState(entry)], swatch: trendSwatch(trendState(entry)) };
-  return indicator === TREATMENT && isHatched(entry, mode) ? { ...shown, swatch: hatchCss(shown.swatch) } : shown;
+  return showsBandC(indicator, entry, mode) ? { ...shown, swatch: hatchCss(shown.swatch) } : shown;
 }
 
 /** A result that has no number to show, with what takes its place. */
