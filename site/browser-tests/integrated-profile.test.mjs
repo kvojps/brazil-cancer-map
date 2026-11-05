@@ -20,17 +20,17 @@ test('selection loads four axes, filters all types and distinguishes returning f
     await toggle.click();
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     assert.equal(await page.locator('[data-profile-axis][open]').getAttribute('id'), 'acesso');
+    await toggle.click();
     await page.locator('.filters-toggle').click();
     for (const type of ['breast', 'cervix', 'prostate', 'colorectal', 'lung', 'all']) {
       await page.selectOption('#cancer-type', type);
-      await page.locator(`[data-profile-type="${type}"][aria-current="true"]`).waitFor();
+      await page.waitForFunction(type => document.querySelector('[data-panel-cancer-type]').value === type && !document.querySelector(`[data-profile-axis] [data-cancer-type="${type}"]`).hidden, type);
       assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     }
     await page.getByRole('button', { name: 'Ver mapa' }).click();
-    await page.locator('[data-collapse-profile]').click();
-    assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/');
-    await page.locator('[data-reopen-profile]').click();
-    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+    assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/', 'collapsing keeps the selection');
+    assert.equal(await page.locator('#preview-heading').isVisible(), true);
     await page.locator('[data-clear-profile]').click();
     assert.equal(new URL(page.url()).searchParams.has('municipio'), false);
     assert.equal(await page.locator('#municipality-preview').isVisible(), false);
@@ -83,10 +83,10 @@ for (const theme of ['light', 'dark']) {
         await page.locator(`.profile[data-code="${code}"]`).waitFor({ state: 'attached' });
         for (const width of [320, 768, 1280]) {
           await page.setViewportSize({ width, height: 900 });
-          if (await page.locator('[data-toggle-profile]').getAttribute('aria-expanded') === 'false') await page.locator('[data-toggle-profile]').click();
+          if (await page.locator('[data-toggle-profile]').isVisible() && await page.locator('[data-toggle-profile]').getAttribute('aria-expanded') === 'false') await page.locator('[data-toggle-profile]').click();
           for (const zoom of ['100%', '200%']) {
             await page.locator('body').evaluate((el, zoom) => { el.style.zoom = zoom; }, zoom);
-            await page.locator('[data-profile-axis]').evaluateAll(axes => axes.forEach(axis => { axis.open = true; }));
+            await page.locator('[data-profile-axis]').evaluateAll(axes => axes.forEach(axis => { axis.removeAttribute('name'); axis.open = true; }));
             if (width >= 768) {
               const bounds = await page.evaluate(() => {
                 const map = document.querySelector('.map-with-legend').getBoundingClientRect();

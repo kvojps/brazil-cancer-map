@@ -18,13 +18,25 @@ const chartId = `smoking-series-${cancerType}`;
   {data ? <>
     <p><strong>Período dos dados: {first}–{last}. Último ano consolidado: {data.period.latest}.</strong></p>
     <p>Na capital do seu estado: {data.capital_name}. Este dado da capital não estima o percentual de fumantes do seu município.</p>
-    <h4>Situação em {data.period.latest}</h4>
-    <p><strong>{formatPercent(data.value)}</strong> — {status[data.status]} em relação à meta. IC 95%: {formatPercent(data.ci_low)} a {formatPercent(data.ci_high)}.</p>
+    <p class="card-figure"><span class="card-value">{formatPercent(data.value)}</span> em {data.period.latest}</p>
+    <h4>Situação em {data.period.latest}: {status[data.status]}</h4>
+    <p>{status[data.status]} em relação à meta. IC 95%: {formatPercent(data.ci_low)} a {formatPercent(data.ci_high)}.</p>
     <meter min="0" max="100" low="5.9" high="7.4" optimum="0" value={data.value} aria-label="Percentual de fumantes em relação à meta de 5,9%; menor é melhor" />
     <p>Referência: 5,9% — meta do Brasil para 2030. Menor é melhor.</p>
-    <h4>Tendência: {data.trend ? TREND_LABELS[data.trend.trend_class] : 'Dado insuficiente'}</h4>
-    {data.trend && <p>Janela da Tendência: {data.trend.first_year}–{data.trend.last_year}.</p>}
+    <h4>Tendência{data.trend && ` ${data.trend.first_year}–${data.trend.last_year}`}: {data.trend ? TREND_LABELS[data.trend.trend_class] : 'Dado insuficiente'}</h4>
     <p>Estável: quase não mudou, menos de 1% por ano em relação ao próprio valor. Sem direção clara: pode ter subido ou caído; os dados não bastam para dizer.</p>
+  </> : <p>Os dados de tabagismo na capital do seu estado ainda não estão disponíveis nesta ficha.</p>}
+  <section class="card-action" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
+    <details><summary>Saiba mais</summary>
+      {action.reviewedVersion === action.version && action.reviewer && action.reviewedAt && <>
+        <p>{action.audience}</p><p>{action.criteria}</p><p>{action.exceptions}</p>
+        {action.details.map(text => <p>{text}</p>)}
+      </>}
+      <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
+    </details><p>{action.disclaimer}</p>
+  </section>
+  {data && <>
+    <h4>Série {first}–{last}</h4>
     <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartId}>
       <title id={chartId}>Percentual de adultos fumantes em {data.capital_name}. Série e IC 95% na tabela.</title>
       <line x1="42" x2="542" y1="160" y2="160" stroke="var(--muted)" />
@@ -48,15 +60,6 @@ const chartId = `smoking-series-${cancerType}`;
       <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
       <p>Data de extração: <time datetime={data.extracted_at}>{data.extracted_at}</time>.</p>
     </details>
-  </> : <p>Os dados de tabagismo na capital do seu estado ainda não estão disponíveis nesta ficha.</p>}
-  <section aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
-    <details><summary>Saiba mais</summary>
-      {action.reviewedVersion === action.version && action.reviewer && action.reviewedAt && <>
-        <p>{action.audience}</p><p>{action.criteria}</p><p>{action.exceptions}</p>
-        {action.details.map(text => <p>{text}</p>)}
-      </>}
-      <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>
-    </details><p>{action.disclaimer}</p>
-  </section>
+  </>}
   <p><a href="/metodologia/#tabagismo">Como calculamos</a></p>
 </article>

@@ -6,19 +6,14 @@ const { data, uf, cancerType } = Astro.props;
 <article class="treatment-card" aria-label="Casos novos estimados">
   <h3>Casos novos estimados</h3>
   {data ? <>
+    <p class="card-figure">Na sua UF ({uf}): <span class="card-value">{data.state_cases.toLocaleString('pt-BR')}</span> casos por ano</p>
     <p><strong>Edição {data.edition}: estimativas por ano, apresentadas para {data.annual_year}.</strong></p>
-    <p>Na sua UF ({uf}): <strong>{data.state_cases.toLocaleString('pt-BR')} casos por ano</strong>.</p>
     <p>Na capital do seu estado ({data.capital_name}): <strong>{data.capital_cases.toLocaleString('pt-BR')} casos por ano</strong>.</p>
     {data.capital_is_df && <p>Brasília: os números são os do Distrito Federal. Os dois recortes coincidem; não devem ser somados.</p>}
     {cancerType === 'all' && <p>Todos os cânceres, exceto pele não melanoma.</p>}
     {cancerType === 'breast' && <p>Estimativa de câncer de mama feminina.</p>}
-    <details><summary>O que é este número?</summary>
-      <p>É uma estimativa do INCA para o território, arredondada para múltiplos de dez. Não é uma contagem de diagnósticos e não representa uma estimativa para este município.</p>
-      <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
-      <p>Data de extração: <time datetime={data.extracted_at}>{data.extracted_at}</time>.</p>
-    </details>
   </> : <p>As estimativas do INCA ainda não estão disponíveis nesta ficha.</p>}
-  <section aria-label="Ação">
+  <section class="card-action" aria-label="Ação">
     <h4>Explore as orientações de prevenção e detecção precoce.</h4>
     <p>A estimativa do estado não prevê quem terá câncer.</p>
     <details><summary>Saiba mais</summary>
@@ -27,5 +22,10 @@ const { data, uf, cancerType } = Astro.props;
     </details>
     <p>Informação geral. A equipe de saúde orienta o cuidado indicado para você.</p>
   </section>
+  {data && <details><summary>O que é este número?</summary>
+    <p>É uma estimativa do INCA para o território, arredondada para múltiplos de dez. Não é uma contagem de diagnósticos e não representa uma estimativa para este município.</p>
+    <p>Fonte: <a href={data.source.url}>{data.source.name}</a>. {data.source.conditions}</p>
+    <p>Data de extração: <time datetime={data.extracted_at}>{data.extracted_at}</time>.</p>
+  </details>}
   <p><a href="/metodologia/#casos-estimados">Como calculamos</a></p>
 </article>

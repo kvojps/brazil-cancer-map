@@ -102,10 +102,10 @@ test('insufficient cards retain the action and show state trend only as context'
   assert.doesNotMatch(html, /<meter|<svg|Ver a série em tabela/);
 });
 
-test('quality C opens with a warning and prostate has no status bar', () => {
+test('quality C warns before the result and prostate has no status bar', () => {
   const { municipality } = example('municipality', 'all', 'C');
   const html = card(municipality, 'all');
-  assert.ok(html.indexOf('Muitos casos estão sem informação') < html.indexOf('Casos tratados com quimioterapia'));
+  assert.ok(html.indexOf('Muitos casos estão sem informação') < html.indexOf('Situação em'));
   const prostate = card(municipality, 'prostate');
   assert.match(prostate, /vigilância ativa/);
   assert.doesNotMatch(prostate, /<meter|Situação em/);

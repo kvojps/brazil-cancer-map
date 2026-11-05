@@ -3,6 +3,12 @@ import { readMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
+import { axisResults, panelResult } from '../profile/panel-result';
+import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
+
+/** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
+const SHEET = '(max-width: 767px) and (min-width: 300px) and (min-height: 520px)';
+const isSheet = () => matchMedia(SHEET).matches;
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
@@ -16,14 +22,14 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
   const status = document.querySelector<HTMLElement>('#search-status')!;
   const profiles = new Map<string, Promise<UfProfile>>();
-  const content = panel.querySelector<HTMLElement>('[data-preview-content]')!;
-  const summary = panel.querySelector<HTMLElement>('[data-profile-summary]')!;
+  const content = panel.querySelector<HTMLElement>('[data-profile-slot]')!;
+  const resultBlock = panel.querySelector<HTMLElement>('[data-profile-result]')!;
   const heading = panel.querySelector<HTMLElement>('#preview-heading')!;
   const toggle = panel.querySelector<HTMLButtonElement>('[data-toggle-profile]')!;
-  const collapse = panel.querySelector<HTMLButtonElement>('[data-collapse-profile]')!;
   const clear = panel.querySelector<HTMLButtonElement>('[data-clear-profile]')!;
-  const reopen = document.querySelector<HTMLButtonElement>('[data-reopen-profile]')!;
-  const shortcut = document.querySelector<HTMLElement>('[data-preview-shortcut]')!;
+  const panelType = panel.querySelector<HTMLLabelElement>('.panel-type')!;
+  const panelTypeSelect = panelType.querySelector<HTMLSelectElement>('select')!;
+  const panelLegend = document.querySelector<HTMLElement>('[data-panel-legend]')!;
   const documents = new Map<string, Promise<string>>();
   const initialProfile = content.querySelector<HTMLElement>('.profile');
   if (initialProfile) documents.set(initialProfile.dataset.code!, Promise.resolve(initialProfile.outerHTML));
@@ -33,57 +39,80 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let shownIndicator = '';
   let initialAnchor = location.hash.slice(1);
   let returnFocus: HTMLElement = input;
+  const root = document.documentElement;
+  // What the floating controls and the sheet are placed against. The open sheet keeps the collapsed height, so nothing moves behind it.
+  const syncSheetMetrics = () => {
+    root.style.setProperty('--notice-height', `${document.querySelector('.construction-notice')!.getBoundingClientRect().height}px`);
+    if (panel.hidden) root.style.setProperty('--sheet-height', '0px');
+    else if (isSheet() && panel.hasAttribute('data-collapsed')) root.style.setProperty('--sheet-height', `${panel.getBoundingClientRect().height}px`);
+  };
+  const metrics = new ResizeObserver(syncSheetMetrics);
+  metrics.observe(panel);
+  metrics.observe(document.querySelector('.construction-notice')!);
   const restoreFocus = () => {
     // On a phone the closed search leaves only its icon in place.
     const target = [returnFocus, input, document.querySelector<HTMLElement>('.search-toggle')].find(element => element?.getClientRects().length);
     target?.focus({ preventScroll: true });
   };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
+  // The state is framed above the collapsed sheet: under an open one, it waits for the sheet to come down.
+  let frameOnCollapse = false;
+  const frame = (code: string) => {
+    frameOnCollapse = isSheet() && !panel.hasAttribute('data-collapsed');
+    if (!frameOnCollapse) map.focus(code);
+  };
   const expand = (expanded: boolean) => {
     panel.toggleAttribute('data-collapsed', !expanded);
     toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.textContent = expanded ? 'Recolher consulta' : 'Expandir consulta';
-  };
-  const open = () => {
-    panel.hidden = false;
-    reopen.hidden = true;
-    heading.focus({ preventScroll: true });
-    panel.scrollIntoView({ block: 'nearest' });
+    toggle.setAttribute('aria-label', expanded ? 'Recolher Meu município' : 'Expandir Meu município');
+    if (!expanded) panel.scrollTop = 0;
+    syncSheetMetrics();
+    if (!expanded && frameOnCollapse && selected) frame(selected.code);
   };
   toggle.onclick = () => expand(toggle.getAttribute('aria-expanded') !== 'true');
-  collapse.onclick = () => {
-    panel.hidden = true;
-    reopen.hidden = false;
-    restoreFocus();
+  // The whole collapsed sheet opens it; what is inside keeps its own action.
+  panel.addEventListener('click', event => {
+    if (!isSheet() || !panel.hasAttribute('data-collapsed') || !(event.target instanceof Element) || event.target.closest('button, a, select')) return;
+    expand(true);
+  });
+  const prepareAxes = () => {
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
+      axis.name = 'profile-axis';
+      const title = axis.querySelector<HTMLElement>(':scope > summary')!;
+      let touched = false;
+      title.addEventListener('click', () => { touched = true; });
+      // Closing the Eixo above moves this one: keep the title that was just activated in view.
+      axis.addEventListener('toggle', () => { if (axis.open && touched) title.scrollIntoView({ block: 'nearest' }); touched = false; });
+    }
   };
-  reopen.onclick = open;
-  shortcut.addEventListener('click', event => { event.preventDefault(); open(); });
+  let frameOnRender = false;
   const render = ({ html, profile }: { html: string; profile: UfProfile }) => {
     if (!selected) return;
-    const indicators = { within_60_days: profile.indicators.within_60_days, mammography: profile.indicators.mammography, cytopathology: profile.indicators.cytopathology, hpv: profile.indicators.hpv, mortality: profile.indicators.mortality };
-    const data = indicators[state.indicator as keyof typeof indicators]?.[state.cancerType];
-    const entry = data?.municipalities[selected.code];
-    summary.textContent = data && entry
-      ? 'Consulta pronta: quatro Eixos com resultados, ressalvas e Ações.'
-      : 'Os dados deste indicador não estão disponíveis. Expanda para consultar os demais Eixos e Ações.';
-    if (!selected) return;
+    const region = listing.immediate_regions[selected.immediate_region];
+    const result = panelResult(selected, profile, state, region);
+    renderResult(resultBlock, result);
+    panelType.hidden = false;
+    panelTypeSelect.value = state.cancerType;
+    panelLegend.dataset.reading = state.mode;
     if (shownCode !== selected.code || !content.querySelector('.profile')) {
       const document = new DOMParser().parseFromString(html, 'text/html');
       const profile = document.querySelector<HTMLElement>('.profile');
       if (!profile) throw new Error('Municipal profile is missing');
-      profile.querySelector('[data-close-profile]')?.parentElement?.remove();
-      profile.querySelector('[data-profile-heading]')?.remove();
+      // The select above replaces the links, and only one Eixo opens at a time, by its title.
+      profile.querySelector('.profile-types')?.remove();
       profile.querySelector('.profile-axes')?.remove();
       content.replaceChildren(profile);
+      prepareAxes();
       shownCode = selected.code;
       shownIndicator = '';
     }
-    for (const link of content.querySelectorAll<HTMLAnchorElement>('[data-profile-type]')) link.href = `${municipalityPath(selected)}?tipo=${link.dataset.profileType}#tipo-${link.dataset.profileType}`;
     for (const section of content.querySelectorAll<HTMLElement>('[data-cancer-type]')) section.hidden = section.dataset.cancerType !== state.cancerType;
-    for (const link of content.querySelectorAll<HTMLElement>('[data-profile-type]')) {
-      if (link.dataset.profileType === state.cancerType) link.setAttribute('aria-current', 'true');
-      else link.removeAttribute('aria-current');
-    }
+    // The number appears once: the block above already says what this card would open with.
+    for (const card of content.querySelectorAll<HTMLElement>('[data-indicator]')) card.toggleAttribute('data-in-result', card.dataset.indicator === state.indicator);
+    const note = content.querySelector<HTMLElement>('.all-cancers-note');
+    if (note) note.hidden = state.cancerType !== 'all';
+    const lines = axisResults(selected, profile, state);
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) renderAxisResults(axis, lines[axis.id] ?? []);
     if (shownIndicator !== state.indicator) {
       const axisId = ['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor)
         ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
@@ -91,6 +120,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       shownIndicator = state.indicator;
       initialAnchor = '';
     }
+    status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
+    // The sheet of a new selection has its final height only now, and the state must be framed above it.
+    if (frameOnRender) { frameOnRender = false; if (isSheet()) frame(selected.code); }
   };
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
@@ -100,18 +132,20 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       const changed = selected?.code !== place.code;
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
-      shortcut.hidden = false;
-      for (const button of [toggle, collapse, clear, panel.querySelector<HTMLButtonElement>('[data-panel-legend]')!]) button.hidden = false;
+      for (const button of [toggle, clear, panelLegend]) button.hidden = false;
       if (changed) {
         panel.hidden = false;
-        reopen.hidden = true;
-        summary.textContent = 'Carregando a consulta municipal…';
+        resultBlock.removeAttribute('data-kind');
+        resultBlock.textContent = 'Carregando o resultado…';
+        panelType.hidden = true;
         content.replaceChildren();
         shownCode = '';
-        expand(!matchMedia('(max-width: 767px)').matches);
+        frameOnCollapse = false;
+        frameOnRender = true;
+        expand(!isSheet());
       }
-      map.focus(place.code);
-      status.textContent = `${place.name} (${place.uf}) selecionado. Consulta disponível após os controles.`;
+      frame(place.code);
+      status.textContent = `${place.name} (${place.uf}) selecionado.`;
     },
     load: async place => {
       let profile = profiles.get(place.uf);
@@ -139,27 +173,27 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       const [data, html] = await Promise.all([profile, document]);
       return { html, profile: data };
     },
-    show: result => {
-      render(result);
-      status.textContent = `${selected!.name} (${selected!.uf}): consulta municipal atualizada.`;
-    },
+    show: render,
     clear: () => {
       panel.hidden = true;
-      shortcut.hidden = true;
-      reopen.hidden = true;
+      panelLegend.hidden = true;
       selected = undefined;
       content.replaceChildren();
       shownCode = '';
-      summary.textContent = '';
+      resultBlock.replaceChildren();
       status.textContent = '';
+      syncSheetMetrics();
       map.focus(undefined);
     },
   });
   const failed = (error: unknown) => {
     console.error(error);
     content.replaceChildren();
-    summary.textContent = '';
+    resultBlock.replaceChildren();
+    panelType.hidden = true;
     shownCode = '';
+    // What can be done about it is inside: a collapsed sheet would hide the retry button.
+    expand(true);
     status.textContent = 'Não foi possível carregar a consulta municipal. Isso não significa dado insuficiente.';
     const note = document.createElement('p');
     note.textContent = status.textContent;
@@ -170,19 +204,25 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     content.append(note, retry);
   };
   clear.onclick = () => { navigation.close(); restoreFocus(); };
-  content.addEventListener('click', event => {
-    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-profile-type]') : null;
-    if (!link || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey || (event as MouseEvent).altKey) return;
-    event.preventDefault();
+  panelTypeSelect.addEventListener('change', () => {
     const selector = document.querySelector<HTMLSelectElement>('#cancer-type')!;
-    selector.value = link.dataset.profileType!;
+    selector.value = panelTypeSelect.value;
     selector.dispatchEvent(new Event('change'));
   });
-  const select = (place: MunicipalityListing['municipalities'][number]) => {
-    returnFocus = input;
-    input.focus({ preventScroll: true });
-    results.replaceChildren();
+  // A link to an Eixo inside a card opens it: browsers only reveal closed details around a target, not the target itself.
+  content.addEventListener('click', event => {
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
+    if (!link || link.pathname !== location.pathname) return;
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) if (`#${axis.id}` === link.hash) axis.open = true;
+  });
+  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input) => {
+    returnFocus = focusAfterwards;
     void navigation.select(place).catch(failed);
+  };
+  const selectFromSearch = (place: MunicipalityListing['municipalities'][number]) => {
+    results.replaceChildren();
+    select(place);
+    heading.focus();
   };
   input.disabled = false;
   input.addEventListener('input', () => {
@@ -199,7 +239,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = `${place.name} (${place.uf})`;
-      button.addEventListener('click', () => select(place));
+      button.addEventListener('click', () => selectFromSearch(place));
       const link = document.createElement('a');
       link.textContent = `Abrir consulta: ${place.name} (${place.uf})`;
       link.href = municipalityPath(place);
@@ -227,17 +267,21 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const place = listing.municipalities.find(place => municipalityPath(place) === new URL(link.href).pathname);
     if (!place) return;
     event.preventDefault();
-    returnFocus = link;
-    void navigation.select(place).catch(failed);
+    select(place, link);
+    if (isSheet()) panel.scrollTop = 0;
   });
   window.addEventListener('municipality-map-select', event => {
     const code = (event as CustomEvent<string>).detail;
     const place = listing.municipalities.find(place => place.code === code);
-    if (place) select(place);
+    if (!place) return;
+    select(place);
+    // In flow the panel is further down the page; on a sheet or beside the map it is already in view.
+    if (!isSheet() && matchMedia('(max-width: 767px)').matches) panel.scrollIntoView({ block: 'start' });
   });
   return (nextLayer: IndicatorLayer | undefined, nextState: MapState) => {
     void nextLayer;
     state = nextState;
+    panelLegend.dataset.reading = state.mode;
     void Promise.resolve(navigation.restore()).catch(failed);
   };
 }

@@ -61,6 +61,8 @@ const BORDER_LAYER = "municipality-border";
 const DOTS_IMAGE = "insufficient-dots";
 const HATCH_LAYER = "municipality-quality-c";
 const HATCH_IMAGE = "quality-c-hatch";
+const SELECTED_LAYER = "municipality-selected";
+const SELECTED_CASING_LAYER = "municipality-selected-casing";
 
 /** The value of a `var(--token)` of the theme now in force; WebGL and canvas cannot read tokens. */
 function themeColor(value: string): string {
@@ -185,12 +187,16 @@ export async function mountMunicipalityMap(
     },
   });
 
-  map.addLayer({ id: "municipality-selected", type: "line", source: SOURCE_ID,
+  // An outer border in the color of the surface keeps the outline apart from any fill and from what floats over it.
+  map.addLayer({ id: SELECTED_CASING_LAYER, type: "line", source: SOURCE_ID,
+    filter: codeFilter([]), paint: { "line-color": themeColor("var(--surface)"), "line-width": 6 } });
+  map.addLayer({ id: SELECTED_LAYER, type: "line", source: SOURCE_ID,
     filter: codeFilter([]), paint: { "line-color": themeColor("var(--selection)"), "line-width": 3 } });
   const syncTheme = () => {
     map.setPaintProperty('background', 'background-color', themeColor('var(--mesh)'));
     map.setPaintProperty(BORDER_LAYER, 'line-color', themeColor('var(--mesh-border)'));
-    for (const layer of ['municipality-hover', 'municipality-selected']) {
+    map.setPaintProperty(SELECTED_CASING_LAYER, 'line-color', themeColor('var(--surface)'));
+    for (const layer of ['municipality-hover', SELECTED_LAYER]) {
       map.setPaintProperty(layer, 'line-color', themeColor('var(--selection)'));
     }
   };
@@ -407,11 +413,11 @@ function highlightOnHover(map: MapLibreMap): void {
 
 
 /** What covers part of the map and so should stay off the framed state. */
-export interface MapOverlays { legend: HTMLElement | null; note: HTMLElement | null; controls: HTMLElement | null }
+export interface MapOverlays { legend: HTMLElement | null; note: HTMLElement | null; controls: HTMLElement | null; floor?: (HTMLElement | null)[] }
 
 /** Fit `bounds` clear of the overlays, on the side that costs the least zoom. */
-function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, note, controls }: MapOverlays, margin = FOCUS_MARGIN): void {
-  const paddings = framingPaddings(map.getContainer().getBoundingClientRect(), { legend: legend?.getBoundingClientRect(), note: note?.getBoundingClientRect(), controls: controls?.getBoundingClientRect() }, margin);
+function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, note, controls, floor = [] }: MapOverlays, margin = FOCUS_MARGIN): void {
+  const paddings = framingPaddings(map.getContainer().getBoundingClientRect(), { legend: legend?.getBoundingClientRect(), note: note?.getBoundingClientRect(), controls: controls?.getBoundingClientRect(), floor: floor.map(element => element?.getBoundingClientRect()) }, margin);
   let padding: Padding | number = margin; // A map too small to spare their area still shows the state, under them.
   let zoom = -Infinity;
   for (const candidate of paddings) {
@@ -423,7 +429,8 @@ function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, no
 
 /** On a phone, frame the country clear of what floats over the map. Larger screens keep the constructor's fit. */
 export function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
-  if (isPhone()) fitClearOfOverlays(map, LngLatBounds.convert(PHONE_BRAZIL_BOUNDS), overlays, PHONE_COUNTRY_MARGIN);
+  // No municipality is selected here: the buttons that stay at the bottom never kept the country from growing.
+  if (isPhone()) fitClearOfOverlays(map, LngLatBounds.convert(PHONE_BRAZIL_BOUNDS), { ...overlays, floor: [] }, PHONE_COUNTRY_MARGIN);
 }
 
 /** Fit the complete state, using the same mesh that paints the map. */
@@ -441,11 +448,11 @@ export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapO
   }
   map.resize();
   if (!bounds.isEmpty() && map.getContainer().clientWidth) fitClearOfOverlays(map, bounds, overlays);
-  map.setFilter('municipality-selected', codeFilter([code]));
+  for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter([code]));
 }
 
 export function clearMunicipality(map: MapLibreMap): void {
-  map.setFilter('municipality-selected', codeFilter([]));
+  for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter([]));
   map.resize();
 }
 
