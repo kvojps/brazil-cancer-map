@@ -11,6 +11,8 @@ __pycache__/
 .pytest_cache/
 
 # Site
+/.astro/
+/node_modules/
 site/node_modules/
 site/dist/
 site/.astro/
