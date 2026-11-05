@@ -219,7 +219,16 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 </ul>
 <p>Os arquivos refletem a publicação atual. Indicadores com carga ainda pendente não são apresentados como downloads disponíveis.</p>
 </details>
-<p>Os agregados completos em Parquet e CSV e seus downloads versionados ainda dependem da publicação de dados abertos. Não há Release de dados indicada nesta página.</p>
+<h3>Download completo em CSV e Parquet</h3>
+<p><a href="https://github.com/kvojps/brazil-cancer-map/releases/latest">Baixar a versão atual dos dados abertos</a> ou consultar o <a href="https://github.com/kvojps/brazil-cancer-map/releases">histórico de versões</a>. As versões de dados usam o prefixo <code>data-</code>. Em cada versão, escolha CSV ou Parquet e baixe todas as tabelas do formato escolhido, inclusive <code>contract</code>, para reconstruir os JSON do site.</p>
+<p>As tabelas incluem as séries completas publicadas, os resultados dos indicadores e a origem dos dados. Cada arquivo registra fonte, período, condições de reutilização e orientação de citação. Os dados de terceiros seguem as condições de cada fonte; a licença AGPL do código não se aplica a eles. Ao citar o Observatório, cite também as fontes originais.</p>
+<ul>
+<li>DATASUS/Ministério da Saúde (Painel-Oncologia, SISCAN, SIM e CNES): dados públicos com citação da fonte, do período e da extração; consulte as notas técnicas nas seções acima.</li>
+<li>SI-PNI/RNDS, TabNet e Vigitel: dados públicos do Ministério da Saúde, com citação da fonte e dos recortes utilizados.</li>
+<li>INCA: dados públicos da Estimativa, com citação do INCA e da edição.</li>
+<li>IBGE e MS/SVS: cite a fonte e a edição da malha, do Censo ou da população utilizada.</li>
+</ul>
+<p>Consulte também as condições específicas registradas em cada arquivo. Para reconstrução sem baixar as fontes nem recalcular os indicadores, veja as instruções de dados abertos no <a href="https://github.com/kvojps/brazil-cancer-map#dados-abertos">README do projeto</a>.</p>
 </section>
 <section id="versoes-e-reproducao">
 <h2><span class="section-number">10</span> Versões e reprodução</h2>

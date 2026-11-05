@@ -2,9 +2,13 @@
 
 import argparse
 import sys
+import subprocess
+from pathlib import Path
 from collections.abc import Sequence
 
 from pipeline.source import STEPS, Source
+from pipeline.paths import REPO_DIR, SITE_DATA_DIR
+from pipeline.release import export_release, publish_release, restore_release
 
 STEP_ORDER = " → ".join(STEPS)
 
@@ -22,7 +26,30 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
     run.add_argument("--step", choices=list(STEPS), help="run only this step")
     run.add_argument("--list", action="store_true", help="show steps and sources without running")
     run.add_argument("--year", type=int, help="partition HPV download/clean by year")
+    for command in ('export-release', 'release'):
+        release = sub.add_parser(command, help='export open data' if command == 'export-release' else 'export and publish a data Release')
+        release.add_argument('--data-dir', type=Path, default=SITE_DATA_DIR)
+        release.add_argument('--output', type=Path, default=REPO_DIR / 'data' / 'release')
+        if command == 'release':
+            release.add_argument('version', help='version tag beginning with data-')
+            release.add_argument('--repository', default='kvojps/brazil-cancer-map')
+    restore = sub.add_parser('restore-release', help='rebuild site JSON from downloaded open data')
+    restore.add_argument('--assets', type=Path, required=True)
+    restore.add_argument('--output', type=Path, default=SITE_DATA_DIR)
+    restore.add_argument('--format', choices=('csv', 'parquet'), default='parquet')
     args = parser.parse_args(argv)
+    if args.command != 'run':
+        try:
+            if args.command == 'restore-release':
+                restore_release(args.assets, args.output, format=args.format)
+            else:
+                assets = export_release(args.data_dir, args.output)
+                if args.command == 'release':
+                    publish_release(assets, args.version, repository=args.repository)
+            return 0
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            print(f'{args.command} failed: {error}', file=sys.stderr)
+            return 1
     if args.year is not None:
         if args.source != 'hpv' or args.step not in ('download', 'clean') or not 2020 <= args.year <= 2100:
             parser.error('--year requires --source hpv and --step download or clean')

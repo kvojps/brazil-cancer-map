@@ -161,3 +161,59 @@ incluir total e ambos os sexos, em municípios com dado próprio. O arquivo não
 é fornecido com valores inventados: sua ausência ou qualquer divergência além
 da tolerância impede `validate` e `export`. As referências reais de Recife, Brasileia e Jundiaí/2025 estão versionadas;
 a validação é executada novamente antes de cada exportação.
+
+## Dados abertos
+
+Depois de exportar os JSON das fontes validadas, exporte o contrato completo:
+
+```bash
+uv run python -m pipeline export-release
+```
+
+A etapa gera `data/release/<indicador>.csv` e `.parquet`, com todos os
+recortes, séries, resultados e metadados publicados, mais `contract` com o
+manifesto, o índice municipal, a malha e os demais dados auxiliares.
+Não depende dos insumos locais em `data/raw/` ou `data/clean/`.
+`--data-dir` e `--output` permitem escolher a origem e o destino.
+
+As colunas são `file` (caminho relativo do JSON), `path` (lista JSON de
+chaves), `value` (registro, lista ou escalar JSON), `source`, `period`,
+`conditions` e `citation`. Os metadados de cada fonte e período aparecem na
+primeira linha correspondente de cada tabela; as linhas seguintes deixam essas
+colunas vazias para evitar duplicação. Chaves preservam códigos IBGE como texto;
+valores preservam números, booleanos, nulos e listas vazias. Os registros
+mantêm as estruturas do contrato para evitar perda de precisão e de
+metadados; o CSV usa UTF-8 e cabeçalho. Parquet tem as mesmas colunas de
+texto, com compressão Zstandard. Não há nova conta estatística na exportação.
+
+Para publicar, com o GitHub CLI instalado e autenticado com permissão de
+escrita no repositório:
+
+```bash
+uv run python -m pipeline release data-2026-11-05
+```
+
+Esse comando exporta os arquivos e cria uma Release com todos os assets,
+marcada como a mais recente. A versão deve começar com `data-` e ser nova;
+versões existentes não são sobrescritas. Cada asset deve ter menos de 2 GiB;
+se algum atingir o limite, nada é enviado. O estado incremental HPV continua
+na Release própria `hpv-state`, que não deve ser marcada como mais recente.
+Use `--repository owner/repo` para outro repositório.
+
+[Download atual](https://github.com/kvojps/brazil-cancer-map/releases/latest).
+Os arquivos ficam disponíveis depois da primeira publicação pelo mantenedor.
+Cada arquivo identifica fonte, período e condições. Dados de terceiros não
+recebem a licença do código; cite o Observatório **e as fontes originais**.
+A [metodologia](https://github.com/kvojps/brazil-cancer-map/blob/main/site/src/pages/metodologia.astro)
+reúne as condições e limitações por fonte.
+
+Para reconstruir os JSON, baixe **todos** os arquivos `.parquet` da mesma
+versão, inclusive `contract.parquet`, em uma pasta vazia:
+
+```bash
+uv run python -m pipeline restore-release --assets /tmp/release --output /tmp/dados
+```
+
+Também é possível usar só os CSV, com `--format csv`. O resultado é o mesmo
+contrato JSON, sem baixar fontes nem executar as etapas estatísticas. Depois
+de conferir a versão, use `--output site/public/dados` e `npm run build --prefix site`.
