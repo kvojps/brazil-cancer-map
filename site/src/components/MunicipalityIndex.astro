@@ -5,7 +5,8 @@ const collator = new Intl.Collator('pt-BR');
 const states = [...new Set(listing.municipalities.map(place => place.uf))].sort();
 ---
 <details class="municipality-index">
-  <summary id="municipality-index-heading">Consultar municípios por UF</summary>
+  <summary>Consultar municípios por UF</summary>
+  <h2 id="municipality-index-heading">Municípios por UF</h2>
   <p>Acesse Meu município mesmo sem mapa ou JavaScript.</p>
   <nav aria-label="Ir para uma UF">
     {states.map(uf => <a href={`#municipalities-${uf}`}>{uf}</a>)}

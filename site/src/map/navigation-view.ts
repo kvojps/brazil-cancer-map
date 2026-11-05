@@ -2,12 +2,11 @@ import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer
 import { readMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
-import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
+import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities } from './navigation';
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
-  const initialPlace = listing.municipalities.find(place => municipalityPath(place) === initialUrl.pathname)
-    ?? listing.municipalities.find(place => place.code === initialUrl.searchParams.get('municipio'));
+  const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
   initialUrl.searchParams.delete('municipio');
   if (initialPlace) initialUrl.pathname = municipalityPath(initialPlace);
   history.replaceState(null, '', initialUrl);
@@ -85,7 +84,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       else link.removeAttribute('aria-current');
     }
     if (shownIndicator !== state.indicator) {
-      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === (['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor) ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator));
+      const axisId = ['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor)
+        ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
+      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
       shownIndicator = state.indicator;
       initialAnchor = '';
     }
