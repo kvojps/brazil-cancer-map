@@ -25,6 +25,7 @@ O redesenho visual do site implementado e verificado na `main`, sem deploy: Mapa
 - [Quais padrões visuais concretos fazem um painel de dados parecer sóbrio e preciso?](issues/01-referencias-visuais.md): seis referências sustentam hipóteses por protótipo, com mapa ocupando a altura no celular, escala tipográfica curta e três fontes candidatas; a aprovação visual segue com o responsável.
 - [Como deve ser a primeira tela do site no celular?](issues/02-celular-cabecalho-filtros-mapa.md): mapa inteiro sob o aviso em faixa invertida, com cabeçalho, Filtros, legenda e Mapa/Lista flutuando; a tela do mapa não rola, e ficam pendências para a implementação.
 - [Quais fundamentos visuais expressam "sóbrio e preciso" nos dois temas?](issues/03-fundamentos-visuais.md): Inter, neutros sem matiz, controles preenchidos, marca da silhueta e novos tons do mapa, com regras próprias de cor no tema escuro.
+- [Como o painel Meu município deve apresentar o resultado primeiro?](issues/04-painel-meu-municipio.md): folha com o resultado no topo, botão Legenda e resultado nos Eixos fechados, um controle para recolher e ✕ para limpar; telas baixas e zoom de 200% seguem pendentes.
 
 ## Not yet specified
 
