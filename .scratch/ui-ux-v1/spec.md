@@ -12,7 +12,7 @@ O [handoff aprovado](observability-handoff.md) consolida escopo, evidência e li
 
 O Mapa inicial é um dashboard com Brasil inteiro, mapa dominante e cabeçalho compacto. Abre em tratamento em até 60 dias × Todos os cânceres × Tendência, sem município selecionado e sem painel vazio. Mantém o recorte quimio/radio e não acrescenta cartões numéricos nacionais nem apresentação longa.
 
-A identidade combina o nome Observatório do Câncer no Brasil e símbolo simples. Navegação principal: “Mapa” e “Como calculamos”. A busca municipal integra a barra horizontal de controles, com filtros agrupados e “Explorar em lista” como botão secundário com ícone, próximo à busca. Tema em um único controle com nome acessível: lua no modo claro para ativar o escuro e sol no escuro para ativar o claro. Claro e escuro compartilham tipografia precisa, superfícies definidas, controles compactos e acentos luminosos discretos; cores semânticas permanecem intactas.
+A identidade combina o nome Observatório do Câncer no Brasil e símbolo simples. Navegação principal: “Mapa”, “Municípios por UF” e “Como calculamos”. A busca municipal integra a barra horizontal de controles, com filtros agrupados e “Explorar em lista” como botão secundário com ícone, próximo à busca. Tema em um único controle com nome acessível: lua no modo claro para ativar o escuro e sol no escuro para ativar o claro. Claro e escuro compartilham tipografia precisa, superfícies definidas, controles compactos e acentos luminosos discretos; cores semânticas permanecem intactas.
 
 Selecionar um município no mapa, na busca, na lista ou por link direto abre Meu município no próprio dashboard, sem etapa de prévia nem navegação a uma ficha separada. No desktop, painel lateral com nome/UF e quatro Eixos expansíveis, inicialmente aberto no Eixo do indicador do mapa. A ordem mantém Acesso ao tratamento primeiro e Onde se tratar junto dele. Indicador e modo restringem o mapa, não os quatro Eixos; Tipo de câncer restringe o conteúdo pertinente.
 
@@ -66,7 +66,7 @@ Nenhuma ampliação estatística do contrato foi identificada como necessária. 
 
 Busca e lista inicializam independentemente do mapa/WebGL, com carregamento, falha e nova tentativa próprios. A lista mantém valores, classes, períodos, origens e avisos do estado indicador × Tipo × modo. A falha cartográfica mantém busca e consulta utilizáveis.
 
-Sem JavaScript, a alternativa textual continua no HTML do dashboard: índice por UF em expansão sob demanda e links nativos para documentos com seleção municipal já renderizada, seus quatro Eixos, Ações, ressalvas, fontes e Tipos. Query string sozinha não seleciona conteúdo num servidor estático; usar caminhos pré-gerados ou blocos/âncoras presentes no documento.
+Sem JavaScript, o dashboard oferece link nativo para `/municipios/`, página própria com índice por UF em expansão sob demanda e links nativos para documentos com seleção municipal já renderizada, seus quatro Eixos, Ações, ressalvas, fontes e Tipos. Query string sozinha não seleciona conteúdo num servidor estático; usar caminhos pré-gerados ou blocos/âncoras presentes no documento.
 
 As rotas antigas `/municipio/<slug>/` devem entregar o dashboard com seleção equivalente, sem ficha com navegação própria. A solução proposta é reutilizar essas rotas como documentos selecionados do dashboard, reduzindo migração; se a implementação optar por nova rota canônica, usar redirects HTTP da hospedagem, preservando parâmetros e âncoras compatíveis, ou entregar o mesmo HTML do dashboard na rota antiga. Redirecionamento apenas por JavaScript não atende. A convenção técnica final e seu custo devem ser registrados no ticket 38 antes de concluir a mudança.
 
@@ -95,3 +95,9 @@ As rotas antigas `/municipio/<slug>/` devem entregar o dashboard com seleção e
 A consulta completa passa a integrar o dashboard e substitui a prévia seguida de ficha própria. O painel vazio inicial desaparece; o painel móvel é inferior e expansível. A lista ocupa a área do mapa, e o índice estático fica sob demanda. A direção A substitui C e a direção editorial rejeitada. A Metodologia permanece uma página de leitura e as rotas antigas mantêm acesso funcional sem JavaScript.
 
 Nenhuma mudança de método, indicadores, recortes, Referência, classes, cascata ou contrato estatístico foi aprovada. Os exemplos do protótipo não substituem textos clínicos nem resultados publicados.
+
+### Revisão da consulta por UF — 2026-11-05
+
+Aprovada a transferência do índice para `/municipios/`, com apresentação por UF, nome completo e quantidade de municípios. A inicial e os documentos municipais mantêm acesso por link nativo; a consulta continua funcionando sem JavaScript. Substitui a exigência anterior de incluir o índice completo no HTML da inicial, reduzindo seu volume e a interferência na área do mapa.
+
+O acesso à consulta por UF fica na navegação principal, entre “Mapa” e “Como calculamos”, sem link adicional abaixo do mapa (posição aprovada em 2026-11-05).

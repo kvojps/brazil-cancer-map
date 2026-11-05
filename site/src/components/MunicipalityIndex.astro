@@ -3,23 +3,36 @@ import listing from '../../public/dados/municipalities.json';
 import { municipalityPath } from '../profile/profile';
 const collator = new Intl.Collator('pt-BR');
 const states = [...new Set(listing.municipalities.map(place => place.uf))].sort();
+const names: Record<string, string> = {
+  AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará',
+  DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão',
+  MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará',
+  PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro',
+  RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima',
+  SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins',
+};
 ---
-<details class="municipality-index">
-  <summary>Consultar municípios por UF</summary>
-  <h2 id="municipality-index-heading">Municípios por UF</h2>
-  <p>Acesse Meu município mesmo sem mapa ou JavaScript.</p>
-  <nav aria-label="Ir para uma UF">
-    {states.map(uf => <a href={`#municipalities-${uf}`}>{uf}</a>)}
-  </nav>
-  {states.map(uf => <details id={`municipalities-${uf}`}>
-    <summary>{uf}</summary>
-    <ul>{listing.municipalities.filter(place => place.uf === uf).sort((a, b) => collator.compare(a.name, b.name)).map(place => <li><a href={municipalityPath(place)}>{place.name}</a></li>)}</ul>
-  </details>)}
-</details>
+<div class="municipality-index">
+  {states.map(uf => {
+    const places = listing.municipalities.filter(place => place.uf === uf).sort((a, b) => collator.compare(a.name, b.name));
+    return <details id={`municipalities-${uf}`}>
+      <summary><span class="state-code">{uf}</span><span class="state-name">{names[uf] ?? uf}<small>{places.length.toLocaleString('pt-BR')} {places.length === 1 ? 'município' : 'municípios'}</small></span></summary>
+      <ul>{places.map(place => <li><a href={municipalityPath(place)}>{place.name}</a></li>)}</ul>
+    </details>;
+  })}
+</div>
 <style>
-  .municipality-index { min-width: 0; overflow-wrap: anywhere; }
-  nav { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
-  summary { cursor: pointer; padding: .5rem; font-weight: 600; }
-  ul { padding-inline-start: 1.5rem; }
-  li { padding-block: .2rem; }
+  .municipality-index { min-width: 0; display: grid; gap: .75rem; }
+  details { border: 1px solid var(--border); border-radius: .75rem; background: var(--surface); overflow-wrap: anywhere; scroll-margin-top: 1rem; }
+  summary { cursor: pointer; padding: 1rem; font-weight: 650; }
+  summary::marker { color: var(--link); }
+  .state-code { display: inline-block; padding: .35rem .5rem; margin-inline: .5rem .75rem; border-radius: .35rem; background: var(--soft); color: var(--link); vertical-align: middle; font-size: .875rem; }
+  .state-name { display: inline-block; vertical-align: middle; max-width: calc(100% - 5.5rem); }
+  small { display: block; font-size: .8rem; font-weight: 400; color: var(--muted); margin-top: .15rem; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  ul { list-style: none; padding: 1rem; margin: 0; columns: 15rem; column-gap: 2rem; }
+  li { break-inside: avoid; }
+  li a { display: block; padding: .5rem; border-radius: .25rem; }
+  li a:hover { background: var(--soft); }
+  summary:hover { background: var(--soft); border-radius: .75rem; }
 </style>

@@ -29,7 +29,7 @@ export function navigationUrl(destination: URL, current: URL): URL {
 }
 
 function isPage(path: string): boolean {
-  return path === '/' || path === '/metodologia/' || path.startsWith('/municipio/');
+  return path === '/municipios/' || path === '/' || path === '/metodologia/' || path.startsWith('/municipio/');
 }
 
 export function mountSharedNavigation(): void {

@@ -85,3 +85,15 @@ test('methodology round trip and section links preserve the selected dashboard c
     assert.equal(back.searchParams.get(key), value, key);
   }
 });
+
+test('the directory carries filters and theme without retaining a municipal selection', () => {
+  const selected = new URL('https://example.org/municipio/261160-recife/?tipo=breast&theme=dark&visualizacao=lista');
+  const directory = navigationUrl(new URL('/municipios/', selected), selected);
+  assert.equal(directory.pathname, '/municipios/');
+  assert.equal(directory.searchParams.has('municipio'), false);
+  assert.equal(directory.searchParams.get('theme'), 'dark');
+  assert.equal(directory.searchParams.get('tipo'), 'breast');
+  const municipal = navigationUrl(new URL('/municipio/260960-olinda/', directory), directory);
+  assert.equal(municipal.searchParams.get('theme'), 'dark');
+  assert.equal(municipal.searchParams.get('visualizacao'), 'lista');
+});
