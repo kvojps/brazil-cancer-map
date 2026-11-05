@@ -106,7 +106,7 @@ uv run python -m pipeline run --source hpv --step export
 Cada mês é baixado, lido diretamente do ZIP e reduzido antes do próximo;
 o ZIP é apagado só depois da extração bem-sucedida. Não se grava o CSV inteiro
 descompactado. A redução guarda a primeira dose elegível de cada pessoa no mês;
-o cálculo deduplica também entre meses e anos e acumula as diagonais de idade
+a auditoria local deduplica também entre meses e anos e acumula as diagonais de idade
 conforme a NT 16/2025. HPV quadrivalente e nonavalente entram, com ao menos uma
 dose. D1 de 2015–2019 do TabNet completa as coortes da série exibida desde 2020;
 não é uma série antiga publicada. O Censo 2022 fixo (SIDRA 9514) fornece os
@@ -117,7 +117,8 @@ O ano corrente usa os meses CSV anunciados no catálogo oficial, registrados
 em `data/clean/hpv/availability.json` com fonte e data da consulta. Execute
 `download --year <ano corrente>` antes de calcular para atualizar esse limite.
 Ausências no meio do período e erros de acesso a recursos anunciados interrompem
-a execução; não viram cobertura zero. O período exportado registra `last_month`.
+a execução; não viram cobertura zero. O período exportado registra `audit_last_month` para delimitar os microdados de auditoria;
+a extração dos agregados oficiais pode ter atualização mais recente.
 
 Os meses reduzidos e seus metadados ficam em `data/clean/hpv/months/<ano>/`;
 a chave pseudonimizada do paciente é necessária para a deduplicação longitudinal.
@@ -135,6 +136,22 @@ na máquina do mantenedor. A medição e os limites estão em
 [docs/data/hpv-benchmark.md](docs/data/hpv-benchmark.md); a investigação dos
 insumos está na [pesquisa do HPV](.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).
 
+O indicador publicado usa os numeradores qualificados das **coortes oficiais
+agregadas** do painel do Ministério. A reconstrução dos microdados fica em
+`data/clean/hpv/audit.json`: não reproduz integralmente a qualificação interna
+do PNI e não substitui o numerador oficial. O denominador dos agregados é
+conferido contra o Censo local antes de calcular coberturas e cascatas.
+
+A partição do ano corrente também baixa a tabela oficial completa, em
+`data/clean/hpv/official.json`, usando Chromium pelo Playwright. Instale o
+navegador com `uv run playwright install chromium` ou indique um executável
+existente em `CHROMIUM_PATH` (nesta máquina, `/snap/bin/chromium`). Para atualizar
+somente os agregados, preservando os extratos de auditoria já disponíveis:
+
+```sh
+uv run python -c 'from pipeline.sources.hpv import HpvSource; HpvSource().download_official()'
+```
+
 Antes de exportar HPV, registre referências de cobertura conferidas no painel
 oficial em `pipeline/references/hpv.json`: `source_url`, `extracted_at`,
 `tolerance_pp` (entre 0 e 1 ponto percentual) e `observations`, com município
@@ -142,5 +159,5 @@ oficial em `pipeline/references/hpv.json`: `source_url`, `extracted_at`,
 `M` ou `null` para o total) e cobertura percentual (`value`). A amostra deve
 incluir total e ambos os sexos, em municípios com dado próprio. O arquivo não
 é fornecido com valores inventados: sua ausência ou qualquer divergência além
-da tolerância impede `validate` e `export`. Essa conferência permanece pendente
-até a carga nacional e a extração das coberturas oficiais correspondentes.
+da tolerância impede `validate` e `export`. As referências reais de Recife, Brasileia e Jundiaí/2025 estão versionadas;
+a validação é executada novamente antes de cada exportação.

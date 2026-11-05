@@ -46,13 +46,19 @@ Fontes: [Quais dados públicos existem para cada eixo?](issues/01-dados-disponiv
 | Painel-Oncologia | % em até 60 dias; % sem informação de tratamento; faixa A/B/C | Município de residência | DBC no FTP DATASUS | Mensal, regrava todos os anos | ~0,2 GB |
 | CNES (habilitações) | Onde se tratar (CACON, UNACON, radioterapia) | Estabelecimento | DBC no FTP DATASUS | Mensal (competência M por volta do dia 15 de M+1) | ~24 MB |
 | SISCAN | Razão de mamografias e de citopatológicos | Município de residência | CSV no FTP | Anual, regrava tudo em janeiro de X+1 | 24,4 GB descompactado |
-| SI-PNI novo | Cobertura HPV | Município | CSV mensal (S3) | Mensal, regrava o ano corrente inteiro | ~215 GB zipado; ~23–28 GB por mês |
+| Painel oficial de coortes HPV (SI-PNI/RNDS e TabNet) | Cobertura HPV | Município × sexo × ano | Tabela agregada pública do InfoMS/Qlik; CSV mensal S3 para auditoria | Checagem mensal | Agregado pequeno; auditoria mensal em fluxo |
 | Vigitel | % de fumantes | Capital da UF | Microdado anual | ~20 meses após a coleta; nome do arquivo muda | pequeno |
 | SIM | Tendência da mortalidade | Município de residência | `DOBR<ano>.dbc` no FTP | Ano X final em dezembro de X+1 | ~130 MB/ano |
 | Estimativa INCA 2026–2028 | Casos novos estimados | UF e capital | Extração manual a cada edição | Trienal (próxima ~2029) | pequeno |
 | POPSVS (MS/SVS) | Denominador de taxas e razões | Município × sexo × idade simples (0–79, 80+), 2000–2025 | `POPSBR<aa>.zip` no FTP | Anual (out/nov) | ~3,4 MB/ano |
 | Censo 2022 (SIDRA 9514) | Denominador fixo do HPV | Município × sexo × idade | SIDRA | Fixo | pequeno |
 | Malha municipal IBGE 2025 | Geometria e Região imediata | Município | Shapefile | Anual (fev–abr de X+1) | — |
+
+Para o HPV, o numerador publicado é o agregado qualificado pelo próprio Ministério,
+conforme a [decisão 30](issues/30-fonte-oficial-coortes-hpv.md). Os microdados
+mensais permanecem como auditoria local; a reconstrução não substitui o agregado
+oficial. O Observatório confere o Censo e calcula cobertura total, cascata e
+Situação a partir dos numeradores e denominadores oficiais.
 
 Os endereços do FTP do DATASUS e do S3 do SI-PNI são estáveis. O portal do SI-PNI, o nome do arquivo do Vigitel e a página da Estimativa INCA mudam com frequência.
 

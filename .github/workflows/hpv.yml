@@ -54,9 +54,17 @@ jobs:
       matrix:
         year: ${{ fromJSON(needs.prepare.outputs.years) }}
     steps:
+      - name: Measure the whole job from before checkout
+        run: |
+          date +%s > /tmp/hpv-job-start
+          df -B1 --output=avail / | tail -1 > /tmp/hpv-job-initial-free
+          nohup bash -c 'while true; do date +%s; df -B1 --output=avail / | tail -1; sleep 2; done' > /tmp/hpv-job-disk.log 2>&1 &
+          echo $! > /tmp/hpv-job-monitor.pid
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
+      - name: Install Chromium for official cohorts
+        run: uv run playwright install --with-deps chromium
       - name: Restore durable reduced state
         env:
           GH_TOKEN: ${{ github.token }}
@@ -83,3 +91,31 @@ jobs:
           name: hpv-measurements-${{ matrix.year }}
           path: data/clean/hpv/months/**/*.json
           if-no-files-found: ignore
+      - name: Record total duration and disk headroom
+        if: always()
+        run: |
+          kill "$(cat /tmp/hpv-job-monitor.pid)" || true
+          python3 - <<'PYMETRICS'
+          import json, pathlib, time
+          values = pathlib.Path('/tmp/hpv-job-disk.log').read_text().splitlines()
+          free = [int(value) for value in values[1::2]]
+          initial = int(pathlib.Path('/tmp/hpv-job-initial-free').read_text())
+          metrics = {
+              'duration_seconds': int(time.time()) - int(pathlib.Path('/tmp/hpv-job-start').read_text()),
+              'initial_available_bytes': initial,
+              'minimum_available_bytes': min(free),
+              'peak_disk_growth_bytes': initial - min(free),
+              'sampling_interval_seconds': 2,
+              'scope': 'checkout, dependencies, Chromium, restore, download, reduction and state compression; final metrics upload excluded',
+          }
+          pathlib.Path('/tmp/hpv-job-metrics.json').write_text(json.dumps(metrics, indent=2))
+          print(json.dumps(metrics, indent=2))
+          PYMETRICS
+      - name: Retain whole-job measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hpv-job-metrics-${{ matrix.year }}
+          path: |
+            /tmp/hpv-job-metrics.json
+            /tmp/hpv-job-disk.log

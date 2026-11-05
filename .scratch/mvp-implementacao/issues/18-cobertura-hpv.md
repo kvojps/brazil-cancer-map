@@ -8,11 +8,11 @@
 
 - [x] O pipeline processa o SI-PNI novo um arquivo mensal por vez, em fluxo, apagando o bruto; o processamento é particionado por ano
 - [ ] A duração e o pico de disco são medidos e registrados, e fica documentado se cabem num job do GitHub Actions (14 GB, 6 h)
-- [ ] A contagem é "ao menos uma dose" em todos os anos, de 2020 ao último ano, com a mudança para dose única em 2024 marcada na série
+- [x] A contagem é "ao menos uma dose" em todos os anos, de 2020 ao último ano, com a mudança para dose única em 2024 marcada na série
 - [x] O denominador é o Censo 2022 fixo (SIDRA 9514), 9–14 anos por sexo; o mínimo e a cascata contam o denominador
 - [x] Referência 90% ("meta para 2030") para o total e para cada sexo; valores acima de 100% seguem a regra do acima do esperado
 - [x] Sem Tendência: o cartão diz "série curta, ainda sem direção"
-- [ ] No mapa, o HPV abre em "como está hoje", com uma nota no seletor explicando por quê
+- [x] No mapa, o HPV abre em "como está hoje", com uma nota no seletor explicando por quê
 - [x] O cartão mostra o detalhe por sexo ao ser aberto, a marca da dose única, a nota do Censo 2022, a menção de que a meta da OMS é para meninas e a Ação aprovada da vacinação
 - [x] A metodologia ganha a seção do HPV, com a diferença entre o Censo 2022 e o POPSVS
 
@@ -128,3 +128,37 @@ Como os ZIPs são apagados um por vez, foi comunicada uma estimativa de 1–3 GB
 Verificação do script: `bash -n download-hpv.sh` passou. Uma execução isolada em diretório temporário com `uv` simulado verificou o acompanhamento, a exibição do erro e a preservação do código de saída 7; não iniciou download real nem alterou os dados locais. Esta mudança não reexecutou as suítes Python/site, pois o cálculo e o front não foram modificados.
 
 Commits de contexto: `ea0af78`, `1cd1658` e `d1cf7c2`. O script, a exclusão dos logs pelo git e este registro entram juntos no commit `chore: add monitored HPV download script and update handoff`.
+
+
+### Decisão de fonte na retomada — 05/11/2026
+
+O mantenedor aprovou explicitamente **usar as coortes oficiais agregadas**
+publicadas pelo Ministério da Saúde como fonte do indicador, mantendo a redução
+mensal dos microdados para auditoria. Esta decisão substitui a exigência anterior
+de publicar a reconstrução local do numerador como se reproduzisse a qualificação
+interna do PNI. Preserva o método oficial por coorte e ao menos uma dose; não
+substitui a coorte por doses aplicadas no ano.
+
+Motivo: a carga manual completou 81 meses (janeiro/2020 a setembro/2026), mas
+a reconstrução longitudinal divergiu do painel em municípios e sexos distintos,
+mesmo com denominadores censitários idênticos. Foram testadas atribuição pelo
+primeiro/último município e contagem por coorte; nenhuma reproduziu os
+numeradores qualificados. A NT 16/2025 informa remoção de duplicidades e erros
+na RNDS, sem documentar integralmente como reproduzir essa qualificação a
+partir das chaves públicas. Não se altera arbitrariamente a deduplicação para
+ajustar amostras. Os agregados publicados pelo próprio PNI passam a ser a fonte.
+
+O mantenedor aprovou `c2a3d89` como base da revisão desta retomada.
+
+
+Entregas desta retomada: descoberta dos meses anunciados no catálogo (sem
+converter HTTP 403 em ausência), carga completa de 81 meses, auditoria nacional,
+coortes oficiais nacionais 2020–2026, nove referências reais, validação e
+exportação dos mapas HPV para Todos/colo, fichas das 27 UFs e manifesto.
+Verificação em Chromium sobre o build estático: seletor habilitado, normalização
+de Tendência para Situação, nota explicativa, Recife/2025 total 88,6%, meninas
+94,9%, meninos 82,7%, detalhe por sexo, dose única 2024 e nota censitária.
+
+Verificação: 163 testes Python, 87 testes do site com build estático, mypy e
+Astro check passaram. A revisão final será reconferida desde `c2a3d89`.
+A caixa de capacidade permanece aberta até a medição do job anual completo.
