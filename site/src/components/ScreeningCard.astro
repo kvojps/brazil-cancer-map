@@ -44,13 +44,13 @@ const pointY = (value: number) => 160 - 130 * value / maximum;
       {entry.trend === 'worsening' && <p>A razão de {chartLabel} diminuiu.</p>}
       <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartTitle}>
         <title id={chartTitle}>Razão anual de {chartLabel}; valores na tabela abaixo.</title>
-        <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
+        <line x1="42" x2="542" y1="160" y2="160" stroke="var(--muted)" />
         <text x="0" y="160">0</text><text x="0" y="30">{valueText(maximum)}</text>
         {series.map((point, index) => {
           const previous = series[index - 1];
           return <>
-            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="#315e90" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
-            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="#315e90" />}
+            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="var(--chart)" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
+            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="var(--chart)" />}
           </>;
         })}
         <text x="42" y="185">2016</text><text x="505" y="185">2025</text>

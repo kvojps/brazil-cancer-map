@@ -20,7 +20,8 @@ test('static cancer links reach readable cards without JavaScript', async () => 
     for (const link of await links.all()) {
       await link.click();
       const target = page.locator(new URL(page.url()).hash);
-      assert.equal(await target.isVisible(), true);
+      // The link reloads the page: wait for the new document before reading it.
+      await target.waitFor({ state: 'visible' });
       assert.match(await target.textContent(), /Conheça seus direitos/);
     }
   } finally { await page.close(); }

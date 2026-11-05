@@ -1,16 +1,17 @@
 .profile {
 
-  article { border: 1px solid var(--border); border-radius: .75rem; padding: 1.25rem; background: var(--surface); }
+  article { border-radius: var(--card-radius); padding: 1rem; background: var(--surface); }
   h3 { margin-top: 0; } h4 { margin-bottom: .5rem; }
-  .warning { border-left: 5px solid var(--muted); padding: .75rem; background: var(--soft); }
+  .warning { border-radius: var(--control-radius); padding: .75rem; background: var(--soft); }
   .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 1rem; }
-  meter { width: 100%; height: 1.5rem; accent-color: #7050a0; }
-  meter::-webkit-meter-optimum-value { background: #7050a0; }
-  meter::-moz-meter-bar { background: #7050a0; }
-  svg { display: block; width: 100%; max-width: 650px; font-size: 12px; }
-  .swatch { display: inline-block; width: 1rem; height: 1rem; border: 1px solid #4d5660; }
-  details { margin: 1rem 0; } summary { cursor: pointer; font-weight: 600; }
-  table { border-collapse: collapse; width: 100%; } th, td { padding: .4rem; text-align: left; border-bottom: 1px solid var(--border); }
+  meter { width: 100%; height: 1.5rem; accent-color: var(--status-reached); }
+  meter::-webkit-meter-optimum-value { background: var(--status-reached); }
+  meter::-moz-meter-bar { background: var(--status-reached); }
+  /* In viewBox units: renders at 12 px or more from 768 px up; the charts cannot reach it on narrow screens. */
+  svg { display: block; width: 100%; max-width: 650px; font-size: 16px; }
+  .swatch { display: inline-block; width: 1rem; height: 1rem; border: 1px solid var(--swatch-border); border-radius: 2px; }
+  details { margin: 1rem 0; } summary { cursor: pointer; }
+  table { border-collapse: collapse; width: 100%; } th, td { padding: .5rem; text-align: left; border-bottom: 1px solid var(--border); }
 
 }
 
@@ -19,15 +20,13 @@
   margin-inline: auto;
   min-width: 0;
   .profile-types, .profile-axes { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem; }
-  .profile-types a, .profile-axes a { padding: .4rem .65rem; border: 1px solid var(--border); border-radius: .4rem; background: var(--surface); }
-  .profile-types [aria-current="true"] { background: var(--soft); font-weight: 700; }
   > [data-profile-axis] { margin-block: 1rem; }
-  > [data-profile-axis] > summary { font-size: 1.2rem; }
+  > [data-profile-axis] > summary { font-size: var(--text-20); }
   [data-cancer-type] { margin-block: 1rem; scroll-margin-top: 1rem; }
   article + article { margin-top: 1rem; }
-  .treatment-locations { border: 1px solid var(--border); border-radius: .75rem; padding: 1.25rem; background: var(--surface); }
+  .treatment-locations { border-radius: var(--card-radius); padding: 1rem; background: var(--surface); }
   details { max-width: 100%; }
   details:has(> table) { overflow-x: auto; }
-  summary { padding: .3rem; }
+  summary { padding: .25rem; }
   li + li { margin-top: .5rem; }
 }

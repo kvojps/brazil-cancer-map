@@ -13,6 +13,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "check:tones": "node scripts/map-tones.mjs",
     "test:browser": "node --test browser-tests/*.test.mjs"
   },
   "dependencies": {

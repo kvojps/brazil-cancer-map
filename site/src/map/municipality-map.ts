@@ -61,26 +61,40 @@ const DOTS_IMAGE = "insufficient-dots";
 const HATCH_LAYER = "municipality-quality-c";
 const HATCH_IMAGE = "quality-c-hatch";
 
+/** The value of a `var(--token)` of the theme now in force; WebGL and canvas cannot read tokens. */
+function themeColor(value: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(value.slice(4, -1)).trim();
+}
+
 /** Fill by the `trend` feature-state; anything else (no class) is "dado insuficiente". */
-const TREND_FILL: ExpressionSpecification = [
+const trendFill = (): ExpressionSpecification => [
   "match",
   ["coalesce", ["feature-state", "trend"], "insufficient"],
   "improving",
-  TREND_COLORS.improving,
+  themeColor(TREND_COLORS.improving),
   "worsening",
-  TREND_COLORS.worsening,
+  themeColor(TREND_COLORS.worsening),
   "stable",
-  TREND_COLORS.stable,
+  themeColor(TREND_COLORS.stable),
   "no_clear_direction",
-  TREND_COLORS.no_clear_direction,
-  TREND_COLORS.insufficient,
+  themeColor(TREND_COLORS.no_clear_direction),
+  themeColor(TREND_COLORS.insufficient),
 ];
 
-const STATUS_FILL: ExpressionSpecification = [
+const statusFill = (): ExpressionSpecification => [
   "match", ["coalesce", ["feature-state", "status"], "insufficient"],
-  "reached", STATUS_COLORS.reached, "near", STATUS_COLORS.near,
-  "far", STATUS_COLORS.far, STATUS_COLORS.insufficient,
+  "reached", themeColor(STATUS_COLORS.reached), "near", themeColor(STATUS_COLORS.near),
+  "far", themeColor(STATUS_COLORS.far), themeColor(STATUS_COLORS.insufficient),
 ];
+
+/** Run `handler` whenever the theme in force changes: by the URL or by the system preference. */
+function onThemeChange(map: MapLibreMap, handler: () => void): void {
+  const observer = new MutationObserver(handler);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  const preference = matchMedia('(prefers-color-scheme: dark)');
+  preference.addEventListener('change', handler);
+  map.on('remove', () => { observer.disconnect(); preference.removeEventListener('change', handler); });
+}
 
 // MapLibre looks for its worker next to its own module, which the bundler
 // does not emit; point it at the copy Vite publishes.
@@ -106,8 +120,7 @@ export async function mountMunicipalityMap(
       version: 8,
       sources: {},
       layers: [
-        // Darker than the near-white of "dado insuficiente", so those municipalities stand out.
-        { id: "background", type: "background", paint: { "background-color": "#e6e9ed" } },
+        { id: "background", type: "background", paint: { "background-color": themeColor("var(--mesh)") } },
       ],
     },
     bounds: BRAZIL_BOUNDS,
@@ -141,14 +154,14 @@ export async function mountMunicipalityMap(
     id: FILL_LAYER,
     type: "fill",
     source: SOURCE_ID,
-    paint: { "fill-color": TREND_FILL },
+    paint: { "fill-color": trendFill() },
   });
   map.addLayer({
     id: BORDER_LAYER,
     type: "line",
     source: SOURCE_ID,
     paint: {
-      "line-color": "#ffffff",
+      "line-color": themeColor("var(--mesh-border)"),
       "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.2, 8, 1],
     },
   });
@@ -158,27 +171,21 @@ export async function mountMunicipalityMap(
     type: "line",
     source: SOURCE_ID,
     paint: {
-      "line-color": "#1f2933",
+      "line-color": themeColor("var(--selection)"),
       "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 2, 0],
     },
   });
 
   map.addLayer({ id: "municipality-selected", type: "line", source: SOURCE_ID,
-    filter: codeFilter([]), paint: { "line-color": "#142f55", "line-width": 3 } });
+    filter: codeFilter([]), paint: { "line-color": themeColor("var(--selection)"), "line-width": 3 } });
   const syncTheme = () => {
-    const colors = getComputedStyle(document.documentElement);
-    map.setPaintProperty('background', 'background-color', colors.getPropertyValue('--mesh').trim());
-    map.setPaintProperty(BORDER_LAYER, 'line-color', colors.getPropertyValue('--mesh-border').trim());
+    map.setPaintProperty('background', 'background-color', themeColor('var(--mesh)'));
+    map.setPaintProperty(BORDER_LAYER, 'line-color', themeColor('var(--mesh-border)'));
     for (const layer of ['municipality-hover', 'municipality-selected']) {
-      map.setPaintProperty(layer, 'line-color', colors.getPropertyValue('--selection').trim());
+      map.setPaintProperty(layer, 'line-color', themeColor('var(--selection)'));
     }
   };
-  syncTheme();
-  const observer = new MutationObserver(syncTheme);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  const preference = matchMedia('(prefers-color-scheme: dark)');
-  preference.addEventListener('change', syncTheme);
-  map.on('remove', () => { observer.disconnect(); preference.removeEventListener('change', syncTheme); });
+  onThemeChange(map, syncTheme);
   highlightOnHover(map);
   return map;
 }
@@ -210,9 +217,19 @@ export function mountIndicatorPaint(
   });
   map.on("mouseleave", FILL_LAYER, () => popup.remove());
 
+  // Without a layer the mesh stays neutral: no tone may suggest a class.
+  const paintFill = () => map.setPaintProperty(FILL_LAYER, "fill-color",
+    current ? (currentMode === "status" ? statusFill() : trendFill()) : themeColor("var(--soft)"));
+  onThemeChange(map, () => {
+    paintFill();
+    map.updateImage(DOTS_IMAGE, insufficientDotsImage());
+    map.updateImage(HATCH_IMAGE, qualityHatchImage());
+  });
+
   return (layer, mode = "trend") => {
     currentMode = mode;
-    map.setPaintProperty(FILL_LAYER, "fill-color", layer ? (mode === "status" ? STATUS_FILL : TREND_FILL) : getComputedStyle(document.documentElement).getPropertyValue("--mesh").trim());
+    current = layer;
+    paintFill();
     if (!layer) {
       for (const item of meshes.get(map)?.features ?? []) {
         map.removeFeatureState({ source: SOURCE_ID, id: String(item.properties?.CD_MUN) });
@@ -228,7 +245,6 @@ export function mountIndicatorPaint(
     }
     map.setFilter(DOTS_LAYER, codeFilter(insufficient));
     map.setFilter(HATCH_LAYER, codeFilter(hatched));
-    current = layer;
     popup.remove();
   };
 }
@@ -289,23 +305,28 @@ function tooltip(
   return box;
 }
 
-/**
- * Cover the "dado insuficiente" municipalities with near-white dots (spec,
- * section 11.1). `fill-pattern` cannot read feature-state, so a second layer
- * draws the pattern, filtered to the codes of the layer shown.
- */
-function addInsufficientDots(map: MapLibreMap): void {
+/** One tile of the "dado insuficiente" pattern, in the colors of the theme in force. */
+function insufficientDotsImage(): ImageData {
   const size = INSUFFICIENT_DOTS.spacing;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const context = canvas.getContext("2d")!;
-  context.fillStyle = TREND_COLORS.insufficient;
+  context.fillStyle = themeColor(TREND_COLORS.insufficient);
   context.fillRect(0, 0, size, size);
-  context.fillStyle = INSUFFICIENT_DOTS.color;
+  context.fillStyle = themeColor(INSUFFICIENT_DOTS.color);
   context.beginPath();
   context.arc(size / 2, size / 2, INSUFFICIENT_DOTS.radius, 0, 2 * Math.PI);
   context.fill();
-  map.addImage(DOTS_IMAGE, context.getImageData(0, 0, size, size));
+  return context.getImageData(0, 0, size, size);
+}
+
+/**
+ * Cover the "dado insuficiente" municipalities with dots (spec, section 11.1).
+ * `fill-pattern` cannot read feature-state, so a second layer draws the pattern,
+ * filtered to the codes of the layer shown.
+ */
+function addInsufficientDots(map: MapLibreMap): void {
+  map.addImage(DOTS_IMAGE, insufficientDotsImage());
   map.addLayer(
     {
       id: DOTS_LAYER,
@@ -319,17 +340,16 @@ function addInsufficientDots(map: MapLibreMap): void {
 }
 
 /**
- * Hatch the municipalities of the UFs in band C (spec, section 11.1), like the
- * dots: a pattern layer filtered to the codes of the layer shown. The tile is transparent between
- * the lines, so the Tendência color shows through, and its three segments join
- * across tiles into continuous diagonals.
+ * One tile of the band C hatching. It is transparent between the lines, so the
+ * trend color shows through, and its three segments join across tiles into
+ * continuous diagonals.
  */
-function addQualityHatch(map: MapLibreMap): void {
+function qualityHatchImage(): ImageData {
   const size = HATCH.spacing;
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const context = canvas.getContext("2d")!;
-  context.strokeStyle = HATCH.color;
+  context.strokeStyle = themeColor(HATCH.color);
   context.lineWidth = HATCH.width;
   context.beginPath();
   for (const offset of [-size, 0, size]) {
@@ -337,7 +357,15 @@ function addQualityHatch(map: MapLibreMap): void {
     context.lineTo(offset + size, 0);
   }
   context.stroke();
-  map.addImage(HATCH_IMAGE, context.getImageData(0, 0, size, size));
+  return context.getImageData(0, 0, size, size);
+}
+
+/**
+ * Hatch the municipalities of the UFs in band C (spec, section 11.1), like the
+ * dots: a pattern layer filtered to the codes of the layer shown.
+ */
+function addQualityHatch(map: MapLibreMap): void {
+  map.addImage(HATCH_IMAGE, qualityHatchImage());
   map.addLayer(
     {
       id: HATCH_LAYER,

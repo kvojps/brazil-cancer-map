@@ -45,3 +45,11 @@ com `?municipio=` são normalizados com JavaScript. A recarga desse caminho
 continua entregando quatro Eixos e seis Tipos sem JavaScript. O índice por UF
 fica na página `/municipios/`, com expansões nativas por UF; os testes verificam
 o acesso pelos documentos municipais, recarga, tema e navegação pelo teclado.
+
+`visual-foundations.test.mjs` verifica o contrato dos fundamentos visuais: aviso
+integral, invertido e sempre visível nas quatro páginas, tema pela preferência do
+sistema com e sem JavaScript, controles de 40 e 44 px com estado ativo invertido,
+Inter servida pelo próprio site com o `≥` e algarismos tabulares, marca da silhueta,
+foco pelo teclado e `/municipios/` sem rolagem horizontal. As distâncias de cor do
+mapa são conferidas fora do navegador, por `npm run check:tones`, que também roda em
+`npm test`. A fonte é gerada por `scripts/build-font.sh`.

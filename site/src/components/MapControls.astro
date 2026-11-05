@@ -43,7 +43,7 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     <p id="search-status" role="status"></p>
     <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
   </div>
-  <a class="list-shortcut" href="/municipios/">☷ Explorar em lista</a>
+  <a class="list-shortcut control-link" href="/municipios/">☷ Explorar em lista</a>
   <p id="indicator-caveat" class="note" role="status" hidden></p>
   <p id="map-selection-notice" class="note" role="status" hidden></p>
   <a href="#preview-heading" data-preview-shortcut hidden>Ir para Meu município</a>
@@ -63,44 +63,34 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
   .map-controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem 1rem;
-    padding: .85rem;
-    border: 1px solid var(--border);
-    border-radius: .6rem;
-    background: var(--surface);
+    gap: .75rem 1rem;
     align-items: start;
   }
   label,
   .cancer-type {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.875rem;
+    gap: .25rem;
+    font-size: var(--text-14);
+    font-weight: 500;
     flex: 1 1 10rem;
   }
   .cancer-type label {
     flex: none;
   }
-  input,
-  select {
-    font: inherit;
-    padding: 0.4rem 0.5rem;
-  }
-  select:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-  .municipality-search { flex: 1.5 1 13rem; position: relative; }
-  .municipality-search label { display: block; }
+  .municipality-search { flex: 1.5 1 13rem; position: relative; display: flex; flex-direction: column; gap: .25rem; }
+  .municipality-search label { display: block; flex: none; }
+  /* One label height across the bar, so the ⓘ beside Tipo de câncer does not push its select down. */
+  label { line-height: 1.5rem; }
   input { width: 100%; }
   #search-status:empty, #municipality-results:empty { display: none; }
-  #municipality-results { padding-left: 1.2rem; max-height: 18rem; overflow: auto; }
+  #municipality-results { padding-left: 1.25rem; max-height: 18rem; overflow: auto; }
   .cancer-type-heading { display: flex; align-items: center; gap: .25rem; }
   .cancer-type-heading label { display: block; }
-  .list-shortcut { align-self: center; font-size: .875rem; padding: .4rem; }
+  .list-shortcut { align-self: end; }
   .note {
     color: var(--muted);
-    font-size: 0.8125rem;
+    font-size: var(--text-14);
   }
   .note p {
     margin: 0;

@@ -42,13 +42,13 @@ const chartTitle = `series-${cancerType}`;
     {trend === 'worsening' && <p>A proporção de casos tratados em até 60 dias diminuiu.</p>}
     <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartTitle}>
       <title id={chartTitle}>Percentual em até 60 dias por ano. Anos provisórios tracejados; valores na tabela abaixo.</title>
-      <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
+      <line x1="42" x2="542" y1="160" y2="160" stroke="var(--muted)" />
       {[0, 50, 100].map(value => <text x="0" y={pointY(value)}>{value}%</text>)}
       {series.map((point, index) => {
         const previous = series[index - 1];
         return <>
-          {previous && point.value !== null && previous.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="#315e90" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
-          {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="#315e90" />}
+          {previous && point.value !== null && previous.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="var(--chart)" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
+          {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="var(--chart)" />}
         </>;
       })}
       <text x="42" y="185">{period.first_year}</text><text x="505" y="185">{period.last_year}</text>

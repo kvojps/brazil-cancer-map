@@ -1,5 +1,6 @@
 ---
 import "../shared/theme.css";
+import BrandMark from "../components/BrandMark.astro";
 interface Props {
   title: string;
 }
@@ -13,16 +14,20 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preload" href="/fonts/InterVariable-subset.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
     <script is:inline>
       const theme = new URLSearchParams(location.search).get('theme');
       if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
     </script>
+    <!-- The explicit theme needs JavaScript; without it the site follows the system preference. -->
+    <noscript><style>.site-header .theme-switcher { display: none; }</style></noscript>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
     <!-- Under-construction notice, not dismissible (spec, section 2; decision ticket 29).
-         Blue keeps it apart from the Tendência palette and from red. -->
+         Inverted neutrals keep it apart from the trend palette and from red. -->
     <aside class="construction-notice" aria-label="Aviso">
       <p>
         <strong>Em construção.</strong> Este site ainda está sendo desenvolvido e os números não
@@ -30,26 +35,27 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
       </p>
     </aside>
     <header class="site-header">
-      <a class="identity" href="/"><span class="identity-symbol" aria-hidden="true">◈</span> Observatório do Câncer no Brasil</a>
+      <a class="identity" href="/"><BrandMark /> Observatório do Câncer no Brasil</a>
       <nav aria-label="Navegação principal">
         <a href="/">Mapa</a>
         <a href="/municipios/" id={Astro.url.pathname === "/" || Astro.url.pathname.startsWith("/municipio/") ? "municipality-index-heading" : undefined}>Municípios por UF</a>
         <a href="/metodologia/">Como calculamos</a>
       </nav>
       <nav aria-label="Tema" class="theme-switcher">
-        <a href="?theme=dark" data-theme-toggle data-theme-choice="dark" aria-label="Usar tema escuro"><span aria-hidden="true">☾</span></a>
+        <a class="control-link" href="?theme=dark" data-theme-toggle data-theme-choice="dark" aria-label="Usar tema escuro"><span aria-hidden="true">☾</span></a>
       </nav>
     </header>
     <main id="main-content">
       <slot />
     </main>
     <footer>
-      <strong>◈ Observatório do Câncer no Brasil</strong>
+      <strong><BrandMark /> Observatório do Câncer no Brasil</strong>
       <a href="/metodologia/#dados-e-fontes">Fontes e condições de reutilização</a>
       <p>
         <a href={SOURCE_CODE_URL}>Código-fonte</a> sob a licença AGPL-3.0-or-later.
         Textos sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil.
         Os dados seguem as condições de cada fonte.
+        Fonte tipográfica Inter sob a <a href="/fonts/OFL.txt">SIL Open Font License</a>.
       </p>
     </footer>
   </body>
@@ -57,10 +63,14 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
 
 <style>
   .construction-notice {
-    background: var(--notice-bg);
-    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: .5rem 1rem;
+    font-size: var(--text-14);
+    line-height: 1.4;
     color: var(--notice-text);
-    padding: 0.5rem 1rem;
+    background: var(--notice-bg);
     overflow-wrap: break-word;
   }
   .construction-notice p {
