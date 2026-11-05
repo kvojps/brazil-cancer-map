@@ -88,3 +88,22 @@ com a sessão pública do InfoMS; salva somente agregados e filtros efetivos,
 sem cookies ou identificadores de pacientes. O denominador de cada fatia foi
 conferido contra o Censo local. Boa Esperança do Norte tem denominador oficial
 zero e continua usando a Região imediata. A [decisão 30](../../.scratch/mapa-cancer-br/issues/30-fonte-oficial-coortes-hpv.md) registra a mudança de fonte.
+
+
+## Tentativa de medição no runner — 05/11/2026
+
+O workflow instrumentado mede espaço livre no sistema de arquivos raiz a cada
+dois segundos desde antes do checkout, registrando espaço inicial, mínimo
+livre, maior crescimento de uso e duração até depois da compactação do estado.
+Inclui dependências, Chromium, restauração, download, redução e compactação;
+o upload final do pequeno artefato de métricas fica fora do cronômetro interno.
+O tempo total do job também deve ser conferido na API do GitHub.
+
+A [execução 42129117735](https://github.com/kvojps/brazil-cancer-map/actions/runs/42129117735)
+foi acionada para 2020 na branch `agent/hpv-18-benchmark`, commit
+`6b5f91e225aabfc79f6b232bf8c813e1ecdb7d0c`. O GitHub recusou iniciar o
+`prepare`, sem executar nenhuma etapa e sem atribuir runner: **“The job was not
+started because your account is locked due to a billing issue.”** A partição
+anual foi pulada. Portanto essa tentativa não produz benchmark nem comprova
+14 GB/6 h. É preciso regularizar a conta e reexecutar; a medição completa
+continua sendo a única pendência do ticket 18.

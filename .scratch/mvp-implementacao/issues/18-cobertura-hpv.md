@@ -4,7 +4,7 @@
 
 **Blocked by:** 10 — Ficha do Meu município com o cartão do 60 dias
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
 - [x] O pipeline processa o SI-PNI novo um arquivo mensal por vez, em fluxo, apagando o bruto; o processamento é particionado por ano
 - [ ] A duração e o pico de disco são medidos e registrados, e fica documentado se cabem num job do GitHub Actions (14 GB, 6 h)
@@ -173,3 +173,36 @@ Revisão `code-review`, base `c2a3d89`: Standards apontou apenas a ausência do
 commit resolutor no ticket de decisão 30, corrigida no registro; sem problemas
 de código pendentes. Spec confirmou a decisão 30 e a entrega pública dos dados,
 restando a medição anual completa no runner.
+
+
+### Única pendência externa — GitHub Actions, 05/11/2026
+
+A implementação e a publicação dos JSON no repositório estão concluídas e
+validadas. **Não resolver o ticket:** falta medir uma partição anual completa
+no runner. O status passa a `ready-for-human` porque o GitHub exige regularizar
+a conta antes de permitir qualquer execução; não falta uma decisão estatística.
+
+Tentativa concreta: [execução 42129117735](https://github.com/kvojps/brazil-cancer-map/actions/runs/42129117735),
+partição 2020, branch `agent/hpv-18-benchmark`, commit remoto de medição
+`6b5f91e225aabfc79f6b232bf8c813e1ecdb7d0c`. O job `prepare` falhou antes de
+qualquer etapa; `year` foi pulado. Anotação oficial do check
+`127601029153`: **“The job was not started because your account is locked due
+to a billing issue.”** Não há duração ou disco de execução para inferir desse
+fracasso, e não se declara o orçamento anual aprovado.
+
+O envio Git retornou primeiro erro de DNS e depois `fatal error in commit_refs`;
+a branch de medição e os seis arquivos necessários ao runner foram enviados
+pela API. Ela contém workflow, dependências e módulos de execução revisados,
+não é a publicação integral dos commits locais. O endpoint de dispatch por ID
+retornou HTTP 500; o endpoint direto pelo nome `hpv.yml` criou a execução acima.
+Não houve deploy do site nem envio dos commits locais para `main` remoto.
+
+**Próxima ação após liberar a conta:** reexecutar a medição anual instrumentada,
+baixar os artefatos `hpv-job-metrics-2020` e os metadados mensais, registrar
+duração e pico de disco completos em `docs/data/hpv-benchmark.md`; avaliar
+14 GB/6 h, mantendo a execução local onde necessário. Então marcar a única
+caixa restante e resolver o ticket com os commits. Não repetir a carga nacional
+ou a investigação da fonte: os 81 extratos, o agregado oficial e a auditoria
+estão locais; os mapas, fichas e referências reais estão commitados.
+
+Commit adicional: `a2d372f` — `docs: record HPV implementation commits and final review`.
