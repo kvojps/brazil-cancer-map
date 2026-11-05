@@ -7,6 +7,13 @@ import pytest
 from pipeline.sources.vigitel import VigitelSource
 
 
+def reference_file(tmp_path, value):
+    path = tmp_path / 'reference.json'
+    path.write_text(json.dumps({'source_url': 'https://example.org/worked-survey-example',
+                                'national_prevalence': {'2024': value}}))
+    return path
+
+
 def test_weighted_microdata_reaches_state_profiles_without_map_layer(tmp_path):
     raw = tmp_path / 'input.zip'
     import io
@@ -24,7 +31,7 @@ def test_weighted_microdata_reaches_state_profiles_without_map_layer(tmp_path):
     profiles = site / 'profiles'
     profiles.mkdir(parents=True)
     (profiles / 'PE.json').write_text(json.dumps({'uf': 'PE', 'indicators': {'existing': 7}}))
-    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=site)
+    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=site, reference_path=reference_file(tmp_path, 25))
     source.download()
     source.clean()
     source.compute()
@@ -54,7 +61,7 @@ def test_log_trend_and_status_are_published_from_microdata(tmp_path):
             for city in range(1, 28):
                 writer.writerow([year, city, 30, 1, prevalence])
                 writer.writerow([year, city, 30, 0, 1 - prevalence])
-    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=tmp_path / 'site')
+    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=tmp_path / 'site', reference_path=reference_file(tmp_path, 5.9049))
     source.clean()
     source.compute()
     source.export()
@@ -84,9 +91,25 @@ def test_published_smoking_uses_explicit_reference_cuts(tmp_path, value, status)
         for city in range(1, 28):
             writer.writerow([2024, city, 30, 1, value])
             writer.writerow([2024, city, 30, 0, 100-value])
-    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=tmp_path / 'site')
+    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=tmp_path / 'site', reference_path=reference_file(tmp_path, value))
     source.clean()
     source.compute()
     source.export()
     data = json.loads((tmp_path / 'site/profiles/PE.json').read_text())
     assert data['indicators']['smoking']['all']['status'] == status
+
+
+def test_official_reference_mismatch_blocks_publication(tmp_path):
+    raw = tmp_path / 'input.csv'
+    with raw.open('w') as file:
+        writer = csv.writer(file)
+        writer.writerow(['ano', 'cidade', 'q6', 'fumante', 'pesorake2025'])
+        for city in range(1, 28):
+            writer.writerow([2024, city, 30, 1, 25])
+            writer.writerow([2024, city, 30, 0, 75])
+    source = VigitelSource(input_path=raw, clean_dir=tmp_path / 'clean', site_data_dir=tmp_path / 'site')
+    source.clean()
+    source.compute()
+    with pytest.raises(ValueError, match='official Vigitel'):
+        source.export()
+    assert not (tmp_path / 'site/manifest.json').exists()

@@ -1,0 +1,7 @@
+{
+  "source_url": "https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/vigitel/vigitel-brasil-2006-2024.pdf",
+  "location": "Figura 31, página impressa 100; total das 27 capitais e DF",
+  "checked_at": "2026-11-05",
+  "note": "Valores publicados arredondados; a base harmonizada revisou pesos de Fortaleza e Florianópolis em agosto de 2026. Tolerância operacional relativa de 3% para acomodar o arredondamento e a revisão dos pesos.",
+  "national_prevalence": {"2019": 9.7, "2020": 9.2, "2021": 9.0, "2023": 9.2, "2024": 11.5}
+}
