@@ -12,7 +12,7 @@ O [handoff aprovado](observability-handoff.md) consolida escopo, evidência e li
 
 O Mapa inicial é um dashboard com Brasil inteiro, mapa dominante e cabeçalho compacto. Abre em tratamento em até 60 dias × Todos os cânceres × Tendência, sem município selecionado e sem painel vazio. Mantém o recorte quimio/radio e não acrescenta cartões numéricos nacionais nem apresentação longa.
 
-A identidade combina o nome Observatório do Câncer no Brasil e símbolo simples. Navegação principal: “Mapa”, “Municípios por UF” e “Como calculamos”. A busca municipal fica no cabeçalho, e a barra horizontal de controles agrupa os filtros e o alternador “Mapa | Lista” ([decisão do desktop](../ui-polimento/issues/05-desktop-tela-cheia.md)). Tema em um único controle com nome acessível: lua no modo claro para ativar o escuro e sol no escuro para ativar o claro. Claro e escuro compartilham tipografia precisa, superfícies definidas, controles compactos e acentos luminosos discretos; cores semânticas permanecem intactas.
+A identidade combina o nome Observatório do Câncer no Brasil e símbolo simples. Navegação principal: “Mapa”, “Municípios por UF” e “Como calculamos”. A busca municipal fica no cabeçalho de todas as páginas ([decisão das páginas](../ui-polimento/issues/06-lista-ufs-metodologia.md)), e a barra horizontal de controles agrupa os filtros e o alternador “Mapa | Lista” ([decisão do desktop](../ui-polimento/issues/05-desktop-tela-cheia.md)). Tema em um único controle com nome acessível: lua no modo claro para ativar o escuro e sol no escuro para ativar o claro. Claro e escuro compartilham tipografia precisa, superfícies definidas, controles compactos e acentos luminosos discretos; cores semânticas permanecem intactas.
 
 Selecionar um município no mapa, na busca, na lista ou por link direto abre Meu município no próprio dashboard, sem etapa de prévia nem navegação a uma ficha separada. No desktop, painel lateral com nome/UF e quatro Eixos expansíveis, inicialmente aberto no Eixo do indicador do mapa. A ordem mantém Acesso ao tratamento primeiro e Onde se tratar junto dele. Indicador e modo restringem o mapa, não os quatro Eixos; Tipo de câncer restringe o conteúdo pertinente.
 
@@ -22,9 +22,9 @@ Quando mapa e Meu município estiverem lado a lado, o painel deve alinhar suas b
 
 Resultado, classificação, período, origem regional, Referência quando aplicável, Ação e ressalvas essenciais ficam junto do resultado. Explicações extensas ficam em expansões. A explicação do Tipo de câncer fica no ícone ⓘ junto ao rótulo, sem resumo fixo abaixo do seletor; abre por hover, foco, clique ou toque e preserva as notas dinâmicas. Ajuda dos controles usa popover acionável por clique, toque e teclado com descrição acessível; nenhuma ressalva essencial pode depender só de hover. A legenda compacta integra o mapa com cores/texturas e explicações sob demanda, distinguindo Tendência, Situação, qualidade C e dado insuficiente.
 
-A Lista substitui o mapa na mesma área, pelo alternador “Mapa | Lista”, preservando filtros e seleção. Não há tabela ou índice por UF permanentemente abaixo do mapa. O rodapé compacto vem depois da área principal, com identidade, fontes/condições, licenças e código. O aviso integral de construção permanece em todas as páginas, conforme MVP §2.
+A Lista substitui o mapa na mesma área, pelo alternador “Mapa | Lista”, preservando filtros e seleção. Em largura estreita, cada linha mostra município, classe, Faixa C e valor, e os demais campos, inclusive a origem regional, abrem na própria linha ([decisão das páginas](../ui-polimento/issues/06-lista-ufs-metodologia.md)); no painel, a origem continua junto do resultado. Não há tabela ou índice por UF permanentemente abaixo do mapa. O rodapé compacto vem depois da área principal, com identidade, fontes/condições, licenças e código. O aviso integral de construção permanece em todas as páginas, conforme MVP §2.
 
-Metodologia mantém `/metodologia/` e suas âncoras: sumário, coluna de leitura, seções e detalhes expansíveis no mesmo sistema visual. Preservar fontes, dados, versões, condições de reutilização, citação e reprodução, sem resumir o conteúdo de produção ao texto ilustrativo do protótipo.
+Metodologia mantém `/metodologia/` e suas âncoras: sumário sempre à mão (lateral no desktop e uma linha fixa em telas estreitas), coluna de leitura, seções e detalhes expansíveis no mesmo sistema visual. Preservar fontes, dados, versões, condições de reutilização, citação e reprodução, sem resumir o conteúdo de produção ao texto ilustrativo do protótipo.
 
 ## Tema e estado
 
@@ -64,7 +64,7 @@ Nenhuma ampliação estatística do contrato foi identificada como necessária. 
 
 ## Acesso sem mapa ou JavaScript e links antigos
 
-Busca e lista inicializam independentemente do mapa/WebGL, com carregamento, falha e nova tentativa próprios. A lista mantém valores, classes, períodos, origens e avisos do estado indicador × Tipo × modo. A falha cartográfica mantém busca e consulta utilizáveis.
+Busca e lista inicializam independentemente do mapa/WebGL, com carregamento, falha e nova tentativa próprios. A lista mantém, ainda que na linha aberta, valores, classes, períodos, origens e avisos do estado indicador × Tipo × modo. A falha cartográfica mantém busca e consulta utilizáveis.
 
 Sem JavaScript, o dashboard oferece link nativo para `/municipios/`, página própria com índice por UF em expansão sob demanda e links nativos para documentos com seleção municipal já renderizada, seus quatro Eixos, Ações, ressalvas, fontes e Tipos. Query string sozinha não seleciona conteúdo num servidor estático; usar caminhos pré-gerados ou blocos/âncoras presentes no documento.
 
@@ -86,6 +86,7 @@ As rotas antigas `/municipio/<slug>/` devem entregar o dashboard com seleção e
 | Meu município completo integrado e responsivo | [37](../mvp-implementacao/issues/37-consulta-municipal-integrada.md); reaproveita 31 e 33 |
 | Mapa/Lista, links municipais e acesso sem mapa/JavaScript | [38](../mvp-implementacao/issues/38-navegacao-resiliente-e-links-municipais.md); reaproveita 09, 32 e 33 |
 | Como calculamos no Console A | [39](../mvp-implementacao/issues/39-metodologia-no-console-horizontal.md); reaproveita 34 |
+| Polimento visual e celular | [40](../mvp-implementacao/issues/40-fundamentos-visuais-do-polimento.md) a [46](../mvp-implementacao/issues/46-verificacao-final-em-celular-real.md), conforme o [mapa](../ui-polimento/map.md) |
 | Conteúdo técnico / dados versionados | Tickets 24 / 22; continuam independentes |
 | Auditoria de lançamento / orçamento | Ticket 25; incluir os novos fluxos, sem duplicar auditoria |
 | Revisão clínica / cargas HPV e tabagismo | Tickets próprios; aprovação visual não os encerra |

@@ -27,11 +27,23 @@ O redesenho visual do site implementado e verificado na `main`, sem deploy: Mapa
 - [Quais fundamentos visuais expressam "sóbrio e preciso" nos dois temas?](issues/03-fundamentos-visuais.md): Inter, neutros sem matiz, controles preenchidos, marca da silhueta e novos tons do mapa, com regras próprias de cor no tema escuro.
 - [Como o painel Meu município deve apresentar o resultado primeiro?](issues/04-painel-meu-municipio.md): folha com o resultado no topo, botão Legenda e resultado nos Eixos fechados, um controle para recolher e ✕ para limpar; telas baixas e zoom de 200% seguem pendentes.
 - [Como fazer o mapa dominar a primeira tela no desktop?](issues/05-desktop-tela-cheia.md): composição D, com cabeçalho e filtros em uma linha cada, mapa sem margens até o fim da janela e legenda encostada no canto; ressalva dinâmica e sem JavaScript seguem pendentes.
+- [Como Lista, Municípios por UF e Como calculamos devem ficar no novo sistema?](issues/06-lista-ufs-metodologia.md): Lista com linhas que abrem, UFs em lista com filetes e Metodologia com sumário sempre à mão; a semântica da Lista para leitores de tela segue pendente.
+
+## Implementação
+
+Em ordem, com os bloqueios em cada ticket:
+
+- [40: Fundamentos visuais](../mvp-implementacao/issues/40-fundamentos-visuais-do-polimento.md)
+- [41: Mapa inicial em tela cheia no desktop](../mvp-implementacao/issues/41-mapa-inicial-em-tela-cheia-no-desktop.md)
+- [42: Primeira tela no celular](../mvp-implementacao/issues/42-primeira-tela-no-celular.md)
+- [43: Painel Meu município com o resultado primeiro](../mvp-implementacao/issues/43-painel-com-resultado-primeiro.md)
+- [44: Lista com linhas que abrem](../mvp-implementacao/issues/44-lista-com-linhas-que-abrem.md)
+- [45: Municípios por UF e Como calculamos no novo sistema](../mvp-implementacao/issues/45-ufs-e-metodologia-no-novo-sistema.md)
+- [46: Verificação final em celular real](../mvp-implementacao/issues/46-verificacao-final-em-celular-real.md)
 
 ## Not yet specified
 
-- Divisão final dos tickets de implementação, a partir do 40, e a ordem entre eles.
-- Ajuste dos testes de navegador que dependem da estrutura atual.
+Nada no momento: a rota até o destino está nos tickets de implementação.
 
 ## Out of scope
 
