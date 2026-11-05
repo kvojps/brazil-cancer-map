@@ -85,6 +85,17 @@ for (const theme of ['light', 'dark']) {
           for (const zoom of ['100%', '200%']) {
             await page.locator('body').evaluate((el, zoom) => { el.style.zoom = zoom; }, zoom);
             await page.locator('[data-profile-axis]').evaluateAll(axes => axes.forEach(axis => { axis.open = true; }));
+            if (width >= 768) {
+              const bounds = await page.evaluate(() => {
+                const map = document.querySelector('.map-with-legend').getBoundingClientRect();
+                const panel = document.querySelector('#municipality-preview');
+                const rect = panel.getBoundingClientRect();
+                panel.scrollTop = panel.scrollHeight;
+                return { top: Math.abs(map.top - rect.top), bottom: Math.abs(map.bottom - rect.bottom), scrolled: panel.scrollTop > 0 };
+              });
+              assert.ok(bounds.top < 1 && bounds.bottom < 1, `panel aligns with map: ${JSON.stringify(bounds)}`);
+              assert.ok(bounds.scrolled, 'expanded consultation scrolls inside the panel');
+            }
             assert.match(await page.locator('#acesso').textContent(), new RegExp(text));
             assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, `${code}, ${width}, ${zoom}`);
           }

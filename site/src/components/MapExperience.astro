@@ -64,6 +64,9 @@ const period = manifest.indicators[indicator].all;
   .panel-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
   #municipality-preview { max-height: 85vh; overflow: auto; }
   #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
+  @media (min-width: 768px) {
+    #municipality-preview { contain: size; min-height: 0; max-height: none; }
+  }
   @media (max-width: 767px) {
     #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 2; max-height: 75vh; overscroll-behavior: contain; }
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
