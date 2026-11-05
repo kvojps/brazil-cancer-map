@@ -30,7 +30,7 @@ Metodologia mantém `/metodologia/` e suas âncoras: sumário, coluna de leitura
 
 Escolha explícita em `theme=light|dark`, preservada na navegação interna junto de seleção, indicador, Tipo de câncer, modo e visualização Mapa/Lista pertinentes. Sem tema válido, acompanhar o sistema; sem persistência entre visitas. Sem JavaScript, tema do sistema por CSS; a escolha explícita da URL pode ser aprimorada por JavaScript sem impedir leitura básica.
 
-Preservar elegibilidade, padrões e correções de URL do MVP e o comportamento de Voltar/Avançar. Trocas rápidas não exibem resultados da seleção anterior como atuais. Fundos, textos, controles e malha neutra acompanham o tema; não inverter as cores estatísticas do mapa.
+Preservar elegibilidade, padrões e correções de URL do MVP e o comportamento de Voltar/Avançar. Trocas rápidas não exibem resultados da seleção anterior como atuais. Fundos, textos, controles e malha neutra acompanham o tema; as cores estatísticas do mapa têm valores próprios por tema, definidos nos [fundamentos visuais](../ui-polimento/issues/03-fundamentos-visuais.md), sem mudar classes nem significados.
 
 ## Painel e contrato existente
 

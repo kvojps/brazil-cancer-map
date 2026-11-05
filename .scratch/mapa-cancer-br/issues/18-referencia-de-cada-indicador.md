@@ -46,3 +46,9 @@ A definição de Referência no glossário continua com "o valor do Brasil quand
 - **Valores acima do possível** (HPV acima de 100%, razão muito acima de 1): entram como "alcançou", com a nota "valor acima do esperado, provavelmente erro no registro ou na estimativa de população". O número não é cortado.
 - **Cor:** uma escala de **um só tom em 3 passos**, mais escura quanto mais perto da Referência, diferente das cores da Tendência. Usa as mesmas texturas (pontos para dado insuficiente e hachura para a faixa C). A legenda diz "distância até a meta, não é ranking".
 - A cascata município → Região imediata → dado insuficiente ([Como classificar a Tendência e tratar municípios pequenos no mapa?](12-tendencia-e-municipios-pequenos.md)) vale também para a Situação, com a mesma Referência.
+
+## Comments
+
+### Tema escuro — 2026-11-05
+
+Nos pontos de cor do tema escuro, esta decisão foi alterada pelos [fundamentos visuais](../../ui-polimento/issues/03-fundamentos-visuais.md). O tema claro segue a regra acima.
