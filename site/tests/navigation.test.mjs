@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { searchMunicipalities } from '../src/map/navigation.ts';
+import { searchMunicipalities, searchStatusText } from '../src/map/navigation.ts';
 const places = [
   { code: '1', name: 'São João', uf: 'PE', immediate_region: '1' },
   { code: '2', name: 'São João', uf: 'PR', immediate_region: '2' },
@@ -68,4 +68,10 @@ test('municipal documents restore selection without query strings', async () => 
   await navigation.select(places[1]);
   assert.equal(url.pathname, '/municipio/2-sao-joao/');
   assert.equal(url.search, '?visualizacao=lista');
+});
+
+test('the search status agrees in number and does not assume a keyboard', () => {
+  assert.equal(searchStatusText(1), '1 município encontrado.');
+  assert.equal(searchStatusText(20), '20 municípios encontrados.');
+  assert.equal(searchStatusText(0), 'Nenhum município encontrado.');
 });

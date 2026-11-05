@@ -196,6 +196,8 @@ export interface IndicatorText {
   /** Available modes by cancer type; first is the indicator default. */
   modes: Record<string, readonly MapMode[]>;
   name: string;
+  /** The name where space is short, as in the filter summary on a phone. */
+  shortName: string;
   unit: 'percent' | 'ratio' | 'rate';
   valueLabel: string;
   hasTreatmentQuality: boolean;
@@ -212,6 +214,7 @@ export const INDICATORS: Record<string, IndicatorText> = {
       colorectal: ["trend", "status"], lung: ["trend", "status"],
     },
     name: "Até 60 dias para começar o tratamento",
+    shortName: 'Até 60 dias',
     unit: 'percent', valueLabel: 'Em até 60 dias', hasTreatmentQuality: true,
     improving: "mais casos passaram a começar o tratamento em até 60 dias.",
     worsening: "menos casos passaram a começar o tratamento em até 60 dias.",
@@ -219,12 +222,14 @@ export const INDICATORS: Record<string, IndicatorText> = {
   hpv: {
     modes: { all: ['status'], cervix: ['status'] },
     name: 'Cobertura da vacina HPV (9–14 anos)',
+    shortName: 'Vacina HPV',
     unit: 'percent', valueLabel: 'Cobertura HPV (9–14 anos)', hasTreatmentQuality: false,
     improving: '', worsening: '',
   },
   cytopathology: {
     modes: { all: ['trend', 'status'], cervix: ['trend', 'status'] },
     name: 'Citopatológicos (25–64 anos; série até 2025)',
+    shortName: 'Citopatológicos',
     unit: 'ratio', valueLabel: 'Razão de citopatológicos (25–64 anos)', hasTreatmentQuality: false,
     improving: 'a razão de citopatológicos aumentou; a transição para DNA-HPV exige cautela na leitura.',
     worsening: 'a razão de citopatológicos diminuiu; menos Papanicolaus não quer dizer menos cuidado com a transição para DNA-HPV.',
@@ -233,6 +238,7 @@ export const INDICATORS: Record<string, IndicatorText> = {
   mammography: {
     modes: { all: ['trend', 'status'], breast: ['trend', 'status'] },
     name: 'Mamografias de rastreamento (50–69 anos)',
+    shortName: 'Mamografias',
     unit: 'ratio', valueLabel: 'Razão de mamografias (50–69 anos)', hasTreatmentQuality: false,
     improving: 'a razão de mamografias de rastreamento aumentou.',
     worsening: 'a razão de mamografias de rastreamento diminuiu.',
@@ -240,6 +246,7 @@ export const INDICATORS: Record<string, IndicatorText> = {
   mortality: {
     modes: { all: ['trend'], breast: ['trend'], cervix: ['trend'], prostate: ['trend'], colorectal: ['trend'], lung: ['trend'] },
     name: 'Tendência da mortalidade padronizada por idade',
+    shortName: 'Mortalidade',
     unit: 'rate', valueLabel: 'Taxa por 100 mil', hasTreatmentQuality: false,
     improving: 'a taxa de mortalidade padronizada por idade diminuiu.',
     worsening: 'a taxa de mortalidade padronizada por idade aumentou.',

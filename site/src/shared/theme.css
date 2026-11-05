@@ -163,8 +163,8 @@ footer { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-size: var(--tex
 footer strong { display: inline-flex; align-items: center; gap: .5rem; color: var(--text); }
 footer p { margin: 0; flex-basis: 100%; }
 
-.home, .map-and-profile, .map-frame, .map-controls > * { min-width: 0; }
-.map-controls > * { max-width: 100%; }
+.home, .map-and-profile, .map-frame, .map-controls > *, .filters-sheet > * { min-width: 0; }
+.map-controls > *, .filters-sheet > * { max-width: 100%; }
 .map-frame { background: var(--mesh); }
 .map-status { padding: .5rem .75rem; background: var(--surface); border-radius: var(--control-radius); }
 .skip-link { position: absolute; left: 1rem; top: -10rem; z-index: 50; padding: .5rem; background: var(--surface); }
@@ -200,7 +200,7 @@ footer p { margin: 0; flex-basis: 100%; }
   .site-header { gap: .25rem .75rem; }
   .identity { flex-basis: 100%; }
   .theme-switcher { margin-left: auto; }
-  .map-controls > * { flex-basis: 100%; }
+  .map-controls > *, .filters-sheet > * { flex-basis: 100%; }
 }
 
 .map-with-legend { background: var(--surface); }
@@ -226,4 +226,34 @@ footer p { margin: 0; flex-basis: 100%; }
 @media (min-width: 768px) and (max-width: 1023px) {
   body:has(.home) .site-menu { display: block; }
   body:has(.home) .site-header > nav[aria-label="Navegação principal"] { display: none; }
+}
+@media (min-width: 768px) {
+  .site-header .site-menu > nav .menu-phone-only { display: none; }
+}
+
+/* The map's first screen on a phone: .scratch/ui-polimento/issues/02-celular-cabecalho-filtros-mapa.md.
+   Two compositions share the rules of this block. Floating: the map fills what the notice leaves and the
+   controls float over it, in the media query repeated across the components that take part in it. In flow:
+   a short or very narrow viewport, as under 200% zoom, has no room to float, so the controls stack around
+   the map and the page scrolls. */
+@media (max-width: 767px) {
+  body:has(.home) > main { padding: 0; }
+  body:has(.home) > .site-header { position: relative; z-index: 20; gap: 0 .25rem; padding: .25rem; }
+  body:has(.home) .site-menu { display: block; flex: none; }
+  body:has(.home) .site-header > nav[aria-label="Navegação principal"], body:has(.home) .site-header > .theme-switcher { display: none; }
+  body:has(.home) .identity { flex: 1 1 0; min-width: 0; margin: 0; font-size: var(--text-14); line-height: 1.2; }
+  body:has(.home) .site-menu > nav { left: 0; }
+}
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
+  body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
+  body:has(.home)::before { content: ""; grid-area: 1 / 1 / 3 / 2; height: 100dvh; visibility: hidden; pointer-events: none; }
+  body:has(.home) > .construction-notice { grid-area: 1 / 1; }
+  body:has(.home) > main { grid-area: 2 / 1; display: flex; min-width: 0; min-height: 0; }
+  body:has(.home) > .site-header { grid-area: 2 / 1; align-self: start; flex-wrap: nowrap; min-height: var(--control-height); margin: .5rem; padding: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+  body:has(.home) > footer { grid-area: 3 / 1; padding-bottom: 5rem; }
+  /* One finger moves the map, so the map screen does not scroll. The list and a profile rendered in the
+     document, as without JavaScript, do, down to the footer. */
+  html:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
+  body:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) > footer { display: none; }
+  .maplibregl-map .maplibregl-ctrl-top-right { top: 3.25rem; }
 }

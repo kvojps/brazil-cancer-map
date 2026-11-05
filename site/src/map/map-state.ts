@@ -24,6 +24,11 @@ export function normalizeMapState(
   return { indicator, cancerType, mode };
 }
 
+/** The current selection in few words, for the button that opens the filters on a phone. */
+export function filterSummary({ indicator, cancerType, mode }: MapState): string {
+  return [INDICATORS[indicator]!.shortName, CANCER_TYPES[cancerType], mode === "trend" ? "Tendência" : "Como está hoje"].join(" · ");
+}
+
 export function readMapState(params: URLSearchParams, catalog: IndicatorCatalog = MAP_INDICATORS): MapState {
   return normalizeMapState({ indicator: params.get("indicador"), cancerType: params.get("tipo"),
     mode: params.get("modo") === "hoje" ? "status" : params.get("modo") }, catalog);

@@ -97,7 +97,10 @@ for (const [width, height] of [[1280, 40], [390, 44]]) {
       try {
         await page.goto(base + '/');
         await page.locator('.view-controls:not([hidden]) button').first().waitFor();
+        // On a phone the selectors and the search open from the header, one in place of the other.
+        const opener = { '#map-indicator': '.filters-toggle', '#municipality-search': '.search-toggle' };
         for (const selector of ['#map-indicator', '#municipality-search', '.view-controls button[aria-pressed="false"]']) {
+          if (width < 768 && opener[selector]) await page.locator(opener[selector]).click();
           const control = page.locator(selector).first();
           const box = await control.boundingBox();
           assert.equal(box.height, height, `${selector} height`);

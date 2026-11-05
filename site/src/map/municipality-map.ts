@@ -105,7 +105,14 @@ const BRAZIL_BOUNDS: LngLatBoundsLike = [
   [-74.1, -33.8],
   [-28.8, 5.3],
 ];
+/** A phone stops at Fernando de Noronha, not at Trindade, for the country to be larger. */
+const PHONE_BRAZIL_BOUNDS: [[number, number], [number, number]] = [
+  [-74.1, -33.8],
+  [-32.2, 5.3],
+];
 const FOCUS_MARGIN = 24;
+const PHONE_COUNTRY_MARGIN = 8;
+const isPhone = () => matchMedia("(max-width: 767px)").matches;
 
 /**
  * Mount the home map: the municipalities of the IBGE mesh, with no base map.
@@ -125,7 +132,7 @@ export async function mountMunicipalityMap(
         { id: "background", type: "background", paint: { "background-color": themeColor("var(--mesh)") } },
       ],
     },
-    bounds: BRAZIL_BOUNDS,
+    bounds: isPhone() ? PHONE_BRAZIL_BOUNDS : BRAZIL_BOUNDS,
     fitBoundsOptions: { padding: 16 },
     attributionControl: false,
     dragRotate: false,
@@ -400,18 +407,23 @@ function highlightOnHover(map: MapLibreMap): void {
 
 
 /** What covers part of the map and so should stay off the framed state. */
-export interface MapOverlays { legend: HTMLElement | null; note: HTMLElement | null }
+export interface MapOverlays { legend: HTMLElement | null; note: HTMLElement | null; controls: HTMLElement | null }
 
 /** Fit `bounds` clear of the overlays, on the side that costs the least zoom. */
-function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, note }: MapOverlays): void {
-  const paddings = framingPaddings(map.getContainer().getBoundingClientRect(), { legend: legend?.getBoundingClientRect(), note: note?.getBoundingClientRect() }, FOCUS_MARGIN);
-  let padding: Padding | number = FOCUS_MARGIN; // A map too small to spare their area still shows the state, under them.
+function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, note, controls }: MapOverlays, margin = FOCUS_MARGIN): void {
+  const paddings = framingPaddings(map.getContainer().getBoundingClientRect(), { legend: legend?.getBoundingClientRect(), note: note?.getBoundingClientRect(), controls: controls?.getBoundingClientRect() }, margin);
+  let padding: Padding | number = margin; // A map too small to spare their area still shows the state, under them.
   let zoom = -Infinity;
   for (const candidate of paddings) {
     const camera = map.cameraForBounds(bounds, { padding: candidate });
     if (camera?.zoom !== undefined && camera.zoom > zoom) { padding = candidate; zoom = camera.zoom; }
   }
   map.fitBounds(bounds, { padding, duration: 0 });
+}
+
+/** On a phone, frame the country clear of what floats over the map. Larger screens keep the constructor's fit. */
+export function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
+  if (isPhone()) fitClearOfOverlays(map, LngLatBounds.convert(PHONE_BRAZIL_BOUNDS), overlays, PHONE_COUNTRY_MARGIN);
 }
 
 /** Fit the complete state, using the same mesh that paints the map. */

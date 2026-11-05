@@ -32,3 +32,15 @@ test('hidden elements, with no box, reserve nothing', () => {
   assert.deepEqual(framingPaddings(MAP, { legend: empty, note: empty }, 24), NOTHING);
   assert.deepEqual(framingPaddings(MAP, {}, 24), NOTHING);
 });
+
+test('floating controls over the top of the map join the caveat in the reservation', () => {
+  const phone = { left: 0, top: 73, right: 390, bottom: 664 };
+  const controls = { left: 8, top: 133, right: 300, bottom: 177 };
+  const legend = { left: 8, top: 510, right: 150, bottom: 656 };
+  assert.deepEqual(framingPaddings(phone, { legend, controls }, 8), [
+    { top: 8, right: 8, bottom: 8, left: 308 },
+    { top: 112, right: 8, bottom: 162, left: 8 },
+  ]);
+  const note = { left: 8, top: 185, right: 200, bottom: 225 };
+  assert.equal(framingPaddings(phone, { legend, controls, note }, 8)[1].top, 160);
+});

@@ -20,11 +20,13 @@ test('selection loads four axes, filters all types and distinguishes returning f
     await toggle.click();
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     assert.equal(await page.locator('[data-profile-axis][open]').getAttribute('id'), 'acesso');
+    await page.locator('.filters-toggle').click();
     for (const type of ['breast', 'cervix', 'prostate', 'colorectal', 'lung', 'all']) {
       await page.selectOption('#cancer-type', type);
       await page.locator(`[data-profile-type="${type}"][aria-current="true"]`).waitFor();
       assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     }
+    await page.getByRole('button', { name: 'Ver mapa' }).click();
     await page.locator('[data-collapse-profile]').click();
     assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/');
     await page.locator('[data-reopen-profile]').click();

@@ -61,3 +61,12 @@ Inter servida pelo próprio site com o `≥` e algarismos tabulares, marca da si
 foco pelo teclado e `/municipios/` sem rolagem horizontal. As distâncias de cor do
 mapa são conferidas fora do navegador, por `npm run check:tones`, que também roda em
 `npm test`. A fonte é gerada por `scripts/build-font.sh`.
+
+`phone-first-screen.test.mjs` verifica a primeira tela abaixo de 768 px: mapa de ponta
+a ponta sob o aviso a 390 × 844, 390 × 664 e 320 × 568, sem rolagem; um dedo move o mapa
+com toque emulado; cabeçalho, menu, busca, folha de Filtros não modal e legenda
+flutuantes; sem JavaScript, menu e folha abrem com os seletores desativados; a Lista
+rola até o rodapé; e, em janelas baixas ou muito estreitas e no zoom nativo de 200%, os
+controles saem de cima do mapa. O teclado virtual é uma altura típica descontada da
+tela, pois a emulação do Chromium não o abre. O enquadramento dentro do WebGL é
+conferido em capturas; a conta da área reservada está em `tests/framing.test.mjs`.

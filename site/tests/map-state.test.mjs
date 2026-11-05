@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeMapState, readMapState, writeMapState } from '../src/map/map-state.ts';
+import { filterSummary, normalizeMapState, readMapState, writeMapState } from '../src/map/map-state.ts';
 import { formatIndicatorValue, mapOption, cancerTypeNotes } from '../src/map/indicator-layer.ts';
 
 test('mammography is available for breast and all in both modes, formatted as a ratio', () => {
@@ -102,4 +102,10 @@ test('HPV opens status for all and cervix and explains its short series', () => 
   }
   assert.equal(mapOption('hpv', 'breast', 'status').disabled, true);
   assert.equal(formatIndicatorValue('hpv', 95), '95,0%');
+});
+
+test('the filter summary names the current selection in few words', () => {
+  assert.equal(filterSummary({ indicator: 'within_60_days', cancerType: 'all', mode: 'trend' }), 'Até 60 dias · Todos os cânceres · Tendência');
+  assert.equal(filterSummary({ indicator: 'mammography', cancerType: 'breast', mode: 'status' }), 'Mamografias · Mama · Como está hoje');
+  assert.equal(filterSummary({ indicator: 'hpv', cancerType: 'cervix', mode: 'status' }), 'Vacina HPV · Colo do útero · Como está hoje');
 });

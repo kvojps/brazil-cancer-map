@@ -12,7 +12,7 @@ import {
   type MunicipalityListing,
 } from "../map/indicator-layer";
 
-import { normalizeMapState, readMapState, writeMapState, type MapState } from "../map/map-state";
+import { filterSummary, normalizeMapState, readMapState, writeMapState, type MapState } from "../map/map-state";
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -29,6 +29,8 @@ const readingSelector = document.querySelector<HTMLSelectElement>('#map-reading'
 const notes = document.querySelector<HTMLElement>("#cancer-type-note");
 const legendCorner = document.querySelector<HTMLElement>('.legend-corner');
 const mapNotes = document.querySelector<HTMLElement>('.map-notes');
+const filtersToggle = document.querySelector<HTMLElement>('.filters-toggle');
+const filterSummaryText = document.querySelector<HTMLElement>('[data-filter-summary]');
 
 /** One request per cancer type: switching back reuses the layer already loaded. */
 const layers = new Map<string, Promise<IndicatorLayer | undefined>>();
@@ -84,6 +86,7 @@ if (container && status) {
       let mapLayer: IndicatorLayer | undefined;
       let mapState = initial;
       let selectOnMap = (_code: string | undefined) => {};
+      let frameCountryOnce = () => {};
       let selectedCode: string | undefined;
       const mapSelection = { focus: (code: string | undefined) => { selectedCode = code; selectOnMap(code); } };
       const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
@@ -93,6 +96,7 @@ if (container && status) {
       let request = 0;
       const syncControls = (state: MapState) => {
         if (selector) selector.value = state.cancerType;
+        if (filterSummaryText) filterSummaryText.textContent = filterSummary(state);
         if (indicatorSelector && readingSelector) {
           indicatorSelector.value = state.indicator;
           readingSelector.value = state.mode;
@@ -118,7 +122,7 @@ if (container && status) {
         const legend = document.querySelector<HTMLElement>('.legend')!;
         legend.hidden = !shown;
         legendCorner!.hidden = !shown;
-        if (shown) { updateLegend(legend, shown, state.mode); updateLegendCorner(legendCorner!, shown, state.mode); showNotes(shown); }
+        if (shown) { updateLegend(legend, shown, state.mode); updateLegendCorner(legendCorner!, shown, state.mode); showNotes(shown); frameCountryOnce(); }
         else {
           notes?.replaceChildren();
           const caveat = document.querySelector<HTMLElement>('#indicator-caveat');
@@ -170,13 +174,25 @@ if (container && status) {
         showOnMap(mapLayer, mapState.mode);
         // The list view hides the map, which cannot be framed until it comes back.
         let frameWhenShown = false;
+        const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle };
         selectOnMap = code => {
           frameWhenShown = !!code && !container.clientWidth;
-          if (code) renderer.focusMunicipality(map, code, { legend: legendCorner, note: mapNotes });
+          if (code) renderer.focusMunicipality(map, code, overlays);
           else renderer.clearMunicipality(map);
         };
-        map.on('resize', () => { if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode); });
+        // The legend reserves its area only once a layer has filled it, and the list hides the map.
+        let countryFramed = false;
+        frameCountryOnce = () => {
+          if (countryFramed || !mapLayer || selectedCode || !container.clientWidth) return;
+          countryFramed = true;
+          renderer.frameCountry(map, overlays);
+        };
+        map.on('resize', () => {
+          if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode);
+          frameCountryOnce();
+        });
         selectOnMap(selectedCode);
+        frameCountryOnce();
         renderer.onMunicipalityClick(map, code => {
           window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));
         });
