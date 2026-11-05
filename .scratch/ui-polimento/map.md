@@ -23,6 +23,7 @@ O redesenho visual do site implementado e verificado na `main`, sem deploy: Mapa
 ## Decisions so far
 
 - [Quais padrões visuais concretos fazem um painel de dados parecer sóbrio e preciso?](issues/01-referencias-visuais.md): seis referências sustentam hipóteses por protótipo, com mapa ocupando a altura no celular, escala tipográfica curta e três fontes candidatas; a aprovação visual segue com o responsável.
+- [Como deve ser a primeira tela do site no celular?](issues/02-celular-cabecalho-filtros-mapa.md): mapa inteiro sob o aviso em faixa invertida, com cabeçalho, Filtros, legenda e Mapa/Lista flutuando; a tela do mapa não rola, e ficam pendências para a implementação.
 
 ## Not yet specified
 
