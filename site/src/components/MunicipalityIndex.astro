@@ -23,16 +23,16 @@ const names: Record<string, string> = {
 </div>
 <style>
   .municipality-index { min-width: 0; display: grid; gap: .75rem; }
-  details { border: 1px solid var(--border); border-radius: .75rem; background: var(--surface); overflow-wrap: anywhere; scroll-margin-top: 1rem; }
-  summary { cursor: pointer; padding: 1rem; font-weight: 650; }
-  summary::marker { color: var(--link); }
-  .state-code { display: inline-block; padding: .35rem .5rem; margin-inline: .5rem .75rem; border-radius: .35rem; background: var(--soft); color: var(--link); vertical-align: middle; font-size: .875rem; }
+  details { border-radius: var(--card-radius); background: var(--surface); overflow-wrap: anywhere; scroll-margin-top: 1rem; }
+  summary { cursor: pointer; padding: 1rem; }
+  summary::marker { color: var(--muted); }
+  .state-code { display: inline-block; padding: .25rem .5rem; margin-inline: .5rem .75rem; border-radius: var(--control-radius); background: var(--soft); color: var(--text); vertical-align: middle; font-size: var(--text-14); }
   .state-name { display: inline-block; vertical-align: middle; max-width: calc(100% - 5.5rem); }
-  small { display: block; font-size: .8rem; font-weight: 400; color: var(--muted); margin-top: .15rem; }
+  small { display: block; font-size: var(--text-12); font-weight: 400; color: var(--muted); margin-top: .25rem; }
   details[open] summary { border-bottom: 1px solid var(--border); }
   ul { list-style: none; padding: 1rem; margin: 0; columns: 15rem; column-gap: 2rem; }
   li { break-inside: avoid; }
-  li a { display: block; padding: .5rem; border-radius: .25rem; }
+  li a { display: block; padding: .5rem; border-radius: var(--control-radius); }
   li a:hover { background: var(--soft); }
-  summary:hover { background: var(--soft); border-radius: .75rem; }
+  summary:hover { background: var(--soft); border-radius: var(--card-radius); }
 </style>

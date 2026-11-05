@@ -47,12 +47,11 @@
   .indicator-table {
     padding: 1rem;
     min-width: 0;
-    font-size: 0.875rem;
+    font-size: var(--text-14);
   }
   summary {
     cursor: pointer;
-    font-weight: 600;
-    padding: 0.25rem 0;
+    padding: .25rem 0;
   }
   label {
     display: inline-flex;
@@ -60,17 +59,9 @@
     align-items: center;
     margin: 0.5rem 0;
   }
-  select {
-    font: inherit;
-  }
   .scroll {
     max-height: 60vh;
     overflow: auto;
-  }
-  .scroll:focus-visible,
-  summary:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
   }
   table {
     border-collapse: collapse;

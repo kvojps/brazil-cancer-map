@@ -116,19 +116,21 @@ export const TREND_STATES: TrendState[] = [
 ];
 
 /**
- * Tendência colors, without red (spec, section 11.1): blue-green and amber stay
+ * Trend colors, without red (spec, section 11.1): blue-green and amber stay
  * apart for the common color-vision deficiencies; the grays differ in lightness.
+ * Each is a theme token of shared/theme.css, so static documents follow the theme
+ * without JavaScript; the map resolves them when it paints.
  */
 export const TREND_COLORS: Record<TrendState, string> = {
-  improving: "#1d8a87",
-  worsening: "#d9961a",
-  stable: "#80868f",
-  no_clear_direction: "#c8ccd2",
-  insufficient: "#f3f2ec",
+  improving: "var(--trend-improving)",
+  worsening: "var(--trend-worsening)",
+  stable: "var(--trend-stable)",
+  no_clear_direction: "var(--trend-no-clear-direction)",
+  insufficient: "var(--insufficient)",
 };
 
-/** "Dado insuficiente" is near-white with gray dots, never plain white (spec, section 11.1). */
-export const INSUFFICIENT_DOTS = { color: "#8a9099", spacing: 6, radius: 1 };
+/** "Dado insuficiente" keeps its gray dots in both themes, so it never reads as a plain fill. */
+export const INSUFFICIENT_DOTS = { color: "var(--insufficient-dots)", spacing: 6, radius: 1 };
 
 /** The dotted fill as CSS, for the legend swatch. */
 export const INSUFFICIENT_CSS =
@@ -138,10 +140,10 @@ export const INSUFFICIENT_CSS =
 
 /**
  * Band C gets diagonal hatching on the treatment indicator only (spec, section
- * 11.1): dark lines, unlike the gray dots of "dado insuficiente", drawn over the
- * Tendência color so the class still shows.
+ * 11.1): lines that contrast with the theme, unlike the gray dots of "dado insuficiente",
+ * drawn over the trend color so the class still shows.
  */
-export const HATCH = { color: "rgba(31, 41, 51, 0.7)", spacing: 6, width: 1.5 };
+export const HATCH = { color: "var(--quality-hatch)", spacing: 6, width: 1.5 };
 
 /** The hatched fill as CSS, for the legend swatch, over the most common class. */
 export const HATCH_CSS =
@@ -365,7 +367,7 @@ export function trendPeriodText(period: Period): string {
 export type MapMode = "trend" | "status";
 export type StatusClass = "reached" | "near" | "far";
 export const STATUS_STATES: (StatusClass | "insufficient")[] = ["reached", "near", "far", "insufficient"];
-export const STATUS_COLORS = { reached: "#54278f", near: "#9e9ac8", far: "#dadaeb", insufficient: TREND_COLORS.insufficient };
+export const STATUS_COLORS = { reached: "var(--status-reached)", near: "var(--status-near)", far: "var(--status-far)", insufficient: TREND_COLORS.insufficient };
 export const STATUS_LABELS = { reached: "Alcançou", near: "Perto", far: "Longe", insufficient: "Dado insuficiente" };
 export const STATUS_LEGEND = "A cor mostra a distância até a referência. Não é um ranking entre municípios.";
 

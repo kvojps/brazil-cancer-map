@@ -239,30 +239,33 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 .methodology { max-width: 76rem; margin: .5rem auto 3rem; }
 .methodology-header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
 .methodology-header p:last-child { max-width: 68ch; margin-bottom: 0; color: var(--muted); }
-.methodology-back { display: inline-block; font-size: .875rem; margin-bottom: 1rem; }
-.eyebrow { color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .25rem; }
+.methodology-back { display: inline-block; font-size: var(--text-14); margin-bottom: 1rem; }
+.eyebrow { color: var(--muted); font-size: var(--text-14); font-weight: 500; margin-bottom: .25rem; }
 .methodology-header h1 { margin-top: .25rem; }
 .methodology-layout { display: grid; grid-template-columns: minmax(12rem, 17rem) minmax(0, 1fr); gap: 2rem; align-items: start; }
-.methodology-index { background: var(--surface); border: 1px solid var(--border); border-radius: .6rem; padding: 1rem; position: sticky; top: 1rem; }
-.methodology-index h2 { font-size: .875rem; margin-top: 0; }
+.methodology-index { background: var(--surface); border-radius: var(--card-radius); padding: 1rem; position: sticky; top: var(--notice-clearance); }
+.methodology-index h2 { font-size: var(--text-14); margin-top: 0; }
 .methodology-index ol { padding-left: 1.75rem; margin: 0; list-style-type: decimal-leading-zero; }
-.methodology-index li { border-top: 1px solid var(--soft); padding-left: .25rem; font-size: .875rem; }
-.methodology-index li::marker { color: var(--muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.methodology-index li { border-top: 1px solid var(--soft); padding-left: .25rem; font-size: var(--text-14); }
+.methodology-index li::marker { color: var(--muted); font-size: var(--text-12); }
 .methodology-index a { display: block; padding: .5rem 0; text-decoration: none; }
 .methodology-index a:hover { text-decoration: underline; }
 .methodology-reading { min-width: 0; }
-section { scroll-margin-top: 1rem; border: 1px solid var(--border); border-radius: .6rem; background: var(--surface); padding: clamp(.75rem, 2vw, 1.5rem); margin-bottom: 1rem; }
+section { scroll-margin-top: 1rem; border-radius: var(--card-radius); background: var(--surface); padding: 1rem; margin-bottom: 1rem; }
+@media (min-width: 768px) {
+  section { padding: 1.5rem; }
+}
 section > h2 { margin-top: 0; }
-.section-number { color: var(--link); font-size: .875rem; font-variant-numeric: tabular-nums; margin-right: .35rem; }
+.section-number { color: var(--muted); font-size: var(--text-14); margin-right: .25rem; }
 section > ol { padding-left: 1.5rem; }
 section > ol > li { margin-bottom: 2rem; }
 code { overflow-wrap: anywhere; }
-details { border: 1px solid var(--border); border-radius: .4rem; background: var(--page); padding: .75rem 1rem; }
-summary { cursor: pointer; font-weight: 650; }
+details { border-radius: var(--control-radius); background: var(--page); padding: .75rem 1rem; }
+summary { cursor: pointer; }
 details li { margin-block: .5rem; }
 .table-scroll { max-width: 100%; overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; }
-caption { text-align: left; font-weight: 650; margin-bottom: .5rem; }
+caption { text-align: left; font-weight: 600; margin-bottom: .5rem; }
 th, td { padding: .5rem; border: 1px solid var(--border); text-align: left; }
 thead { background: var(--soft); }
 @media (max-width: 55rem) {

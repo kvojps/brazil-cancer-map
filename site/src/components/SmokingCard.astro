@@ -27,14 +27,14 @@ const chartId = `smoking-series-${cancerType}`;
     <p>Estável: quase não mudou, menos de 1% por ano em relação ao próprio valor. Sem direção clara: pode ter subido ou caído; os dados não bastam para dizer.</p>
     <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartId}>
       <title id={chartId}>Percentual de adultos fumantes em {data.capital_name}. Série e IC 95% na tabela.</title>
-      <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
-      <line x1="42" x2="542" y1={y(5.9)} y2={y(5.9)} stroke="#80868f" stroke-dasharray="3 4" />
+      <line x1="42" x2="542" y1="160" y2="160" stroke="var(--muted)" />
+      <line x1="42" x2="542" y1={y(5.9)} y2={y(5.9)} stroke="var(--muted)" stroke-dasharray="3 4" />
       <text x="0" y="160">0</text><text x="0" y="25">{formatPercent(maximum)}</text>
       {series.map((point, index) => {
         const previous = series[index - 1];
         return <>
-          {previous && point.year === previous.year + 1 && <line x1={x(previous.year)} x2={x(point.year)} y1={y(previous.value)} y2={y(point.value)} stroke="#315e90" stroke-width="2" />}
-          <circle cx={x(point.year)} cy={y(point.value)} r="3" fill="#315e90" />
+          {previous && point.year === previous.year + 1 && <line x1={x(previous.year)} x2={x(point.year)} y1={y(previous.value)} y2={y(point.value)} stroke="var(--chart)" stroke-width="2" />}
+          <circle cx={x(point.year)} cy={y(point.value)} r="3" fill="var(--chart)" />
         </>;
       })}
       <text x="42" y="185">{first}</text><text x="505" y="185">{last}</text>

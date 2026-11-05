@@ -48,17 +48,16 @@ const period = manifest.indicators[indicator].all;
   .home { display: flex; flex-direction: column; gap: 1rem; min-height: 85vh; }
   .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1rem; }
   .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem); }
-  .map-with-legend { min-width: 0; border: 1px solid var(--border); border-radius: .6rem; overflow: clip; }
+  .map-with-legend { min-width: 0; border-radius: var(--card-radius); overflow: clip; }
   .view-controls { padding: .5rem 1rem; display: flex; gap: .5rem; }
   .view-controls[hidden] { display: none; }
-  .view-controls [aria-pressed="true"] { font-weight: bold; border-bottom: 3px solid var(--focus); }
   .map-heading { padding: 1rem 1rem 0; }
   .map-heading h2 { margin: .25rem 0; }
-  .eyebrow { font: .75rem ui-monospace, monospace; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
-  #municipality-preview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: .6rem; background: var(--surface); }
+  .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
+  #municipality-preview { min-width: 0; padding: 1rem; border-radius: var(--card-radius); background: var(--surface); }
   #municipality-preview h2 { margin-top: 0; }
-  #municipality-preview :global(.warning) { padding: .75rem; border-left: 4px solid var(--muted); background: var(--soft); }
-  #municipality-preview :global(h3) { font-size: 1.1rem; }
+  #municipality-preview :global(.warning) { padding: .75rem; border-radius: var(--control-radius); background: var(--soft); }
+  #municipality-preview :global(h3) { font-size: var(--text-16); }
   .panel-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem; }
   #municipality-preview { max-height: 85vh; overflow: auto; }
   #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
@@ -66,7 +65,7 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview { contain: size; min-height: 0; max-height: none; }
   }
   @media (max-width: 767px) {
-    #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 2; max-height: 75vh; overscroll-behavior: contain; }
+    #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 2; max-height: 75vh; overscroll-behavior: contain; box-shadow: var(--card-shadow); }
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
   }
 </style>

@@ -31,18 +31,18 @@ const chartId = `hpv-series-${cancerType}`;
       <p>Referência: 90% — meta para 2030, para o total e para cada sexo (Plano de Dant). A meta da OMS é para meninas.</p>
       <svg viewBox="0 0 570 200" role="img" aria-labelledby={chartId}>
         <title id={chartId}>Cobertura anual da coorte de 9–14 anos com ao menos uma dose; valores na tabela.</title>
-        <line x1="42" x2="542" y1="160" y2="160" stroke="#80868f" />
-        <line x1="42" x2="542" y1={pointY(90)} y2={pointY(90)} stroke="#80868f" stroke-dasharray="3 4" />
+        <line x1="42" x2="542" y1="160" y2="160" stroke="var(--muted)" />
+        <line x1="42" x2="542" y1={pointY(90)} y2={pointY(90)} stroke="var(--muted)" stroke-dasharray="3 4" />
         <text x="0" y="160">0</text><text x="0" y="25">{formatPercent(maximum)}</text>
         {first <= 2024 && last >= 2024 && <>
-          <line x1={pointX(2024)} x2={pointX(2024)} y1="35" y2="160" stroke="#80868f" stroke-dasharray="3 4" />
+          <line x1={pointX(2024)} x2={pointX(2024)} y1="35" y2="160" stroke="var(--muted)" stroke-dasharray="3 4" />
           <text x={Math.min(pointX(2024), 380)} y="18">2024: dose única</text>
         </>}
         {series.map((point, index) => {
           const previous = series[index - 1];
           return <>
-            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="#315e90" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
-            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="#315e90" />}
+            {previous?.value != null && point.value !== null && <line x1={pointX(previous.year)} y1={pointY(previous.value)} x2={pointX(point.year)} y2={pointY(point.value)} stroke="var(--chart)" stroke-width="2" stroke-dasharray={point.provisional || previous.provisional ? '6 4' : undefined} />}
+            {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="var(--chart)" />}
           </>;
         })}
         <text x="42" y="185">{first}</text><text x="505" y="185">{last}</text>

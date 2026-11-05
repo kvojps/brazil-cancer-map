@@ -26,14 +26,14 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
     <h1 tabindex="-1" data-profile-heading>{municipality.name} <small>({municipality.uf})</small></h1>
     <p>Meu município — dados sobre o cuidado com o câncer, para entender e agir.</p>
     <nav aria-label="Tipo de câncer" class="profile-types">
-      {Object.entries(CANCER_TYPES).map(([type, label]) => <a href={`?tipo=${type}#tipo-${type}`} data-profile-type={type}>{label}</a>)}
+      {Object.entries(CANCER_TYPES).map(([type, label]) => <a class="control-link" href={`?tipo=${type}#tipo-${type}`} data-profile-type={type}>{label}</a>)}
     </nav>
     <p>{ALL_CANCERS_NOTE}</p>
     <nav aria-label="Eixos" class="profile-axes">
-      <a href="#acesso">Acesso ao tratamento</a>
-      <a href="#deteccao">Detecção precoce</a>
-      <a href="#prevencao">Prevenção</a>
-      <a href="#panorama">Panorama</a>
+      <a class="control-link" href="#acesso">Acesso ao tratamento</a>
+      <a class="control-link" href="#deteccao">Detecção precoce</a>
+      <a class="control-link" href="#prevencao">Prevenção</a>
+      <a class="control-link" href="#panorama">Panorama</a>
     </nav>
     <details id="acesso" data-profile-axis open><summary>Acesso ao tratamento</summary>
       {Object.entries(CANCER_TYPES).map(([cancerType, label]) => <section id={`tipo-${cancerType}`} tabindex="-1" data-cancer-type={cancerType}>
