@@ -113,6 +113,12 @@ não é uma série antiga publicada. O Censo 2022 fixo (SIDRA 9514) fornece os
 12 recortes de sexo e idade por município. O histórico consolidado e o Censo
 são baixados automaticamente na primeira execução. POPSVS não é usado.
 
+O ano corrente usa os meses CSV anunciados no catálogo oficial, registrados
+em `data/clean/hpv/availability.json` com fonte e data da consulta. Execute
+`download --year <ano corrente>` antes de calcular para atualizar esse limite.
+Ausências no meio do período e erros de acesso a recursos anunciados interrompem
+a execução; não viram cobertura zero. O período exportado registra `last_month`.
+
 Os meses reduzidos e seus metadados ficam em `data/clean/hpv/months/<ano>/`;
 a chave pseudonimizada do paciente é necessária para a deduplicação longitudinal.
 O site recebe apenas cobertura e classes prontas. Meses ausentes impedem o

@@ -1,5 +1,6 @@
 """HPV source behavior at the monthly-file boundary."""
 import csv
+from datetime import UTC, datetime
 import io
 import json
 import zipfile
@@ -82,6 +83,10 @@ def prepared_source(tmp_path, last_year=2021):
         'observations': [{'municipality': '110001', 'year': 2021, 'sex': sex, 'value': 1.67}
                          for sex in (None, 'F', 'M')],
     }))
+    if last_year == datetime.now(UTC).year:
+        (clean / 'availability.json').write_text(json.dumps({
+            'year': last_year, 'months': list(range(1, datetime.now(UTC).month + 1)),
+            'source_url': 'https://example.test/catalog', 'checked_at': '2026-11-05'}))
     source = HpvSource(clean_dir=clean, site_data_dir=site, years=tuple(range(2020, last_year + 1)),
                        validation_path=reference_path)
     return source, site, clean
@@ -204,3 +209,71 @@ def test_official_comparison_is_required_and_divergence_blocks_publication(tmp_p
     with pytest.raises(ValueError, match='differs from official reference'):
         source.export()
     assert (site / 'manifest.json').read_bytes() == previous
+
+
+def test_current_year_uses_catalog_boundary_and_rejects_internal_gaps(tmp_path):
+    from datetime import UTC, datetime
+    import pytest
+    current = datetime.now(UTC).year
+    source, _, clean = prepared_source(tmp_path, last_year=current)
+    # A trailing month is unpublished; an internal missing month must still fail.
+    last_month = min(9, datetime.now(UTC).month)
+    for month in range(last_month + 1, 13):
+        (clean / 'months' / str(current) / f'{month:02}.parquet').unlink()
+    (clean / 'availability.json').write_text(json.dumps({
+        'year': current, 'months': list(range(1, last_month + 1)),
+        'source_url': f'https://dadosabertos.saude.gov.br/dataset/pni-{current}',
+        'checked_at': datetime.now(UTC).date().isoformat(),
+    }))
+    source.compute()
+    data = json.loads((clean / 'computed.json').read_text())
+    assert data['period']['last_month'] == last_month
+    (clean / 'months' / str(current) / '01.parquet').unlink()
+    with pytest.raises(ValueError, match='every published monthly'):
+        source.compute()
+
+
+def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_path, monkeypatch):
+    import pytest
+    from pipeline.download import DownloadError, RemoteInfo
+    from pipeline.sources.hpv import CATALOG_ROOT, MONTHS, S3_ROOT
+    current = datetime.now(UTC).year
+    clean = tmp_path / 'clean'
+    folder = clean / 'months' / str(current)
+    folder.mkdir(parents=True)
+    for month in (1, 2):
+        (folder / f'{month:02}.parquet').touch()
+        (folder / f'{month:02}.json').write_text(json.dumps({
+            'extract_version': 1, 'size': 100, 'modified': 10}))
+
+    class CatalogTransport:
+        catalog_months = [1, 2]
+        fail = False
+        inspected = []
+
+        def get(self, url, dest):
+            assert url == CATALOG_ROOT + str(current)
+            dest.write_text(json.dumps({'resources': [
+                {'url': f'{S3_ROOT}vacinacao_{MONTHS[month - 1]}_{current}_csv.zip'}
+                for month in self.catalog_months]}))
+
+        def head(self, url):
+            self.inspected.append(url)
+            if self.fail:
+                raise OSError('advertised resource unavailable')
+            return RemoteInfo(100, 10)
+
+    transport = CatalogTransport()
+    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', lambda *args: None)
+    monkeypatch.setattr('pipeline.download.time.sleep', lambda seconds: None)
+    source = HpvSource(clean_dir=clean, years=(current,), transport=transport)
+    source.download()
+    assert transport.inspected == [f'{S3_ROOT}vacinacao_{name}_{current}_csv.zip' for name in ('jan', 'fev')]
+    assert json.loads((clean / 'availability.json').read_text())['months'] == [1, 2]
+    transport.catalog_months = [1, 3]
+    with pytest.raises(ValueError, match='internal gaps'):
+        source.download()
+    transport.catalog_months = [1, 2]
+    transport.fail = True
+    with pytest.raises(DownloadError, match='advertised resource unavailable'):
+        source.download()
