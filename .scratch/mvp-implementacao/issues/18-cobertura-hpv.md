@@ -162,3 +162,14 @@ de Tendência para Situação, nota explicativa, Recife/2025 total 88,6%, menina
 Verificação: 163 testes Python, 87 testes do site com build estático, mypy e
 Astro check passaram. A revisão final será reconferida desde `c2a3d89`.
 A caixa de capacidade permanece aberta até a medição do job anual completo.
+
+
+Commits desta retomada:
+
+- `df740cd` — `fix: discover published HPV months from the official catalog`.
+- `6d2f0a7` — `feat: publish qualified official HPV cohorts and retain local audit`.
+
+Revisão `code-review`, base `c2a3d89`: Standards apontou apenas a ausência do
+commit resolutor no ticket de decisão 30, corrigida no registro; sem problemas
+de código pendentes. Spec confirmou a decisão 30 e a entrega pública dos dados,
+restando a medição anual completa no runner.
