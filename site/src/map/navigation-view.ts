@@ -2,7 +2,7 @@ import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer
 import { readMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
-import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities } from './navigation';
+import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
@@ -34,8 +34,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let initialAnchor = location.hash.slice(1);
   let returnFocus: HTMLElement = input;
   const restoreFocus = () => {
-    const target = returnFocus.isConnected && !returnFocus.closest('[hidden]') ? returnFocus : input;
-    target.focus({ preventScroll: true });
+    // On a phone the closed search leaves only its icon in place.
+    const target = [returnFocus, input, document.querySelector<HTMLElement>('.search-toggle')].find(element => element?.getClientRects().length);
+    target?.focus({ preventScroll: true });
   };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
   const expand = (expanded: boolean) => {
@@ -100,7 +101,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
       shortcut.hidden = false;
-      for (const button of [toggle, collapse, clear]) button.hidden = false;
+      for (const button of [toggle, collapse, clear, panel.querySelector<HTMLButtonElement>('[data-panel-legend]')!]) button.hidden = false;
       if (changed) {
         panel.hidden = false;
         reopen.hidden = true;
@@ -188,7 +189,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const matches = searchMunicipalities(listing.municipalities, input.value);
     if (input.value.trim() && !matches.length) {
       const empty = document.createElement('li');
-      empty.textContent = 'Nenhum município encontrado.';
+      empty.textContent = searchStatusText(0);
       results.replaceChildren(empty);
       status.textContent = empty.textContent;
       return;
@@ -205,7 +206,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       item.append(button, ' ', link);
       return item;
     }));
-    status.textContent = input.value.trim() ? `${matches.length} municípios encontrados. Use Tab para escolher.` : '';
+    status.textContent = input.value.trim() ? searchStatusText(matches.length) : '';
   });
   input.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown') { event.preventDefault(); results.querySelector('button')?.focus(); }

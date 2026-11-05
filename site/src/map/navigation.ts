@@ -10,6 +10,11 @@ export function searchMunicipalities(places: Municipality[], query: string): Mun
   return places.filter(place => words.every(word => normalized(`${place.name} ${place.uf}`).split(' ').some(part => part.startsWith(word)))).slice(0, 20);
 }
 
+export function searchStatusText(found: number): string {
+  if (!found) return 'Nenhum município encontrado.';
+  return found === 1 ? '1 município encontrado.' : `${found} municípios encontrados.`;
+}
+
 /** Municipal documents take precedence over the legacy query-only selection. */
 export function municipalityFromUrl(places: Municipality[], url: URL): Municipality | undefined {
   return places.find(place => municipalityPath(place) === url.pathname)

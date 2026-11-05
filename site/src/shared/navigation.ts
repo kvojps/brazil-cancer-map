@@ -60,7 +60,10 @@ export function mountSharedNavigation(): void {
         const active = readTheme(current.searchParams) ?? (systemTheme.matches ? 'dark' : 'light');
         const next = active === 'dark' ? 'light' : 'dark';
         link.dataset.themeChoice = next;
-        link.setAttribute('aria-label', next === 'light' ? 'Usar tema claro' : 'Usar tema escuro');
+        const label = next === 'light' ? 'Usar tema claro' : 'Usar tema escuro';
+        link.setAttribute('aria-label', label);
+        const visibleLabel = link.querySelector('[data-theme-label]');
+        if (visibleLabel && visibleLabel.textContent !== label) visibleLabel.textContent = label;
         const icon = link.querySelector('span')!;
         const symbol = next === 'light' ? '☀' : '☾';
         if (icon.textContent !== symbol) icon.textContent = symbol;

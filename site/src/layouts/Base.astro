@@ -22,7 +22,7 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
       if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
     </script>
     <!-- The explicit theme needs JavaScript; without it the site follows the system preference. -->
-    <noscript><style>.site-header .theme-switcher { display: none; }</style></noscript>
+    <noscript><style>.site-header .theme-switcher, .site-menu [data-theme-toggle] { display: none !important; }</style></noscript>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Ir para o conteúdo</a>
@@ -41,6 +41,10 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
           <a href="/">Mapa</a>
           <a href="/municipios/">Municípios por UF</a>
           <a href="/metodologia/">Como calculamos</a>
+          <!-- On a phone the map screen does not reach the footer and the header has no room for the theme. -->
+          <a class="menu-phone-only" href="/metodologia/#dados-e-fontes">Fontes e condições de reutilização</a>
+          <a class="menu-phone-only" href={SOURCE_CODE_URL}>Código-fonte</a>
+          <a class="menu-phone-only" href="?theme=dark" data-theme-toggle data-theme-choice="dark" aria-label="Usar tema escuro"><span aria-hidden="true">☾</span>&nbsp;<span data-theme-label>Usar tema escuro</span></a>
         </nav>
       </details>
       <a class="identity" href="/"><BrandMark /> Observatório do Câncer no Brasil</a>

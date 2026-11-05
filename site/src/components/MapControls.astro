@@ -2,6 +2,7 @@
 import ContextHelp from './ContextHelp.astro';
 import manifest from '../../public/dados/manifest.json';
 import { CANCER_TYPES, DEFAULT_CANCER_TYPE, INDICATORS, cancerTypeNotes } from "../map/indicator-layer";
+import { filterSummary, normalizeMapState } from "../map/map-state";
 
 // Controls become available once their data is ready.
 const hpvPending = !Object.hasOwn(manifest.indicators, 'hpv');
@@ -9,6 +10,12 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
 ---
 
 <form class="map-controls" aria-label="O que o mapa mostra" onsubmit="return false">
+  <!-- A native popover opens without JavaScript and, being manual, leaves the map in reach behind it. -->
+  <button type="button" class="filters-toggle" popovertarget="map-filters">
+    <strong>Filtros</strong>
+    <span data-filter-summary>{filterSummary(normalizeMapState({}))}</span>
+  </button>
+  <div id="map-filters" class="filters-sheet" popover="manual">
   <label>
     Indicador
     <select id="map-indicator" disabled>
@@ -37,6 +44,12 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
       ))}
     </select>
   </div>
+  <noscript>
+    <p class="filters-noscript">Os filtros mudam o mapa e precisam de JavaScript. <a href="/municipios/">Consulte os municípios por UF</a>.</p>
+    <style>.filters-close { display: none !important; }</style>
+  </noscript>
+  <button type="button" class="filters-close" popovertarget="map-filters" popovertargetaction="hide">Ver mapa</button>
+  </div>
   <nav class="view-controls" aria-label="Visualização" hidden>
     <button type="button" data-view="mapa" aria-pressed="true">Mapa</button>
     <button type="button" data-view="lista" aria-pressed="false">Lista</button>
@@ -56,6 +69,19 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     heading.focus({ preventScroll: true });
     heading.scrollIntoView({ block: 'start' });
   });
+
+  const sheet = document.querySelector<HTMLElement>('#map-filters');
+  const closeSheet = () => { if (sheet?.matches(':popover-open')) sheet.hidePopover(); };
+  // Unlike an auto popover, a manual one does not give focus back when it closes.
+  sheet?.addEventListener('beforetoggle', event => {
+    if ((event as ToggleEvent).newState === 'closed' && sheet.contains(document.activeElement)) document.querySelector<HTMLElement>('.filters-toggle')?.focus();
+  });
+  // A manual popover has no native Escape, and the sheet belongs to the floating composition only.
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSheet(); });
+  // A popover sits above everything else on the page, so it gives way to what opens from the header.
+  document.querySelector('.site-menu')?.addEventListener('toggle', event => { if ((event.target as HTMLDetailsElement).open) closeSheet(); });
+  document.querySelector('.search-toggle')?.addEventListener('click', closeSheet);
+  matchMedia('(max-width: 767px) and (min-width: 300px) and (min-height: 520px)').addEventListener('change', closeSheet);
 </script>
 
 <style>
@@ -96,6 +122,37 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
   .note p + p {
     margin-top: 0.25rem;
   }
+  .filters-toggle, .filters-close, .filters-noscript { display: none; }
+  /* A keyboard shortcut only: the panel is in reach, and the link must not reshape the controls. */
+  .preview-shortcut { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .preview-shortcut:focus { top: 100%; right: 1rem; width: auto; height: auto; padding: .5rem .75rem; clip-path: none; background: var(--surface); }
+  /* From 768 px and in the in-flow composition the selectors are always in place, and the sheet does not exist. */
+  @media (min-width: 768px), (max-width: 299px), (max-height: 519px) {
+    .filters-sheet:not(:popover-open) { display: contents; }
+  }
+  @media (max-width: 767px) {
+    .map-controls { position: relative; padding: .75rem; }
+    .filters-sheet:popover-open { position: fixed; inset: auto 0 0; display: flex; flex-direction: column; gap: .5rem; width: 100%; max-width: none; max-height: 50dvh; margin: 0; padding: .75rem; overflow: auto; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
+    .filters-sheet:popover-open > label, .filters-sheet:popover-open > .cancer-type { flex: none; }
+    .filters-sheet:popover-open .filters-close { position: sticky; bottom: 0; display: block; flex: none; }
+    .filters-sheet:popover-open .filters-noscript { display: block; margin: 0; font-size: var(--text-14); }
+    .cancer-type-heading { justify-content: space-between; }
+  }
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
+    /* The floating column under the header. It takes no taps of its own, so the map stays in reach beside
+       its children, and it leaves room for the zoom buttons. */
+    .map-controls { position: absolute; top: 3.75rem; left: .5rem; right: 3.5rem; z-index: 5; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: .5rem; padding: 0; pointer-events: none; }
+    .map-controls > * { flex: none; pointer-events: auto; }
+    .filters-toggle { display: flex; align-items: center; gap: .5rem; max-width: 100%; padding: .25rem .75rem; text-align: left; background-color: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .filters-toggle:hover:not(:disabled) { background-color: var(--surface); }
+    .filters-toggle strong { flex: none; font-size: var(--text-14); }
+    .filters-toggle span { font-size: var(--text-12); font-weight: 400; line-height: 1.25; color: var(--muted); }
+    .map-notes { flex: none; padding: .25rem .5rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .view-controls { position: fixed; right: .5rem; bottom: 2rem; z-index: 7; padding: .25rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .view-controls button { min-width: 3.5rem; padding-inline: .5rem; font-size: var(--text-14); }
+    /* In the list the column enters the flow, above the rows it would otherwise cover. */
+    :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
+  }
   @media (min-width: 768px) {
     .map-controls { position: relative; z-index: 6; flex: none; align-items: center; gap: .5rem 1.25rem; min-height: 56px; padding: .25rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
     label, .cancer-type { flex: 0 1 auto; flex-direction: row; align-items: center; gap: .5rem; white-space: nowrap; }
@@ -109,8 +166,5 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     .map-notes { position: absolute; top: calc(100% + 1px); left: 0; max-width: min(18rem, calc(100% - 4rem)); padding: .5rem 1rem; background: var(--surface); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); border-bottom-right-radius: var(--card-radius); }
     :global(.home:has(.indicator-table:not([hidden]))) .map-notes { position: static; max-width: none; padding: 0; border: 0; }
     :global(.home:has(#municipality-preview:not([hidden]))) .map-notes { max-width: min(18rem, calc(100% - var(--panel-width) - 4rem)); }
-    /* A keyboard shortcut only: the panel is already beside the map, and the link must not reshape the bar. */
-    .preview-shortcut { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .preview-shortcut:focus { top: 100%; right: 1rem; width: auto; height: auto; padding: .5rem .75rem; clip-path: none; background: var(--surface); }
   }
 </style>

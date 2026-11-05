@@ -33,6 +33,7 @@ const period = manifest.indicators[indicator].all;
         <button type="button" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Expandir consulta</button>
         <button type="button" data-collapse-profile hidden>Voltar ao mapa</button>
         <button type="button" data-clear-profile hidden>Limpar seleção</button>
+        <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>Legenda</button>
       </div>
       <div id="municipality-content" data-preview-content><slot /></div>
     </aside>
@@ -55,6 +56,7 @@ const period = manifest.indicators[indicator].all;
   #municipality-preview { max-height: 85vh; overflow: auto; }
   #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
   .data-feedback:has(#data-status:empty):has(#retry-data[hidden]) { display: none; }
+  .panel-legend { display: none; }
   @media (min-width: 768px) {
     .home { --panel-width: min(25rem, 60%); flex: 1; gap: 0; min-width: 0; min-height: 0; }
     /* Size containment: the panel and the list scroll inside instead of growing the first screen.
@@ -75,7 +77,23 @@ const period = manifest.indicators[indicator].all;
     .home { --panel-width: 30rem; }
   }
   @media (max-width: 767px) {
-    #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 2; max-height: 75vh; overscroll-behavior: contain; box-shadow: var(--card-shadow); }
+    #municipality-preview[data-enhanced] { position: fixed; inset-inline: .5rem; bottom: .5rem; z-index: 25; max-height: 75vh; overscroll-behavior: contain; box-shadow: var(--card-shadow); }
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+    .panel-legend { display: block; }
+  }
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
+    .home { position: relative; flex: 1; gap: 0; min-height: 0; }
+    .map-and-profile { flex: 1 1 auto; gap: 0; }
+    .map-with-legend { position: relative; display: flex; flex-direction: column; border-radius: 0; overflow: visible; }
+    .map-with-legend > [data-map-view] { position: relative; display: flex; flex: 1; min-height: 60dvh; }
+    .map-heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .data-feedback { position: absolute; top: 8rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    .data-feedback p { margin: 0; }
+    .data-feedback button { margin-top: .5rem; }
+    /* Above Mapa/Lista, which stays in reach while the panel is open. */
+    #municipality-preview[data-enhanced] { bottom: 5.5rem; max-height: 65dvh; }
+    /* Collapsed, it passes under Filtros on a short screen; expanded, it takes the screen until collapsed. */
+    #municipality-preview[data-enhanced][data-collapsed] { z-index: 4; }
+    .reopen-profile { position: fixed; right: .5rem; bottom: 5.5rem; z-index: 7; box-shadow: var(--card-shadow); }
   }
 </style>
