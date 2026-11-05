@@ -32,3 +32,16 @@ para os seis Tipos de câncer, âncora direta que prevalece sobre um filtro ante
 preservação de tema e retorno, ativação de links e expansões pelo teclado e a
 mesma matriz de temas/larguras/JavaScript, com expansões abertas. Inclui zoom
 nativo de 200% pela extensão de teste.
+
+Para verificar os documentos efetivamente gerados, rode `npm run build --prefix site`,
+inicie `npm run preview --prefix site -- --port 4322` e use
+`SITE_URL=http://127.0.0.1:4322 npm run test:browser --prefix site`.
+Não execute builds simultâneos: eles compartilham o diretório de saída.
+
+A lista agora ocupa a área do mapa. Os testes ativam “Explorar em lista” e
+verificam Mapa/Lista, seleção e filtros ao usar Voltar/Avançar. A seleção
+aprimorada usa o caminho estático `/municipio/<código>-<nome>/`; links antigos
+com `?municipio=` são normalizados com JavaScript. A recarga desse caminho
+continua entregando quatro Eixos e seis Tipos sem JavaScript. O índice por UF
+fica numa expansão nativa na inicial; sua âncora abre a expansão e preserva o
+destino após navegação a partir de um documento municipal e recarga.
