@@ -53,8 +53,8 @@ def test_cli_publishes_versioned_assets_and_rejects_oversized_files(tmp_path, mo
     assert str(tmp_path / 'assets/contract.csv') in command
     assert str(tmp_path / 'assets/contract.parquet') in command
     large = tmp_path / 'large.csv'
-    with large.open('wb') as stream:
-        stream.truncate(2 * 1024**3)
+    monkeypatch.setattr('pipeline.release.MAX_ASSET_BYTES', 2)
+    large.write_bytes(b'ab')
     with pytest.raises(ValueError, match='2 GiB'):
         publish_release([large], 'data-2026-11', repository='owner/repo')
     assert len(commands) == 1
