@@ -1,0 +1,83 @@
+{
+  "source_url": "https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv",
+  "extracted_at": "2026-11-05",
+  "table_id": "KeWXGFP",
+  "filters": {
+    "Ano Referência": 2025
+  },
+  "tolerance_pp": 0.01,
+  "observations": [
+    {
+      "municipality": "120010",
+      "year": 2025,
+      "sex": "F",
+      "value": 74.73363774733637,
+      "numerator": 982,
+      "denominator": 1314
+    },
+    {
+      "municipality": "120010",
+      "year": 2025,
+      "sex": "M",
+      "value": 61.49025069637883,
+      "numerator": 883,
+      "denominator": 1436
+    },
+    {
+      "municipality": "120010",
+      "year": 2025,
+      "sex": null,
+      "value": 67.81818181818181,
+      "numerator": 1865,
+      "denominator": 2750
+    },
+    {
+      "municipality": "261160",
+      "year": 2025,
+      "sex": "F",
+      "value": 94.8551108420973,
+      "numerator": 50148,
+      "denominator": 52868
+    },
+    {
+      "municipality": "261160",
+      "year": 2025,
+      "sex": "M",
+      "value": 82.6820268202682,
+      "numerator": 45934,
+      "denominator": 55555
+    },
+    {
+      "municipality": "261160",
+      "year": 2025,
+      "sex": null,
+      "value": 88.61772871069792,
+      "numerator": 96082,
+      "denominator": 108423
+    },
+    {
+      "municipality": "352590",
+      "year": 2025,
+      "sex": "F",
+      "value": 92.67760285752084,
+      "numerator": 14011,
+      "denominator": 15118
+    },
+    {
+      "municipality": "352590",
+      "year": 2025,
+      "sex": "M",
+      "value": 76.518296187496,
+      "numerator": 11982,
+      "denominator": 15659
+    },
+    {
+      "municipality": "352590",
+      "year": 2025,
+      "sex": null,
+      "value": 84.45592487896806,
+      "numerator": 25993,
+      "denominator": 30777
+    }
+  ]
+}

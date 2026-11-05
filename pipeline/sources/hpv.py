@@ -18,13 +18,14 @@ from pipeline.status import classify_status, status_note
 
 from pipeline.download import HttpTransport, Transport, fetch, with_retries
 from pipeline.hpv_inputs import download_fixed_inputs
+from pipeline.hpv_official import download_official_cohorts
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 
 EXTRACT_VERSION = 1
 
 MONTHS = ('jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez')
-SOURCE = {'name': 'SI-PNI/RNDS e TabNet (Ministério da Saúde)',
-          'url': 'https://www.gov.br/saude/pt-br/vacinacao',
+SOURCE = {'name': 'Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)',
+          'url': 'https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv',
           'conditions': 'Dados abertos; reutilização com citação da fonte.',
           'period': 'Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente.'}
 CATALOG_ROOT = 'https://dadosabertos.saude.gov.br/dataset/doses-aplicadas-pelo-programa-de-nacional-de-imunizacoes-pni-'
@@ -57,6 +58,13 @@ class HpvSource:
             months = self._discover_months(year) if year == today.year else list(range(1, 13))
             for month in months:
                 self.download_month(year, month)
+        if today.year in self._years:
+            self.download_official()
+
+    def download_official(self) -> None:
+        """Refresh the qualified national cohorts published by the Ministry."""
+        with_retries(lambda: download_official_cohorts(self._clean_dir / 'official.json', tuple(range(2020, datetime.now(UTC).year + 1))),
+                     'download official HPV cohorts')
 
     def _discover_months(self, year: int) -> list[int]:
         """Use advertised resources, never interpret an S3 access error as absence."""
@@ -236,6 +244,35 @@ class HpvSource:
                 for code, sex, total in rows:
                     count_key = (code, sex, year)
                     counts[count_key] = counts.get(count_key, 0) + total
+        # Keep the independent microdata reconstruction as an audit, never publish it as qualified coverage.
+        (self._clean_dir / 'audit.json').write_text(json.dumps({'records': [
+            {'municipality': code, 'sex': sex, 'year': year, 'vaccinated': count}
+            for (code, sex, year), count in sorted(counts.items())]}))
+        official = json.loads((self._clean_dir / 'official.json').read_text())
+        if (not official.get('source_url') or not official.get('extracted_at')
+                or not set(self._years) <= set(official.get('years', []))):
+            raise ValueError('official HPV cohorts require complete years and provenance')
+        counts = {}
+        for row in official['records']:
+            code, year = row['municipality'], row['year']
+            if code not in regions or year not in self._years:
+                continue
+            sex = {'Feminino': 'F', 'Masculino': 'M'}.get(row['sex'])
+            if sex is None:
+                raise ValueError('unknown sex in official HPV cohorts')
+            key_tuple = (code, sex, year)
+            vaccinated, population = row['vaccinated'], row['population']
+            if (key_tuple in counts or not isinstance(vaccinated, (int, float))
+                    or not 0 <= vaccinated < float('inf') or vaccinated != int(vaccinated)
+                    or population != populations[code][sex]):
+                raise ValueError('invalid or duplicate official HPV cohort or Census denominator mismatch')
+            if population and abs(row['coverage'] - vaccinated / population) > 0.000001:
+                raise ValueError('official HPV coverage disagrees with numerator and denominator')
+            counts[key_tuple] = int(vaccinated)
+        expected = {(code, sex, year) for code in regions if code not in absent
+                    for sex in ('F', 'M') for year in self._years}
+        if expected - counts.keys():
+            raise ValueError('missing municipality, sex or year in official HPV cohorts')
         # A denominator, rather than dose volume, chooses the origin for the whole card.
         origins = data_origins({code: sum(populations[code].values()) for code in regions}, regions, years=1)
         members: dict[str, list[str]] = {f'municipality:{code}': [code] for code in regions}
@@ -275,7 +312,7 @@ class HpvSource:
         period = {'first_year': 2020, 'last_year': max(self._years), 'latest': latest,
                   'trend': [], 'provisional': provisional, 'single_dose_year': 2024,
                   'denominator_year': 2022,
-                  'last_month': max(current_months) if max(self._years) == today.year else 12}
+                  'audit_last_month': max(current_months) if max(self._years) == today.year else 12}
         data = {'period': period, 'reference': {'value': 90, 'label': 'meta para 2030'},
                 'municipalities': entries, 'series': displayed}
         self._clean_dir.mkdir(parents=True, exist_ok=True)
@@ -344,10 +381,11 @@ class HpvSource:
                          'series': {key: data['series'][key] for key in sorted(keys)}}
             profile['indicators']['hpv'] = {cancer_type: published for cancer_type in ('all', 'cervix')}
             files[name] = profile
+        official = json.loads((self._clean_dir / 'official.json').read_text())
         extracts = [json.loads(path.read_text()) for path in (self._clean_dir / 'months').glob('*/*.json')]
         files[MANIFEST] = updated_manifest(self._site_data_dir, source=self.name,
-            extract={'name': SOURCE['name'], 'extracted_at': max(e['extracted_at'] for e in extracts),
-                     'files': [e['file'] for e in extracts]},
+            extract={'name': SOURCE['name'], 'extracted_at': official['extracted_at'],
+                     'files': [e['file'] for e in extracts] + ['official.json']},
             indicators={'hpv': {cancer_type: data['period'] for cancer_type in ('all', 'cervix')}})
         publish_together(self._site_data_dir, files)
 

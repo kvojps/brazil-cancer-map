@@ -87,6 +87,16 @@ def prepared_source(tmp_path, last_year=2021):
         (clean / 'availability.json').write_text(json.dumps({
             'year': last_year, 'months': list(range(1, datetime.now(UTC).month + 1)),
             'source_url': 'https://example.test/catalog', 'checked_at': '2026-11-05'}))
+    (clean / 'official.json').write_text(json.dumps({
+        'source_url': 'https://example.test/official-cohorts', 'extracted_at': '2026-11-05',
+        'years': list(range(2020, last_year + 1)), 'records': [
+            {'year': year, 'municipality': code, 'sex': sex,
+             'vaccinated': count, 'population': population, 'coverage': count / population}
+            for year in range(2020, last_year + 1)
+            for code, population in [('110001', 60), ('110002', 6), ('110003', 6)]
+            for sex in ('Feminino', 'Masculino')
+            for count in [int(code == '110001' and year <= (2024 if sex == 'Feminino' else 2025))]
+        ]}))
     source = HpvSource(clean_dir=clean, site_data_dir=site, years=tuple(range(2020, last_year + 1)),
                        validation_path=reference_path)
     return source, site, clean
@@ -135,6 +145,12 @@ def test_above_100_is_kept_and_invalid_export_preserves_previous_files(tmp_path)
         db.execute('CREATE TABLE legacy AS SELECT * FROM read_parquet(?)', [str(path)])
         db.execute('UPDATE legacy SET vaccinated=120')
         db.execute('COPY legacy TO ? (FORMAT PARQUET)', [str(path)])
+    path = clean / 'official.json'
+    official = json.loads(path.read_text())
+    for row in official['records']:
+        if row['municipality'] == '110001' and row['sex'] == 'Feminino':
+            row.update(vaccinated=120, coverage=2)
+    path.write_text(json.dumps(official))
     reference_path = tmp_path / 'references.json'
     reference = json.loads(reference_path.read_text())
     for observation in reference['observations']:
@@ -227,7 +243,7 @@ def test_current_year_uses_catalog_boundary_and_rejects_internal_gaps(tmp_path):
     }))
     source.compute()
     data = json.loads((clean / 'computed.json').read_text())
-    assert data['period']['last_month'] == last_month
+    assert data['period']['audit_last_month'] == last_month
     (clean / 'months' / str(current) / '01.parquet').unlink()
     with pytest.raises(ValueError, match='every published monthly'):
         source.compute()
@@ -265,6 +281,7 @@ def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_p
 
     transport = CatalogTransport()
     monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', lambda *args: None)
+    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', lambda *args: None)
     monkeypatch.setattr('pipeline.download.time.sleep', lambda seconds: None)
     source = HpvSource(clean_dir=clean, years=(current,), transport=transport)
     source.download()
@@ -277,3 +294,41 @@ def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_p
     transport.fail = True
     with pytest.raises(DownloadError, match='advertised resource unavailable'):
         source.download()
+
+
+def test_official_qualified_cohorts_override_the_local_audit(tmp_path):
+    source, site, clean = prepared_source(tmp_path)
+    records = [
+        {'year': year, 'municipality': code, 'sex': sex, 'vaccinated': count,
+         'population': population, 'coverage': count / population}
+        for year in (2020, 2021)
+        for code, population in [('110001', 60), ('110002', 6), ('110003', 6)]
+        for sex in ('Feminino', 'Masculino')
+        for count in [12 if code == '110001' else 0]
+    ]
+    (clean / 'official.json').write_text(json.dumps({
+        'source_url': 'https://example.test/official-cohorts', 'extracted_at': '2026-11-05',
+        'years': [2020, 2021], 'records': records}))
+    source.compute()
+    data = json.loads((clean / 'computed.json').read_text())
+    assert data['municipalities']['110001']['value'] == 20
+    audit = json.loads((clean / 'audit.json').read_text())
+    assert next(row for row in audit['records'] if row['municipality'] == '110001'
+                and row['sex'] == 'F' and row['year'] == 2021)['vaccinated'] == 1
+
+
+def test_official_cohorts_require_complete_census_matched_slices(tmp_path):
+    import pytest
+    source, _, clean = prepared_source(tmp_path)
+    path = clean / 'official.json'
+    official = json.loads(path.read_text())
+    original = path.read_text()
+    official['records'][0]['population'] += 1
+    path.write_text(json.dumps(official))
+    with pytest.raises(ValueError, match='Census denominator mismatch'):
+        source.compute()
+    official = json.loads(original)
+    official['records'].pop()
+    path.write_text(json.dumps(official))
+    with pytest.raises(ValueError, match='missing municipality, sex or year'):
+        source.compute()

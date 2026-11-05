@@ -42,7 +42,7 @@ A extração real do SIDRA gerou **66.840 células**, 5.570 municípios × dois 
 
 Boa Esperança do Norte (`510183`) não existe no Censo 2022: seu volume municipal não recebe população estimada. A cascata usa sua Região imediata, com os denominadores censitários existentes e os numeradores somados, e o cartão explica a ausência municipal. Ausências inesperadas ou fatias incompletas de idade/sexo bloqueiam o cálculo.
 
-A carga completa dos meses de 2020 até o último disponível e a comparação das coberturas finais com o painel oficial **ainda não foram executadas**. Portanto não há JSON de HPV publicado em `site/public/dados/` nesta mudança. O seletor indica dados ainda não disponíveis. A exportação exige referências oficiais com fonte e data, para total e dois sexos; sem `pipeline/references/hpv.json` ou com divergência além da tolerância registrada (máximo de um ponto percentual), falha sem alterar a publicação anterior. As interfaces de cálculo/publicação foram verificadas com arquivos pequenos, incluindo deduplicação entre anos, saída da coorte, Censo fixo, cascata, valores acima de 100% e preservação da publicação anterior quando a validação falha.
+A carga completa de janeiro/2020 a setembro/2026 foi concluída em 05/11/2026. A comparação com o painel encontrou divergência no numerador da reconstrução local; por decisão do mantenedor, o indicador passa a usar as coortes agregadas oficiais, mantendo a reconstrução para auditoria. Os JSON reais das coortes oficiais foram exportados para `site/public/dados/`, habilitando o seletor. A validação contra nove referências reais de 2025 (total e ambos os sexos em Recife, Brasileia e Jundiaí) passou. A exportação exige referências oficiais com fonte e data, para total e dois sexos; sem `pipeline/references/hpv.json` ou com divergência além da tolerância registrada (máximo de um ponto percentual), falha sem alterar a publicação anterior. As interfaces de cálculo/publicação foram verificadas com arquivos pequenos, incluindo deduplicação entre anos, saída da coorte, Censo fixo, cascata, valores acima de 100% e preservação da publicação anterior quando a validação falha.
 
 Fontes: [NT 16/2025-DPNI](https://infoms.saude.gov.br/content/Default/SEI_0045605478_Nota_Tecnica_16.pdf), [SIDRA 9514](https://sidra.ibge.gov.br/tabela/9514), [TabNet](http://tabnet.datasus.gov.br/cgi/dhdat.exe?bd_pni/dpnibr.def), [pesquisa de volume do SI-PNI](../../.scratch/mapa-cancer-br/research/17-calendario-das-fontes.md), [pesquisa dos insumos oficiais](../../.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).
 
@@ -80,3 +80,11 @@ a execução local permanece necessária para a carga inicial; não se declara
 que a matriz anual cabe em 6 h/14 GB. A medição do job inteiro continua pendente.
 
 Fonte de disponibilidade: [catálogo oficial PNI 2026](https://dadosabertos.saude.gov.br/dataset/doses-aplicadas-pelo-programa-de-nacional-de-imunizacoes-pni-2026).
+
+
+A tabela oficial nacional contém **77.990 linhas** de município × sexo × ano,
+de 2020 a 2026, consultadas em 05/11/2026. Sua obtenção usa Chromium/Playwright
+com a sessão pública do InfoMS; salva somente agregados e filtros efetivos,
+sem cookies ou identificadores de pacientes. O denominador de cada fatia foi
+conferido contra o Censo local. Boa Esperança do Norte tem denominador oficial
+zero e continua usando a Região imediata. A [decisão 30](../../.scratch/mapa-cancer-br/issues/30-fonte-oficial-coortes-hpv.md) registra a mudança de fonte.
