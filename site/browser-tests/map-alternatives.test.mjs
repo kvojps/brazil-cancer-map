@@ -45,7 +45,7 @@ test('search, direct links and table work when WebGL fails', async () => {
     await page.keyboard.press('Enter');
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     assert.match(await page.locator('#preview-heading').textContent(), /Recife/);
-    await page.locator('.indicator-table summary').click();
+    await page.locator('.list-shortcut').click();
     await page.locator('.indicator-table select').selectOption('PE');
     assert.match(await page.locator('.table-count').textContent(), /185 municípios/);
     assert.match(await page.locator('.indicator-table tbody').textContent(), /Seu município e vizinhos/);
@@ -90,7 +90,7 @@ test('layer failure clears old results, retries and respects the selected cancer
     await page.route('**/map/within_60_days/breast.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
     await page.goto(base);
     await waitForData(page);
-    await page.locator('.indicator-table summary').click();
+    await page.locator('.list-shortcut').click();
     await page.locator('#cancer-type').selectOption('breast');
     await page.locator('#retry-data').waitFor();
     assert.equal(await page.locator('.indicator-table tbody tr').count(), 0);
@@ -140,7 +140,7 @@ test('an uncomputable C55 adjustment is distinct from insufficient data in the t
     });
     await page.goto(`${base}/?indicador=mortality&tipo=cervix`);
     await waitForData(page);
-    await page.locator('.indicator-table summary').click();
+    await page.locator('.list-shortcut').click();
     const row = page.locator('.indicator-table tbody tr').filter({ has: page.getByRole('link', { name: 'Recife', exact: true }) });
     assert.equal(await row.locator('td').nth(1).textContent(), 'Ajuste não calculável');
   } finally { await page.close(); }
@@ -156,8 +156,9 @@ for (const javaScriptEnabled of [false, true]) {
           await page.goto(base);
           if (javaScriptEnabled) {
             await waitForData(page);
-            await page.locator('.indicator-table summary').click();
+            await page.locator('.list-shortcut').click();
           }
+          await page.locator('#municipality-index-heading').click();
           await page.locator('#municipalities-PE summary').click();
           const link = page.locator('#municipalities-PE a').filter({ hasText: /^Recife$/ });
           assert.match(await link.getAttribute('href'), /261160-recife/);
@@ -190,9 +191,10 @@ test('native 200% browser zoom keeps alternatives readable in both themes', asyn
         await page.goto(base);
         if (javaScriptEnabled) {
           await waitForData(page);
-          await page.locator('.indicator-table summary').click();
+          await page.locator('.list-shortcut').click();
         }
-        await page.locator('#municipalities-PE summary').click();
+        await page.locator('#municipality-index-heading').click();
+          await page.locator('#municipalities-PE summary').click();
         await worker.evaluate(async base => {
           const tabs = await chrome.tabs.query({});
           const tab = tabs.find(tab => tab.url.startsWith(base));
@@ -208,4 +210,59 @@ test('native 200% browser zoom keeps alternatives readable in both themes', asyn
       } finally { await context.close(); }
     }
   }
+});
+
+test('list replaces the map and restores selection and filters through history', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.goto(`${base}/?tipo=breast&theme=dark`);
+    await waitForData(page);
+    await page.locator('.list-shortcut').click();
+    assert.equal(await page.locator('.map-frame').isVisible(), false);
+    assert.equal(await page.locator('.indicator-table').isVisible(), true);
+    assert.equal(new URL(page.url()).searchParams.get('visualizacao'), 'lista');
+    await page.locator('.indicator-table select').selectOption('PE');
+    await page.screenshot({ path: '/tmp/ticket38-list.png' });
+    await page.locator('.indicator-table a').filter({ hasText: /^Recife$/ }).click();
+    await page.waitForURL('**/municipio/261160-recife/**');
+    await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    await page.locator('[data-view="mapa"]').click();
+    assert.equal(await page.locator('.indicator-table').isVisible(), false);
+    assert.match(await page.locator('#preview-heading').textContent(), /Recife/);
+    await page.goBack();
+    await page.locator('.indicator-table').waitFor();
+    assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
+    assert.equal(await page.locator('#cancer-type').inputValue(), 'breast');
+    await page.goForward();
+    await page.locator('.map-frame').waitFor();
+    assert.equal(await page.locator('.indicator-table').isVisible(), false);
+  } finally { await page.close(); }
+});
+
+test('invalid state is corrected field by field and legacy queries become static municipal links', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.goto(`${base}/?municipio=261160&indicador=mortality&tipo=prostate&modo=hoje&visualizacao=invalid&theme=invalid`);
+    await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    const url = new URL(page.url());
+    assert.equal(url.pathname, '/municipio/261160-recife/');
+    assert.equal(url.searchParams.get('indicador'), 'mortality');
+    assert.equal(url.searchParams.get('tipo'), 'prostate');
+    for (const key of ['modo', 'municipio', 'theme', 'visualizacao']) assert.equal(url.searchParams.has(key), false, key);
+    await page.locator('#municipality-search').fill('Olinda PE');
+    await page.locator('#municipality-results button').click();
+    await page.locator('.profile[data-code="260960"]').waitFor({ state: 'attached' });
+    await page.goBack();
+    await page.locator('.profile[data-code="261160"]').waitFor({ state: 'attached' });
+    assert.match(await page.locator('#preview-heading').textContent(), /Recife/);
+    const staticPage = await browser.newPage({ javaScriptEnabled: false });
+    try {
+      await staticPage.goto(page.url());
+      assert.equal(await staticPage.locator('.profile[data-code="261160"]').count(), 1);
+      assert.equal(await staticPage.locator('[data-profile-axis]').count(), 4);
+      assert.equal(await staticPage.locator('[data-profile-type]').count(), 6);
+    } finally { await staticPage.close(); }
+  } finally { await page.close(); }
 });

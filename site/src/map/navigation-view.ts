@@ -5,6 +5,12 @@ import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, searchMunicipalities } from './navigation';
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
+  const initialUrl = new URL(location.href);
+  const initialPlace = listing.municipalities.find(place => municipalityPath(place) === initialUrl.pathname)
+    ?? listing.municipalities.find(place => place.code === initialUrl.searchParams.get('municipio'));
+  initialUrl.searchParams.delete('municipio');
+  if (initialPlace) initialUrl.pathname = municipalityPath(initialPlace);
+  history.replaceState(null, '', initialUrl);
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   panel.dataset.enhanced = '';
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
@@ -26,7 +32,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let state: MapState = readMapState(new URLSearchParams(location.search));
   let shownCode = '';
   let shownIndicator = '';
+  let initialAnchor = location.hash.slice(1);
   let returnFocus: HTMLElement = input;
+  const restoreFocus = () => {
+    const target = returnFocus.isConnected && !returnFocus.closest('[hidden]') ? returnFocus : input;
+    target.focus({ preventScroll: true });
+  };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
   const expand = (expanded: boolean) => {
     panel.toggleAttribute('data-collapsed', !expanded);
@@ -43,7 +54,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   collapse.onclick = () => {
     panel.hidden = true;
     reopen.hidden = false;
-    returnFocus.focus({ preventScroll: true });
+    restoreFocus();
   };
   reopen.onclick = open;
   shortcut.addEventListener('click', event => { event.preventDefault(); open(); });
@@ -67,14 +78,16 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       shownCode = selected.code;
       shownIndicator = '';
     }
+    for (const link of content.querySelectorAll<HTMLAnchorElement>('[data-profile-type]')) link.href = `${municipalityPath(selected)}?tipo=${link.dataset.profileType}#tipo-${link.dataset.profileType}`;
     for (const section of content.querySelectorAll<HTMLElement>('[data-cancer-type]')) section.hidden = section.dataset.cancerType !== state.cancerType;
     for (const link of content.querySelectorAll<HTMLElement>('[data-profile-type]')) {
       if (link.dataset.profileType === state.cancerType) link.setAttribute('aria-current', 'true');
       else link.removeAttribute('aria-current');
     }
     if (shownIndicator !== state.indicator) {
-      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(state.indicator);
+      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === (['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor) ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator));
       shownIndicator = state.indicator;
+      initialAnchor = '';
     }
   };
   const navigation = createMunicipalityNavigation({
@@ -154,10 +167,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     retry.onclick = () => { if (selected) void navigation.select(selected, false).catch(failed); };
     content.append(note, retry);
   };
-  clear.onclick = () => { navigation.close(); returnFocus.focus({ preventScroll: true }); };
+  clear.onclick = () => { navigation.close(); restoreFocus(); };
   content.addEventListener('click', event => {
     const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('[data-profile-type]') : null;
-    if (!link || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) return;
+    if (!link || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey || (event as MouseEvent).shiftKey || (event as MouseEvent).altKey) return;
     event.preventDefault();
     const selector = document.querySelector<HTMLSelectElement>('#cancer-type')!;
     selector.value = link.dataset.profileType!;
@@ -197,6 +210,16 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   results.addEventListener('keydown', event => {
     if (event.key === 'Escape') { results.replaceChildren(); input.focus(); }
+  });
+  document.querySelector('.indicator-table')!.addEventListener('click', event => {
+    const click = event as MouseEvent;
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('tbody a') : null;
+    if (!link || click.ctrlKey || click.metaKey || click.shiftKey || click.altKey || click.button !== 0) return;
+    const place = listing.municipalities.find(place => municipalityPath(place) === new URL(link.href).pathname);
+    if (!place) return;
+    event.preventDefault();
+    returnFocus = link;
+    void navigation.select(place).catch(failed);
   });
   window.addEventListener('municipality-map-select', event => {
     const code = (event as CustomEvent<string>).detail;

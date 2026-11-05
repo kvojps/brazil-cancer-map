@@ -1,3 +1,4 @@
+import { municipalityPath } from '../profile/profile.ts';
 import type { MunicipalityListing } from './indicator-layer.ts';
 
 type Municipality = MunicipalityListing['municipalities'][number];
@@ -26,8 +27,9 @@ export function createMunicipalityNavigation<T>(options: {
       options.focus(place);
       if (push) {
         const url = options.getUrl();
-        url.pathname = '/';
-        url.searchParams.set('municipio', place.code);
+        url.pathname = municipalityPath(place);
+        url.searchParams.delete('municipio');
+        if (url.hash.startsWith('#tipo-')) url.hash = '';
         options.setUrl(url);
       }
       try {
@@ -48,7 +50,9 @@ export function createMunicipalityNavigation<T>(options: {
       options.clear();
     },
     restore() {
-      const place = options.places.find(place => place.code === options.getUrl().searchParams.get('municipio'));
+      const url = options.getUrl();
+      const place = options.places.find(place => municipalityPath(place) === url.pathname)
+        ?? options.places.find(place => place.code === url.searchParams.get('municipio'));
       return place ? this.select(place, false) : this.close(false);
     },
   };

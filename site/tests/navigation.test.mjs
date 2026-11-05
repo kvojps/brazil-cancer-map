@@ -28,8 +28,8 @@ test('selection focuses the state before loading its profile and closing retains
   assert.deepEqual(events, []);
   await navigation.select(places[0]);
   assert.deepEqual(events, ['focus:PE', 'load:PE', 'São João']);
-  assert.equal(url.pathname, '/');
-  assert.equal(url.search, '?tipo=breast&modo=hoje&municipio=1');
+  assert.equal(url.pathname, '/municipio/1-sao-joao/');
+  assert.equal(url.search, '?tipo=breast&modo=hoje');
   navigation.close();
   assert.equal(url.pathname, '/');
   assert.equal(url.search, '?tipo=breast&modo=hoje');
@@ -44,8 +44,8 @@ test('preview selection stays on the map and ignores late results and failures',
   const navigation = createMunicipalityNavigation({ places, getUrl: () => new URL(url), setUrl: next => { url = next; }, focus() {}, clear() {},
     load: place => new Promise((resolve, reject) => pending.push({ resolve, reject, place })), show: value => shown.push(value) });
   const first = navigation.select(places[0]);
-  assert.equal(url.pathname, '/');
-  assert.equal(url.searchParams.get('municipio'), '1');
+  assert.equal(url.pathname, '/municipio/1-sao-joao/');
+  assert.equal(url.searchParams.get('municipio'), null);
   assert.equal(url.searchParams.get('theme'), 'dark');
   const second = navigation.select(places[1]);
   pending[1].resolve('PR'); await second;
@@ -55,4 +55,17 @@ test('preview selection stays on the map and ignores late results and failures',
   pending[2].resolve('PE'); await third;
   assert.deepEqual(shown, ['PR']);
   assert.equal(url.searchParams.get('municipio'), null);
+});
+
+test('municipal documents restore selection without query strings', async () => {
+  const { createMunicipalityNavigation } = await import('../src/map/navigation.ts');
+  const focused = [];
+  let url = new URL('https://example.org/municipio/1-sao-joao/?visualizacao=lista');
+  const navigation = createMunicipalityNavigation({ places, getUrl: () => url, setUrl: next => { url = next; },
+    focus: place => focused.push(place.code), load: async place => place.code, show() {}, clear() {} });
+  await navigation.restore();
+  assert.deepEqual(focused, ['1']);
+  await navigation.select(places[1]);
+  assert.equal(url.pathname, '/municipio/2-sao-joao/');
+  assert.equal(url.search, '?visualizacao=lista');
 });

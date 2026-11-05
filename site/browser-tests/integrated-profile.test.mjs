@@ -26,7 +26,7 @@ test('selection loads four axes, filters all types and distinguishes returning f
       assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     }
     await page.locator('[data-collapse-profile]').click();
-    assert.equal(new URL(page.url()).searchParams.get('municipio'), '261160');
+    assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/');
     await page.locator('[data-reopen-profile]').click();
     assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
     await page.locator('[data-clear-profile]').click();

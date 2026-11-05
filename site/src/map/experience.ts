@@ -1,3 +1,4 @@
+import { mountVisualization } from './view';
 import { mountMunicipalityNavigation } from "../map/navigation-view";
 import { mountIndicatorTable } from "../map/indicator-table";
 import { updateLegend } from '../map/legend';
@@ -61,10 +62,9 @@ function showNotes(layer: IndicatorLayer): void {
 }
 
 if (container && status) {
+  mountVisualization();
   const { meshUrl, listingUrl } = container.dataset;
   const initialUrl = new URL(location.href);
-  const staticCode = document.querySelector<HTMLElement>('.profile[data-code]')?.dataset.code;
-  if (staticCode && !initialUrl.searchParams.has('municipio')) initialUrl.searchParams.set('municipio', staticCode);
   const anchorType = initialUrl.hash.startsWith('#tipo-') ? initialUrl.hash.slice(6) : '';
   if (Object.hasOwn(CANCER_TYPES, anchorType)) initialUrl.searchParams.set('tipo', anchorType);
   history.replaceState(null, '', initialUrl);
@@ -82,8 +82,8 @@ if (container && status) {
       let mapLayer: IndicatorLayer | undefined;
       let mapState = initial;
       let selectOnMap = (_code: string | undefined) => {};
-      const mapSelection = { focus: (code: string | undefined) => selectOnMap(code) };
-      if (table) table.hidden = false;
+      let selectedCode: string | undefined;
+      const mapSelection = { focus: (code: string | undefined) => { selectedCode = code; selectOnMap(code); } };
       const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
       const notice = document.querySelector<HTMLElement>("#map-selection-notice");
       let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
@@ -123,6 +123,7 @@ if (container && status) {
           if (caveat) { caveat.textContent = ''; caveat.hidden = true; }
         }
         const url = new URL(location.href);
+        if (url.hash.startsWith('#tipo-')) url.hash = '';
         url.search = writeMapState(state, url.searchParams).toString();
         if (push) history.pushState(null, "", url);
         else history.replaceState(null, "", url);
@@ -166,7 +167,7 @@ if (container && status) {
         showOnMap = renderer.mountIndicatorPaint(map, listing);
         showOnMap(mapLayer, mapState.mode);
         selectOnMap = code => code ? renderer.focusMunicipality(map, code) : renderer.clearMunicipality(map);
-        selectOnMap(new URLSearchParams(location.search).get('municipio') ?? undefined);
+        selectOnMap(selectedCode);
         renderer.onMunicipalityClick(map, code => {
           window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));
         });
@@ -174,7 +175,7 @@ if (container && status) {
       }).catch(error => {
         console.error(error);
         status.hidden = false;
-        status.textContent = 'Não foi possível carregar o mapa. A busca, a tabela e o índice por UF continuam disponíveis.';
+        status.textContent = 'Não foi possível carregar o mapa. A busca, a lista e o índice por UF continuam disponíveis.';
       });
       for (const control of [indicatorSelector, readingSelector]) {
         if (!control) continue;
@@ -200,7 +201,10 @@ if (container && status) {
         });
       }
       window.addEventListener("popstate", () => {
-        void selectState(readMapState(new URLSearchParams(location.search)), "", false);
+        const params = new URLSearchParams(location.search);
+        const anchorType = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
+        if (Object.hasOwn(CANCER_TYPES, anchorType)) params.set('tipo', anchorType);
+        void selectState(readMapState(params), "", false);
       });
     })
     .catch((error: unknown) => {

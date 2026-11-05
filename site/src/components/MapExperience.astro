@@ -20,8 +20,13 @@ const period = manifest.indicators[indicator].all;
         <span class="eyebrow">Panorama territorial · Brasil</span>
         <h2 id="map-indicator-heading">Tratamento em até 60 dias</h2>
       </header>
-      <MunicipalityMap />
-      <TrendLegend indicator={indicator} period={period} />
+      <nav class="view-controls" aria-label="Visualização" hidden>
+        <button type="button" data-view="mapa" aria-pressed="true">Mapa</button>
+        <button type="button" data-view="lista" aria-pressed="false">Lista</button>
+      </nav>
+      <div data-map-view><MunicipalityMap /><TrendLegend indicator={indicator} period={period} /></div>
+      <IndicatorTable />
+
     </div>
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading">
       <h2 id="preview-heading" tabindex="-1">Meu município</h2>
@@ -39,7 +44,6 @@ const period = manifest.indicators[indicator].all;
     <p id="data-status" role="status">Com JavaScript, carregamos os dados da seleção. Você também pode usar o índice por UF.</p>
     <button id="retry-data" type="button" hidden>Tentar novamente</button>
   </div>
-  <IndicatorTable />
   {selected ? <p><a href="/#municipality-index-heading">Consultar outro município no índice por UF</a></p> : <MunicipalityIndex />}
 </div>
 <style>
@@ -47,6 +51,9 @@ const period = manifest.indicators[indicator].all;
   .map-and-profile { display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1rem; }
   .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem); }
   .map-with-legend { min-width: 0; border: 1px solid var(--border); border-radius: .6rem; overflow: clip; }
+  .view-controls { padding: .5rem 1rem; display: flex; gap: .5rem; }
+  .view-controls[hidden] { display: none; }
+  .view-controls [aria-pressed="true"] { font-weight: bold; border-bottom: 3px solid var(--focus); }
   .map-heading { padding: 1rem 1rem 0; }
   .map-heading h2 { margin: .25rem 0; }
   .eyebrow { font: .75rem ui-monospace, monospace; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }

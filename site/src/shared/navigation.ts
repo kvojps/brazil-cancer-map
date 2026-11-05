@@ -14,6 +14,8 @@ export function navigationUrl(destination: URL, current: URL): URL {
   const theme = readTheme(result.searchParams) ?? readTheme(current.searchParams);
   const cancerType = ownType ? readMapState(new URLSearchParams({ tipo: ownType })).cancerType : state.cancerType;
   result.searchParams.delete('theme');
+  result.searchParams.delete('visualizacao');
+  if (current.searchParams.get('visualizacao') === 'lista' && (result.pathname === '/' || result.pathname.startsWith('/municipio/'))) result.searchParams.set('visualizacao', 'lista');
   for (const key of ['indicador', 'tipo', 'modo']) result.searchParams.delete(key);
   // Municipal pages carry the map context for their return link, but filter only by type.
   if (result.pathname === '/' || result.pathname.startsWith('/municipio/')) {
