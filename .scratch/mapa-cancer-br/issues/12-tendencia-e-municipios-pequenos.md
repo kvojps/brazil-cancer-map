@@ -60,3 +60,9 @@ Decidido em grilling em 2026-11-02.
 **Glossário:** a Tendência passou a ter 4 classes. Entraram os termos **Região imediata** e **Dado insuficiente**. "Agregado" fica só como termo técnico do pipeline.
 
 > **Atualização (2026-11-02):** os modelos do 60 dias e do tabagismo e a escala do ±1% foram redefinidos em [Em que escala vale a faixa de "estável" (±1% ao ano) para proporções, razões e tabagismo?](25-escala-da-faixa-estavel.md).
+
+## Comments
+
+### Tema escuro — 2026-11-05
+
+Nos pontos de cor do tema escuro, esta decisão foi alterada pelos [fundamentos visuais](../../ui-polimento/issues/03-fundamentos-visuais.md). O tema claro segue a regra acima.
