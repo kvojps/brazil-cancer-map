@@ -64,3 +64,12 @@ test('list view follows native municipal links and return links', () => {
   const invalid = new URL('https://example.org/?visualizacao=invalid');
   assert.equal(navigationUrl(new URL('/', invalid), invalid).searchParams.has('visualizacao'), false);
 });
+
+test('the static index remains a root destination from a selected dashboard', () => {
+  const selected = new URL('https://example.org/municipio/261160-recife/?visualizacao=lista&tipo=breast&theme=dark');
+  const index = navigationUrl(new URL('/#municipality-index-heading', selected), selected);
+  assert.equal(index.pathname, '/');
+  assert.equal(index.searchParams.has('municipio'), false);
+  assert.equal(index.searchParams.get('visualizacao'), 'lista');
+  assert.equal(index.hash, '#municipality-index-heading');
+});

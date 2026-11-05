@@ -24,7 +24,8 @@ export function navigationUrl(destination: URL, current: URL): URL {
     if (cancerType !== 'all') result.searchParams.set('tipo', cancerType);
   }
   result.searchParams.delete('municipio');
-  if (result.pathname === '/') {
+  const indexDestination = result.hash === '#municipality-index-heading' || result.hash.startsWith('#municipalities-');
+  if (result.pathname === '/' && !indexDestination) {
     const code = current.pathname.match(/^\/municipio\/(\d+)-/)?.[1] ?? current.searchParams.get('municipio');
     if (code) result.searchParams.set('municipio', code);
   }

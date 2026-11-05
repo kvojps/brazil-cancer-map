@@ -10,6 +10,12 @@ export function searchMunicipalities(places: Municipality[], query: string): Mun
   return places.filter(place => words.every(word => normalized(`${place.name} ${place.uf}`).split(' ').some(part => part.startsWith(word)))).slice(0, 20);
 }
 
+/** Municipal documents take precedence over the legacy query-only selection. */
+export function municipalityFromUrl(places: Municipality[], url: URL): Municipality | undefined {
+  return places.find(place => municipalityPath(place) === url.pathname)
+    ?? places.find(place => place.code === url.searchParams.get('municipio'));
+}
+
 /** Coordinate selection without binding history or the map engine to the profile view. */
 export function createMunicipalityNavigation<T>(options: {
   places: Municipality[];
@@ -51,8 +57,7 @@ export function createMunicipalityNavigation<T>(options: {
     },
     restore() {
       const url = options.getUrl();
-      const place = options.places.find(place => municipalityPath(place) === url.pathname)
-        ?? options.places.find(place => place.code === url.searchParams.get('municipio'));
+      const place = municipalityFromUrl(options.places, url);
       return place ? this.select(place, false) : this.close(false);
     },
   };

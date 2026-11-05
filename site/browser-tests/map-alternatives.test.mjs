@@ -158,7 +158,7 @@ for (const javaScriptEnabled of [false, true]) {
             await waitForData(page);
             await page.locator('.list-shortcut').click();
           }
-          await page.locator('#municipality-index-heading').click();
+          await page.locator('.municipality-index > summary').click();
           await page.locator('#municipalities-PE summary').click();
           const link = page.locator('#municipalities-PE a').filter({ hasText: /^Recife$/ });
           assert.match(await link.getAttribute('href'), /261160-recife/);
@@ -193,7 +193,7 @@ test('native 200% browser zoom keeps alternatives readable in both themes', asyn
           await waitForData(page);
           await page.locator('.list-shortcut').click();
         }
-        await page.locator('#municipality-index-heading').click();
+        await page.locator('.municipality-index > summary').click();
           await page.locator('#municipalities-PE summary').click();
         await worker.evaluate(async base => {
           const tabs = await chrome.tabs.query({});
@@ -264,5 +264,23 @@ test('invalid state is corrected field by field and legacy queries become static
       assert.equal(await staticPage.locator('[data-profile-axis]').count(), 4);
       assert.equal(await staticPage.locator('[data-profile-type]').count(), 6);
     } finally { await staticPage.close(); }
+  } finally { await page.close(); }
+});
+
+test('the index link from a selected document survives reload and preserves its native anchor', async () => {
+  const page = await browser.newPage();
+  try {
+    await disableWebGL(page);
+    await page.goto(`${base}/municipio/261160-recife/?visualizacao=lista&theme=dark`);
+    await page.locator('#municipality-search:enabled').waitFor();
+    await page.getByRole('link', { name: 'Consultar outro município no índice por UF' }).click();
+    await page.locator('#municipality-search:enabled').waitFor();
+    assert.equal(new URL(page.url()).pathname, '/');
+    assert.equal(new URL(page.url()).searchParams.has('municipio'), false);
+    await page.reload();
+    await page.locator('#municipality-search:enabled').waitFor();
+    assert.equal(new URL(page.url()).pathname, '/');
+    assert.equal(await page.locator('.municipality-index').getAttribute('open'), '');
+    assert.equal(await page.locator('#municipality-index-heading').isVisible(), true);
   } finally { await page.close(); }
 });
