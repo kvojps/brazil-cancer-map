@@ -5,7 +5,7 @@ Data: 04/11/2026. Escopo: apresentação e navegação de `/metodologia/` no sis
 ## Composição e conteúdo
 
 - Shell compartilhado existente: identidade, navegação, tema, aviso integral de construção e rodapé.
-- Sumário numerado, fixo durante a leitura em desktop e no fluxo em telas estreitas; dez seções numeradas em superfícies do Console, coluna de até 72 caracteres e expansão nativa para downloads.
+- Sumário numerado, fixo durante a leitura em desktop e no fluxo em telas estreitas; dez seções numeradas em superfícies do Console, coluna ocupando a largura restante até o fim do separador e expansão nativa para downloads.
 - Retorno ao mapa preserva indicador, Tipo, modo, seleção municipal, Mapa/Lista e tema pela URL com JavaScript, inclusive após navegar entre âncoras da Metodologia. Sem JavaScript, sumário, retorno nativo, fontes, downloads e expansão continuam utilizáveis; o tema acompanha o sistema, conforme a spec.
 - Comparação literal da coluna de leitura contra `92935e2`: conteúdo, links e âncoras técnicos idênticos após remover apenas os novos marcadores numéricos dos títulos.
 - Inspeção das capturas locais de 1280 px/claro e 320 px/escuro. Nenhuma fonte externa adicionada.

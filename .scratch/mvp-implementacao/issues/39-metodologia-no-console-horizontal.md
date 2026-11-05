@@ -35,3 +35,4 @@ Não alterar pipeline, JSON publicados, método, classes, Referência, cascata o
 - Encerramento, registro de validação e revisão: `docs: record methodology validation and close ticket 39` (este commit).
 - [Verificação do novo desenho e limites](../../ui-ux-v1/validation-39.md): checagem sem erros, build, 41 testes do site e 40 testes de navegador contra a saída estática; 320/768/1280 px, claro/escuro, com/sem JavaScript e zoom nativo 200%. Conteúdo técnico e âncoras preservados; retorno ao dashboard conserva o contexto disponível pela URL.
 - Revisão em dois eixos: nenhuma pendência de código em Standards ou desvio de Spec. O apontamento de encerramento documental foi atendido neste commit. Tickets 22, 24 e 25 permanecem independentes.
+- Ajuste solicitado após a entrega: a coluna de conteúdo ocupa toda a largura restante até o fim do separador, mantendo o sumário lateral. Commit: `fix(site): fill remaining methodology reading width (#39)` (este commit).
