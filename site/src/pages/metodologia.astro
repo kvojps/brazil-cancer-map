@@ -191,7 +191,7 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <p>A Referência é 5,9% — meta do Brasil para 2030, aplicada a todas as capitais. A regra da Situação é invertida: alcançou ≤ 5,9%; perto &gt; 5,9% e ≤ 7,4%; longe &gt; 7,4%, sem arredondar o percentual antes de comparar. Não há cascata para Região imediata: a origem deste indicador é sempre a capital, explicitamente identificada.</p>
 <p>Para reproduzir: <code>./download-vigitel.sh</code> e <code>uv run python -m pipeline run --source vigitel</code>. O caminho do ZIP ou CSV harmonizado pode ser definido em <code>VIGITEL_INPUT_PATH</code>; a URL variável do download, em <code>VIGITEL_CSV_URL</code>. Os dados limpos ficam em <code>data/clean/vigitel/</code> e os agregados em <code>dados/profiles/&lt;UF&gt;.json</code>, com período, IC e proveniência. A validação confere as 27 capitais, anos comuns, limites das estimativas e o total ponderado das capitais em 2019–2024 contra a Figura 31 (página 100) do relatório oficial, com tolerância operacional relativa de 3% para arredondamento e revisão dos pesos; divergência bloqueia a exportação. Essa comparação não valida individualmente cada capital; testes usam exemplos independentes de média ponderada e queda relativa. Cite Vigitel/Ministério da Saúde, período e extração, e o Observatório pelos cálculos. Novembro de 2026: primeira implementação.</p>
 </section>
-<section id="casos-estimados"><h2><span class="section-number">07</span> Casos novos estimados — INCA 2026–2028</h2>
+<section id="casos-estimados"><h2><span class="section-number">08</span> Casos novos estimados — INCA 2026–2028</h2>
 <h3>Fonte, período e recortes</h3>
 <p>Usamos a <a href="https://www.gov.br/inca/pt-br/assuntos/cancer/numeros/estimativa/estado-capital/brasil">Estimativa 2026–2028 do INCA, tabelas de casos novos por Estado e Capital</a>, transcrita manualmente em 4 de novembro de 2026. São números esperados por ano da edição, apresentados pelo INCA para 2026, e não a soma dos três anos. O INCA arredonda os números para múltiplos de dez.</p>
 <p>A ficha de cada município mostra o contexto da sua UF e da capital, sem estimar casos municipais. Para Brasília, usamos os números do Distrito Federal da tabela de UFs: o INCA não apresenta Brasília separadamente na tabela de capitais. Os recortes coincidem e não devem ser somados.</p>
@@ -202,7 +202,7 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <p>Reproduza com <code>uv run python -m pipeline run --source inca</code>. A fonte <code>pipeline/sources/inca.py</code> publica somente nas fichas por UF e no manifesto, preservando os outros indicadores. A atualização é manual a cada edição, com nova conferência das tabelas, do período e dos recortes. Cite INCA, Estimativa 2026–2028, extração de 2026-11-04, e o Observatório pela apresentação. Novembro de 2026: primeira inclusão deste contexto.</p>
 </section>
 <section id="dados-e-fontes">
-<h2><span class="section-number">08</span> Dados e fontes</h2>
+<h2><span class="section-number">09</span> Dados e fontes</h2>
 <p>As seções de cada indicador acima reúnem as fontes oficiais, os períodos, os recortes e as limitações. Consulte-as junto dos arquivos para interpretar os números.</p>
 <ul>
 <li><a href="/dados/manifest.json">Manifesto dos dados publicados</a>: fontes, extrações, períodos e versão do pipeline.</li>
@@ -222,12 +222,12 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 <p>Os agregados completos em Parquet e CSV e seus downloads versionados ainda dependem da publicação de dados abertos. Não há Release de dados indicada nesta página.</p>
 </section>
 <section id="versoes-e-reproducao">
-<h2><span class="section-number">09</span> Versões e reprodução</h2>
+<h2><span class="section-number">10</span> Versões e reprodução</h2>
 <p>Versão do pipeline registrada na publicação: <code>{manifest.pipeline_version}</code>. O <a href="/dados/manifest.json">manifesto</a> identifica as extrações e os períodos de cada fonte; eles podem ser diferentes entre indicadores.</p>
 <p>Consulte o <a href="https://github.com/kvojps/brazil-cancer-map">repositório e as instruções do projeto</a> e o <a href="https://github.com/kvojps/brazil-cancer-map/tree/main/pipeline">código do pipeline</a>. Os comandos, insumos e históricos já documentados permanecem nas seções de cada indicador. A consolidação da metodologia e dos links oficiais para o lançamento continua pendente.</p>
 </section>
 <section id="reutilizacao-e-citacao">
-<h2><span class="section-number">10</span> Reutilização e citação</h2>
+<h2><span class="section-number">11</span> Reutilização e citação</h2>
 <p>Ao reutilizar um resultado, cite a fonte original, o período e a data de extração, além do Observatório do Câncer no Brasil pelos cálculos ou pela apresentação. Cada seção acima identifica a fonte e as orientações disponíveis para aquele indicador.</p>
 <p>Os dados de terceiros seguem as condições de cada fonte; consulte sua documentação oficial. Os textos do Observatório estão sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil. O código está sob AGPL-3.0-or-later; essa licença não cobre os arquivos de dados.</p>
 </section>
