@@ -22,6 +22,7 @@ from pipeline.status import classify_status
 from pipeline.trend import weighted_prevalence_trend
 
 CITY_UFS = 'SE PA MG RR MS MT PR SC CE GO PB AP AL AM RN TO RS RO PE AC RJ BA MA SP PI ES DF'.split()
+REFERENCE = Path(__file__).resolve().parents[1] / 'references' / 'vigitel.json'
 SOURCE = {'name': 'Vigitel — Ministério da Saúde',
           'url': 'https://svs.aids.gov.br/daent/cgdnt/vigitel/',
           'conditions': 'Dados públicos; reutilização com citação da fonte.'}
@@ -32,10 +33,12 @@ class VigitelSource:
 
     def __init__(self, *, input_path: Path | None = None,
                  clean_dir: Path = CLEAN_DIR / 'vigitel',
-                 site_data_dir: Path = SITE_DATA_DIR) -> None:
+                 site_data_dir: Path = SITE_DATA_DIR,
+                 reference_path: Path = REFERENCE) -> None:
         self._input = input_path or Path(os.environ.get('VIGITEL_INPUT_PATH', RAW_DIR / 'vigitel' / 'microdata.zip'))
         self._clean = clean_dir
         self._site = site_data_dir
+        self._reference = reference_path
 
     def download(self) -> None:
         """Use the manually downloaded archive; its changing name is configurable."""
@@ -102,6 +105,9 @@ class VigitelSource:
                     sum(pow(i.weight*(i.smoker-m.p),2))/pow(m.w,2) AS variance,
                     count(*) AS sample_size
                 FROM means m JOIN interviews i USING(year,city) GROUP BY m.year,m.city,m.p,m.w ORDER BY m.year,m.city''').fetchall()
+            national = {str(year): value for year, value in db.execute('''
+                SELECT year, 100*sum(weight*smoker)/sum(weight) FROM interviews GROUP BY year''').fetchall()}
+        (self._clean / 'validation.json').write_text(json.dumps(national, allow_nan=False))
         critical = float(stats.t.ppf(0.975, count - 1))
         states: dict[str, list[dict[str, Any]]] = {}
         for year, city, p, variance, sample_size in rows:
@@ -127,6 +133,14 @@ class VigitelSource:
 
     def validate(self) -> None:
         data = json.loads((self._clean / 'computed.json').read_text())
+        reference = json.loads(self._reference.read_text())
+        expected = reference.get('national_prevalence', {})
+        actual = json.loads((self._clean / 'validation.json').read_text())
+        if not reference.get('source_url') or not expected:
+            raise ValueError('Missing official Vigitel reference')
+        for year, value in expected.items():
+            if year not in actual or not math.isclose(actual[year], value, rel_tol=0.03):
+                raise ValueError(f'{year}: prevalence differs from official Vigitel reference by more than 3%')
         if set(data) != set(CAPITALS):
             raise ValueError('Vigitel must cover all 27 capitals')
         years = None
