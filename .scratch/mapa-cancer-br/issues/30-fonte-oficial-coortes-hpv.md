@@ -31,3 +31,5 @@ públicas. Variações de atribuição municipal e coorte não reproduziram a am
 Aprovação expressa na retomada do [ticket de implementação 18](../../mvp-implementacao/issues/18-cobertura-hpv.md): “Usar coortes oficiais agregadas”.
 
 Fonte: [painel oficial HPV](https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv), tabela `KeWXGFP`; referências de Recife, Brasileia e Jundiaí/2025 em `pipeline/references/hpv.json`, consultadas em 05/11/2026.
+
+Commit da decisão e implementação: `6d2f0a7` — `feat: publish qualified official HPV cohorts and retain local audit`.
