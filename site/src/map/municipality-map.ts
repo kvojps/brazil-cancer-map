@@ -38,6 +38,7 @@ import {
   type IndicatorLayer,
   type MunicipalityListing,
 } from "./indicator-layer";
+import { framingPaddings, type Padding } from "./framing";
 
 /** Properties each municipality carries in the TopoJSON exported by the pipeline. */
 export interface MunicipalityProperties {
@@ -104,6 +105,7 @@ const BRAZIL_BOUNDS: LngLatBoundsLike = [
   [-74.1, -33.8],
   [-28.8, 5.3],
 ];
+const FOCUS_MARGIN = 24;
 
 /**
  * Mount the home map: the municipalities of the IBGE mesh, with no base map.
@@ -397,8 +399,23 @@ function highlightOnHover(map: MapLibreMap): void {
 }
 
 
+/** What covers part of the map and so should stay off the framed state. */
+export interface MapOverlays { legend: HTMLElement | null; note: HTMLElement | null }
+
+/** Fit `bounds` clear of the overlays, on the side that costs the least zoom. */
+function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, { legend, note }: MapOverlays): void {
+  const paddings = framingPaddings(map.getContainer().getBoundingClientRect(), { legend: legend?.getBoundingClientRect(), note: note?.getBoundingClientRect() }, FOCUS_MARGIN);
+  let padding: Padding | number = FOCUS_MARGIN; // A map too small to spare their area still shows the state, under them.
+  let zoom = -Infinity;
+  for (const candidate of paddings) {
+    const camera = map.cameraForBounds(bounds, { padding: candidate });
+    if (camera?.zoom !== undefined && camera.zoom > zoom) { padding = candidate; zoom = camera.zoom; }
+  }
+  map.fitBounds(bounds, { padding, duration: 0 });
+}
+
 /** Fit the complete state, using the same mesh that paints the map. */
-export function focusMunicipality(map: MapLibreMap, code: string): void {
+export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays): void {
   const bounds = new LngLatBounds();
   for (const item of meshes.get(map)?.features ?? []) {
     if (!String(item.properties?.CD_MUN).startsWith(code.slice(0, 2))) continue;
@@ -411,7 +428,7 @@ export function focusMunicipality(map: MapLibreMap, code: string): void {
     if ('coordinates' in item.geometry) visit(item.geometry.coordinates);
   }
   map.resize();
-  if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 24, duration: 0 });
+  if (!bounds.isEmpty() && map.getContainer().clientWidth) fitClearOfOverlays(map, bounds, overlays);
   map.setFilter('municipality-selected', codeFilter([code]));
 }
 

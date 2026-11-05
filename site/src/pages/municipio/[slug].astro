@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import '../../profile/profile.css';
 import MapExperience from '../../components/MapExperience.astro';
 import MunicipalityProfile from '../../components/MunicipalityProfile.astro';
+import MunicipalitySearch from '../../components/MunicipalitySearch.astro';
 import listing from '../../../public/dados/municipalities.json';
 import { municipalityPath, type UfProfile } from '../../profile/profile';
 
@@ -21,5 +22,6 @@ interface Props {
 const { municipality, profile } = Astro.props;
 ---
 <Base title={`${municipality.name} (${municipality.uf}) — Meu município`}>
+  <MunicipalitySearch slot="header-tools" />
   <MapExperience selected><MunicipalityProfile municipality={municipality} profile={profile} /></MapExperience>
 </Base>

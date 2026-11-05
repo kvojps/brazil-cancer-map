@@ -1,7 +1,7 @@
 import { mountVisualization } from './view';
 import { mountMunicipalityNavigation } from "../map/navigation-view";
 import { mountIndicatorTable } from "../map/indicator-table";
-import { updateLegend } from '../map/legend';
+import { updateLegend, updateLegendCorner } from '../map/legend';
 import {
   CANCER_TYPES,
   INDICATORS,
@@ -27,6 +27,8 @@ const selector = document.querySelector<HTMLSelectElement>("#cancer-type");
 const indicatorSelector = document.querySelector<HTMLSelectElement>('#map-indicator');
 const readingSelector = document.querySelector<HTMLSelectElement>('#map-reading');
 const notes = document.querySelector<HTMLElement>("#cancer-type-note");
+const legendCorner = document.querySelector<HTMLElement>('.legend-corner');
+const mapNotes = document.querySelector<HTMLElement>('.map-notes');
 
 /** One request per cancer type: switching back reuses the layer already loaded. */
 const layers = new Map<string, Promise<IndicatorLayer | undefined>>();
@@ -115,7 +117,8 @@ if (container && status) {
         showOnMap(shown, state.mode);
         const legend = document.querySelector<HTMLElement>('.legend')!;
         legend.hidden = !shown;
-        if (shown) { updateLegend(legend, shown, state.mode); showNotes(shown); }
+        legendCorner!.hidden = !shown;
+        if (shown) { updateLegend(legend, shown, state.mode); updateLegendCorner(legendCorner!, shown, state.mode); showNotes(shown); }
         else {
           notes?.replaceChildren();
           const caveat = document.querySelector<HTMLElement>('#indicator-caveat');
@@ -165,7 +168,14 @@ if (container && status) {
         const map = await renderer.mountMunicipalityMap(container, meshUrl!);
         showOnMap = renderer.mountIndicatorPaint(map, listing);
         showOnMap(mapLayer, mapState.mode);
-        selectOnMap = code => code ? renderer.focusMunicipality(map, code) : renderer.clearMunicipality(map);
+        // The list view hides the map, which cannot be framed until it comes back.
+        let frameWhenShown = false;
+        selectOnMap = code => {
+          frameWhenShown = !!code && !container.clientWidth;
+          if (code) renderer.focusMunicipality(map, code, { legend: legendCorner, note: mapNotes });
+          else renderer.clearMunicipality(map);
+        };
+        map.on('resize', () => { if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode); });
         selectOnMap(selectedCode);
         renderer.onMunicipalityClick(map, code => {
           window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));

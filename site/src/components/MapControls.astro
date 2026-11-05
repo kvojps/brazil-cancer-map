@@ -37,16 +37,15 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
       ))}
     </select>
   </div>
-  <div class="municipality-search">
-    <label for="municipality-search">Buscar município</label>
-    <input id="municipality-search" type="search" placeholder="Nome do município e UF" aria-controls="municipality-results" disabled />
-    <p id="search-status" role="status"></p>
-    <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
+  <nav class="view-controls" aria-label="Visualização" hidden>
+    <button type="button" data-view="mapa" aria-pressed="true">Mapa</button>
+    <button type="button" data-view="lista" aria-pressed="false">Lista</button>
+  </nav>
+  <div class="map-notes">
+    <p id="indicator-caveat" class="note" role="status" hidden></p>
+    <p id="map-selection-notice" class="note" role="status" hidden></p>
   </div>
-  <a class="list-shortcut control-link" href="/municipios/">☷ Explorar em lista</a>
-  <p id="indicator-caveat" class="note" role="status" hidden></p>
-  <p id="map-selection-notice" class="note" role="status" hidden></p>
-  <a href="#preview-heading" data-preview-shortcut hidden>Ir para Meu município</a>
+  <a href="#preview-heading" class="preview-shortcut" data-preview-shortcut hidden>Ir para Meu município</a>
 </form>
 
 <script>
@@ -78,24 +77,40 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
   .cancer-type label {
     flex: none;
   }
-  .municipality-search { flex: 1.5 1 13rem; position: relative; display: flex; flex-direction: column; gap: .25rem; }
-  .municipality-search label { display: block; flex: none; }
   /* One label height across the bar, so the ⓘ beside Tipo de câncer does not push its select down. */
   label { line-height: 1.5rem; }
-  input { width: 100%; }
-  #search-status:empty, #municipality-results:empty { display: none; }
-  #municipality-results { padding-left: 1.25rem; max-height: 18rem; overflow: auto; }
   .cancer-type-heading { display: flex; align-items: center; gap: .25rem; }
   .cancer-type-heading label { display: block; }
-  .list-shortcut { align-self: end; }
+  .view-controls { display: flex; gap: .25rem; align-self: end; }
+  .view-controls button { min-width: 3.75rem; }
+  .map-notes { flex-basis: 100%; }
+  .map-notes:not(:has(p:not([hidden]))) { display: none; }
   .note {
     color: var(--muted);
     font-size: var(--text-14);
   }
+  .map-notes p { margin: 0; }
   .note p {
     margin: 0;
   }
   .note p + p {
     margin-top: 0.25rem;
+  }
+  @media (min-width: 768px) {
+    .map-controls { position: relative; z-index: 6; flex: none; align-items: center; gap: .5rem 1.25rem; min-height: 56px; padding: .25rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+    label, .cancer-type { flex: 0 1 auto; flex-direction: row; align-items: center; gap: .5rem; white-space: nowrap; }
+    .cancer-type-heading { flex: none; }
+    #map-indicator { width: 19rem; }
+    #map-reading { width: 10rem; }
+    #cancer-type { width: 11rem; }
+    .view-controls { margin-left: auto; align-self: center; }
+    /* Caveats hang under the bar, over the map's empty corner, so they never change the map's height.
+       In the list view they enter the flow, where the rows would otherwise sit beneath them. */
+    .map-notes { position: absolute; top: calc(100% + 1px); left: 0; max-width: min(18rem, calc(100% - 4rem)); padding: .5rem 1rem; background: var(--surface); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); border-bottom-right-radius: var(--card-radius); }
+    :global(.home:has(.indicator-table:not([hidden]))) .map-notes { position: static; max-width: none; padding: 0; border: 0; }
+    :global(.home:has(#municipality-preview:not([hidden]))) .map-notes { max-width: min(18rem, calc(100% - var(--panel-width) - 4rem)); }
+    /* A keyboard shortcut only: the panel is already beside the map, and the link must not reshape the bar. */
+    .preview-shortcut { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .preview-shortcut:focus { top: 100%; right: 1rem; width: auto; height: auto; padding: .5rem .75rem; clip-path: none; background: var(--surface); }
   }
 </style>

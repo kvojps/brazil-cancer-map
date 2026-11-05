@@ -22,6 +22,7 @@
   --text: #171717; --muted: #525252; --link: #1a56b0; --focus: #1a56b0;
   --notice-bg: #171717; --notice-text: #fafafa; --selection: #000; --chart: #1a56b0;
   --card-shadow: 0 4px 16px #00000024;
+  --backdrop: #00000055;
   --swatch-border: color-mix(in srgb, var(--text) 40%, transparent);
   --mesh: #f6f7f9; --mesh-border: #fff;
   --trend-improving: #0f6e6b; --trend-worsening: #d68f10; --trend-stable: #9aa0a9;
@@ -203,3 +204,26 @@ footer p { margin: 0; flex-basis: 100%; }
 }
 
 .map-with-legend { background: var(--surface); }
+
+.site-menu { display: none; }
+.site-menu > summary { display: grid; place-items: center; width: var(--control-height); height: var(--control-height); font-size: var(--text-20); list-style: none; cursor: pointer; border-radius: var(--control-radius); }
+.site-menu > summary::-webkit-details-marker { display: none; }
+.site-menu > nav { position: absolute; z-index: 25; top: calc(100% + .25rem); left: .5rem; display: flex; flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 0; width: 18rem; max-width: calc(100vw - 1rem); padding: .25rem 0; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+.site-header .site-menu > nav a:not(.control-link) { padding: 0 1rem; }
+
+/* The map's first screen: notice, header, bars and map fill the window exactly, with the footer after it.
+   A hidden item spans the first three rows at the height of the window. The flexible row takes what the
+   notice and the header leave, whatever their height, with no measuring and with the page still the one
+   that scrolls, so the sticky notice stays on top down to the footer. */
+@media (min-width: 768px) {
+  body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
+  body:has(.home)::before { content: ""; grid-area: 1 / 1 / 4 / 2; height: max(100dvh, 520px); visibility: hidden; pointer-events: none; }
+  body:has(.home) > .construction-notice { grid-area: 1 / 1; }
+  body:has(.home) > .site-header { grid-area: 2 / 1; position: relative; z-index: 20; min-height: 48px; padding: 0 1rem; border-bottom: 1px solid var(--border); }
+  body:has(.home) > main { grid-area: 3 / 1; display: flex; min-width: 0; padding: 0; }
+  body:has(.home) > footer { grid-area: 4 / 1; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  body:has(.home) .site-menu { display: block; }
+  body:has(.home) .site-header > nav[aria-label="Navegação principal"] { display: none; }
+}

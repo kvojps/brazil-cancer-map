@@ -3,7 +3,7 @@
 ---
 
 <section id="indicator-table" class="indicator-table" aria-labelledby="list-heading" hidden>
-  <h3 id="list-heading" tabindex="-1">Dados em lista</h3>
+  <h3 id="list-heading">Dados em lista</h3>
   <label>
     UF
     <select>
@@ -87,5 +87,12 @@
   }
   tbody :global(th) {
     font-weight: normal;
+  }
+  /* From 768 px the list takes the map's area: its rows scroll inside and the bars stay in view. */
+  @media (min-width: 768px) {
+    .indicator-table { display: flex; flex-direction: column; height: 100%; overflow: auto; background: var(--surface); }
+    .indicator-table > * { flex: none; }
+    .indicator-table > .scroll { flex: 1 0 16rem; max-height: none; }
+    h3 { margin-top: 0; }
   }
 </style>
