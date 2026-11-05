@@ -15,17 +15,12 @@ export function navigationUrl(destination: URL, current: URL): URL {
   const cancerType = ownType ? readMapState(new URLSearchParams({ tipo: ownType })).cancerType : state.cancerType;
   result.searchParams.delete('theme');
   result.searchParams.delete('visualizacao');
-  if (current.searchParams.get('visualizacao') === 'lista' && (result.pathname === '/' || result.pathname.startsWith('/municipio/'))) result.searchParams.set('visualizacao', 'lista');
+  if (current.searchParams.get('visualizacao') === 'lista') result.searchParams.set('visualizacao', 'lista');
   for (const key of ['indicador', 'tipo', 'modo']) result.searchParams.delete(key);
-  // Municipal pages carry the map context for their return link, but filter only by type.
-  if (result.pathname === '/' || result.pathname.startsWith('/municipio/')) {
-    result.search = writeMapState({ ...state, cancerType }, result.searchParams).toString();
-  } else {
-    if (cancerType !== 'all') result.searchParams.set('tipo', cancerType);
-  }
+  result.search = writeMapState({ ...state, cancerType }, result.searchParams).toString();
   result.searchParams.delete('municipio');
   const indexDestination = result.hash === '#municipality-index-heading' || result.hash.startsWith('#municipalities-');
-  if (result.pathname === '/' && !indexDestination) {
+  if ((result.pathname === '/' || result.pathname === '/metodologia/') && !indexDestination) {
     const code = current.pathname.match(/^\/municipio\/(\d+)-/)?.[1] ?? current.searchParams.get('municipio');
     if (code) result.searchParams.set('municipio', code);
   }

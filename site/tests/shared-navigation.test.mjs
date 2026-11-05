@@ -10,7 +10,7 @@ test('municipality links carry map context for return without filtering the prof
 
 test('section links and methodology carry explicit theme and cancer type', () => {
   assert.equal(navigationUrl(new URL('/metodologia/#mammography', current), current).href,
-    'https://example.org/metodologia/?tipo=breast&theme=dark#mammography');
+    'https://example.org/metodologia/?indicador=mammography&tipo=breast&modo=hoje&theme=dark#mammography');
   assert.equal(navigationUrl(new URL('#table', current), current).href,
     'https://example.org/?indicador=mammography&tipo=breast&modo=hoje&theme=dark#table');
 });
@@ -72,4 +72,16 @@ test('the static index remains a root destination from a selected dashboard', ()
   assert.equal(index.searchParams.has('municipio'), false);
   assert.equal(index.searchParams.get('visualizacao'), 'lista');
   assert.equal(index.hash, '#municipality-index-heading');
+});
+
+
+test('methodology round trip and section links preserve the selected dashboard context', () => {
+  const selected = new URL('https://example.org/municipio/261160-recife/?indicador=mammography&tipo=breast&modo=hoje&visualizacao=lista&theme=dark');
+  const method = navigationUrl(new URL('/metodologia/#mamografia', selected), selected);
+  const section = navigationUrl(new URL('#dados-e-fontes', method), method);
+  assert.equal(section.hash, '#dados-e-fontes');
+  const back = navigationUrl(new URL('/', method), section);
+  for (const [key, value] of Object.entries({ municipio: '261160', indicador: 'mammography', tipo: 'breast', modo: 'hoje', visualizacao: 'lista', theme: 'dark' })) {
+    assert.equal(back.searchParams.get(key), value, key);
+  }
 });
