@@ -97,6 +97,8 @@ const period = manifest.indicators[indicator].all;
     .data-feedback { position: absolute; top: 1rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: var(--control-radius); }
     .data-feedback p { margin: 0; }
     .data-feedback button { margin-top: .5rem; }
+    /* In the list the message hangs below the bar of the UF, which wraps when the list is narrow. */
+    .map-with-legend:has(:global(.indicator-table:not([hidden]))) .data-feedback { top: 7rem; }
   }
   @media (min-width: 1920px) {
     .home { --panel-width: 30rem; }
