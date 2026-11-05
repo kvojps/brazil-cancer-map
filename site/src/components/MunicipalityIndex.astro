@@ -4,8 +4,8 @@ import { municipalityPath } from '../profile/profile';
 const collator = new Intl.Collator('pt-BR');
 const states = [...new Set(listing.municipalities.map(place => place.uf))].sort();
 ---
-<section aria-labelledby="municipality-index-heading" class="municipality-index">
-  <h2 id="municipality-index-heading">Municípios por UF</h2>
+<details class="municipality-index">
+  <summary id="municipality-index-heading">Consultar municípios por UF</summary>
   <p>Acesse Meu município mesmo sem mapa ou JavaScript.</p>
   <nav aria-label="Ir para uma UF">
     {states.map(uf => <a href={`#municipalities-${uf}`}>{uf}</a>)}
@@ -14,7 +14,7 @@ const states = [...new Set(listing.municipalities.map(place => place.uf))].sort(
     <summary>{uf}</summary>
     <ul>{listing.municipalities.filter(place => place.uf === uf).sort((a, b) => collator.compare(a.name, b.name)).map(place => <li><a href={municipalityPath(place)}>{place.name}</a></li>)}</ul>
   </details>)}
-</section>
+</details>
 <style>
   .municipality-index { min-width: 0; overflow-wrap: anywhere; }
   nav { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }

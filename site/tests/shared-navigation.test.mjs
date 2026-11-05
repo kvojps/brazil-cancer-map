@@ -55,3 +55,12 @@ test('preview to profile and return preserve selection, map context and theme', 
  assert.equal(back.searchParams.get('modo'), 'hoje');
  assert.equal(back.searchParams.get('theme'), 'dark');
 });
+
+test('list view follows native municipal links and return links', () => {
+  const list = new URL('https://example.org/?visualizacao=lista&theme=dark');
+  const municipal = navigationUrl(new URL('/municipio/261160-recife/', list), list);
+  assert.equal(municipal.searchParams.get('visualizacao'), 'lista');
+  assert.equal(navigationUrl(new URL('/', list), municipal).searchParams.get('visualizacao'), 'lista');
+  const invalid = new URL('https://example.org/?visualizacao=invalid');
+  assert.equal(navigationUrl(new URL('/', invalid), invalid).searchParams.has('visualizacao'), false);
+});

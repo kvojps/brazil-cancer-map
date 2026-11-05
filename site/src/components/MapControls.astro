@@ -48,17 +48,13 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     <p id="search-status" role="status"></p>
     <ul id="municipality-results" aria-label="Municípios encontrados"></ul>
   </div>
-  <a class="list-shortcut" href="#indicator-table">☷ Explorar em lista</a>
+  <a class="list-shortcut" href="/#municipality-index-heading">☷ Explorar em lista</a>
   <p id="indicator-caveat" class="note" role="status" hidden></p>
   <p id="map-selection-notice" class="note" role="status" hidden></p>
   <a href="#preview-heading" data-preview-shortcut hidden>Ir para Meu município</a>
 </form>
 
 <script>
-  document.querySelector('.list-shortcut')?.addEventListener('click', () => {
-    const table = document.querySelector<HTMLDetailsElement>('.indicator-table');
-    if (table) { table.open = true; table.querySelector('summary')?.focus(); }
-  });
   document.querySelector('[data-preview-shortcut]')?.addEventListener('click', event => {
     const heading = document.getElementById('preview-heading');
     if (!heading) return;

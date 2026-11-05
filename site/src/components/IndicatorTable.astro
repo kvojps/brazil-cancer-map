@@ -2,8 +2,8 @@
 // Text alternative populated independently of the optional map renderer.
 ---
 
-<details id="indicator-table" class="indicator-table" hidden>
-  <summary>Ver os dados do mapa em tabela</summary>
+<section id="indicator-table" class="indicator-table" aria-labelledby="list-heading" hidden>
+  <h3 id="list-heading" tabindex="-1">Dados em lista</h3>
   <label>
     UF
     <select>
@@ -41,11 +41,12 @@
       <tbody></tbody>
     </table>
   </div>
-</details>
+</section>
 
 <style>
   .indicator-table {
-    margin: 1rem 0;
+    padding: 1rem;
+    min-width: 0;
     font-size: 0.875rem;
   }
   summary {
