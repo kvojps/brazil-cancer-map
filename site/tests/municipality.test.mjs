@@ -228,3 +228,28 @@ test('estimated cases show annual state and capital context for every cancer typ
   const dfCard = page(df).split('aria-label="Casos novos estimados"')[1].split('</article>')[0];
   assert.match(dfCard, /Brasília.*Distrito Federal/s);
 });
+
+test('smoking shows the state capital for capital and inland municipalities, only for all and lung', () => {
+  for (const code of ['261160', '260410', '530010']) {
+    const municipality = listing.municipalities.find(m => m.code === code);
+    const profile = JSON.parse(readFileSync(new URL(`../public/dados/profiles/${municipality.uf}.json`, import.meta.url)));
+    const html = page(municipality);
+    const cards = [...html.matchAll(/<section data-cancer-type="([^"]+)"[^>]*>\s*<article[^>]*aria-label="Tabagismo na capital"[^>]*>([\s\S]*?)<\/article>/g)];
+    assert.deepEqual(cards.map(match => match[1]), ['all', 'lung']);
+    const data = profile.indicators.smoking.all;
+    for (const [, , card] of cards) {
+      assert.ok(card.includes(data.capital_name));
+      assert.match(card, /na capital do seu estado/);
+      assert.ok(card.includes(percent(data.value)));
+      assert.match(card, /5,9% — meta do Brasil para 2030/);
+      assert.match(card, /Quer parar de fumar\? Procure apoio/);
+      assert.match(card, /Pergunte na UBS onde encontrar atendimento para parar de fumar/);
+      assert.match(card, /\/metodologia\/#tabagismo/);
+      assert.match(card, /IC 95%/);
+      assert.doesNotMatch(card, /pontos percentuais|annual_percent_change/);
+      for (const point of data.series) assert.ok(card.includes(`<th scope="row">${point.year}</th>`));
+    }
+  }
+  const index = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(index, /<option value="smoking"/);
+});

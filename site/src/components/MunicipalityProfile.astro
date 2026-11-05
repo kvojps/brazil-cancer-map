@@ -1,8 +1,9 @@
 ---
 import AlternativeActionCard from './AlternativeActionCard.astro';
-import { earlyDetectionActions, preventionActions, smokingAction } from '../content/actions';
+import { earlyDetectionActions, preventionActions } from '../content/actions';
 import EstimatedCasesCard from './EstimatedCasesCard.astro';
 import TreatmentCard from './TreatmentCard.astro';
+import SmokingCard from './SmokingCard.astro';
 import HpvCard from './HpvCard.astro';
 import MortalityCard from './MortalityCard.astro';
 import ScreeningCard from './ScreeningCard.astro';
@@ -63,7 +64,7 @@ const sources: Record<string, { extracted_at: string }> = manifest.sources;
         <AlternativeActionCard label={CANCER_TYPES[cancerType as keyof typeof CANCER_TYPES]} reason="Este eixo não tem indicador com dado aberto para este tipo de câncer no MVP." action={action} />
       </section>))}
       {['all', 'lung'].map(selection => <section data-cancer-type={selection}>
-        <AlternativeActionCard label="Pulmão" reason="O indicador de tabagismo na capital do seu estado ainda não está disponível nesta ficha." action={smokingAction} />
+        <SmokingCard data={profile.indicators.smoking?.[selection]} cancerType={selection} />
       </section>)}
     </details>
     <details id="panorama" data-profile-axis open><summary>Panorama</summary>

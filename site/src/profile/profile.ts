@@ -16,7 +16,7 @@ export interface TreatmentProfile extends Pick<IndicatorLayer, 'period' | 'sourc
 
 export interface UfProfile {
   uf: string;
-  indicators: { estimated_cases?: Record<string, EstimatedCasesProfile>; within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; hpv?: Record<string, HpvProfile>; mortality?: Record<string, MortalityProfile> };
+  indicators: { smoking?: Record<string, SmokingProfile>; estimated_cases?: Record<string, EstimatedCasesProfile>; within_60_days: Record<string, TreatmentProfile>; mammography?: Record<string, ScreeningProfile>; cytopathology?: Record<string, ScreeningProfile>; hpv?: Record<string, HpvProfile>; mortality?: Record<string, MortalityProfile> };
   where_to_treat?: WhereToTreat;
 }
 
@@ -68,4 +68,18 @@ export interface EstimatedCasesProfile {
   capital_cases: number;
   capital_name: string;
   capital_is_df: boolean;
+}
+
+export interface SmokingProfile {
+  capital_name: string;
+  value: number;
+  ci_low: number;
+  ci_high: number;
+  status: 'reached' | 'near' | 'far';
+  trend: { trend_class: TrendClass; first_year: number; last_year: number } | null;
+  period: { first_year: number; last_year: number; latest: number };
+  series: { year: number; value: number; ci_low: number; ci_high: number }[];
+  reference: { value: number; label: string };
+  source: { name: string; url: string; conditions: string };
+  extracted_at: string;
 }

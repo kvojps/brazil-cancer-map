@@ -8,7 +8,7 @@ def test_status_uses_fixed_reference_thresholds(value, expected):
     assert classify_status(value, reference=100) == expected
 
 
-@pytest.mark.parametrize(('value', 'expected'), [(5.9, 'reached'), (5, 'reached'), (7.375, 'near'), (7.4, 'far')])
+@pytest.mark.parametrize(('value', 'expected'), [(5.9, 'reached'), (5, 'reached'), (7.375, 'near'), (7.4, 'near'), (7.401, 'far')])
 def test_smoking_reverses_the_reference_bands(value, expected):
     assert classify_status(value, reference=5.9, lower_is_better=True) == expected
 
