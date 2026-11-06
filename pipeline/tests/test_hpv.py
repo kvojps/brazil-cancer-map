@@ -30,7 +30,7 @@ def test_monthly_extract_counts_people_once_and_removes_raw(tmp_path):
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('vaccination.csv', stream.getvalue().encode('latin1'))
     source = HpvSource(raw_dir=raw, clean_dir=tmp_path / 'clean', years=(2020,))
-    source.clean()
+    source.clean_audit()
     assert not path.exists()
     with duckdb.connect() as db:
         assert db.execute('SELECT patient, sex, age FROM read_parquet(?) ORDER BY patient',
@@ -349,3 +349,12 @@ def test_publication_uses_only_official_aggregates_and_census(tmp_path):
     assert not (clean / 'audit.json').exists()
     manifest = json.loads((site / 'manifest.json').read_text())
     assert manifest['sources']['hpv']['files'] == ['official.json', 'census.parquet']
+
+
+def test_indicator_clean_does_not_run_optional_patient_audit(tmp_path):
+    raw = tmp_path / 'raw'
+    raw.mkdir()
+    # An interrupted optional audit must not break the official aggregate flow.
+    (raw / 'vacinacao_jan_2020_csv.zip').write_bytes(b'incomplete audit download')
+    HpvSource(raw_dir=raw, clean_dir=tmp_path / 'clean', years=(2020,)).clean()
+    assert (raw / 'vacinacao_jan_2020_csv.zip').exists()

@@ -25,7 +25,7 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
     run.add_argument("--source", help="run only this source")
     run.add_argument("--step", choices=list(STEPS), help="run only this step")
     run.add_argument("--list", action="store_true", help="show steps and sources without running")
-    run.add_argument("--year", type=int, help="partition HPV download/clean by year")
+    run.add_argument("--year", type=int, help="legacy option; use hpv-audit --year for microdata")
     update = sub.add_parser('update', help='prepare a local update for review, without changing live JSON')
     update.add_argument('--source', action='append', required=True)
     update.add_argument('--data-dir', type=Path, default=SITE_DATA_DIR)
@@ -63,7 +63,7 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
                 if args.step == 'download':
                     audit_source.download_audit()
                 elif args.step == 'clean':
-                    audit_source.clean()
+                    audit_source.clean_audit()
                 else:
                     audit_source.compute_audit()
             elif args.command == 'restore-state':
@@ -81,9 +81,6 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
             print(f'{args.command} failed: {error}', file=sys.stderr)
             return 1
     if args.year is not None:
-        if args.source != 'hpv' or args.step not in ('download', 'clean') or not 2020 <= args.year <= 2100:
-            parser.error('--year requires --source hpv and --step download or clean')
-        from pipeline.sources.hpv import HpvSource
         parser.error('Use hpv-audit --step download or clean --year for patient microdata')
 
     names = [s.name for s in sources]
