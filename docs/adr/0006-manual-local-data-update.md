@@ -25,5 +25,5 @@ A tentativa de medir uma partição anual, em 05/11/2026, parou antes de qualque
 - Os dados só mudam quando o mantenedor executa o fluxo. Entre execuções, o site mantém a última versão publicada.
 - `update` prepara um snapshot isolado para revisão. Uma falha é registrada, aparece na saída e retorna código 1, sem alterar os JSON do site nem renovar a data exibida.
 - O estado necessário para retomar em outra máquina vai em assets de Release, abaixo de 2 GiB cada. A auditoria do HPV fica local e opcional.
-- O CI e o deploy do site continuam separados do processamento dos dados.
+- O deploy do site continua separado do processamento dos dados.
 - O calendário de checagem é só uma recomendação: nada dispara a atualização nem avisa quando ela atrasa.

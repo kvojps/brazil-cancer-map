@@ -123,8 +123,7 @@ Indicador, Tipo e modo, nos dois temas, com WebGL indisponível, e compara a cla
 a origem, as notas e o ano de Recife com os JSONs publicados. Os demais testes
 continuam cobrindo interação, recuperação, responsividade, zoom e teclado.
 
-O job do site no CI instala o Chromium, inicia `astro preview --background`, roda
-esses dois arquivos, guarda o artifact `accessibility-results` e encerra a prévia.
+O repositório não tem CI: esses dois arquivos rodam localmente, com `npm run test:a11y`.
 Os resultados e limites da auditoria, incluindo revisão humana e a dívida de
 orçamento aceita para a V1, estão na [auditoria](../../docs/validation/accessibility-audit.md).
 

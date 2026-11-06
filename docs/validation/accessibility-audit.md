@@ -30,7 +30,7 @@ Data: 06/11/2026. Base da implementação: `31ddefb2cd3432fec45e7adbec38a570d7fa
 
 O axe identificou `landmark-unique` (moderado): duas regiões de tabela da Metodologia se chamavam "Conferência de mortalidade", e várias seções de Ação apareciam como regiões de mesmo nome. A tabela de pesos passou a se chamar "População mundial padrão Segi/Doll". As Ações usam `role="group"`, dentro dos artigos já nomeados por indicador. O teste reproduziu os achados antes da correção.
 
-O CI barra violações graves e críticas e a regressão de nomes de regiões, e guarda os relatórios, inclusive os inconclusivos, no artifact `accessibility-results`. Os comandos foram executados localmente, e esta auditoria não registra execução remota do workflow. O job do site no CI roda `check`, `build` e `test:a11y`, sem `npm test` nem `test:browser`.
+`test:a11y` barra violações graves e críticas e a regressão de nomes de regiões, e guarda os relatórios, inclusive os inconclusivos, em `A11Y_REPORT_DIR`. Os comandos foram executados localmente. O workflow de CI que rodava essa checagem foi removido em 06/11/2026 sem ter sido executado remotamente, então ela não roda de forma automática.
 
 **Inconclusivos do axe:**
 

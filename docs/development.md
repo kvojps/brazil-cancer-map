@@ -6,7 +6,7 @@ Para alterar páginas, estilos ou interações, basta o site: os JSON do
 Contrato de dados já estão commitados em `site/public/dados/`. Não é preciso
 instalar Python, baixar Fontes ou executar o pipeline.
 
-Pré-requisitos: Git e **Node.js 24**, usado no CI e no deploy. O mínimo
+Pré-requisitos: Git e **Node.js 24**, usado no deploy. O mínimo
 declarado em `site/package.json` é `>=22.23.4`. Use o npm que acompanha o Node.
 Os comandos abaixo partem da raiz do repositório:
 
@@ -83,7 +83,7 @@ SITE_URL=http://127.0.0.1:4322 npm run test:a11y
 
 Se já houver Chromium instalado, basta definir `CHROMIUM_PATH` com seu caminho
 absoluto. O padrão dos testes é `/snap/bin/chromium`. Em Linux, a instalação
-pode exigir bibliotecas de sistema; o CI usa `install --with-deps chromium`.
+pode exigir bibliotecas de sistema; nesse caso, use `install --with-deps chromium`.
 Os testes de zoom nativo exigem suporte a extensões locais.
 
 `test:browser` cobre interações, navegação, recuperação de falhas, teclado,
@@ -94,12 +94,10 @@ Esses testes não substituem a revisão humana com leitor de tela.
 Para a matriz completa, relatórios e execução de um arquivo por vez, veja
 [os testes de navegador](../site/browser-tests/README.md).
 
-Conforme [o workflow versionado](../.github/workflows/ci.yml), o CI roda em
-push na `main` e em pull requests. O job Python instala dependências e
-mapshaper e executa `mypy` e `pytest`. O job do site instala dependências,
-executa `check` e `build`, instala Chromium, abre a prévia e roda `test:a11y`,
-guardando `accessibility-results`. **`npm test` e a suíte completa
-`test:browser` não estão no CI**; execute-os localmente ao alterar o site.
+**O repositório não tem CI**: nenhuma verificação roda automaticamente em push
+ou pull request. Execute localmente as que cobrem a sua mudança antes de
+publicá-la: `mypy` e `pytest` no pipeline; `check`, `build`, `npm test`,
+`test:browser` e `test:a11y` no site.
 
 ## Caminho completo: trabalhar no pipeline
 
@@ -187,7 +185,6 @@ npx wrangler deploy --assets ./dist --name brazil-cancer-map --compatibility-dat
 
 Outras branches geram previews com `npx wrangler versions upload` e as mesmas
 flags. A publicação usa os JSON commitados e não executa o pipeline.
-O CI de verificações e a integração de deploy são fluxos separados.
 
 ## Contribuir
 
