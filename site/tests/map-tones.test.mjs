@@ -6,7 +6,7 @@ import { HATCH, INSUFFICIENT_DOTS, STATUS_COLORS, TREND_COLORS } from '../src/ma
 
 const themes = parseThemeTokens(readFileSync(new URL('../src/shared/theme.css', import.meta.url), 'utf8'));
 
-// The tables of the visual foundations decision (.scratch/ui-polimento/issues/03-fundamentos-visuais.md).
+// The tables of the visual foundations decision (docs/ui-contract.md, section Fundamentos visuais).
 const DECISION = {
   light: {
     improving: '#0f6e6b', worsening: '#d68f10', stable: '#9aa0a9', no_clear_direction: '#d9dde2', insufficient: '#f3f2ec',

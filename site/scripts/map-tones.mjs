@@ -1,5 +1,5 @@
 // Checks the map tones of src/shared/theme.css against the distances of the visual
-// foundations decision (.scratch/ui-polimento/issues/03-fundamentos-visuais.md).
+// foundations decision (docs/ui-contract.md, section Fundamentos visuais).
 // Run with `npm run check:tones`.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

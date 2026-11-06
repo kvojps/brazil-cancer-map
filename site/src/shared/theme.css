@@ -1,4 +1,4 @@
-/* Visual foundations: .scratch/ui-polimento/issues/03-fundamentos-visuais.md.
+/* Visual foundations: docs/ui-contract.md, section Fundamentos visuais.
    Sizes come from the type scale, spacing from multiples of 4 px, and color from the tokens below.
    The dark values appear twice because CSS cannot share a rule between a media query and a selector;
    tests/map-tones.test.mjs keeps the two copies equal. */
@@ -236,7 +236,7 @@ footer p { margin: 0; flex-basis: 100%; }
   body:not(:has(.home)) > .site-header { border-bottom: 1px solid var(--border); }
 }
 
-/* The map's first screen on a phone: .scratch/ui-polimento/issues/02-celular-cabecalho-filtros-mapa.md.
+/* The map's first screen on a phone: docs/ui-contract.md, section Primeira tela no celular.
    Two compositions share the rules of this block. Floating: the map fills what the notice leaves and the
    controls float over it, in the media query repeated across the components that take part in it. In flow:
    a short or very narrow viewport, as under 200% zoom, has no room to float, so the controls stack around

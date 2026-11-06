@@ -93,7 +93,7 @@ export const hpvAction = {
   exceptions: 'Grupos especiais têm esquemas próprios; a equipe orienta cada situação.',
   version: '1', checkedAt: '2026-11-04',
   sources: [{ title: 'Ministério da Saúde — HPV', url: 'https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/h/hpv/hpv' }],
-  verificationNote: 'Texto curto aprovado no ticket 20. Revisão clínica dos detalhes pendente.',
+  verificationNote: 'Texto curto aprovado na spec, seção 10.2. Revisão clínica dos detalhes pendente.',
   reviewedVersion: null, reviewedAt: null, reviewer: null,
 };
 

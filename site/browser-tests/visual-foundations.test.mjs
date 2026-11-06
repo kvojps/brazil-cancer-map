@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 
-// The contract of the visual foundations decision (.scratch/ui-polimento/issues/03-fundamentos-visuais.md).
+// The contract of the visual foundations decision (docs/ui-contract.md, section Fundamentos visuais).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const PAGES = ['/', '/municipios/', '/metodologia/', '/municipio/261160-recife/'];
 const NOTICE = 'Em construção. Este site ainda está sendo desenvolvido e os números não passaram por uma validação completa: podem conter erros e mudar.';

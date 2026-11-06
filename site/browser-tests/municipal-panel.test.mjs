@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
-// The contract of the panel decision (.scratch/ui-polimento/issues/04-painel-meu-municipio.md).
+// The contract of the panel decision (docs/ui-contract.md, section Painel Meu município).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const CHROMIUM = process.env.CHROMIUM_PATH ?? '/snap/bin/chromium';
 const BALSAS = '/municipio/210140-balsas/';

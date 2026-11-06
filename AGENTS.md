@@ -1,6 +1,10 @@
 ## Execução do MVP
 
-O projeto é o Observatório do Câncer no Brasil. A **spec** é [`.scratch/mapa-cancer-br/spec-mvp.md`](.scratch/mapa-cancer-br/spec-mvp.md): leia a seção que toca o seu ticket antes de mudar código. Cada regra da spec cita o ticket de decisão (em `.scratch/mapa-cancer-br/issues/`) que a fixou; se a spec e esse ticket divergirem, vale o ticket. Os tickets de implementação ficam em `.scratch/mvp-implementacao/issues/`. Nomeie conceitos com os termos do [`GLOSSARY.md`](GLOSSARY.md).
+O projeto é o Observatório do Câncer no Brasil. A **spec** é [`docs/spec.md`](docs/spec.md): leia a seção que toca o seu ticket antes de mudar código. Em divergência, vale o ADR mais recente em [`docs/adr/`](docs/adr/). Nomeie conceitos com os termos do [`GLOSSARY.md`](GLOSSARY.md).
+
+**Guias:** para setup, testes e contribuição, leia [`docs/development.md`](docs/development.md); para atualizar e publicar dados, [`docs/data-update.md`](docs/data-update.md); para verificar ou reproduzir dados, [`docs/reproducibility.md`](docs/reproducibility.md). Mudança em comando do CLI, fluxo de atualização ou pré-requisito atualiza o guia correspondente no mesmo commit.
+
+**Tracker:** os esforços vivem em `.scratch/<feature>/`. Antes de excluir um esforço concluído, registre as decisões vigentes na spec e nos ADRs e preserve as evidências necessárias em `docs/`, sem referências ao esforço. O responsável faz a exclusão; consulte o ciclo de vida em [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
 
 Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15): os JSON em `site/public/dados/`.
 

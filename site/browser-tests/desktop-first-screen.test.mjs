@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 import { fileURLToPath } from 'node:url';
 
-// The contract of the desktop decision (.scratch/ui-polimento/issues/05-desktop-tela-cheia.md).
+// The contract of the desktop decision (docs/ui-contract.md, section Desktop em tela cheia).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const RECIFE = '/municipio/261160-recife/';
 
