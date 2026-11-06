@@ -1,4 +1,4 @@
-# Glossário — Mapa do Câncer no Brasil
+# Glossário — Observatório do Câncer no Brasil
 
 **Eixo**: Um dos quatro agrupamentos temáticos do mapa: Prevenção, Detecção precoce, Acesso ao tratamento e Panorama. Cada indicador pertence a exatamente um eixo.
 
@@ -25,3 +25,9 @@
 **Região imediata**: O grupo de municípios vizinhos definido pelo IBGE cujo dado substitui o de um município com poucos casos, tanto no Mapa inicial quanto no Meu município. Para o cidadão, aparece como "seu município e vizinhos". _Evitar_: "agregado" em texto para o público.
 
 **Dado insuficiente**: O estado de um indicador quando nem o município nem a sua Região imediata têm casos suficientes para calcular a Situação e a Tendência. Não é uma classe de Tendência, e a Ação continua aparecendo.
+
+**Fonte**: O provedor oficial de onde vem um dado (por exemplo SISCAN ou IBGE), aquele que o site identifica e que deve ser citado junto com o Observatório. Uma Fonte pode alimentar mais de um Indicador. _Evitar_: "fonte" para a unidade de processamento do pipeline, que é a `source`, sempre escrita como código.
+
+**Contrato de dados**: O conjunto de arquivos publicados com que o site é construído, com os valores prontos para exibir. É a única ligação entre o processamento dos dados e o site.
+
+**Versão de dados**: Uma publicação datada e imutável do Contrato de dados e dos seus dados abertos, identificada por um nome como `data-2026-11-05`. É o que se cita e se verifica.
