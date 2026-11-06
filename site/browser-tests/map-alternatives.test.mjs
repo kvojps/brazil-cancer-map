@@ -275,7 +275,7 @@ test('the directory link from a selected document survives reload and keeps the 
     await page.locator('#municipality-search:enabled').waitFor();
     await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Municípios por UF', exact: true }).click();
     assert.equal(new URL(page.url()).pathname, '/municipios/');
-    assert.equal(new URL(page.url()).searchParams.has('municipio'), false);
+    assert.equal(new URL(page.url()).searchParams.get('municipio'), '261160', 'the Mapa link returns to the selection');
     assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
     await page.reload();
     assert.equal(await page.locator('#municipality-index-heading').isVisible(), true);

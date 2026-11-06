@@ -18,6 +18,8 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
     <link rel="preload" href="/fonts/InterVariable-subset.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
     <script is:inline>
+      // Before the first paint: what JavaScript will compact must not push an anchor out of place.
+      document.documentElement.dataset.js = '';
       const theme = new URLSearchParams(location.search).get('theme');
       if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
     </script>
