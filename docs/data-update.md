@@ -77,7 +77,7 @@ git commit -m "data: publish data-AAAA-MM-DD"
 git push
 ```
 
-Substitua `data-AAAA-MM-DD` pela versão real. `release` reexporta os arquivos e chama `gh release create`; é uma ação externa. `restore-release` usa Parquet por padrão e reconstrói os JSON sem recalcular. Confira o diff completo antes do commit. O commit gerador no manifesto é anterior ao commit dos JSON: guarde ambos para rastreabilidade. Push e deploy cabem ao responsável; a publicação da Release não atualiza o site por si só.
+Substitua `data-AAAA-MM-DD` pela versão real. Para publicar em outro repositório, acrescente `--repository owner/repo` ao comando `release`. Cada asset precisa ter menos de 2 GiB; se algum atingir esse limite, nada é enviado. `release` reexporta os arquivos e chama `gh release create`; é uma ação externa. `restore-release` usa Parquet por padrão e reconstrói os JSON sem recalcular. Confira o diff completo antes do commit. O commit gerador no manifesto é anterior ao commit dos JSON: guarde ambos para rastreabilidade. Push e deploy cabem ao responsável; a publicação da Release não atualiza o site por si só.
 
 ## Falhas e retomada em outra máquina
 

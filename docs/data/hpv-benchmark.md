@@ -2,7 +2,7 @@
 > agora é manual, pelos agregados oficiais, e o workflow em Actions foi removido.
 > Não há medição de CI pendente, e o limite de 14 GB e 6 horas por job descrito
 > abaixo não é requisito vigente. As medições ficam como registro. A auditoria
-> continua opcional e local, via `hpv-audit` (veja o README).
+> continua opcional e local, via `hpv-audit` (veja o [guia do mantenedor](../data-update.md#auditoria-hpv-opcional)).
 
 # SI-PNI: medição e orçamento de execução
 
