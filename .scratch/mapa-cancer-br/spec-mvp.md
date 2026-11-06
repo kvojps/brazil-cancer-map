@@ -273,6 +273,7 @@ Fontes: [Qual stack e pipeline de dados usar?](issues/07-stack-e-pipeline.md), [
 - **Mapa:** uma ilha em TypeScript + MapLibre GL JS (BSD-3), com TopoJSON da malha IBGE 2025 simplificado a 1–2% com mapshaper (~0,6–0,9 MB gzip), sem as 2 lagoas, **sem mapa base**, com `promoteId: "CD_MUN"` e `feature-state` para trocar indicador e ano.
 - **O front não faz conta estatística.** Taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C chegam prontas do pipeline.
 - **Hospedagem:** Cloudflare Pages, com GitHub Pages como alternativa equivalente. O orçamento estimado é ~1,3 MB na primeira visita e menos de 30 MB no site inteiro. Não usa DuckDB-WASM nem PMTiles.
+  - **Exceção para a V1 (06/11/2026):** por decisão do responsável registrada no [ticket 47 de implementação](../mvp-implementacao/issues/47-reduzir-saida-e-transferencia.md), a redução fica para depois da V1. O excesso medido (999.530.479 bytes de saída e 1.369.414 bytes gzip na primeira visita local) é dívida conhecida e não bloqueia a V1 por orçamento. As metas permanecem para a otimização posterior; acessibilidade, validação dos dados e verificação da hospedagem continuam exigidas.
 
 ## 14. Pipeline
 

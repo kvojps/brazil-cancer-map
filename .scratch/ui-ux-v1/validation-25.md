@@ -6,7 +6,7 @@ Data: 06/11/2026. Base de implementação: `31ddefb2cd3432fec45e7adbec38a570d7fa
 
 A automação foi ampliada com axe no CI, relatórios por página e comparação das classes e origens de todas as seleções publicadas do mapa com o contrato JSON. Foram corrigidos nomes repetidos de regiões acessíveis na Metodologia e nos cartões. A sessão real com leitor de tela permanece pendente, por decisão do responsável: **“Deixar pendente para revisão humana”**.
 
-Os orçamentos continuam excedidos. Decisão explícita do responsável: **“Manter metas e bloquear lançamento até reduzir”**. O [ticket 47](../mvp-implementacao/issues/47-reduzir-saida-e-transferencia.md) acompanha essa correção. O aceite desta automação não libera o lançamento nem encerra o ticket 25.
+Os orçamentos continuam excedidos. A decisão inicial foi **“Manter metas e bloquear lançamento até reduzir”**. Em decisão posterior de 06/11/2026, registrada no [ticket 47](../mvp-implementacao/issues/47-reduzir-saida-e-transferencia.md), o responsável adiou a otimização para depois da V1 e aceitou o excesso medido como dívida conhecida: **o orçamento deixa de bloquear a V1**. As metas continuam pendentes; essa exceção não dispensa acessibilidade, validação dos dados ou verificação da hospedagem. O aceite desta automação não libera o lançamento nem encerra o ticket 25.
 
 ## Escopo e método
 
