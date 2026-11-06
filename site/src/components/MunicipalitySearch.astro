@@ -58,7 +58,7 @@
     /* Short enough to stay above a virtual keyboard, which does not change the height of the page. */
     #municipality-results { position: absolute; top: calc(100% + .25rem); inset-inline: 0; max-height: 26dvh; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
     /* The button already opens the consultation, and each row stays one touch target above the keyboard. */
-    #municipality-results :global(a) { display: none; }
+    #municipality-results :global(a:not(.search-result)) { display: none; }
   }
   @media (min-width: 768px) {
     .municipality-search { flex: 0 1 15rem; }
@@ -68,4 +68,10 @@
     #municipality-results :global(li) { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; padding-block: .25rem; }
     .municipality-search:not(:focus-within):not(:hover) #municipality-results { display: none; }
   }
+  /* Results on pages without the dashboard, where each one is a link. */
+  #municipality-results :global(.search-result) { display: flex; flex: 1; align-items: center; min-height: 44px; padding-inline: .75rem; color: var(--text); text-decoration: none; }
+  #municipality-results :global(.search-result:hover) { background: var(--soft); }
+  /* Without JavaScript the field cannot work: on these pages the icon leads to the list by UF at every width. */
+  :global(html:not([data-js]) body:not(:has(.home))) .municipality-search { display: none; }
+  :global(html:not([data-js]) body:not(:has(.home))) .search-toggle { display: grid; place-items: center; flex: none; width: var(--control-height); height: var(--control-height); color: var(--text); border-radius: var(--control-radius); }
 </style>

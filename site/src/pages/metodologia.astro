@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import HeaderSearch from '../components/HeaderSearch.astro';
 import manifest from '../../public/dados/manifest.json';
 const sim = (manifest.sources as Record<string, { extracted_at: string }>).sim;
 const period = manifest.indicators.within_60_days.all;
@@ -8,17 +9,17 @@ const siscan = (manifest.sources as Record<string, { extracted_at: string }>).si
 const cytopathology = (manifest.sources as Record<string, { extracted_at: string }>).siscan_cytopathology;
 ---
 <Base title="Como calculamos — Observatório do Câncer no Brasil">
+<HeaderSearch slot="header-tools" />
 <div class="methodology">
 <header class="methodology-header">
-<a class="methodology-back" href="/">← Voltar ao mapa</a>
-<p class="eyebrow">Metodologia</p>
 <h1>Como calculamos</h1>
 <p>O dado descreve o cuidado no território. Não estima seu risco individual nem determina seu tratamento.</p>
 </header>
 <div class="methodology-layout">
 <nav class="methodology-index" aria-labelledby="methodology-index-title">
 <h2 id="methodology-index-title">Nesta página</h2>
-<ol>
+<button type="button" class="index-toggle" aria-expanded="false" aria-controls="methodology-index-list"><span class="index-label">Nesta página</span> <span class="index-current" data-index-current></span><span class="index-chevron" aria-hidden="true">⌄</span></button>
+<ol id="methodology-index-list">
 <li><a href="#60-dias">Tratamento em até 60 dias</a></li>
 <li><a href="#onde-se-tratar">Onde se tratar</a></li>
 <li><a href="#mamografia">Mamografia de rastreamento</a></li>
@@ -244,41 +245,72 @@ const cytopathology = (manifest.sources as Record<string, { extracted_at: string
 </div>
 </div>
 </Base>
+<script>
+  import { mountSectionIndex } from '../shared/section-index';
+  mountSectionIndex();
+</script>
 <style>
-.methodology { max-width: 76rem; margin: .5rem auto 3rem; }
-.methodology-header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
-.methodology-header p:last-child { max-width: 68ch; margin-bottom: 0; color: var(--muted); }
-.methodology-back { display: inline-block; font-size: var(--text-14); margin-bottom: 1rem; }
-.eyebrow { color: var(--muted); font-size: var(--text-14); font-weight: 500; margin-bottom: .25rem; }
-.methodology-header h1 { margin-top: .25rem; }
-.methodology-layout { display: grid; grid-template-columns: minmax(12rem, 17rem) minmax(0, 1fr); gap: 2rem; align-items: start; }
-.methodology-index { background: var(--surface); border-radius: var(--card-radius); padding: 1rem; position: sticky; top: var(--notice-clearance); }
-.methodology-index h2 { font-size: var(--text-14); margin-top: 0; }
-.methodology-index ol { padding-left: 1.75rem; margin: 0; list-style-type: decimal-leading-zero; }
-.methodology-index li { border-top: 1px solid var(--soft); padding-left: .25rem; font-size: var(--text-14); }
+/* The reading page: .scratch/ui-polimento/issues/06-lista-ufs-metodologia.md. */
+/* Measured here: any more than the notice would make focusing the line fixed under it scroll the page. */
+:global(html:has(.methodology)) { scroll-padding-top: var(--notice-height, var(--notice-clearance)); }
+.methodology { --index-line: 0rem; --notice-bottom: var(--notice-height, var(--notice-clearance)); max-width: 72rem; margin: 0 auto; padding-block: .5rem 3rem; }
+.methodology-header { margin-bottom: 1.5rem; }
+.methodology-header h1 { margin: 0 0 .5rem; }
+.methodology-header p { max-width: 68ch; margin: 0; color: var(--muted); }
+.methodology-index h2 { margin: 0; font-size: var(--text-14); }
+.methodology-index ol { margin: 0; padding-left: 2rem; list-style-type: decimal-leading-zero; }
+.methodology-index li { padding-left: .25rem; font-size: var(--text-14); }
 .methodology-index li::marker { color: var(--muted); font-size: var(--text-12); }
-.methodology-index a { display: block; padding: .5rem 0; text-decoration: none; }
+.methodology-index a { display: flex; align-items: center; min-height: 44px; padding-block: .25rem; line-height: 1.25; color: var(--text); text-decoration: none; outline-offset: -3px; }
 .methodology-index a:hover { text-decoration: underline; }
-.methodology-reading { min-width: 0; }
-section { scroll-margin-top: 1rem; border-radius: var(--card-radius); background: var(--surface); padding: 1rem; margin-bottom: 1rem; }
-@media (min-width: 768px) {
-  section { padding: 1.5rem; }
-}
-section > h2 { margin-top: 0; }
+.methodology-index a[aria-current] { font-weight: 600; text-decoration: underline; }
+.index-toggle { display: none; }
+.methodology-reading { min-width: 0; max-width: 44rem; }
+/* The notice is already cleared by the page's scroll-padding; the rest keeps the title under the index line. */
+section { scroll-margin-top: calc(var(--index-line) + 1rem); margin-bottom: 2.5rem; }
+/* The keyboard must not leave focus behind the line. */
+.methodology-reading :is(a, summary) { scroll-margin-top: calc(var(--index-line) + .5rem); }
+section:focus { outline: none; }
+section:focus-visible > h2 { outline: 3px solid var(--focus); outline-offset: 2px; }
+section > h2 { margin: 0 0 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+section:first-child > h2 { padding-top: 0; border-top: 0; }
 .section-number { color: var(--muted); font-size: var(--text-14); margin-right: .25rem; }
 section > ol { padding-left: 1.5rem; }
 section > ol > li { margin-bottom: 2rem; }
 code { overflow-wrap: anywhere; }
-details { border-radius: var(--control-radius); background: var(--page); padding: .75rem 1rem; }
+details { border-radius: var(--control-radius); background: var(--surface); padding: .75rem 1rem; }
 summary { cursor: pointer; }
 details li { margin-block: .5rem; }
 .table-scroll { max-width: 100%; overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: var(--text-14); }
 caption { text-align: left; font-weight: 600; margin-bottom: .5rem; }
-th, td { padding: .5rem; border: 1px solid var(--border); text-align: left; }
-thead { background: var(--soft); }
-@media (max-width: 55rem) {
-  .methodology-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-  .methodology-index { position: static; }
+th, td { padding: .5rem; border-bottom: 1px solid var(--border); text-align: left; }
+@media (min-width: 881px) {
+  .methodology-layout { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 3rem; align-items: start; }
+  .methodology-index { position: sticky; top: calc(var(--notice-bottom) + 1rem); max-height: calc(100dvh - var(--notice-bottom) - 2rem); overflow: auto; }
+  .methodology-index h2 { padding-bottom: .5rem; }
+  .methodology-index a { min-height: 40px; }
+  section:first-child > h2 { padding-top: 0; }
+}
+/* Without JavaScript the narrow index is plain text in the flow; with it, one line that opens over the text. */
+@media (max-width: 880px) {
+  .methodology-index { margin-bottom: 1.5rem; }
+  :global(html[data-js]) .methodology-index { position: relative; z-index: 12; margin-inline: -.75rem; background: var(--surface); border-block: 1px solid var(--border); }
+  :global(html[data-js]) .methodology-index h2 { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  :global(html[data-js]) .index-toggle { display: flex; align-items: center; gap: .5rem; width: 100%; min-height: 48px; padding: .25rem .75rem; font-size: var(--text-14); text-align: left; background-color: transparent; border-radius: 0; outline-offset: -3px; }
+  .index-label { flex: none; font-weight: 500; color: var(--muted); }
+  .index-current { flex: 1; min-width: 0; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+  .index-chevron { flex: none; }
+  .index-toggle[aria-expanded="true"] .index-chevron { transform: rotate(180deg); }
+  :global(html[data-js]) .methodology-index:not([data-open]) ol { display: none; }
+  :global(html[data-js]) .methodology-index ol { position: absolute; top: 100%; inset-inline: 0; max-height: max(12rem, calc(100dvh - var(--notice-bottom) - 3.5rem)); padding: .25rem .75rem .5rem 2.75rem; overflow: auto; background: var(--surface); box-shadow: var(--card-shadow); }
+}
+@media (min-width: 768px) and (max-width: 880px) {
+  :global(html[data-js]) .methodology-index { margin-inline: -1.5rem; }
+}
+/* Fixed only where the notice and the line leave room to read, unlike a small screen at 200% zoom. */
+@media (max-width: 880px) and (min-width: 300px) and (min-height: 300px) {
+  :global(html[data-js]) .methodology { --index-line: 3rem; }
+  :global(html[data-js]) .methodology-index { position: sticky; top: var(--notice-bottom); }
 }
 </style>

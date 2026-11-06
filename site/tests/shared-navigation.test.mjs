@@ -86,14 +86,18 @@ test('methodology round trip and section links preserve the selected dashboard c
   }
 });
 
-test('the directory carries filters and theme without retaining a municipal selection', () => {
+test('the directory carries filters, theme and selection, so its Mapa link can return to them', () => {
   const selected = new URL('https://example.org/municipio/261160-recife/?tipo=breast&theme=dark&visualizacao=lista');
   const directory = navigationUrl(new URL('/municipios/', selected), selected);
   assert.equal(directory.pathname, '/municipios/');
-  assert.equal(directory.searchParams.has('municipio'), false);
+  assert.equal(directory.searchParams.get('municipio'), '261160');
   assert.equal(directory.searchParams.get('theme'), 'dark');
   assert.equal(directory.searchParams.get('tipo'), 'breast');
+  const back = navigationUrl(new URL('/', directory), directory);
+  assert.equal(back.searchParams.get('municipio'), '261160');
+  assert.equal(back.searchParams.get('tipo'), 'breast');
   const municipal = navigationUrl(new URL('/municipio/260960-olinda/', directory), directory);
+  assert.equal(municipal.searchParams.has('municipio'), false, 'the path is the selection');
   assert.equal(municipal.searchParams.get('theme'), 'dark');
   assert.equal(municipal.searchParams.get('visualizacao'), 'lista');
 });

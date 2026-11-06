@@ -85,10 +85,8 @@ h3, h4 { font-size: var(--text-16); }
   h1 { font-size: var(--text-32); }
 }
 main, footer { padding: 1rem .75rem; }
-.site-header { padding: .5rem .75rem; }
 @media (min-width: 768px) {
   main, footer { padding: 1rem 1.5rem; }
-  .site-header { padding: .5rem 1.5rem; }
 }
 
 /* Controls: filled, borderless, and inverted when active. */
@@ -147,7 +145,8 @@ button[aria-pressed="true"], button[aria-pressed="true"]:hover:not(:disabled), .
   text-decoration: none;
 }
 .site-header, .site-header nav { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; }
-.site-header { background: var(--surface); }
+/* A band in the flow of the page, on every page. The open menu and search are placed against it. */
+.site-header { position: relative; z-index: 20; background: var(--surface); }
 .site-header nav a:not(.control-link) {
   display: inline-flex;
   align-items: center;
@@ -197,9 +196,6 @@ footer p { margin: 0; flex-basis: 100%; }
 .context-help[open] > summary { font-weight: 600; }
 [hidden] { display: none !important; }
 @media (max-width: 480px) {
-  .site-header { gap: .25rem .75rem; }
-  .identity { flex-basis: 100%; }
-  .theme-switcher { margin-left: auto; }
   .map-controls > *, .filters-sheet > * { flex-basis: 100%; }
 }
 
@@ -219,16 +215,25 @@ footer p { margin: 0; flex-basis: 100%; }
   body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
   body:has(.home)::before { content: ""; grid-area: 1 / 1 / 4 / 2; height: max(100dvh, 520px); visibility: hidden; pointer-events: none; }
   body:has(.home) > .construction-notice { grid-area: 1 / 1; }
-  body:has(.home) > .site-header { grid-area: 2 / 1; position: relative; z-index: 20; min-height: 48px; padding: 0 1rem; border-bottom: 1px solid var(--border); }
+  body:has(.home) > .site-header { grid-area: 2 / 1; }
   body:has(.home) > main { grid-area: 3 / 1; display: flex; min-width: 0; padding: 0; }
   body:has(.home) > footer { grid-area: 4 / 1; }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
-  body:has(.home) .site-menu { display: block; }
-  body:has(.home) .site-header > nav[aria-label="Navegação principal"] { display: none; }
-}
 @media (min-width: 768px) {
+  .site-header { min-height: 48px; padding: 0 1rem; border-bottom: 1px solid var(--border); }
   .site-header .site-menu > nav .menu-phone-only { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .site-menu { display: block; }
+  .site-header > nav[aria-label="Navegação principal"] { display: none; }
+}
+@media (max-width: 767px) {
+  .site-header { gap: 0 .25rem; padding: .25rem; }
+  .site-menu { display: block; flex: none; }
+  .site-header > nav[aria-label="Navegação principal"], .site-header > .theme-switcher { display: none; }
+  .identity { flex: 1 1 0; min-width: 0; margin: 0; font-size: var(--text-14); line-height: 1.2; }
+  .site-menu > nav { left: 0; }
+  body:not(:has(.home)) > .site-header { border-bottom: 1px solid var(--border); }
 }
 
 /* The map's first screen on a phone: .scratch/ui-polimento/issues/02-celular-cabecalho-filtros-mapa.md.
@@ -238,11 +243,6 @@ footer p { margin: 0; flex-basis: 100%; }
    the map and the page scrolls. */
 @media (max-width: 767px) {
   body:has(.home) > main { padding: 0; }
-  body:has(.home) > .site-header { position: relative; z-index: 20; gap: 0 .25rem; padding: .25rem; }
-  body:has(.home) .site-menu { display: block; flex: none; }
-  body:has(.home) .site-header > nav[aria-label="Navegação principal"], body:has(.home) .site-header > .theme-switcher { display: none; }
-  body:has(.home) .identity { flex: 1 1 0; min-width: 0; margin: 0; font-size: var(--text-14); line-height: 1.2; }
-  body:has(.home) .site-menu > nav { left: 0; }
 }
 @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
   body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }

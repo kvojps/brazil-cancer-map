@@ -1,0 +1,9 @@
+---
+import MunicipalitySearch from './MunicipalitySearch.astro';
+---
+<!-- The dashboard mounts the search with its selection; pages without it lead to the dashboard. -->
+<MunicipalitySearch />
+<script>
+  import { mountHeaderSearch } from '../shared/header-search';
+  mountHeaderSearch(`${import.meta.env.BASE_URL}dados/municipalities.json`);
+</script>

@@ -1,12 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import HeaderSearch from '../components/HeaderSearch.astro';
 import MunicipalityIndex from '../components/MunicipalityIndex.astro';
 ---
 <Base title="Municípios por UF | Observatório do Câncer no Brasil">
+  <HeaderSearch slot="header-tools" />
   <div class="directory">
-    <a href="/">← Voltar ao mapa</a>
     <header>
-      <p class="eyebrow">Consulta municipal</p>
       <h1 id="municipality-index-heading">Encontre seu município</h1>
       <p>Abra uma UF e escolha um município para consultar os indicadores e as orientações de cuidado com o câncer.</p>
     </header>
@@ -14,9 +14,8 @@ import MunicipalityIndex from '../components/MunicipalityIndex.astro';
   </div>
 </Base>
 <style>
-  .directory { max-width: 64rem; margin: 0 auto; padding-block: 1rem 3rem; }
-  header { margin-block: 2rem; max-width: 42rem; }
-  h1 { margin-block: .5rem 1rem; }
-  header p { color: var(--muted); }
-  .eyebrow { font-size: var(--text-14); font-weight: 500; }
+  .directory { max-width: 64rem; margin: 0 auto; padding-block: .5rem 3rem; }
+  header { margin-block: 0 1.5rem; max-width: 42rem; }
+  h1 { margin-block: 0 .5rem; }
+  header p { margin: 0; color: var(--muted); }
 </style>

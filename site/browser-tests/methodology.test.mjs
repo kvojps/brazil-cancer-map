@@ -42,12 +42,13 @@ for (const javaScriptEnabled of [false, true]) {
   }
 }
 
-test('methodology return link preserves the selected list and theme', async () => {
+test('the Mapa link of the methodology preserves the selected list and theme', async () => {
   const page = await browser.newPage();
   try {
     await page.goto(base + '/metodologia/?indicador=mammography&tipo=breast&modo=hoje&municipio=261160&visualizacao=lista&theme=dark#mamografia');
-    await page.getByRole('link', { name: /Voltar ao mapa/ }).waitFor();
-    const back = new URL(await page.getByRole('link', { name: /Voltar ao mapa/ }).getAttribute('href'), base);
+    const link = page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Mapa', exact: true });
+    await page.waitForFunction(() => new URL(document.querySelector('nav[aria-label="Navegação principal"] a').href).searchParams.has('municipio'));
+    const back = new URL(await link.getAttribute('href'), base);
     for (const [key, value] of Object.entries({ indicador: 'mammography', tipo: 'breast', modo: 'hoje', municipio: '261160', visualizacao: 'lista', theme: 'dark' })) assert.equal(back.searchParams.get(key), value);
     assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
   } finally { await page.close(); }

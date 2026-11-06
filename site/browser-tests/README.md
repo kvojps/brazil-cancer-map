@@ -82,6 +82,13 @@ JavaScript. O contorno e o enquadramento dentro
 do WebGL são conferidos em capturas; a conta da área reservada à folha está em
 `tests/framing.test.mjs`.
 
+`reading-pages.test.mjs` verifica Municípios por UF e Como calculamos: cabeçalho em faixa no
+fluxo, com menu abaixo de 1024 px; a busca, que só carrega a lista de municípios ao ser usada,
+leva ao dashboard com a seleção, tem falha com nova tentativa e, sem JavaScript, vira link para
+Municípios por UF; o retorno pelo link Mapa; as UFs em linhas com alvos de 44 px; o sumário lateral
+e a linha fixa, com seção atual, fechamento e foco; e as 11 âncoras abaixo do aviso e do sumário a
+320, 390, 768 e 1280 px, com e sem JavaScript.
+
 `list.test.mjs` verifica a Lista: abaixo de 640 px da própria largura, linhas com nome,
 classe com a textura do mapa, Faixa C e valor em 20 px, com o ⌄ abrindo os demais campos em
 texto real e `aria-expanded`; a forma larga, com cabeçalho e município fixos, rolando por dentro
@@ -92,3 +99,7 @@ HPV sem Tendência, com camada montada no teste; e falha de
 carga com nova tentativa. A semântica de tabela é conferida na árvore de acessibilidade do
 Chromium, o que não substitui uma sessão com leitor de tela. Com os arquivos em paralelo, o
 servidor de desenvolvimento pode estourar os tempos de espera: use a saída estática.
+Em uma máquina carregada, mesmo a saída estática pode estourar. Nesse caso, rode um arquivo por
+vez: `node --test --test-concurrency=1 browser-tests/*.test.mjs`. O servidor de desenvolvimento
+também pode estourar o limite de memória do Node; se cair, aumente-o com
+`NODE_OPTIONS=--max-old-space-size=5120`.
