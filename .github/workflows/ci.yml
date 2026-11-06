@@ -39,7 +39,7 @@ jobs:
       - run: npx playwright-core install --with-deps chromium
       - name: Locate the installed Chromium
         run: node --input-type=module -e 'import { chromium } from "playwright-core"; import { appendFileSync } from "node:fs"; appendFileSync(process.env.GITHUB_ENV, `CHROMIUM_PATH=${chromium.executablePath()}\n`);'
-      - run: npm run preview -- --host 127.0.0.1 --port 4321
+      - run: npm run preview -- --background --host 127.0.0.1 --port 4321
       - run: npm run test:a11y
         env:
           SITE_URL: http://127.0.0.1:4321
@@ -49,3 +49,5 @@ jobs:
         with:
           name: accessibility-results
           path: site/accessibility-results/
+      - run: npm run preview -- stop
+        if: always()

@@ -1,0 +1,107 @@
+{
+  "method": "Relative luminance contrast of solid CSS theme tokens, excluding gradients, alpha composition, hover and full rendered-page coverage.",
+  "themes": {
+    "light": [
+      {
+        "foreground": "--text",
+        "background": "--surface",
+        "foregroundColor": "#171717",
+        "backgroundColor": "#fff",
+        "ratio": 17.9278402530276
+      },
+      {
+        "foreground": "--text",
+        "background": "--soft",
+        "foregroundColor": "#171717",
+        "backgroundColor": "#efefef",
+        "ratio": 15.591368236861879
+      },
+      {
+        "foreground": "--muted",
+        "background": "--surface",
+        "foregroundColor": "#525252",
+        "backgroundColor": "#fff",
+        "ratio": 7.81388303728913
+      },
+      {
+        "foreground": "--muted",
+        "background": "--soft",
+        "foregroundColor": "#525252",
+        "backgroundColor": "#efefef",
+        "ratio": 6.795527295797351
+      },
+      {
+        "foreground": "--link",
+        "background": "--surface",
+        "foregroundColor": "#1a56b0",
+        "backgroundColor": "#fff",
+        "ratio": 6.9954397597568425
+      },
+      {
+        "foreground": "--focus",
+        "background": "--surface",
+        "foregroundColor": "#1a56b0",
+        "backgroundColor": "#fff",
+        "ratio": 6.9954397597568425
+      },
+      {
+        "foreground": "--notice-text",
+        "background": "--notice-bg",
+        "foregroundColor": "#fafafa",
+        "backgroundColor": "#171717",
+        "ratio": 17.176123405576867
+      }
+    ],
+    "dark": [
+      {
+        "foreground": "--text",
+        "background": "--surface",
+        "foregroundColor": "#f5f5f5",
+        "backgroundColor": "#1a1a1a",
+        "ratio": 15.96388988776675
+      },
+      {
+        "foreground": "--text",
+        "background": "--soft",
+        "foregroundColor": "#f5f5f5",
+        "backgroundColor": "#2a2a2a",
+        "ratio": 13.165472788340475
+      },
+      {
+        "foreground": "--muted",
+        "background": "--surface",
+        "foregroundColor": "#a3a3a3",
+        "backgroundColor": "#1a1a1a",
+        "ratio": 6.899615723958364
+      },
+      {
+        "foreground": "--muted",
+        "background": "--soft",
+        "foregroundColor": "#a3a3a3",
+        "backgroundColor": "#2a2a2a",
+        "ratio": 5.690135906874976
+      },
+      {
+        "foreground": "--link",
+        "background": "--surface",
+        "foregroundColor": "#8ab4f8",
+        "backgroundColor": "#1a1a1a",
+        "ratio": 8.258453010600512
+      },
+      {
+        "foreground": "--focus",
+        "background": "--surface",
+        "foregroundColor": "#8ab4f8",
+        "backgroundColor": "#1a1a1a",
+        "ratio": 8.258453010600512
+      },
+      {
+        "foreground": "--notice-text",
+        "background": "--notice-bg",
+        "foregroundColor": "#171717",
+        "backgroundColor": "#f5f5f5",
+        "ratio": 16.44407502596064
+      }
+    ]
+  }
+}

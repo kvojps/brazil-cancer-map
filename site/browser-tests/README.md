@@ -103,3 +103,38 @@ Em uma máquina carregada, mesmo a saída estática pode estourar. Nesse caso, r
 vez: `node --test --test-concurrency=1 browser-tests/*.test.mjs`. O servidor de desenvolvimento
 também pode estourar o limite de memória do Node; se cair, aumente-o com
 `NODE_OPTIONS=--max-old-space-size=5120`.
+
+## Auditoria automatizada de acessibilidade
+
+Com o build estático e a prévia já disponíveis:
+
+```sh
+SITE_URL=http://127.0.0.1:4321 CHROMIUM_PATH=/caminho/para/chromium npm run test:a11y --prefix site
+```
+
+`accessibility.test.mjs` executa axe na inicial, no índice por UF, na Metodologia e
+em três documentos municipais, com e sem scripts, nos dois temas. A inicial usa a Lista filtrada por
+PE; o índice abre PE e as expansões dos documentos são abertas. Falham violações
+graves/críticas e nomes repetidos de regiões acessíveis. `A11Y_REPORT_DIR` permite
+guardar os relatórios completos, incluindo verificações inconclusivas.
+
+`map-state-accessibility.test.mjs` percorre as 27 combinações publicadas de
+Indicador, Tipo e modo, nos dois temas, com WebGL indisponível, e compara a classe,
+a origem, as notas e o ano de Recife com os JSONs publicados. Os demais testes
+continuam cobrindo interação, recuperação, responsividade, zoom e teclado.
+
+O job do site no CI instala o Chromium, inicia `astro preview --background`, roda
+esses dois arquivos, guarda o artifact `accessibility-results` e encerra a prévia.
+Os resultados e limites da auditoria, incluindo revisão humana e bloqueio por
+orçamento, estão em [validation-25.md](../../.scratch/ui-ux-v1/validation-25.md).
+
+Medições locais reproduzíveis, após o build:
+
+```sh
+npm run measure:output --prefix site
+CHROMIUM_PATH=/caminho/para/chromium npm run measure:visit --prefix site
+```
+
+A segunda medição inicia seu próprio servidor HTTP local com gzip e usa contexto
+novo do navegador; soma corpos comprimidos, sem cabeçalhos. Registra primeira
+visita e seleção de Recife na mesma sessão. Não comprova compressão no provedor.

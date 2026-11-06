@@ -61,6 +61,8 @@ Ao selecionar Recife, são solicitados o documento municipal e o perfil PE, **29
 
 Capturas locais da inicial, Alcântara e Metodologia a 320 × 568, nos dois temas: aviso integral, legenda com nomes e texturas, origem regional, Faixa C e ressalvas legíveis. A inspeção visual é amostral; os outros tamanhos e o zoom são verificados pela automação. `check:tones` confirma as distâncias das cores previstas pela decisão de polimento nos dois temas; isso não é prova de contraste universal, de distinção por qualquer deficiência visual ou de leitura efetiva por tecnologia assistiva.
 
+Capturas preservadas em [screenshots/](audit-25/screenshots/). A razão de contraste dos tokens sólidos foi calculada com `parseThemeTokens` e `contrastRatio`, exportados de `site/scripts/map-tones.mjs`: texto/controle 15,59:1 no claro e 13,17:1 no escuro; apoio/controle 6,80:1 e 5,69:1; link ou foco/superfície 7,00:1 e 8,26:1. As cores e razões estão em [contrast.json](audit-25/contrast.json). Essa amostra não resolve os casos inconclusivos de gradiente, sobreposição ou células fora da área visível. Os custos de contraste dos tons do mapa já aceitos na decisão de fundamentos continuam explícitos: no claro, “Sem direção clara” fica a 1,3:1 do fundo, Dado insuficiente a 1,05:1 e Piorando a 2,5:1; legenda, lista, textos e pontos são essenciais.
+
 Os testes incluem Araioses (Dado insuficiente), Alcântara (origem regional e Faixa C), Balsas (Faixa C), períodos distintos, falta e falha de carga, HPV, próstata e mortalidade. O ajuste C55 não calculável é montado em teste, pois o dado publicado usado na sessão não garante esse caso em Recife. As séries e valores têm tabelas; classes, origem e avisos aparecem em texto. Há pontos para insuficiência e hachura para Faixa C, além dos textos; as classes de Tendência têm nomes mesmo quando a cor é semelhante.
 
 ## Roteiro humano pendente
@@ -76,3 +78,21 @@ Registrar data, responsável, sistema, navegador, versão e leitor de tela. Exec
 7. A 320/768/1280 px e zoom de 200%, conferir leitura e contraste dos controles com gradiente, símbolos, foco e classes; distinguir as texturas em ambos os temas. Registrar problemas e corrigir antes do aceite.
 
 O teste em aparelho físico e Safari segue também no [ticket 46](../mvp-implementacao/issues/46-verificacao-final-em-celular-real.md). Nenhum teste automatizado substitui a verificação dos anúncios com leitor de tela.
+
+## Verificação executada
+
+- `npm run check --prefix site`: zero erros, avisos ou hints.
+- `npm test --prefix site`: 87 testes aprovados, sem falhas ou skips; o hook gera o build integral. A execução inicial no sandbox recebeu `spawnSync npm EPERM`; a repetição autorizada fora dele passou.
+- `npm run test:a11y --prefix site`, contra a saída estática: 84 testes aprovados, incluindo 24 páginas/estados axe e 54 combinações do mapa, mais seus seis agrupadores. Nenhuma violação confirmada pelo axe após as correções; permanecem as verificações inconclusivas discriminadas no [resumo](audit-25/axe-summary.json).
+- `npm run check:tones --prefix site`: todas as distâncias satisfeitas nos dois temas.
+- `SITE_URL=http://127.0.0.1:4322 node --test --test-concurrency=1 site/browser-tests/*.test.mjs`: **316 testes aprovados**, zero falhas, cancelamentos ou skips; 852,31 s contra o build estático. Inclui as novas verificações de acessibilidade. Os três resultados são preservados em [test-summary.json](audit-25/test-summary.json); os 84 testes específicos já estão incluídos nos 316, não devem ser somados novamente.
+
+## Standards
+
+Revisão independente do diff `31ddefb...2e994b6`: nenhuma violação documentada. Uma observação de julgamento, baixa prioridade: possível Shotgun Surgery, pois os sete cartões repetem o contêiner `<section class="card-action" role="group" aria-label="Ação">`. A duplicação já existia; extrair um componente compartilhado é uma oportunidade de manutenção, sem bloquear esta correção semântica localizada.
+
+## Spec
+
+A revisão independente encontrou um achado P1: a etapa de prévia poderia permanecer em primeiro plano no GitHub Actions, impedindo a auditoria. O comportamento automático em segundo plano observado localmente depende da detecção de agente do Astro 7 e não era garantia para o CI. Corrigido com `--background` explícito; o próprio comando aguarda prontidão por até 30 segundos. A etapa final `preview -- stop` usa `if: always()`. A revisão do ajuste encerrou o achado: zero pendências de Spec no código.
+
+Revisão: Standards — zero violações e uma observação de manutenção; Spec — um achado corrigido, zero pendências de código. Permanecem as limitações humanas e de orçamento descritas acima.
