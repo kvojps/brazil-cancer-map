@@ -41,7 +41,7 @@ const insufficient = entry.origin === 'insufficient';
   </>}
   {cancerType === 'prostate' && <p class="in-result">{NO_STATUS_NOTE}</p>}
   <p>Qualidade do registro no estado: {qualityText(treatment.quality)}, período {period.quality_years?.join('–')}.</p>
-  <section class="card-action" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
+  <section class="card-action" role="group" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     <details><summary>Saiba mais</summary>
       {action.details.map(text => <p>{text}</p>)}
       <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>

@@ -13,7 +13,7 @@ const { data, uf, cancerType } = Astro.props;
     {cancerType === 'all' && <p>Todos os cânceres, exceto pele não melanoma.</p>}
     {cancerType === 'breast' && <p>Estimativa de câncer de mama feminina.</p>}
   </> : <p>As estimativas do INCA ainda não estão disponíveis nesta ficha.</p>}
-  <section class="card-action" aria-label="Ação">
+  <section class="card-action" role="group" aria-label="Ação">
     <h4>Explore as orientações de prevenção e detecção precoce.</h4>
     <p>A estimativa do estado não prevê quem terá câncer.</p>
     <details><summary>Saiba mais</summary>

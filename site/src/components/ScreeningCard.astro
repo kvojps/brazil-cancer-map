@@ -43,7 +43,7 @@ const insufficient = entry?.origin === 'insufficient';
   </> : <p>Os dados de {chartLabel} ainda não estão disponíveis nesta ficha.</p>}
   {cervical ? <p><strong>{CYTOPATHOLOGY_TRANSITION}</strong></p> : <p>{MAMMOGRAPHY_AGES}</p>}
   <p>{SCREENING_SCOPE}</p>
-  <section class="card-action" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
+  <section class="card-action" role="group" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     {cervical && <p>{cervicalScreeningAction.transition}</p>}
     <details><summary>Saiba mais</summary>{action.reviewedVersion === action.version && action.reviewer && action.details.map(text => <p>{text}</p>)}
       <ul>{action.sources.map(source => <li><a href={source.url}>{source.title}</a></li>)}</ul>

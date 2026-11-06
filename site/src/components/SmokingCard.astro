@@ -26,7 +26,7 @@ const chartId = `smoking-series-${cancerType}`;
     <h4>Tendência{data.trend && ` ${data.trend.first_year}–${data.trend.last_year}`}: {data.trend ? TREND_LABELS[data.trend.trend_class] : 'Dado insuficiente'}</h4>
     <p>Estável: quase não mudou, menos de 1% por ano em relação ao próprio valor. Sem direção clara: pode ter subido ou caído; os dados não bastam para dizer.</p>
   </> : <p>Os dados de tabagismo na capital do seu estado ainda não estão disponíveis nesta ficha.</p>}
-  <section class="card-action" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
+  <section class="card-action" role="group" aria-label="Ação"><h4>{action.title}</h4><p>{action.summary}</p>
     <details><summary>Saiba mais</summary>
       {action.reviewedVersion === action.version && action.reviewer && action.reviewedAt && <>
         <p>{action.audience}</p><p>{action.criteria}</p><p>{action.exceptions}</p>
