@@ -7,6 +7,8 @@ interface Props {
 
 const { title } = Astro.props;
 const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
+const MAINTAINER_GITHUB_URL = "https://github.com/kvojps";
+const MAINTAINER_LINKEDIN_URL = "https://www.linkedin.com/in/jos%C3%A9-ferreira-43a8071a1/";
 ---
 
 <!doctype html>
@@ -71,6 +73,9 @@ const SOURCE_CODE_URL = "https://github.com/kvojps/brazil-cancer-map";
         Textos sob CC BY-SA 4.0, com atribuição ao Observatório do Câncer no Brasil.
         Os dados seguem as condições de cada fonte.
         Fonte tipográfica Inter sob a <a href="/fonts/OFL.txt">SIL Open Font License</a>.
+      </p>
+      <p>
+        Mantido por José Ferreira: <a href={MAINTAINER_GITHUB_URL}>GitHub</a> · <a href={MAINTAINER_LINKEDIN_URL}>LinkedIn</a>
       </p>
     </footer>
   </body>
