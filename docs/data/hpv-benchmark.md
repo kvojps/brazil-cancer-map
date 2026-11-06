@@ -1,7 +1,8 @@
-> Registro histórico da auditoria de microdados. O ticket 23 substituiu a
-> operação em Actions por atualização manual pelos agregados oficiais.
-> O workflow foi removido; medições de CI pendentes abaixo não são requisitos
-> de atualização. A auditoria continua local via `hpv-audit` (veja o README).
+> Registro histórico da auditoria de microdados. A atualização do indicador
+> agora é manual, pelos agregados oficiais, e o workflow em Actions foi removido.
+> Não há medição de CI pendente, e o limite de 14 GB e 6 horas por job descrito
+> abaixo não é requisito vigente. As medições ficam como registro. A auditoria
+> continua opcional e local, via `hpv-audit` (veja o README).
 
 # SI-PNI: medição e orçamento de execução
 
@@ -18,13 +19,13 @@ Abril foi reprocessado a partir de um ZIP já baixado: seu tempo não mede a red
 
 ## Caberia em 14 GB e 6 horas?
 
-**A amostra mensal cabe com folga; a partição anual completa ainda não foi medida em runner do GitHub Actions.** Não há comprovação de que todo ano caiba em seis horas. A execução anual continua sendo uma pendência do ticket 18.
+Pergunta da época em que a auditoria rodaria em GitHub Actions. **A amostra mensal coube com folga; a partição anual completa nunca foi medida em runner.** Não houve comprovação de que todo ano coubesse em seis horas. A medição deixou de ser necessária com a remoção do workflow.
 
-A pesquisa de volume encontrou meses de até cerca de 4,9 GB compactados, e anos correntes de aproximadamente 23–28 GB compactados. Como um mês é apagado antes do próximo, não é necessário reservar o ano todo no disco. É preciso somar ao maior ZIP os extratos reduzidos já existentes, temporários, dependências e checkout; o limite é 14 GB para o job inteiro.
+A pesquisa de volume encontrou meses de até cerca de 4,9 GB compactados, e anos correntes de aproximadamente 23–28 GB compactados. Como um mês é apagado antes do próximo, não é necessário reservar o ano todo no disco. Era preciso somar ao maior ZIP os extratos reduzidos já existentes, temporários, dependências e checkout, contra um limite de 14 GB para o job inteiro.
 
-Extrapolação **local, não medição de CI**: aplicando a velocidade de maio a 28 GB compactados, download e limpeza levariam cerca de **120 minutos**. A extrapolação supõe a mesma rede e proporção de HPV/CSV; os meses de campanha e o runner podem mudar o resultado. Ela sugere viabilidade de um job por ano, sem garantir o limite de seis horas. Até a medição anual, a carga inicial deve ser acompanhada na máquina do mantenedor; não se declara o CI aprovado apenas com essa estimativa.
+Extrapolação **local, não medição de CI**: aplicando a velocidade de maio a 28 GB compactados, download e limpeza levariam cerca de **120 minutos**. A extrapolação supõe a mesma rede e proporção de HPV/CSV; os meses de campanha e o runner podem mudar o resultado. Ela sugeria viabilidade de um job por ano, sem garantir o limite de seis horas.
 
-O workflow `.github/workflows/hpv.yml` limita cada partição a 360 minutos. Resta executar uma partição anual completa em CI, guardar as medições e registrar seu maior espaço total de disco. Se ultrapassar o orçamento, a partição roda na máquina do mantenedor. O workflow não publica o site e persiste somente os extratos e metadados em assets da Release `hpv-state`, abaixo de 2 GiB por asset; não depende do cache de sete dias.
+O workflow `.github/workflows/hpv.yml`, já removido, limitava cada partição a 360 minutos. Não publicava o site e previa persistir somente os extratos e metadados em assets da Release `hpv-state`, abaixo de 2 GiB por asset, sem depender do cache de sete dias.
 
 ## Reprodução
 
@@ -80,9 +81,9 @@ de 1,6 GiB. O cálculo nacional concluiu com os 81 meses, sem publicar os JSON.
 
 A partição de 2021 levou pelo menos **6 h 02 min** na máquina do mantenedor,
 somando apenas as etapas mensais. A extrapolação inicial de duas horas por
-ano não se confirmou nesse ano, cujo tráfego foi 58,6 GB. Até medir no runner,
-a execução local permanece necessária para a carga inicial; não se declara
-que a matriz anual cabe em 6 h/14 GB. A medição do job inteiro continua pendente.
+ano não se confirmou nesse ano, cujo tráfego foi 58,6 GB. A carga foi feita
+localmente, e nada aqui comprova que a matriz anual caberia em 6 h/14 GB. O job
+inteiro nunca foi medido.
 
 Fonte de disponibilidade: [catálogo oficial PNI 2026](https://dadosabertos.saude.gov.br/dataset/doses-aplicadas-pelo-programa-de-nacional-de-imunizacoes-pni-2026).
 
@@ -97,18 +98,18 @@ zero e continua usando a Região imediata. A [decisão 30](../../.scratch/mapa-c
 
 ## Tentativa de medição no runner — 05/11/2026
 
-O workflow instrumentado mede espaço livre no sistema de arquivos raiz a cada
-dois segundos desde antes do checkout, registrando espaço inicial, mínimo
-livre, maior crescimento de uso e duração até depois da compactação do estado.
-Inclui dependências, Chromium, restauração, download, redução e compactação;
-o upload final do pequeno artefato de métricas fica fora do cronômetro interno.
-O tempo total do job também deve ser conferido na API do GitHub.
+O workflow instrumentado, já removido, media espaço livre no sistema de arquivos
+raiz a cada dois segundos desde antes do checkout, registrando espaço inicial,
+mínimo livre, maior crescimento de uso e duração até depois da compactação do
+estado. Incluía dependências, Chromium, restauração, download, redução e
+compactação; o upload final do pequeno artefato de métricas ficava fora do
+cronômetro interno. O tempo total do job seria conferido na API do GitHub.
 
 A [execução 42129117735](https://github.com/kvojps/brazil-cancer-map/actions/runs/42129117735)
 foi acionada para 2020 na branch `agent/hpv-18-benchmark`, commit
 `6b5f91e225aabfc79f6b232bf8c813e1ecdb7d0c`. O GitHub recusou iniciar o
 `prepare`, sem executar nenhuma etapa e sem atribuir runner: **“The job was not
 started because your account is locked due to a billing issue.”** A partição
-anual foi pulada. Portanto essa tentativa não produz benchmark nem comprova
-14 GB/6 h. É preciso regularizar a conta e reexecutar; a medição completa
-continua sendo a única pendência do ticket 18.
+anual foi pulada. Portanto essa tentativa não produziu benchmark nem comprovou
+14 GB/6 h. A medição não foi refeita: o workflow foi removido e a atualização
+passou a ser manual.
