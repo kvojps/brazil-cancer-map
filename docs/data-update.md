@@ -38,7 +38,13 @@ Use um destino novo, fora dos diretórios de entrada. Os caminhos abaixo são ex
 uv run python -m pipeline update --source painel --source cnes --source hpv --data-dir site/public/dados --clean-dir data/clean --output /tmp/cancer-update
 ```
 
-`update` executa download, limpeza, cálculo, validação e exportação. Ele sempre chama download; não é o caminho para recalcular sem consultar a origem. A proposta fica em `/tmp/cancer-update/dados`, o estado em `/tmp/cancer-update/clean` e o relatório em `/tmp/cancer-update/update.json`. Os dados do site não são alterados.
+`update` executa download, limpeza, cálculo, validação e exportação. A etapa `download` é sempre chamada, com estes comportamentos (conferidos no código):
+
+- `mesh`, `popsvs`, `painel`, `cnes`, `siscan`, `siscan_cytopathology`, `sim` e `hpv` baixam os insumos automaticamente, respeitando os períodos configurados e o cache. O HPV exige Chromium instalado.
+- `vigitel` apenas verifica se o arquivo local existe. O pipeline não chama `download-vigitel.sh`: execute o script antes de `update --source vigitel`, ou indique um arquivo já baixado por `VIGITEL_INPUT_PATH`.
+- `inca` valida o JSON de referência já versionado no repositório. Não há download; uma nova edição exige transcrição manual e alteração revisada do pipeline.
+
+`update` não é o caminho para recalcular sem consultar a origem. A proposta fica em `/tmp/cancer-update/dados`, o estado em `/tmp/cancer-update/clean` e o relatório em `/tmp/cancer-update/update.json`. Os dados do site não são alterados.
 
 Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `siscan` (mamografia), `siscan_cytopathology` e `sim` no mesmo grupo: todos dependem daquela população. Escolher `mesh` inclui **todas** as `source` no mesmo grupo. Uma falha descarta as mudanças do grupo inteiro. Grupos independentes bem-sucedidos permanecem na proposta mesmo quando o comando retorna erro.
 

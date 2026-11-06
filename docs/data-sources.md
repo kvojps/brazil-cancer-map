@@ -48,6 +48,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
 
 ## Regras comuns
 
+- **Download em `update` (lido no código):** `mesh`, `popsvs`, `painel`, `cnes`, `siscan`, `siscan_cytopathology`, `sim` e `hpv` baixam os insumos automaticamente, nos períodos configurados e respeitando o cache. As exceções são `vigitel`, que exige arquivo local obtido previamente pelo script separado ou indicado por `VIGITEL_INPUT_PATH`, e `inca`, que usa o JSON de referência transcrito manualmente e já versionado. O pipeline não chama o script do Vigitel nem baixa novas edições do INCA. Veja o [guia de atualização](data-update.md#preparar-uma-atualização).
 - **Falha de validação:** nada daquela `source` é publicado, e a última versão válida fica como está (spec, seção 16).
 - **Cache:** o baixador compara tamanho e data remotos antes de baixar de novo, com novas tentativas contra falhas.
 - **FTP do DATASUS:** é lento e instável, e a carga exigiu novas tentativas. Arquivos a partir de 64 MiB descem em trechos paralelos, retomados por trecho (padrão de 4). O SIM e o SISCAN usam 8, e o SISCAN usa tempo limite de 30 s. O cliente prefere EPSV e não envia REST no primeiro trecho, porque sessões PASV do DATASUS podem travar ao negociar REST.
