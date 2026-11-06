@@ -244,7 +244,7 @@ test('closed Eixos carry their results, one opens at a time, and the Eixo of the
     assert.deepEqual(await opened(), ['acesso']);
     assert.equal(await results('acesso').isVisible(), false, 'open, the block and the card already say it');
     assert.match(await results('deteccao').innerText(), /Mamografias[\s\S]*0,22 · Sem direção clara[\s\S]*Citopatológicos/);
-    assert.match(await results('prevencao').innerText(), /Vacina HPV[\s\S]*Sem dado neste recorte[\s\S]*Fumantes na capital/);
+    assert.match(await results('prevencao').innerText(), /Vacina HPV[\s\S]*68,7% · Longe[\s\S]*Fumantes na capital/);
     assert.match(await results('panorama').innerText(), /Mortalidade[\s\S]*por 100 mil · Piorando[\s\S]*Casos estimados na UF[\s\S]*9\.630 por ano/);
     assert.equal(await page.locator('#deteccao .result-swatch').first().evaluate(element => element.style.background.includes('repeating-linear-gradient')), false);
     await page.locator('#deteccao > summary').click();
@@ -277,8 +277,7 @@ test('every card follows the order of the decision: result, Action, series, then
     const card = selector => page.locator(selector).first().innerText();
     assertOrder(await card('[data-indicator="within_60_days"]'), [/Casos tratados com quimioterapia ou radioterapia: % que começou/, /Situação em/, /Referência/, /Tendência \d{4}/, /Sem informação de tratamento em/, /Conheça seus direitos/, /Série \d{4}/, /Ver a série em tabela/, /O que é este número/, /Como calculamos/], '60 dias');
     for (const indicator of ['mammography', 'cytopathology']) assertOrder(await card(`[data-indicator="${indicator}"]`), [/Situação em/, /Referência/, /Tendência \d{4}/, /Saiba mais/, /Série \d{4}/, /Ver a série em tabela/, /Fonte:/, /Como calculamos/], indicator);
-    // No UF has HPV data published yet: only the order around the missing result can be read on a page.
-    assertOrder(await card('[data-indicator="hpv"]'), [/Cobertura da vacina HPV/, /ainda não estão disponíveis/, /Tendência: série curta/, /Saiba mais/, /Como calculamos/], 'HPV');
+    assertOrder(await card('[data-indicator="hpv"]'), [/Cobertura da vacina HPV/, /Situação em/, /Referência/, /Tendência: série curta/, /Saiba mais/, /Série \d{4}/, /Como calculamos/], 'HPV');
     assertOrder(await card('[data-indicator="mortality"]'), [/Tendência \d{4}/, /Tendência do Brasil/, /Veja os caminhos/, /Série \d{4}/, /Ver a série em tabela/, /Fonte:/, /Como calculamos/], 'mortality');
     assertOrder(await card('article[aria-label="Tabagismo na capital"]'), [/capital do seu estado/, /Situação em/, /Referência/, /Tendência/, /Saiba mais/, /Série \d{4}/, /O que é este número/, /Como calculamos/], 'smoking');
     assertOrder(await card('article[aria-label="Casos novos estimados"]'), [/Na sua UF/, /Explore as orientações/, /O que é este número/, /Como calculamos/], 'estimated cases');

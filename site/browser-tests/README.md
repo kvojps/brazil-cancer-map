@@ -78,8 +78,7 @@ aberto, a folha de ponta a ponta que abre até o aviso, Filtros, menu e busca no
 folha, a coluna de 400 e 480 px com o nome fixo, os Eixos com resultado no título e um aberto
 por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensagem de status só
 para leitores de tela e a página comum em janelas baixas, no zoom nativo de 200% e sem
-JavaScript. Nenhuma UF tem HPV publicado: o cartão com dado só é coberto pelo teste de
-`tests/panel-result.test.mjs` e pela leitura do código. O contorno e o enquadramento dentro
+JavaScript. O contorno e o enquadramento dentro
 do WebGL são conferidos em capturas; a conta da área reservada à folha está em
 `tests/framing.test.mjs`.
 
@@ -89,7 +88,7 @@ texto real e `aria-expanded`; a forma larga, com cabeçalho e município fixos, 
 da área do mapa, também a 1280 px com o painel aberto; a troca de forma pela largura da Lista,
 e não da janela; UF e contagem fixas no celular, com Mapa/Lista e o aviso; a folha sem cobrir as
 últimas linhas nem o foco do teclado; ordem por UF e nome; próstata e mortalidade sem Situação;
-HPV sem Tendência, com camada montada no teste, pois nenhuma UF tem HPV publicado; e falha de
+HPV sem Tendência, com camada montada no teste; e falha de
 carga com nova tentativa. A semântica de tabela é conferida na árvore de acessibilidade do
 Chromium, o que não substitui uma sessão com leitor de tela. Com os arquivos em paralelo, o
 servidor de desenvolvimento pode estourar os tempos de espera: use a saída estática.

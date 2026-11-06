@@ -106,7 +106,7 @@ for (const theme of ['light', 'dark']) {
         await page.screenshot({ path: `/tmp/ticket37-${theme}-${code}.png` });
       }
       await page.locator('#prevencao').evaluate(el => { el.open = true; });
-      assert.match(await page.locator('#prevencao').textContent(), /não est[áã]o? dispon[ií]ve|ainda não|não disponível/i);
+      assert.match(await page.locator('#prevencao').textContent(), /Cobertura da vacina HPV[\s\S]*Situação em \d{4}/);
     } finally { await page.close(); }
   });
 }
