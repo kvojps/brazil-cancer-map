@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 import { fileURLToPath } from 'node:url';
 
-// The contract of the phone decision (.scratch/ui-polimento/issues/02-celular-cabecalho-filtros-mapa.md).
+// The contract of the phone decision (docs/ui-contract.md, section Primeira tela no celular).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const RECIFE = '/municipio/261160-recife/';
 const CHROMIUM = process.env.CHROMIUM_PATH ?? '/snap/bin/chromium';

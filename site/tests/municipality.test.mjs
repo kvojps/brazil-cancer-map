@@ -10,7 +10,7 @@ before(() => execFileSync('npm', ['run', 'build'], { cwd: new URL('..', import.m
 
 const manifest = JSON.parse(readFileSync(new URL('../public/dados/manifest.json', import.meta.url)));
 test('mammography is rendered from the published profile with its ratio, reference and approved action', {
-  skip: !manifest.indicators.mammography && 'Initial SISCAN data load is pending; see implementation ticket 14.',
+  skip: !manifest.indicators.mammography && 'Initial SISCAN data load is pending; see docs/spec.md, section 4.',
 }, () => {
   const municipality = listing.municipalities.find(m => m.code === '261160');
   const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));

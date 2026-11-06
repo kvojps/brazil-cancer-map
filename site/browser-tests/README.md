@@ -24,7 +24,7 @@ que a rolagem horizontal fica contida na tabela. A extensão só é carregada pe
 navegador de teste e não integra o site publicado.
 
 Esses testes não substituem uma sessão com leitor de tela nem a auditoria de
-acessibilidade do lançamento (ticket 25). Os anúncios usam regiões de status e
+acessibilidade do lançamento (docs/validation/accessibility-audit.md). Os anúncios usam regiões de status e
 os dados continuam expressos em texto.
 
 A ficha municipal também é verificada em `municipality.test.mjs`: links estáticos
@@ -125,8 +125,8 @@ continuam cobrindo interação, recuperação, responsividade, zoom e teclado.
 
 O job do site no CI instala o Chromium, inicia `astro preview --background`, roda
 esses dois arquivos, guarda o artifact `accessibility-results` e encerra a prévia.
-Os resultados e limites da auditoria, incluindo revisão humana e bloqueio por
-orçamento, estão em [validation-25.md](../../.scratch/ui-ux-v1/validation-25.md).
+Os resultados e limites da auditoria, incluindo revisão humana e a dívida de
+orçamento aceita para a V1, estão na [auditoria](../../docs/validation/accessibility-audit.md).
 
 Medições locais reproduzíveis, após o build:
 

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { chromium } from 'playwright-core';
 
-// The contract of the pages decision (.scratch/ui-polimento/issues/06-lista-ufs-metodologia.md).
+// The contract of the pages decision (docs/ui-contract.md, section Municípios por UF and Como calculamos).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const executablePath = process.env.CHROMIUM_PATH ?? '/snap/bin/chromium';
 const PAGES = ['/municipios/', '/metodologia/'];
