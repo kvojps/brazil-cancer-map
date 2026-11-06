@@ -123,6 +123,10 @@ O estado publicado vai até 2026 e não basta em 2027. A falha em março de 2027
 foi observada com relógio simulado na prova anterior, não numa execução da CLI
 em 2027. Esta Release não altera essa regra do pipeline.
 
+Custo observado em 06/11/2026, numa prova com o estado local, antes da Release
+pública: cerca de 2,5 minutos na soma das etapas e 1,1 GB por clone. O `compute`
+do `sim` levou cerca de 80 s e usou 1,2 GB de RAM.
+
 Para repetir, use Git, GitHub CLI (`gh`), Python 3.14+, `uv` e Node 24.
 Comece na raiz de um clone separado, sem `data/clean`. O fluxo abaixo restaura
 o contrato público antes de recalcular e guarda uma referência independente:

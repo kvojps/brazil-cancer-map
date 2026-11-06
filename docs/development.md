@@ -200,6 +200,12 @@ arquivo, testes, comentários, docstrings e commits ficam em inglês; textos
 públicos e documentos ficam em português. Mantenha comandos e pré-requisitos
 deste guia coerentes com as mudanças que fizer.
 
+Ao escrever documentação, só apresente como garantido o que foi executado, e
+marque como tal o que veio da leitura do código. Os guias não repetem método:
+fórmulas, classes de Tendência, Referências e ressalvas ficam em `/metodologia/`,
+conceitos ficam no [glossário](../GLOSSARY.md) e limiares operacionais ficam em
+[Fontes de dados](data-sources.md).
+
 Contribuições entram sob a licença da parte alterada, **sem CLA**:
 código sob [AGPL-3.0-or-later](../LICENSE); textos do projeto sob
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br), com
