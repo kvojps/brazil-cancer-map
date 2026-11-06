@@ -1,3 +1,8 @@
+> Registro histórico da auditoria de microdados. O ticket 23 substituiu a
+> operação em Actions por atualização manual pelos agregados oficiais.
+> O workflow foi removido; medições de CI pendentes abaixo não são requisitos
+> de atualização. A auditoria continua local via `hpv-audit` (veja o README).
+
 # SI-PNI: medição e orçamento de execução
 
 Medição local em **04/11/2026**, Python 3.14.4, DuckDB 2.0, Linux. Arquivos oficiais no S3 do Ministério da Saúde. O CSV foi lido diretamente do ZIP; não houve cópia integral descompactada. Os ZIPs foram apagados depois da redução. Os dados locais não entram no git.
@@ -25,7 +30,7 @@ O workflow `.github/workflows/hpv.yml` limita cada partição a 360 minutos. Res
 
 ```sh
 # Partição anual, inclusive cache dos meses que não mudaram:
-uv run python -m pipeline run --source hpv --step download --year 2020
+uv run python -m pipeline hpv-audit --step download --year 2020
 ```
 
 Para uma medição mensal isolada, a mesma interface pública usada pelo baixador pode ser executada assim:

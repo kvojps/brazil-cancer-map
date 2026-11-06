@@ -1,4 +1,4 @@
-"""Stream monthly SI-PNI archives into small, deduplicated HPV extracts."""
+"""Publish official HPV cohorts and optionally reconstruct a local patient audit."""
 
 import csv
 import io
@@ -51,6 +51,11 @@ class HpvSource:
         self._validation_path = validation_path
 
     def download(self) -> None:
+        """Refresh official cohorts and the fixed Census without patient extracts."""
+        download_fixed_inputs(self._raw_dir, self._clean_dir, include_legacy=False)
+        self.download_official()
+
+    def download_audit(self) -> None:
         """Cache only reduced monthly files; callers can select one year per job."""
         download_fixed_inputs(self._raw_dir, self._clean_dir)
         today = datetime.now(UTC)
@@ -58,8 +63,6 @@ class HpvSource:
             months = self._discover_months(year) if year == today.year else list(range(1, 13))
             for month in months:
                 self.download_month(year, month)
-        if today.year in self._years:
-            self.download_official()
 
     def download_official(self) -> None:
         """Refresh the qualified national cohorts published by the Ministry."""
@@ -174,10 +177,8 @@ class HpvSource:
             filtered.unlink(missing_ok=True)
             partial.unlink(missing_ok=True)
 
-    def compute(self) -> None:
+    def compute_audit(self) -> None:
         """Accumulate the NT 16/2025 age/year diagonals, counting each RNDS patient once."""
-        listing = json.loads((self._site_data_dir / 'municipalities.json').read_text())
-        regions = {m['code']: m['immediate_region'] for m in listing['municipalities']}
         if self._years != tuple(range(2020, max(self._years) + 1)):
             raise ValueError('compute requires the complete history starting in 2020; use partitions only for download/clean')
         today = datetime.now(UTC)
@@ -208,24 +209,6 @@ class HpvSource:
                 or legacy.get('dose') != 'D1' or not legacy.get('source_url')):
             raise ValueError('incomplete or undocumented legacy HPV history')
         with duckdb.connect() as db:
-            census_path = str(self._clean_dir / 'census.parquet')
-            census = db.execute('SELECT municipality, sex, age, population FROM read_parquet(?)', [census_path]).fetchall()
-            populations: dict[str, dict[str, int]] = {code: {'F': 0, 'M': 0} for code in regions}
-            seen: set[tuple[str, str, int]] = set()
-            for code, sex, age, population in census:
-                if code not in regions or sex not in ('F', 'M') or age not in range(9, 15):
-                    continue
-                slice_key = (code, sex, age)
-                if slice_key in seen or population is None or population < 0:
-                    raise ValueError('duplicate or invalid Census 2022 population')
-                seen.add(slice_key)
-                populations[code][sex] += int(population)
-            missing = {(code, sex, age) for code in regions for sex in ('F', 'M') for age in range(9, 15)} - seen
-            absent = set(regions) - {item[0] for item in seen}
-            if absent - {'510183'}:
-                raise ValueError('unexpected municipality missing from Census 2022')
-            if missing - {(code, sex, age) for code in absent for sex in ('F', 'M') for age in range(9, 15)}:
-                raise ValueError('Census 2022 does not cover all municipality/sex/age slices; never use POPSVS as fallback')
             # Group before joining evaluation years so each patient has a single first qualifying dose.
             db.execute('''CREATE TABLE first_doses AS SELECT patient,
                 first(sex ORDER BY date, municipality, sex) AS sex,
@@ -248,6 +231,33 @@ class HpvSource:
         (self._clean_dir / 'audit.json').write_text(json.dumps({'records': [
             {'municipality': code, 'sex': sex, 'year': year, 'vaccinated': count}
             for (code, sex, year), count in sorted(counts.items())]}))
+
+    def compute(self) -> None:
+        """Compute coverage from qualified official numerators and fixed Census."""
+        listing = json.loads((self._site_data_dir / 'municipalities.json').read_text())
+        regions = {m['code']: m['immediate_region'] for m in listing['municipalities']}
+        if self._years != tuple(range(2020, max(self._years) + 1)):
+            raise ValueError('compute requires the complete history starting in 2020')
+        today = datetime.now(UTC)
+        with duckdb.connect() as db:
+            census = db.execute('SELECT municipality, sex, age, population FROM read_parquet(?)',
+                                [str(self._clean_dir / 'census.parquet')]).fetchall()
+            populations: dict[str, dict[str, int]] = {code: {'F': 0, 'M': 0} for code in regions}
+            seen: set[tuple[str, str, int]] = set()
+            for code, sex, age, population in census:
+                if code not in regions or sex not in ('F', 'M') or age not in range(9, 15):
+                    continue
+                slice_key = (code, sex, age)
+                if slice_key in seen or population is None or population < 0:
+                    raise ValueError('duplicate or invalid Census 2022 population')
+                seen.add(slice_key)
+                populations[code][sex] += int(population)
+            missing = {(code, sex, age) for code in regions for sex in ('F', 'M') for age in range(9, 15)} - seen
+            absent = set(regions) - {item[0] for item in seen}
+            if absent - {'510183'}:
+                raise ValueError('unexpected municipality missing from Census 2022')
+            if missing - {(code, sex, age) for code in absent for sex in ('F', 'M') for age in range(9, 15)}:
+                raise ValueError('Census 2022 does not cover all municipality/sex/age slices; never use POPSVS as fallback')
         official = json.loads((self._clean_dir / 'official.json').read_text())
         if (not official.get('source_url') or not official.get('extracted_at')
                 or not set(self._years) <= set(official.get('years', []))):
@@ -311,8 +321,7 @@ class HpvSource:
                              'quality_band': None, 'without_treatment_info': None, 'series_id': key}
         period = {'first_year': 2020, 'last_year': max(self._years), 'latest': latest,
                   'trend': [], 'provisional': provisional, 'single_dose_year': 2024,
-                  'denominator_year': 2022,
-                  'audit_last_month': max(current_months) if max(self._years) == today.year else 12}
+                  'denominator_year': 2022}
         data = {'period': period, 'reference': {'value': 90, 'label': 'meta para 2030'},
                 'municipalities': entries, 'series': displayed}
         self._clean_dir.mkdir(parents=True, exist_ok=True)
@@ -382,10 +391,9 @@ class HpvSource:
             profile['indicators']['hpv'] = {cancer_type: published for cancer_type in ('all', 'cervix')}
             files[name] = profile
         official = json.loads((self._clean_dir / 'official.json').read_text())
-        extracts = [json.loads(path.read_text()) for path in (self._clean_dir / 'months').glob('*/*.json')]
         files[MANIFEST] = updated_manifest(self._site_data_dir, source=self.name,
             extract={'name': SOURCE['name'], 'extracted_at': official['extracted_at'],
-                     'files': [e['file'] for e in extracts] + ['official.json']},
+                     'files': ['official.json', 'census.parquet']},
             indicators={'hpv': {cancer_type: data['period'] for cancer_type in ('all', 'cervix')}})
         publish_together(self._site_data_dir, files)
 

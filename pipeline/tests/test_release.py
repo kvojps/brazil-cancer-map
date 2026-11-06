@@ -72,3 +72,23 @@ def test_all_published_indicators_can_rebuild_the_complete_site_contract(tmp_pat
         restore_release(assets, restored, format=format)
         assert {p.relative_to(restored): json.loads(p.read_text())
                 for p in restored.rglob('*') if p.is_file()} == original
+
+
+def test_update_state_roundtrip_excludes_patient_audit(tmp_path):
+    from pipeline.release import export_state, restore_state
+    clean = tmp_path / 'clean'
+    (clean / 'hpv/months/2020').mkdir(parents=True)
+    (clean / 'hpv/official.json').write_text('{"years":[2020]}')
+    (clean / 'hpv/census.parquet').write_bytes(b'census fixture')
+    (clean / 'hpv/months/2020/01.parquet').write_bytes(b'patient fixture')
+    (clean / 'hpv/audit.json').write_text('{"records":[]}')
+    (clean / 'popsvs').mkdir()
+    (clean / 'popsvs/population.parquet').write_bytes(b'population fixture')
+    assets = export_state(clean, tmp_path / 'assets')
+    restored = tmp_path / 'restored'
+    restore_state(tmp_path / 'assets', restored)
+    assert {asset.name for asset in assets} == {'state-hpv.tar.gz', 'state-popsvs.tar.gz'}
+    assert (restored / 'hpv/official.json').read_text() == '{"years":[2020]}'
+    assert (restored / 'popsvs/population.parquet').read_bytes() == b'population fixture'
+    assert not (restored / 'hpv/months').exists()
+    assert not (restored / 'hpv/audit.json').exists()

@@ -38,7 +38,7 @@ class _Form(HTMLParser):
             self.select = None
 
 
-def download_fixed_inputs(raw_dir: Path, clean_dir: Path) -> None:
+def download_fixed_inputs(raw_dir: Path, clean_dir: Path, *, include_legacy: bool = True) -> None:
     """Fetch historical inputs once; keep source responses for reproducibility."""
     raw_dir.mkdir(parents=True, exist_ok=True)
     clean_dir.mkdir(parents=True, exist_ok=True)
@@ -52,6 +52,8 @@ def download_fixed_inputs(raw_dir: Path, clean_dir: Path) -> None:
         path = raw_dir / 'census.json'
         path.write_text(json.dumps([{'resultados': results}]))
         clean_census(path, clean_dir / 'census.parquet')
+    if not include_legacy:
+        return
     if (clean_dir / 'legacy.parquet').exists() and (clean_dir / 'legacy.json').exists():
         return
     form_path = raw_dir / 'tabnet-form.html'
