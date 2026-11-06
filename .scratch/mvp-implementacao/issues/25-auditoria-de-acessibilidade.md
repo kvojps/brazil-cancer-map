@@ -22,6 +22,10 @@
 
 ## Comments
 
+### Atualização da decisão de orçamento — 06/11/2026
+
+O responsável adiou a redução de saída estática e transferência para depois da V1. Conforme a decisão posterior registrada no [ticket 47](47-reduzir-saida-e-transferencia.md), o excesso medido fica aceito como dívida conhecida para a V1 e deixa de bloquear seu lançamento por orçamento. Esta atualização substitui as declarações anteriores de excesso sem aprovação e bloqueio até a redução, preservadas abaixo como histórico. As metas não foram cumpridas; a revisão humana de acessibilidade, a validação dos dados e a verificação da hospedagem continuam necessárias.
+
 ### Escopo da UI/UX v1 — 2026-11-04
 
 Ampliação aprovada junto da divisão dos tickets 30–34: incorporar os cenários do redesign à auditoria existente, sem criar auditoria duplicada. A aprovação visual não substitui estas verificações nem a revisão clínica das Ações.
