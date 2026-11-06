@@ -78,11 +78,12 @@ A §17 registra as dívidas conhecidas, com números e decisões já tomadas:
 
 - redução de tamanho: 999.530.479 bytes de saída e 1.369.414 bytes gzip na primeira visita local, contra as metas de 30 MB e cerca de 1,3 MB, com a direção aceita de páginas compartilhadas;
 - sessão humana de acessibilidade;
-- revisão clínica das Ações: o código registra `reviewer: null`, e o site a trata como pendente. `reviewer` não é preenchido sem nome, data e versão reais.
+- revisão clínica das Ações: o código registra `reviewer: null`, e o site a trata como pendente. `reviewer` não é preenchido sem nome, data e versão reais;
+- textos propostos e decisões a confirmar, listados no inventário (D41). Acrescentada pelo responsável em 06/11/2026.
 
 ### ADRs
 
-Seis, e outros só com aviso antes de criar:
+Dez: os seis decididos na sessão e, de 7 a 10, os aprovados depois do inventário. Outros só com aviso antes de criar:
 
 1. Site estático com JSON commitados, sem backend.
 2. Tendência em variação percentual relativa, com faixa de ±1% em todos os indicadores.
@@ -90,6 +91,10 @@ Seis, e outros só com aviso antes de criar:
 4. HPV com agregados oficiais do Ministério, e microdados só como auditoria.
 5. Denominadores: POPSVS revisto, e Censo 2022 fixo no HPV.
 6. Atualização manual local no lugar do agendamento em Actions.
+7. Licenças: AGPL-3.0-or-later e CC BY-SA 4.0, sem CLA.
+8. Cascata município → Região imediata → Dado insuficiente.
+9. Redistribuição do C55 só no colo do útero.
+10. Links municipais estáticos em `/municipio/<código>-<nome>/`.
 
 ### README raiz
 
