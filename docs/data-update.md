@@ -54,11 +54,11 @@ Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `s
 2. Compare os contratos: `git diff --no-index --stat site/public/dados /tmp/cancer-update/dados` e depois `git diff --no-index site/public/dados /tmp/cancer-update/dados`. Código de saída 1 significa diferença; os JSON compactos podem produzir diffs extensos.
 3. Confira `/tmp/cancer-update/dados/manifest.json`: commit em `pipeline_version` sem `-dirty`, extrações e proveniência em `sources`, períodos por Indicador e Tipo de câncer em `indicators`. `mesh` e `popsvs` não têm entrada própria no manifesto.
 4. Confira os períodos nos mapas e perfis, datas, notas provisórias, alertas, valores ausentes e mudanças nas séries, Tendência, Situação, cascata e faixa A/B/C. Investigue saltos inesperados e compare com as referências e limiares de [Fontes de dados](data-sources.md). Não contorne uma validação para publicar.
-5. Confira o estado e os assets a distribuir. Extratos de pacientes, `data/raw/` e a auditoria HPV nunca entram na Release. O empacotador restringe o estado HPV a `official.json` e `census.parquet`. Ele copia os diretórios das outras `source`: mantenha-os livres de arquivos estranhos. O estado Vigitel inclui entrevistas individuais sem identificadores diretos; a publicação desse estado continua pendente de decisão do responsável.
+5. Confira o estado e os assets a distribuir. Extratos de pacientes, `data/raw/` e a auditoria HPV nunca entram na Release. O empacotador restringe o estado HPV a `official.json` e `census.parquet`. Ele copia os diretórios das outras `source`: mantenha-os livres de arquivos estranhos. O estado Vigitel inclui entrevistas individuais sem identificadores diretos; o responsável deve conferir e autorizar esse conteúdo a cada publicação (foi incluído em `data-2026-11-06`).
 
 ## Exportar, publicar e incorporar
 
-Os comandos desta seção descrevem o fluxo lido no código; não foram executados como publicação nesta validação. Resolva as pendências da seção de retomada antes da próxima Release. Gere e publique a partir da mesma árvore limpa e da proposta revisada, sempre com `--state-dir`:
+A Release `data-2026-11-06` foi publicada pelo responsável com `--state-dir` e seus 27 assets foram baixados e conferidos. O recálculo passou no commit gerador, com os limites da seção de retomada abaixo. Para uma nova versão, gere e publique a partir da mesma árvore limpa e da proposta revisada, sempre com `--state-dir`:
 
 ```bash
 uv run python -m pipeline export-release --data-dir /tmp/cancer-update/dados --state-dir /tmp/cancer-update/clean --output /tmp/cancer-assets
@@ -95,12 +95,20 @@ uv run python -m pipeline restore-state --assets /tmp/cancer-downloaded --output
 
 O destino de `restore-state` precisa ser novo. Para preparar uma atualização, volte a `update`; para recalcular sem baixar de novo, o caminho lido no código é `run --source NOME --step compute`, depois `validate` e `export`, usando o estado em `data/clean` e os caminhos padrão. Isso altera os JSON locais e exige nova revisão.
 
-**Limites atuais:** a Release `data-2026-11-05` tem 18 assets CSV/Parquet e nenhum estado; permite reconstruir o contrato, mas não retomar o processamento só com seus assets. Seu manifesto traz `0.1.0+df740cd-dirty`. O estado estará disponível a partir da próxima Release que o inclua. Ainda há pendências: `mesh` exige `data/raw/mesh/ibge_municipalities.json`, `painel` exige `data/raw/painel/tabnet/`, e o recálculo HPV exige todos os anos até o ano corrente, portanto o estado de 2026 não basta em 2027. O recálculo já conferido também muda metadados HPV (`audit_last_month` e a lista de insumos), sem mudar valores. Esses limites e a decisão sobre entrevistas Vigitel precisam ser resolvidos ou explicitados na próxima publicação; não se promete retomada completa apenas por usar `--state-dir`.
+**Limites atuais:** `data-2026-11-06` contém 18 tabelas CSV/Parquet e nove
+arquivos de estado; seu manifesto registra `0.1.0+a98b5fd`, sem `-dirty`.
+A prova pública confirmou 48 arquivos iguais após restauração e recálculo.
+`mesh` ainda exige `data/raw/mesh/ibge_municipalities.json`, `painel` exige
+`data/raw/painel/tabnet/`, e o recálculo HPV exige todos os anos até o ano
+corrente, portanto o estado de 2026 não basta em 2027. Os arquivos externos
+foram fornecidos localmente na prova, sem acrescentá-los à Release. Não se
+promete retomada completa apenas por usar `--state-dir`.
+A Release anterior, `data-2026-11-05`, não contém estado e seu manifesto
+registra `0.1.0+df740cd-dirty`.
 
-As decisões para a próxima publicação e sua evidência local estão em
-[Preparação de uma Versão de dados rastreável](data/traceable-version.md).
-A preparação não comprova uma Release pública nem altera a ordem de publicação
-e incorporação dos JSON.
+As decisões, os checksums e a conferência da publicação estão em
+[Versão de dados rastreável](data/traceable-version.md). O estado Vigitel com
+entrevistas sem identificadores diretos foi publicado pelo responsável.
 
 ## Auditoria HPV opcional
 
@@ -114,6 +122,10 @@ uv run python -m pipeline hpv-audit --step compute
 
 Download e limpeza podem ser feitos por ano. `compute` exige o histórico completo e não aceita `--year`; os dois primeiros comandos sozinhos não o preparam. Consulte [os insumos e a auditoria HPV](data/hpv-official-inputs.md). Nunca envie os microdados ou resultados dessa auditoria como assets da Release.
 
-## Evidência desta validação
+## Histórico de validação
 
 Em 06/11/2026 foram executados `update --source inca` e `export-release`, em pasta temporária, com o contrato atual como entrada e um caminho de estado inicialmente ausente. O INCA usa a referência versionada e não exige estado limpo nem download de rede. Essa execução verifica preparação e exportação tabular; não comprova estado completo, atualização das demais `source`, autenticação GitHub, publicação, restauração ou deploy. `site/public/dados/` permaneceu sem alterações. Os demais comandos, dependências e tratamentos de falha acima vieram da leitura de `pipeline/cli.py`, `pipeline/update.py`, `pipeline/release.py`, `pipeline/publish.py` e das `source`, apoiada nos registros de [Fontes de dados](data-sources.md).
+
+Depois dessa preparação, a Release `data-2026-11-06` foi publicada pelo
+responsável e os assets públicos foram restaurados e recalculados. A prova
+completa e os limites estão em [Versão de dados rastreável](data/traceable-version.md).

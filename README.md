@@ -33,7 +33,7 @@ Para relatar erros ou propor mudanças, abra uma [GitHub Issue](https://github.c
 
 Como citar o Observatório (substitua a Versão de dados pela que utilizou):
 
-> Observatório do Câncer no Brasil. Dados abertos, Versão de dados `data-2026-11-05`. Disponível em: https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-05. Acesso em: [data de acesso].
+> Observatório do Câncer no Brasil. Dados abertos, Versão de dados `data-2026-11-06`. Disponível em: https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-06. Acesso em: [data de acesso].
 
 Cite também as Fontes originais, conforme os [modelos por Fonte e condições de reutilização](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#reutilizacao-e-citacao).
 
