@@ -14,7 +14,10 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:tones": "node scripts/map-tones.mjs",
-    "test:browser": "node --test browser-tests/*.test.mjs"
+    "test:browser": "node --test browser-tests/*.test.mjs",
+    "test:a11y": "node --test --test-concurrency=1 browser-tests/accessibility.test.mjs browser-tests/map-state-accessibility.test.mjs",
+    "measure:output": "node scripts/measure-output.mjs",
+    "measure:visit": "node scripts/measure-visit.mjs"
   },
   "dependencies": {
     "astro": "^7.4.5",
@@ -23,6 +26,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@axe-core/playwright": "^4.14.0",
     "@types/geojson": "^7946.0.16",
     "@types/topojson-client": "^3.1.5",
     "@types/topojson-specification": "^1.0.5",

@@ -1,0 +1,404 @@
+[
+  {
+    "scenario": "dark-script-_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 1453
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "dark-script-_metodologia_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 1
+      }
+    ]
+  },
+  {
+    "scenario": "dark-script-_municipio_210020-alcantara_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 10
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "dark-script-_municipio_210090-araioses_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 10
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "dark-script-_municipio_261160-recife_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 10
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "dark-script-_municipios_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 27
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 1
+      }
+    ]
+  },
+  {
+    "scenario": "dark-static-_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 2
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "dark-static-_metodologia_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "dark-static-_municipio_210020-alcantara_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 84
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "dark-static-_municipio_210090-araioses_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 39
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "dark-static-_municipio_261160-recife_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 84
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "dark-static-_municipios_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 27
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 1454
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_metodologia_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 1
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 1
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_municipio_210020-alcantara_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 11
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_municipio_210090-araioses_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 11
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_municipio_261160-recife_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 11
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 4
+      }
+    ]
+  },
+  {
+    "scenario": "light-script-_municipios_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 28
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 1
+      }
+    ]
+  },
+  {
+    "scenario": "light-static-_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 2
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "light-static-_metodologia_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": []
+  },
+  {
+    "scenario": "light-static-_municipio_210020-alcantara_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 84
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "light-static-_municipio_210090-araioses_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 39
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "light-static-_municipio_261160-recife_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 84
+      },
+      {
+        "id": "label-content-name-mismatch",
+        "nodes": 2
+      }
+    ]
+  },
+  {
+    "scenario": "light-static-_municipios_",
+    "engine": {
+      "name": "axe-core",
+      "version": "4.14.0"
+    },
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "color-contrast",
+        "nodes": 27
+      }
+    ]
+  }
+]
