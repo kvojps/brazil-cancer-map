@@ -6,7 +6,7 @@
 
 **Panorama**: O eixo que descreve o tamanho do problema: casos novos esperados (incidência estimada) e a tendência de mortalidade.
 
-**Tendência de mortalidade**: A variação da taxa de mortalidade ao longo do tempo. É a única forma em que a mortalidade aparece no mapa; contagens absolutas de óbitos não ganham destaque.
+**Tendência de mortalidade**: A variação da taxa de mortalidade ao longo do tempo. Só ela pinta o mapa; o painel do Meu município também mostra a taxa de mortalidade, sem contagem de óbitos e sem Situação.
 
 **Mapa inicial**: O panorama do Brasil por município, com a Tendência do indicador escolhido como leitura padrão e acesso à consulta municipal completa no próprio dashboard. A cor nunca expressa posição entre municípios.
 
