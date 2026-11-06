@@ -2,6 +2,7 @@
 
 import json
 import shutil
+import sys
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -44,14 +45,13 @@ def update_sources(selected: list[str], directory: Path, clean_dir: Path, output
             sources = {source.name: source for source in create_sources(work / 'clean', work / 'dados')}
             try:
                 for name in group:
-                    if name != 'mesh' and name != 'popsvs' and name != 'inca' and not (work / 'dados/municipalities.json').exists():
+                    if name not in {'mesh', 'popsvs', 'inca'} and not (work / 'dados/municipalities.json').exists():
                         step = 'prepare'
                         raise ValueError('Municipal mesh must be published before updating indicators')
                     for step, execute in STEPS.items():
                         print(f'{name}: {step}', flush=True)
                         execute(sources[name])
             except Exception as error:
-                import sys
                 message = f'{name}: {step} failed: {error}'
                 print(message, file=sys.stderr, flush=True)
                 failures.append({'sources': group, 'error': message})

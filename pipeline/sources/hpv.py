@@ -107,6 +107,9 @@ class HpvSource:
         self._clean_file(path, year, month, started, download_seconds=download_seconds, downloaded=downloaded)
 
     def clean(self) -> None:
+        """Official cohorts and Census are standardized during download."""
+
+    def clean_audit(self) -> None:
         """Read one ZIP member in flow, never materializing the uncompressed CSV."""
         pattern = re.compile(r'vacinacao_([a-z]{3})_(\d{4})_csv\.zip')
         for path in sorted(self._raw_dir.glob('*.zip')):
