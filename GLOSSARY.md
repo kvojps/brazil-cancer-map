@@ -18,7 +18,7 @@
 
 **Tipo de câncer**: O recorte por localização do câncer (por exemplo mama ou próstata) que filtra os indicadores do mapa. A visão padrão é "Todos os cânceres", e o seletor oferece mama, colo do útero, próstata, colorretal e pulmão. Quando um eixo não tem indicador para um tipo, ele mostra por que não tem.
 
-**Referência**: O valor com que a situação de um indicador é comparada. É a meta oficial quando ela existe (por exemplo, 100% dos casos tratados em até 60 dias) e o valor do Brasil quando não existe. Nunca é um ranking entre municípios.
+**Referência**: O valor com que a situação de um indicador é comparada. É a meta oficial (por exemplo, 100% dos casos tratados em até 60 dias); indicador sem meta compatível não tem Referência. Nunca é um ranking entre municípios.
 
 **Situação**: O valor do indicador no último ano consolidado, comparado à Referência. Aparece no cartão e no modo "como está hoje" do mapa. A mortalidade não tem Situação, só Tendência.
 

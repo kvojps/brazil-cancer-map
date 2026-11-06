@@ -161,7 +161,7 @@ Decisão e alternativas: [ADR 8](adr/0008-territorial-cascade.md).
 
 ## 9. Referência e Situação
 
-- Referências e textos para o público: 60 dias = 100% ("o que a lei garante"); mamografia e citopatológico = razão 1 ("meta"); HPV = 90% ("meta para 2030"; o cartão diz que a meta da OMS é para meninas); tabagismo = 5,9% ("meta do Brasil para 2030"). Mortalidade, casos estimados e onde se tratar não têm Referência. O glossário prevê o valor do Brasil quando não há meta, mas nenhum indicador usa esse caso.
+- Referências e textos para o público: 60 dias = 100% ("o que a lei garante"); mamografia e citopatológico = razão 1 ("meta"); HPV = 90% ("meta para 2030"; o cartão diz que a meta da OMS é para meninas); tabagismo = 5,9% ("meta do Brasil para 2030"). Mortalidade, casos estimados e onde se tratar não têm Referência.
 - **Por que cada Referência:**
   - **60 dias:** é um direito de todo paciente (Lei 12.732/2012, art. 2º). A Lei 13.896/2019 (exames em até 30 dias) não gera outro parâmetro, porque o Painel conta o tempo a partir do diagnóstico. Ela entra como direito na Ação.
   - **Mamografia e citopatológico:** fichas técnicas do INCA de 2014, com 1 exame a cada 2 anos e a cada 3 anos. O SISPACTO não tem valor nacional, e Previne Brasil e C7 da APS medem outros indicadores.
@@ -362,6 +362,11 @@ Decisões a confirmar:
 - **Painel:** o C55 não calculável sem os pontos; "Sem dado neste recorte" com amostra neutra, sem os pontos; a ressalva sobre o mapa no celular, em que só a da próstata sai com município selecionado; "Fumantes na capital" e "Casos estimados na UF" nos títulos dos Eixos; e o toque no mapa sem mover o foco.
 - **Lista:** "Tendência: Série curta, ainda sem direção" no HPV, sob o rótulo Tendência; "por 100 mil" em 12 px sob o número da mortalidade, na forma estreita; as linhas que continuam abertas ao trocar os filtros; e a Faixa C com Dado insuficiente sem a marca na linha fechada.
 - **Municípios por UF e Metodologia:** `/municipios/?municipio=<código>` carregando a seleção; o índice da Metodologia que também fecha com clique fora e ao sair dele com Tab; e a linha do sumário e os resultados da busca sem preenchimento nem sublinhado.
+
+**5. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) tem dois limites, mantidos como ressalva nos guias:
+
+- **HPV:** o `compute` exige em `official.json` todos os anos até o ano corrente. O estado de `data-2026-11-06` vai até 2026, então, pela leitura do código, deixa de recalcular em 01/01/2027. A falha foi observada só com relógio simulado em março de 2027. Falta decidir se o `compute` deve usar os anos do próprio estado.
+- **`mesh` e `painel`:** `validate` e `export` exigem `data/raw/mesh/ibge_municipalities.json` e as páginas de `data/raw/painel/tabnet/`, que o estado não traz. Falta decidir se esses arquivos entram no estado.
 
 ### Requisitos antes de publicar
 

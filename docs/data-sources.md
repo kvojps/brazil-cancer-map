@@ -118,6 +118,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
 ## `cnes`
 
 - **Insumos:** `HB<UF><aamm>.dbc` e `ST<UF><aamm>.dbc` das 27 UFs, na competência mais recente comum a todos, e `TAB_CNES.zip`, de onde vêm os nomes (`CADGERBR.dbf`), que os DBC não trazem.
+- **Habilitações usadas:** 1704, 1706–1713 e 1715 (`HABILITATIONS`, em `pipeline/sources/cnes.py`). Contam como radioterapia 1704, 1707, 1712, 1713 e 1715 (lido no código).
 - **Pré-requisitos:** malha publicada. Node.js e `npm ci --prefix pipeline`, porque o mapshaper calcula os centroides.
 - **Calendário:** mensal. `HBSP2606` saiu em 15/07/2026, `2607` em 17/08, `2608` em 15/09 e `2609` em 15/10/2026.
 - **Endereços:** `ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/HB/`, `.../Dados/ST/` e `.../Auxiliar/TAB_CNES.zip`.
