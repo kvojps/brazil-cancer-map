@@ -4,10 +4,10 @@
 
 **Blocked by:** 21 — Eixos sem indicador e Ações por tipo
 
-**Status:** ready-for-human
+**Status:** resolved
 
-- [ ] O responsável pelo projeto convida o profissional de saúde revisor
-- [ ] Faixas etárias, intervalos, exceções e disponibilidade são reconferidos nas fontes oficiais: 50–74 na mamografia, FIT, resgate do HPV para 15–19 anos até 31/12/2026 e listas de sinais
-- [ ] Cada Ação registra a versão revisada, a data e o responsável pela revisão
-- [ ] Orientações temporárias têm data de revisão
-- [ ] Fica documentado que toda alteração clínica posterior exige nova revisão
+- [x] O responsável pelo projeto convida o profissional de saúde revisor
+- [x] Faixas etárias, intervalos, exceções e disponibilidade são reconferidos nas fontes oficiais: 50–74 na mamografia, FIT, resgate do HPV para 15–19 anos até 31/12/2026 e listas de sinais
+- [x] Cada Ação registra a versão revisada, a data e o responsável pela revisão
+- [x] Orientações temporárias têm data de revisão
+- [x] Fica documentado que toda alteração clínica posterior exige nova revisão

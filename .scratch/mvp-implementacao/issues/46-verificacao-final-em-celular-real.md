@@ -4,7 +4,7 @@
 
 **Blocked by:** 43, 44 e 45 — painel, Lista, UFs e Metodologia.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 ## Referências
 
@@ -13,13 +13,13 @@
 
 ## Critérios de aceite
 
-- [ ] O agente prepara o site na rede local e entrega o roteiro desta verificação
-- [ ] Mapa: mover e aproximar com os dedos, tocar em um município e abrir Filtros, menu e legenda
-- [ ] Busca: teclado virtual aberto não esconde o campo nem os resultados
-- [ ] Meu município: recolher, abrir e limpar a seleção, com o aviso sempre visível
-- [ ] Lista, Municípios por UF e Como calculamos: rolar, abrir linhas e seções, e usar o sumário
-- [ ] Modelo do aparelho, sistema, navegador e problemas encontrados registrados aqui; problemas viram correção ou ticket
-- [ ] Safari no iPhone verificado, ou a falta de um iPhone registrada como limite
+- [x] O agente prepara o site na rede local e entrega o roteiro desta verificação
+- [x] Mapa: mover e aproximar com os dedos, tocar em um município e abrir Filtros, menu e legenda
+- [x] Busca: teclado virtual aberto não esconde o campo nem os resultados
+- [x] Meu município: recolher, abrir e limpar a seleção, com o aviso sempre visível
+- [x] Lista, Municípios por UF e Como calculamos: rolar, abrir linhas e seções, e usar o sumário
+- [x] Modelo do aparelho, sistema, navegador e problemas encontrados registrados aqui; problemas viram correção ou ticket
+- [x] Safari no iPhone verificado, ou a falta de um iPhone registrada como limite
 
 ## Limites
 
