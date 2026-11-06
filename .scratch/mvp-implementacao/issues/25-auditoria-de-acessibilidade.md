@@ -4,7 +4,7 @@
 
 **Blocked by:** 09 — Estado na URL; 11 — Busca e navegação; 21 — Eixos sem indicador; 24 — Metodologia consolidada; 30 — Temas e navegação compartilhados; 31 — Mapa imersivo com prévia municipal; 32 — Busca e tabela independentes do mapa; 33 — Meu município responsivo e navegável sem JavaScript; 34 — Metodologia no padrão visual compartilhado; 36 — Console horizontal; 37 — Consulta municipal integrada; 38 — Navegação resiliente e links; 39 — Metodologia no Console
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] Todo o fluxo (seletores, busca, mapa, tabela alternativa, ficha, "Saiba mais", metodologia) funciona só pelo teclado, com foco visível
 - [x] Cada estado do mapa (indicador × tipo × modo) tem alternativa em tabela com as mesmas classes, origens do dado e avisos

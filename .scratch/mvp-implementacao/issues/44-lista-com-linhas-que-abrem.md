@@ -4,7 +4,7 @@
 
 **Blocked by:** 41 e 42 — composições do desktop e do celular.
 
-**Status:** ready-for-human
+**Status:** resolved
 
 ## Referências
 
@@ -18,7 +18,7 @@
 - [x] Na forma larga, tabela rolando por dentro da área do mapa, com filtros e painel à vista
 - [x] Seletor de UF e contagem fixos ao rolar no celular; Mapa/Lista fixo na tela e o aviso sempre visível
 - [x] Período ou Referência e ano do valor à vista; o parágrafo longo em "Como ler esta lista", com o aviso da Faixa C preservado
-- [ ] Semântica de tabela preservada para leitores de tela nas duas formas, com rótulos em texto real e `aria-expanded` no controle da linha; sessão com leitor de tela registrada
+- [x] Semântica de tabela preservada para leitores de tela nas duas formas, com rótulos em texto real e `aria-expanded` no controle da linha; sessão com leitor de tela registrada
 - [x] A folha do painel não cobre as linhas nem Mapa/Lista com município selecionado; conferir as colunas a 1280 px com o painel aberto
 - [x] Ordem por UF e nome, sem ranking, e cobertura de HPV sem Tendência, mortalidade sem Situação, próstata sem Situação e falha de carga com nova tentativa
 - [x] Verificar nos dois temas a 320, 768 e 1280 px e no zoom de 200%, com e sem JavaScript, com teclado e foco visível, sem rolagem horizontal fora de tabelas; registrar limites e o que não foi verificado
