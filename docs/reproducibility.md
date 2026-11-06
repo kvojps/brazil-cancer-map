@@ -2,7 +2,7 @@
 
 ## Quero só os dados
 
-Baixe os assets da [Versão de dados `data-2026-11-05`](https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-05). Não é preciso Python: os CSV abrem em ferramentas de análise e planilhas que suportem o tamanho das células; Parquet serve para ferramentas que leem esse formato. A [lista de Releases](https://github.com/kvojps/brazil-cancer-map/releases) permite escolher outra versão. Guarde o nome da versão junto da análise.
+Baixe os assets da [Versão de dados `data-2026-11-06`](https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-06). Não é preciso Python: os CSV abrem em ferramentas de análise e planilhas que suportem o tamanho das células; Parquet serve para ferramentas que leem esse formato. A [lista de Releases](https://github.com/kvojps/brazil-cancer-map/releases) permite escolher outra versão. Guarde o nome da versão junto da análise.
 
 Cada linha preserva uma parte do Contrato de dados; os arquivos não são uma tabela plana com uma linha por município. Cada nome abaixo tem as extensões `.csv` e `.parquet`, com o mesmo conteúdo:
 
@@ -50,7 +50,7 @@ Reconstrói os JSON usando só os assets da mesma Release, sem baixar Fontes. Pr
 uv sync --frozen
 WORK=$(mktemp -d)
 mkdir "$WORK/assets"
-gh release download data-2026-11-05 --repo kvojps/brazil-cancer-map --dir "$WORK/assets"
+gh release download data-2026-11-06 --repo kvojps/brazil-cancer-map --dir "$WORK/assets"
 cat > "$WORK/compare.py" <<'PY'
 import json
 import pathlib
@@ -80,54 +80,91 @@ done
 diff -r "$WORK/level1-parquet" "$WORK/level1-csv"
 ```
 
-Resultado comprovado em 06/11/2026: `48 files, 0 differ` nos dois formatos e nenhuma diferença entre as duas reconstruções. Essa comparação preserva tipos numéricos e inclui `pipeline_version`. Contra os JSON commitados, 21 arquivos são idênticos em bytes e os 27 perfis diferem só na ordem das chaves de `indicators`. A igualdade garantida aqui é de conteúdo JSON; não de bytes. O manifesto é idêntico em bytes.
+Resultado comprovado em 06/11/2026 com os 27 assets baixados da Release
+`data-2026-11-06`: `48 files, 0 differ` nos dois formatos. A comparação
+preserva tipos numéricos e inclui `pipeline_version: 0.1.0+a98b5fd`.
+A igualdade garantida é de conteúdo JSON; não de bytes.
 
-Compare com um checkout que contenha a mesma Versão de dados: uma atualização posterior de `site/public/dados/` muda a referência. A prova original usou o commit `9cf8226`.
+Compare com um checkout que contenha a mesma Versão de dados. O commit gerador
+`a98b5fd8d4d43602d26ac020426928b7531b4952` antecede a incorporação dos JSON
+da nova Release: seu contrato commitado ainda é o antigo. Para verificar
+nesse commit, restaure também a referência da Release, como no nível 2.
 
 ## Nível 2 — Recalcular
 
-**Ainda não comprovado com uma Release pública**, sujeito às limitações por `source` abaixo. A Release `data-2026-11-05` tem 18 assets CSV/Parquet e nenhum `state-*.tar.gz`: não permite restaurar o estado nem retomar o processamento. Seu manifesto registra `pipeline_version: 0.1.0+df740cd-dirty`, que não identifica um checkout limpo reproduzível.
+**Conferido na Release pública `data-2026-11-06` em 06/11/2026**, com os limites
+por `source` abaixo. Ela contém 18 tabelas CSV/Parquet e nove arquivos
+`state-*.tar.gz`. O manifesto identifica o código exato:
+`pipeline_version: 0.1.0+a98b5fd`, sem `-dirty`. Use o commit completo
+`a98b5fd8d4d43602d26ac020426928b7531b4952`, disponível no repositório público;
+não suponha que a tag da Release seja o commit gerador.
 
-A prova de 06/11/2026 usou um clone temporário de `9cf8226`, estado exportado do `data/clean` local e a malha commitada. Não foi uma reprodução de estado obtido da Release. Nenhum valor de Indicador mudou. Comparando sem `pipeline_version`:
+A prova usou um clone nesse commit, contrato e estado restaurados dos assets
+baixados da Release. As dez `source`s concluíram `compute`, `validate` e
+`export` ao fornecer separadamente os insumos externos de `mesh` e `painel`.
+O contrato recalculado ficou igual aos 48 arquivos restaurados da Release,
+inclusive tipos numéricos e `pipeline_version`. Nenhum valor de Indicador mudou.
 
-| `source` | Resultado com estado e JSON commitados |
+| `source` | Resultado com o estado público e o contrato restaurado |
 |---|---|
-| `mesh` | Não executável: `validate` e `export` exigem `data/raw/mesh/ibge_municipalities.json`; igual ao fornecer esse arquivo |
+| `mesh` | `validate` não executável sem `data/raw/mesh/ibge_municipalities.json`; igual ao fornecer esse arquivo |
 | `popsvs` | Igual; só valida, não publica no site |
-| `painel` | `compute` roda; `validate` e `export` exigem as 26 páginas de `data/raw/painel/tabnet/` (13 anos × 2 tabelas); igual ao fornecê-las |
+| `painel` | `validate` não executável sem as 26 páginas de `data/raw/painel/tabnet/` (13 anos × 2 tabelas); igual ao fornecê-las |
 | `cnes` | Igual; exige mapshaper |
 | `siscan` | Igual |
 | `siscan_cytopathology` | Igual |
-| `sim` | Igual; `compute` levou cerca de 80 s e 1,2 GB de RAM |
-| `hpv` | Diferente só em metadados; valores, Situação e séries iguais |
-| `inca` | Igual; usa o insumo versionado em `pipeline/references/` |
-| `vigitel` | Igual |
+| `sim` | Igual |
+| `hpv` | Igual, inclusive metadados; sujeito ao limite temporal abaixo |
+| `inca` | Igual; usa o insumo versionado em `pipeline/references/`, sem estado próprio |
+| `vigitel` | Igual; o estado inclui entrevistas sem identificadores diretos |
 
-No HPV, desaparece `audit_last_month: 9` dos mapas, perfis e manifesto; `sources.hpv.files` troca os 81 ZIP e `official.json` por `official.json` e `census.parquet`. Ao final, 18 arquivos ficaram idênticos em bytes e 30 diferiram por metadados do HPV e versão do pipeline. O HPV também depende do relógio: o código exige anos completos até o ano corrente; com o estado que vai até 2026, uma simulação de março de 2027 falhou. Isso não foi uma execução da CLI em 2027.
+O HPV ainda depende do relógio: exige todos os anos até o ano corrente.
+O estado publicado vai até 2026 e não basta em 2027. A falha em março de 2027
+foi observada com relógio simulado na prova anterior, não numa execução da CLI
+em 2027. Esta Release não altera essa regra do pipeline.
 
-Para uma futura Release com estado, use um clone novo do código correspondente, Python 3.14+, `uv` e Node 24. Baixe todos os assets em uma pasta vazia. O fluxo abaixo foi executado com assets de estado produzidos localmente; ainda não foi comprovado com uma Release pública que os contenha. Na raiz desse clone:
+Para repetir, use Git, GitHub CLI (`gh`), Python 3.14+, `uv` e Node 24.
+Comece na raiz de um clone separado, sem `data/clean`. O fluxo abaixo restaura
+o contrato público antes de recalcular e guarda uma referência independente:
 
 ```bash
+git switch --detach a98b5fd8d4d43602d26ac020426928b7531b4952
 uv sync --frozen
 npm ci --prefix pipeline
-# Set this to the directory containing the matching release assets.
-ASSETS=/caminho/para/assets
-uv run --frozen python -m pipeline restore-state --assets "$ASSETS" --output data/clean
-# Supply the matching external mesh and TabNet files described in the table.
-for source in mesh popsvs painel cnes siscan siscan_cytopathology sim hpv inca vigitel; do
+WORK=$(mktemp -d)
+gh release download data-2026-11-06 --repo kvojps/brazil-cancer-map --dir "$WORK/assets"
+uv run --frozen python -m pipeline restore-release --assets "$WORK/assets" --output "$WORK/reference"
+uv run --frozen python -m pipeline restore-release --assets "$WORK/assets" --output site/public/dados
+uv run --frozen python -m pipeline restore-state --assets "$WORK/assets" --output data/clean
+for source in popsvs cnes siscan siscan_cytopathology sim hpv inca vigitel; do
   for step in compute validate export; do
     uv run --frozen python -m pipeline run --source "$source" --step "$step" || exit 1
   done
 done
-git diff --stat -- site/public/dados
-git diff -- site/public/dados
 ```
 
-Sem os arquivos externos, rode apenas as `source` executáveis da tabela. `pipeline_version` muda mesmo sem diferença nos números; examine o diff e compare o conteúdo desconsiderando apenas esse campo para avaliar recálculo. Diferenças de HPV continuam sendo diferenças reais de metadados. `update` sempre inclui `download`; para este nível use `run --step`, que lê os caminhos fixos `data/clean` e `site/public/dados`. Chromium só é exigido no download oficial do HPV, não nos níveis 1 e 2.
+O laço omite `mesh` e `painel`, porque os assets não fornecem os insumos brutos
+externos. Para incluí-las, forneça os arquivos correspondentes nos caminhos
+da tabela antes de executar suas três etapas. Eles foram fornecidos localmente
+na prova e não estão disponíveis só pelo download da Release.
 
-A preparação local da próxima versão e os limites mantidos estão registrados
-em [Preparação de uma Versão de dados rastreável](data/traceable-version.md).
-Esse registro não substitui a conferência dos assets de uma Release pública.
+Para comparar, salve o `compare.py` do nível 1 em `$WORK/compare.py` e execute:
+
+```bash
+uv run --frozen python "$WORK/compare.py" "$WORK/reference" site/public/dados
+```
+
+O resultado esperado neste commit e com esse estado em 2026 é
+`48 files, 0 differ`, sem ignorar `pipeline_version`. Um `git diff` contra
+os JSON antigos do commit gerador não serve de referência. `update` sempre
+inclui `download`; para este nível use `run --step`. Chromium só é exigido
+no download oficial do HPV, não nos níveis 1 e 2.
+
+A Release anterior, `data-2026-11-05`, permite o nível 1, mas não contém estado
+e registra `0.1.0+df740cd-dirty`. A nova versão remove os metadados antigos
+da auditoria HPV (`audit_last_month` e a lista de ZIPs), sem mudar valores.
+Comandos, checksums e evidência da prova pública estão em
+[Versão de dados rastreável](data/traceable-version.md).
 
 ## Nível 3 — Refazer da origem
 
@@ -159,7 +196,7 @@ As evidências estão em [`docs/data/`](data/), com índice em [Fontes de dados]
 
 Modelo para esta versão:
 
-> Observatório do Câncer no Brasil. Dados abertos, Versão de dados `data-2026-11-05`. Disponível em: https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-05. Acesso em: [data de acesso].
+> Observatório do Câncer no Brasil. Dados abertos, Versão de dados `data-2026-11-06`. Disponível em: https://github.com/kvojps/brazil-cancer-map/releases/tag/data-2026-11-06. Acesso em: [data de acesso].
 
 Troque a Versão de dados e o endereço pelos da Release utilizada. Cite também as Fontes originais: os [modelos por Fonte e condições de reutilização](https://brazil-cancer-map.josebazjunior09.workers.dev/metodologia/#reutilizacao-e-citacao) estão na metodologia. A licença do código não se aplica aos dados de terceiros.
 

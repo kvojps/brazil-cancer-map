@@ -1,0 +1,148 @@
+{
+  "release": "data-2026-11-06",
+  "generator": "a98b5fd8d4d43602d26ac020426928b7531b4952",
+  "archive_members": {
+    "state-cnes.tar.gz": [
+      "cnes",
+      "cnes/centers.geojson",
+      "cnes/extract.json",
+      "cnes/facilities.parquet",
+      "cnes/nearby.json"
+    ],
+    "state-hpv.tar.gz": [
+      "hpv",
+      "hpv/census.parquet",
+      "hpv/official.json"
+    ],
+    "state-mesh.tar.gz": [
+      "mesh",
+      "mesh/municipalities.json",
+      "mesh/municipalities.topojson"
+    ],
+    "state-painel.tar.gz": [
+      "painel",
+      "painel/cases.parquet",
+      "painel/extract.json",
+      "painel/layers",
+      "painel/layers/all-profiles.json",
+      "painel/layers/all.json",
+      "painel/layers/breast-profiles.json",
+      "painel/layers/breast.json",
+      "painel/layers/cervix-profiles.json",
+      "painel/layers/cervix.json",
+      "painel/layers/colorectal-profiles.json",
+      "painel/layers/colorectal.json",
+      "painel/layers/lung-profiles.json",
+      "painel/layers/lung.json",
+      "painel/layers/prostate-profiles.json",
+      "painel/layers/prostate.json",
+      "painel/monthly_alerts.json",
+      "painel/months.parquet"
+    ],
+    "state-popsvs.tar.gz": [
+      "popsvs",
+      "popsvs/population.parquet"
+    ],
+    "state-sim.tar.gz": [
+      "sim",
+      "sim/c55-adjustment.json",
+      "sim/c55-validation.json",
+      "sim/computed.json",
+      "sim/deaths.parquet",
+      "sim/extract.json",
+      "sim/validation.json"
+    ],
+    "state-siscan.tar.gz": [
+      "siscan",
+      "siscan/exams",
+      "siscan/exams/2016.json",
+      "siscan/exams/2016.parquet",
+      "siscan/exams/2017.json",
+      "siscan/exams/2017.parquet",
+      "siscan/exams/2018.json",
+      "siscan/exams/2018.parquet",
+      "siscan/exams/2019.json",
+      "siscan/exams/2019.parquet",
+      "siscan/exams/2020.json",
+      "siscan/exams/2020.parquet",
+      "siscan/exams/2021.json",
+      "siscan/exams/2021.parquet",
+      "siscan/exams/2022.json",
+      "siscan/exams/2022.parquet",
+      "siscan/exams/2023.json",
+      "siscan/exams/2023.parquet",
+      "siscan/exams/2024.json",
+      "siscan/exams/2024.parquet",
+      "siscan/exams/2025.json",
+      "siscan/exams/2025.parquet",
+      "siscan/layer.json",
+      "siscan/profiles.json"
+    ],
+    "state-siscan_cytopathology.tar.gz": [
+      "siscan_cytopathology",
+      "siscan_cytopathology/exams",
+      "siscan_cytopathology/exams/2016.json",
+      "siscan_cytopathology/exams/2016.parquet",
+      "siscan_cytopathology/exams/2017.json",
+      "siscan_cytopathology/exams/2017.parquet",
+      "siscan_cytopathology/exams/2018.json",
+      "siscan_cytopathology/exams/2018.parquet",
+      "siscan_cytopathology/exams/2019.json",
+      "siscan_cytopathology/exams/2019.parquet",
+      "siscan_cytopathology/exams/2020.json",
+      "siscan_cytopathology/exams/2020.parquet",
+      "siscan_cytopathology/exams/2021.json",
+      "siscan_cytopathology/exams/2021.parquet",
+      "siscan_cytopathology/exams/2022.json",
+      "siscan_cytopathology/exams/2022.parquet",
+      "siscan_cytopathology/exams/2023.json",
+      "siscan_cytopathology/exams/2023.parquet",
+      "siscan_cytopathology/exams/2024.json",
+      "siscan_cytopathology/exams/2024.parquet",
+      "siscan_cytopathology/exams/2025.json",
+      "siscan_cytopathology/exams/2025.parquet",
+      "siscan_cytopathology/layer.json",
+      "siscan_cytopathology/profiles.json"
+    ],
+    "state-vigitel.tar.gz": [
+      "vigitel",
+      "vigitel/computed.json",
+      "vigitel/extraction.json",
+      "vigitel/interviews.parquet",
+      "vigitel/validation.json"
+    ]
+  },
+  "csv": {
+    "files": 48,
+    "different": 0
+  },
+  "parquet": {
+    "files": 48,
+    "different": 0
+  },
+  "formats": {
+    "files": 48,
+    "different": 0
+  },
+  "pipeline_version": "0.1.0+a98b5fd",
+  "without_external_raw": {
+    "mesh": "[Errno 2] No such file or directory: '/tmp/cancer-public-11-clone/data/raw/mesh/ibge_municipalities.json'",
+    "painel": "all cases, 2014: no TabNet table to compare with; all cases, 2015: no TabNet table to compare with; all cases, 2016: no TabNet table to compare with; all cases, 2017: no TabNet table to compare with; all cases, 2018: no TabNet table to compare with; all cases, 2019: no TabNet table to compare with; all cases, 2020: no TabNet table to compare with; all cases, 2021: no TabNet table to compare with; all cases, 2022: no TabNet table to compare with; all cases, 2023: no TabNet table to compare with; all cases, 2024: no TabNet table to compare with; all cases, 2025: no TabNet table to compare with; all cases, 2026: no TabNet table to compare with; chemotherapy or radiotherapy, 2014: no TabNet table to compare with; chemotherapy or radiotherapy, 2015: no TabNet table to compare with; chemotherapy or radiotherapy, 2016: no TabNet table to compare with; chemotherapy or radiotherapy, 2017: no TabNet table to compare with; chemotherapy or radiotherapy, 2018: no TabNet table to compare with; chemotherapy or radiotherapy, 2019: no TabNet table to compare with; chemotherapy or radiotherapy, 2020: no TabNet table to compare with; chemotherapy or radiotherapy, 2021: no TabNet table to compare with; chemotherapy or radiotherapy, 2022: no TabNet table to compare with; chemotherapy or radiotherapy, 2023: no TabNet table to compare with; chemotherapy or radiotherapy, 2024: no TabNet table to compare with; chemotherapy or radiotherapy, 2025: no TabNet table to compare with; chemotherapy or radiotherapy, 2026: no TabNet table to compare with"
+  },
+  "sources": [
+    "mesh",
+    "popsvs",
+    "painel",
+    "cnes",
+    "siscan",
+    "siscan_cytopathology",
+    "sim",
+    "hpv",
+    "inca",
+    "vigitel"
+  ],
+  "level2": {
+    "files": 48,
+    "different": 0
+  }
+}

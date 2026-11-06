@@ -4,12 +4,12 @@
 
 **Blocked by:** 01 — Provar a reprodução
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] Os JSON são gerados de árvore limpa, com `pipeline_version` sem `-dirty`
-- [ ] A Release é publicada com `--state-dir`, com os `state-*.tar.gz` e sem extratos de pacientes ou auditoria HPV
+- [x] A Release é publicada com `--state-dir`, com os `state-*.tar.gz` e sem extratos de pacientes ou auditoria HPV
 - [x] As diferenças encontradas no ticket 01, registradas abaixo, foram analisadas
-- [ ] `docs/reproducibility.md` deixa de dizer "disponível a partir da próxima Release", e o nível 2 é conferido na Release nova
+- [x] `docs/reproducibility.md` deixa de dizer "disponível a partir da próxima Release", e o nível 2 é conferido na Release nova
 
 ## Comments
 
@@ -69,3 +69,40 @@ Recálculo dos assets locais: estado restaurado em destino novo, dez
 arquivos com zero diferenças, inclusive `pipeline_version`. Foram usados
 os mesmos arquivos externos de `mesh`/`painel`. Essa prova local não foi
 confundida com a conferência pendente de uma nova Release pública.
+
+
+### Conferência pública e fechamento (06/11/2026)
+
+O responsável publicou `data-2026-11-06` às 18:40:28 UTC com 27 assets:
+18 tabelas e nove arquivos de estado. Os assets foram baixados do GitHub em
+pasta vazia e o commit gerador `a98b5fd8d4d43602d26ac020426928b7531b4952`
+foi confirmado como acessível publicamente. Os tarballs republicados têm
+bytes distintos dos preparados, mas seus membros e conteúdos são iguais.
+Não há extratos de pacientes ou auditoria HPV; as entrevistas Vigitel foram
+incluídas pelo responsável.
+
+A CLI restaurou CSV e Parquet (48 arquivos, zero diferenças) e o estado em
+`data/clean` de um clone separado no commit gerador. Sem os insumos externos,
+`mesh` e `painel` falharam na validação conforme esperado. Fornecidos os
+arquivos correspondentes da proposta local, as dez `source`s passaram nas
+três etapas. Comparação final contra o contrato da Release: 48 arquivos,
+zero diferenças, incluindo `pipeline_version: 0.1.0+a98b5fd`.
+
+Os JSON do site foram incorporados diretamente dos assets públicos. O guia
+do pesquisador, o guia do mantenedor, a spec e a citação do README refletem
+a versão publicada e mantêm os limites temporais do HPV e dos arquivos
+externos de `mesh`/`painel`. A prova e os checksums estão em
+`docs/data/traceable-version.md`,
+`docs/data/data-2026-11-06-verification.json` e
+`docs/data/data-2026-11-06-sha256.txt`.
+
+Commits que resolveram o ticket:
+
+- `6bfc659` — `docs: prepare traceable data version` (preparação).
+- `data: publish verified data-2026-11-06` (incorporação da Release pública,
+  prova, documentação e fechamento neste commit).
+
+Validação final: mypy (48 arquivos), pytest (173 testes), Astro check
+(71 arquivos sem diagnósticos) e testes Node (87, com build) passaram.
+A primeira tentativa Node foi bloqueada pelo sandbox (`spawnSync npm EPERM`);
+a repetição fora dele passou. Não houve push nem deploy pelo agente.
