@@ -227,15 +227,7 @@ manifesto, o índice municipal, a malha e os demais dados auxiliares.
 Não depende dos insumos locais em `data/raw/` ou `data/clean/`.
 `--data-dir` e `--output` permitem escolher a origem e o destino.
 
-As colunas são `file` (caminho relativo do JSON), `path` (lista JSON de
-chaves), `value` (registro, lista ou escalar JSON), `source`, `period`,
-`conditions` e `citation`. Os metadados de cada fonte e período aparecem na
-primeira linha correspondente de cada tabela; as linhas seguintes deixam essas
-colunas vazias para evitar duplicação. Chaves preservam códigos IBGE como texto;
-valores preservam números, booleanos, nulos e listas vazias. Os registros
-mantêm as estruturas do contrato para evitar perda de precisão e de
-metadados; o CSV usa UTF-8 e cabeçalho. Parquet tem as mesmas colunas de
-texto, com compressão Zstandard. Não há nova conta estatística na exportação.
+O [guia do pesquisador](docs/reproducibility.md) descreve os arquivos, as colunas, o manifesto e os níveis de reprodução comprovados.
 
 Para publicar, com o GitHub CLI instalado e autenticado com permissão de
 escrita no repositório:
