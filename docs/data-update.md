@@ -97,6 +97,11 @@ O destino de `restore-state` precisa ser novo. Para preparar uma atualização, 
 
 **Limites atuais:** a Release `data-2026-11-05` tem 18 assets CSV/Parquet e nenhum estado; permite reconstruir o contrato, mas não retomar o processamento só com seus assets. Seu manifesto traz `0.1.0+df740cd-dirty`. O estado estará disponível a partir da próxima Release que o inclua. Ainda há pendências: `mesh` exige `data/raw/mesh/ibge_municipalities.json`, `painel` exige `data/raw/painel/tabnet/`, e o recálculo HPV exige todos os anos até o ano corrente, portanto o estado de 2026 não basta em 2027. O recálculo já conferido também muda metadados HPV (`audit_last_month` e a lista de insumos), sem mudar valores. Esses limites e a decisão sobre entrevistas Vigitel precisam ser resolvidos ou explicitados na próxima publicação; não se promete retomada completa apenas por usar `--state-dir`.
 
+As decisões para a próxima publicação e sua evidência local estão em
+[Preparação de uma Versão de dados rastreável](data/traceable-version.md).
+A preparação não comprova uma Release pública nem altera a ordem de publicação
+e incorporação dos JSON.
+
 ## Auditoria HPV opcional
 
 `update --source hpv` usa agregados oficiais. A auditoria com microdados é separada e local, nunca requisito de publicação:

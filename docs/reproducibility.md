@@ -86,7 +86,7 @@ Compare com um checkout que contenha a mesma Versão de dados: uma atualização
 
 ## Nível 2 — Recalcular
 
-**Disponível a partir da próxima Release**, sujeito às limitações por `source` abaixo. A Release `data-2026-11-05` tem 18 assets CSV/Parquet e nenhum `state-*.tar.gz`: não permite restaurar o estado nem retomar o processamento. Seu manifesto registra `pipeline_version: 0.1.0+df740cd-dirty`, que não identifica um checkout limpo reproduzível.
+**Ainda não comprovado com uma Release pública**, sujeito às limitações por `source` abaixo. A Release `data-2026-11-05` tem 18 assets CSV/Parquet e nenhum `state-*.tar.gz`: não permite restaurar o estado nem retomar o processamento. Seu manifesto registra `pipeline_version: 0.1.0+df740cd-dirty`, que não identifica um checkout limpo reproduzível.
 
 A prova de 06/11/2026 usou um clone temporário de `9cf8226`, estado exportado do `data/clean` local e a malha commitada. Não foi uma reprodução de estado obtido da Release. Nenhum valor de Indicador mudou. Comparando sem `pipeline_version`:
 
@@ -124,6 +124,10 @@ git diff -- site/public/dados
 ```
 
 Sem os arquivos externos, rode apenas as `source` executáveis da tabela. `pipeline_version` muda mesmo sem diferença nos números; examine o diff e compare o conteúdo desconsiderando apenas esse campo para avaliar recálculo. Diferenças de HPV continuam sendo diferenças reais de metadados. `update` sempre inclui `download`; para este nível use `run --step`, que lê os caminhos fixos `data/clean` e `site/public/dados`. Chromium só é exigido no download oficial do HPV, não nos níveis 1 e 2.
+
+A preparação local da próxima versão e os limites mantidos estão registrados
+em [Preparação de uma Versão de dados rastreável](data/traceable-version.md).
+Esse registro não substitui a conferência dos assets de uma Release pública.
 
 ## Nível 3 — Refazer da origem
 

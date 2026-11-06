@@ -318,6 +318,7 @@ Decisão e alternativas: [ADR 6](adr/0006-manual-local-data-update.md).
   Checar uma Fonte não significa publicar um período novo: valem as regras de ano consolidado. O citopatológico não recebe anos novos.
 - **Fluxo:** `update` prepara um snapshot para revisão, sem tocar nos JSON do site. Depois da revisão, os dados vão para uma Release e, com um commit dos JSON, para o site. Os comandos estão em `docs/data-update.md`.
 - **Estado:** agregados e estado necessário à retomada ficam em assets de Release (< 2 GiB por arquivo). A primeira Release, `data-2026-11-05`, ainda não traz esses assets. O acervo bruto do SI-PNI e os extratos de pacientes da auditoria ficam locais, fora do git e das Releases.
+- **Reprodução:** a próxima publicação mantém explícitos os limites do HPV dependente do ano corrente e dos arquivos externos de `mesh` e `painel`; `--state-dir` sozinho não garante recálculo integral. Decisões e prova local em [Versão de dados rastreável](data/traceable-version.md).
 - **HPV:** a atualização usa as coortes oficiais agregadas. A auditoria dos microdados é opcional, local e acionada à parte, com `hpv-audit`.
 - **Falha de validação ou mudança de formato:**
   - a `source` afetada não publica, mantém a última versão válida, registra a falha e avisa o mantenedor pela saída do comando e pelo código de saída;
