@@ -130,11 +130,11 @@ def test_missing_month_or_baseline_never_becomes_zero_coverage(tmp_path):
     original = path.read_bytes()
     path.unlink()
     with pytest.raises(ValueError, match='every published monthly'):
-        source.compute()
+        source.compute_audit()
     path.write_bytes(original)
     (clean / 'legacy.json').unlink()
     with pytest.raises(ValueError, match='complete TabNet D1 history'):
-        source.compute()
+        source.compute_audit()
 
 
 def test_above_100_is_kept_and_invalid_export_preserves_previous_files(tmp_path):
@@ -241,12 +241,11 @@ def test_current_year_uses_catalog_boundary_and_rejects_internal_gaps(tmp_path):
         'source_url': f'https://dadosabertos.saude.gov.br/dataset/pni-{current}',
         'checked_at': datetime.now(UTC).date().isoformat(),
     }))
-    source.compute()
-    data = json.loads((clean / 'computed.json').read_text())
-    assert data['period']['audit_last_month'] == last_month
+    source.compute_audit()
+    assert json.loads((clean / 'audit.json').read_text())['records']
     (clean / 'months' / str(current) / '01.parquet').unlink()
     with pytest.raises(ValueError, match='every published monthly'):
-        source.compute()
+        source.compute_audit()
 
 
 def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_path, monkeypatch):
@@ -284,16 +283,16 @@ def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_p
     monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', lambda *args: None)
     monkeypatch.setattr('pipeline.download.time.sleep', lambda seconds: None)
     source = HpvSource(clean_dir=clean, years=(current,), transport=transport)
-    source.download()
+    source.download_audit()
     assert transport.inspected == [f'{S3_ROOT}vacinacao_{name}_{current}_csv.zip' for name in ('jan', 'fev')]
     assert json.loads((clean / 'availability.json').read_text())['months'] == [1, 2]
     transport.catalog_months = [1, 3]
     with pytest.raises(ValueError, match='internal gaps'):
-        source.download()
+        source.download_audit()
     transport.catalog_months = [1, 2]
     transport.fail = True
     with pytest.raises(DownloadError, match='advertised resource unavailable'):
-        source.download()
+        source.download_audit()
 
 
 def test_official_qualified_cohorts_override_the_local_audit(tmp_path):
@@ -312,6 +311,7 @@ def test_official_qualified_cohorts_override_the_local_audit(tmp_path):
     source.compute()
     data = json.loads((clean / 'computed.json').read_text())
     assert data['municipalities']['110001']['value'] == 20
+    source.compute_audit()
     audit = json.loads((clean / 'audit.json').read_text())
     assert next(row for row in audit['records'] if row['municipality'] == '110001'
                 and row['sex'] == 'F' and row['year'] == 2021)['vaccinated'] == 1
@@ -332,3 +332,20 @@ def test_official_cohorts_require_complete_census_matched_slices(tmp_path):
     path.write_text(json.dumps(official))
     with pytest.raises(ValueError, match='missing municipality, sex or year'):
         source.compute()
+
+
+def test_publication_uses_only_official_aggregates_and_census(tmp_path):
+    import shutil
+    source, site, clean = prepared_source(tmp_path)
+    shutil.rmtree(clean / 'months')
+    (clean / 'legacy.parquet').unlink()
+    (clean / 'legacy.json').unlink()
+    source.compute()
+    source.validate()
+    source.export()
+    layer = json.loads((site / 'map/hpv/all.json').read_text())
+    assert layer['municipalities']['110001']['value'] == 100 / 60
+    assert 'audit_last_month' not in layer['period']
+    assert not (clean / 'audit.json').exists()
+    manifest = json.loads((site / 'manifest.json').read_text())
+    assert manifest['sources']['hpv']['files'] == ['official.json', 'census.parquet']

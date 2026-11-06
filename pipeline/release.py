@@ -135,3 +135,52 @@ def publish_release(assets: list[Path], version: str, *, repository: str) -> Non
                     '--title', f'Dados — {version}', '--notes',
                     'Agregados completos em CSV e Parquet. ' + CITATION,
                     '--latest', *map(str, assets)], check=True)
+
+
+def export_state(directory: Path, output: Path) -> list[Path]:
+    """Package resumable clean state, never the local HPV patient audit."""
+    import tarfile
+    import tempfile
+    from pipeline.update import copy_state
+
+    output.mkdir(parents=True, exist_ok=True)
+    assets = []
+    with tempfile.TemporaryDirectory(prefix='release-state-') as temporary:
+        snapshot = Path(temporary) / 'clean'
+        copy_state(directory, snapshot)
+        for folder in sorted(snapshot.iterdir()):
+            asset = output / f'state-{folder.name}.tar.gz'
+            with tarfile.open(asset, 'w:gz') as archive:
+                archive.add(folder, arcname=folder.name)
+            if asset.stat().st_size >= MAX_ASSET_BYTES:
+                raise ValueError(f'State asset must be smaller than 2 GiB: {asset.name}')
+            assets.append(asset)
+    return assets
+
+
+def restore_state(assets: Path, directory: Path) -> None:
+    """Restore a complete state set into a new directory after checking archive paths."""
+    import tarfile
+    from pipeline.sources import create_sources
+
+    files = sorted(assets.glob('state-*.tar.gz'))
+    if not files or directory.exists():
+        raise ValueError('State restore requires assets and a new output directory')
+    names = {source.name for source in create_sources()}
+    # Validate all archives before writing any state.
+    for file in files:
+        source = file.name[len('state-'):-len('.tar.gz')]
+        if source not in names:
+            raise ValueError(f'Unknown state source: {source}')
+        with tarfile.open(file) as archive:
+            for member in archive.getmembers():
+                path = Path(member.name)
+                if (path.is_absolute() or '..' in path.parts or not path.parts
+                        or path.parts[0] != source or not (member.isfile() or member.isdir())
+                        or (source == 'hpv' and member.isfile()
+                            and member.name not in ('hpv/official.json', 'hpv/census.parquet'))):
+                    raise ValueError(f'Unsafe state archive member: {member.name}')
+    directory.mkdir(parents=True)
+    for file in files:
+        with tarfile.open(file) as archive:
+            archive.extractall(directory, filter='data')

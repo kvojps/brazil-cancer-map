@@ -93,64 +93,40 @@ orientação atual de 50–74 estão em `/metodologia/#mamografia` no site.
 
 ## Vacina HPV (SI-PNI)
 
-O download é particionado por ano:
+A atualização usa as **coortes oficiais agregadas** do painel do Ministério:
+numeradores qualificados, denominadores, anos, filtros efetivos, fonte e data de
+extração ficam em `official.json`. O cálculo confere os denominadores contra o
+Censo 2022 fixo (SIDRA 9514), nunca contra o POPSVS. A Situação usa o último ano
+completo; o ano corrente é provisório, a cascata conta a população e não há
+Tendência estatística. O total e as Regiões imediatas somam os numeradores e
+denominadores oficiais.
+
+Instale Chromium com `uv run playwright install chromium` ou configure
+`CHROMIUM_PATH` para um executável existente. `run --source hpv` agora baixa o
+Censo e os agregados oficiais, calcula, valida e exporta **sem microdados**.
+Para preparar uma atualização para revisão, prefira `update`, descrito abaixo.
+
+A auditoria pesada é **opcional, local e separada**. Não é pré-requisito para
+atualizar ou publicar o indicador. Para acioná-la explicitamente:
 
 ```sh
-uv run python -m pipeline run --source hpv --step download --year 2020
-# Repita até o ano corrente; depois use o histórico completo:
-uv run python -m pipeline run --source hpv --step compute
-uv run python -m pipeline run --source hpv --step validate
-uv run python -m pipeline run --source hpv --step export
+uv run python -m pipeline hpv-audit --step download --year 2020
+# Repita para todos os anos até o corrente, antes da reconstrução completa:
+uv run python -m pipeline hpv-audit --step compute
+# Para reduzir ZIPs que já estão em data/raw/hpv:
+uv run python -m pipeline hpv-audit --step clean --year 2020
 ```
 
-Cada mês é baixado, lido diretamente do ZIP e reduzido antes do próximo;
-o ZIP é apagado só depois da extração bem-sucedida. Não se grava o CSV inteiro
-descompactado. A redução guarda a primeira dose elegível de cada pessoa no mês;
-a auditoria local deduplica também entre meses e anos e acumula as diagonais de idade
-conforme a NT 16/2025. HPV quadrivalente e nonavalente entram, com ao menos uma
-dose. D1 de 2015–2019 do TabNet completa as coortes da série exibida desde 2020;
-não é uma série antiga publicada. O Censo 2022 fixo (SIDRA 9514) fornece os
-12 recortes de sexo e idade por município. O histórico consolidado e o Censo
-são baixados automaticamente na primeira execução. POPSVS não é usado.
-
-O ano corrente usa os meses CSV anunciados no catálogo oficial, registrados
-em `data/clean/hpv/availability.json` com fonte e data da consulta. Execute
-`download --year <ano corrente>` antes de calcular para atualizar esse limite.
-Ausências no meio do período e erros de acesso a recursos anunciados interrompem
-a execução; não viram cobertura zero. O período exportado registra `audit_last_month` para delimitar os microdados de auditoria;
-a extração dos agregados oficiais pode ter atualização mais recente.
-
-Os meses reduzidos e seus metadados ficam em `data/clean/hpv/months/<ano>/`;
-a chave pseudonimizada do paciente é necessária para a deduplicação longitudinal.
-O site recebe apenas cobertura e classes prontas. Meses ausentes impedem o
-cálculo. A ausência de histórico não vira cobertura zero. O ano corrente é
-provisório; a Situação usa o último ano completo. A cascata conta a população,
-e o HPV tem apenas Situação, sem Tendência estatística.
-
-O workflow `HPV annual partitions` processa um ano por job, com limite de seis
-horas, e persiste estado reduzido em assets da Release `hpv-state` (menos de
-2 GiB por arquivo). Não publica os JSON do site automaticamente. Pode ser
-acionado manualmente por ano e é agendado mensalmente; tamanho e data remotos
-permitem reaproveitar meses que não mudaram. A carga inicial pode ser feita
-na máquina do mantenedor. A medição e os limites estão em
-[docs/data/hpv-benchmark.md](docs/data/hpv-benchmark.md); a investigação dos
-insumos está na [pesquisa do HPV](.scratch/mapa-cancer-br/research/18-hpv-official-inputs.md).
-
-O indicador publicado usa os numeradores qualificados das **coortes oficiais
-agregadas** do painel do Ministério. A reconstrução dos microdados fica em
-`data/clean/hpv/audit.json`: não reproduz integralmente a qualificação interna
-do PNI e não substitui o numerador oficial. O denominador dos agregados é
-conferido contra o Censo local antes de calcular coberturas e cascatas.
-
-A partição do ano corrente também baixa a tabela oficial completa, em
-`data/clean/hpv/official.json`, usando Chromium pelo Playwright. Instale o
-navegador com `uv run playwright install chromium` ou indique um executável
-existente em `CHROMIUM_PATH` (nesta máquina, `/snap/bin/chromium`). Para atualizar
-somente os agregados, preservando os extratos de auditoria já disponíveis:
-
-```sh
-uv run python -c 'from pipeline.sources.hpv import HpvSource; HpvSource().download_official()'
-```
+Cada mês é baixado e reduzido antes do próximo; o ZIP é removido depois da
+redução bem-sucedida. Os extratos com chaves de pacientes ficam em
+`data/clean/hpv/months/`; a reconstrução longitudinal deduplicada e o histórico
+D1 TabNet 2015–2019 geram `data/clean/hpv/audit.json`. Meses ausentes impedem a
+auditoria, sem virar zero. O catálogo oficial delimita os meses do ano corrente
+em `availability.json`. Esses arquivos e os brutos ficam locais, fora do git e
+das Releases. A auditoria não reproduz integralmente a qualificação interna do
+PNI e nunca substitui os numeradores oficiais. Não existe mais workflow de
+microdados no Actions; as medições anteriores estão em
+[docs/data/hpv-benchmark.md](docs/data/hpv-benchmark.md).
 
 Antes de exportar HPV, registre referências de cobertura conferidas no painel
 oficial em `pipeline/references/hpv.json`: `source_url`, `extracted_at`,
@@ -161,6 +137,80 @@ incluir total e ambos os sexos, em municípios com dado próprio. O arquivo não
 é fornecido com valores inventados: sua ausência ou qualquer divergência além
 da tolerância impede `validate` e `export`. As referências reais de Recife, Brasileia e Jundiaí/2025 estão versionadas;
 a validação é executada novamente antes de cada exportação.
+
+## Atualização manual dos dados
+
+A atualização depende de uma execução manual do mantenedor. Não há agendamento
+de dados no GitHub Actions. Entre execuções, o site mantém a última versão
+publicada. Recomenda-se checagem **mensal** de Painel-Oncologia (`painel`), CNES
+(`cnes`) e HPV (`hpv`); **anual**, conforme o calendário de cada fonte, de POPSVS,
+SISCAN, SIM e Vigitel; INCA a cada edição. O citopatológico é uma série histórica
+fechada: nunca recebe anos novos. Conferir uma fonte não implica publicar um
+período novo. As séries anuais têm períodos explícitos no código: uma nova
+edição exige revisar esses períodos, as referências oficiais e as validações.
+
+Pré-requisitos: Python 3.14+, uv, Node.js (22.23.4+ para o site), dependências
+instaladas pelos comandos de preparação acima, Chromium para HPV e GitHub CLI
+(`gh auth login`) com escrita no repositório para publicar Releases. Vigitel
+exige o arquivo obtido por `./download-vigitel.sh` ou `VIGITEL_INPUT_PATH`;
+INCA usa a edição transcrita e versionada em `pipeline/references/`. Referências
+oficiais de cada fonte devem ser conferidas antes da publicação.
+
+Prepare uma pasta nova para revisão (não use uma execução concorrente):
+
+```sh
+uv run python -m pipeline update --source painel --source cnes --source hpv --output data/review-2026-11-05
+cat data/review-2026-11-05/update.json
+git diff --no-index site/public/dados/manifest.json data/review-2026-11-05/dados/manifest.json
+```
+
+`update` executa baixar, limpar, calcular, validar e exportar em um snapshot
+isolado. `--source` pode ser repetido; os nomes estão em `run --list`.
+`--data-dir` e `--clean-dir` selecionam o contrato e estado de entrada (por
+padrão, `site/public/dados` e `data/clean`). A malha deve estar publicada;
+selecionar `mesh` recalcula todas as fontes juntas. Selecionar `popsvs` inclui
+mamografia, citopatológico e SIM no mesmo grupo: uma falha descarta o grupo
+todo, inclusive o novo denominador. Atualizar um indicador isolado reutiliza o
+denominador do snapshot de entrada. Use sempre contrato e estado da mesma versão.
+
+Os JSON e o estado aprovados ficam em `dados/` e `clean/` dentro da pasta de
+revisão. Uma falha registra fonte, etapa e erro em `update.json`, aparece na
+saída e retorna código 1; outras fontes independentes continuam. O snapshot
+preserva os dados e a data anterior de cada grupo que falhou. Nada é alterado
+nos JSON do site nem no estado de entrada. Inspecione o relatório, o manifesto,
+os períodos, os alertas e os resultados antes de publicar. Não publique uma
+fonte que falhou; você pode publicar apenas os sucessos preservados no snapshot.
+
+Depois da revisão, exporte para inspeção e publique uma versão nova:
+
+```sh
+uv run python -m pipeline export-release --data-dir data/review-2026-11-05/dados --state-dir data/review-2026-11-05/clean --output data/release-2026-11-05
+uv run python -m pipeline release data-2026-11-05 --data-dir data/review-2026-11-05/dados --state-dir data/review-2026-11-05/clean --output data/release-2026-11-05
+```
+
+Além de CSV/Parquet, `--state-dir` inclui assets `state-<fonte>.tar.gz` com
+agregados e estado necessário à retomada. Cada asset deve ter menos de 2 GiB;
+se ultrapassar, o comando falha antes de enviar qualquer asset. HPV inclui
+somente `official.json` e `census.parquet`: nenhum ZIP SI-PNI, extrato de
+paciente, histórico de auditoria ou `audit.json` entra na Release.
+
+Para retomar em outra máquina, baixe a mesma Release em uma pasta vazia e
+restaure contrato e estado em destinos novos:
+
+```sh
+gh release download data-2026-11-05 --dir data/download-2026-11-05
+uv run python -m pipeline restore-release --assets data/download-2026-11-05 --output data/restored-2026-11-05/dados
+uv run python -m pipeline restore-state --assets data/download-2026-11-05 --output data/restored-2026-11-05/clean
+uv run python -m pipeline update --source hpv --data-dir data/restored-2026-11-05/dados --clean-dir data/restored-2026-11-05/clean --output data/next-review
+```
+
+A Release não altera o site. Para levar a versão revisada ao público, restaure
+os JSON dessa Release em `site/public/dados` (com `restore-release`), rode
+`npm run check --prefix site` e `npm run build --prefix site`, confira o diff,
+faça commit dos JSON e envie à `main`. O Cloudflare publica esses assets.
+CI continua verificando tipos, testes e build; o processamento local e a
+publicação dos dados são etapas separadas. Os comandos `run --step` continuam
+disponíveis para diagnóstico, mas não oferecem o isolamento de `update`.
 
 ## Dados abertos
 
@@ -196,8 +246,9 @@ uv run python -m pipeline release data-2026-11-05
 Esse comando exporta os arquivos e cria uma Release com todos os assets,
 marcada como a mais recente. A versão deve começar com `data-` e ser nova;
 versões existentes não são sobrescritas. Cada asset deve ter menos de 2 GiB;
-se algum atingir o limite, nada é enviado. O estado incremental HPV continua
-na Release própria `hpv-state`, que não deve ser marcada como mais recente.
+se algum atingir o limite, nada é enviado. Use `--state-dir` para incluir o estado retomável da mesma versão; a antiga
+Release `hpv-state` não faz parte do fluxo e seus extratos de pacientes não
+devem ser republicados.
 Use `--repository owner/repo` para outro repositório.
 
 [Download atual](https://github.com/kvojps/brazil-cancer-map/releases/latest).
