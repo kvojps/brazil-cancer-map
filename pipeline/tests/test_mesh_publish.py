@@ -24,7 +24,7 @@ def make_source(tmp_path, mesh, reference, empty=()):
     clean = tmp_path / "clean"
     raw.mkdir()
     clean.mkdir()
-    (raw / "ibge_municipalities.json").write_text(
+    (clean / "ibge_municipalities.json").write_text(
         json.dumps([reference_entry(code, name, rgi) for code, name, _, rgi, _ in reference])
     )
     (clean / "municipalities.json").write_text(

@@ -363,10 +363,11 @@ Decisões a confirmar:
 - **Lista:** "Tendência: Série curta, ainda sem direção" no HPV, sob o rótulo Tendência; "por 100 mil" em 12 px sob o número da mortalidade, na forma estreita; as linhas que continuam abertas ao trocar os filtros; e a Faixa C com Dado insuficiente sem a marca na linha fechada.
 - **Municípios por UF e Metodologia:** `/municipios/?municipio=<código>` carregando a seleção; o índice da Metodologia que também fecha com clique fora e ao sair dele com Tab; e a linha do sumário e os resultados da busca sem preenchimento nem sublinhado.
 
-**5. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) tem dois limites, mantidos como ressalva nos guias:
+**5. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) registra os limites e as correções abaixo, mantidos como ressalva nos guias:
 
 - **HPV:** corrigido no código atual: `compute` usa os anos e a data de extração do estado, preservando período, provisoriedade e último consolidado. O teste empacota/restaura agregados e Censo e compara o contrato com referência independente em 2026, 2027 e 2030 simulados. O código gerador de `data-2026-11-06` continua sujeito ao limite antigo; nenhuma Release foi alterada. Evidência e limites em [Recálculo temporal do HPV](data/hpv-temporal-recalculation.md).
-- **`mesh` e `painel`:** `validate` e `export` exigem `data/raw/mesh/ibge_municipalities.json` e as páginas de `data/raw/painel/tabnet/`, que o estado não traz. Falta decidir se esses arquivos entram no estado.
+- **`mesh`:** corrigido no código atual: `clean` preserva a lista municipal efetivamente usada em `clean/mesh/ibge_municipalities.json`; `validate` e `export` leem somente essa cópia do snapshot. O asset `state-mesh.tar.gz` a inclui, sem o ZIP da malha nem outros brutos. A prova restaura estado e contrato fora do diretório original, sem rede, e compara conteúdo, tipos e metadados com referência independente. Estados antigos continuam exigindo o insumo externo correspondente; nenhuma Release foi alterada. Evidência em [Restauração da referência da malha](data/mesh-state-recalculation.md).
+- **`painel`:** `validate` e `export` ainda exigem as páginas de `data/raw/painel/tabnet/`, que o estado não traz. A decisão sobre esses insumos permanece pendente.
 
 ### Requisitos antes de publicar
 

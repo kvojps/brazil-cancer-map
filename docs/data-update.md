@@ -121,6 +121,33 @@ simuladas, sem nova carga real nem publicação; veja a
 [evidência](data/hpv-temporal-recalculation.md). Não se promete que o código
 de Releases antigas passe a funcionar retroativamente.
 
+## Referência da malha no estado
+
+No código atual, `mesh.clean` copia a lista municipal baixada do IBGE para
+`clean/mesh/ibge_municipalities.json` no snapshot em preparação. A validação
+lê essa cópia, e o empacotamento existente a preserva em `state-mesh.tar.gz`,
+junto dos atributos e do TopoJSON. Não se empacota `data/raw/`, o ZIP original,
+extratos de pacientes ou a auditoria HPV. Continua valendo o limite de menos
+de 2 GiB por asset.
+
+`update --source mesh` continua incluindo todas as `source`s no mesmo grupo:
+uma falha descarta o grupo e preserva os dados e o estado anteriores.
+Atualizações independentes copiam a referência existente junto do snapshot,
+sem buscar outra no cache bruto durante a exportação dos assets.
+
+Para novas publicações, use o snapshot revisado como `--state-dir`, com o
+contrato de `dados/` da mesma proposta. O estado precisa ter sido preparado
+por `mesh.clean` com o código corrigido; apenas reempacotar um estado antigo
+não acrescenta a referência. Ausência ou incompatibilidade da referência
+impede `validate` e `export`. A preparação exige mapshaper e Node, conforme
+o guia de desenvolvimento; as três etapas de recálculo da malha restaurada
+não executam mapshaper, não baixam Fontes e não exigem o diretório bruto.
+
+Os comandos de restauração e recálculo estão no [guia do pesquisador](reproducibility.md#recálculo-da-malha-com-o-código-atual).
+A [evidência com fixture](data/mesh-state-recalculation.md) registra comparação
+independente, isolamento, falhas e limites. Releases antigas mantêm as
+limitações já documentadas; não houve nova carga, publicação ou deploy.
+
 ## Auditoria HPV opcional
 
 `update --source hpv` usa agregados oficiais. A auditoria com microdados é separada e local, nunca requisito de publicação:

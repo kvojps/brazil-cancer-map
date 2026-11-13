@@ -2,6 +2,7 @@
 
 import gzip
 import json
+import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -93,7 +94,8 @@ class MeshSource:
         transport: Transport | None = None,
     ) -> None:
         self._mesh_zip = raw_dir / "BR_Municipios_2025.zip"
-        self._reference = raw_dir / "ibge_municipalities.json"
+        self._raw_reference = raw_dir / "ibge_municipalities.json"
+        self._reference = clean_dir / "ibge_municipalities.json"
         self._topojson = clean_dir / "municipalities.topojson"
         self._attributes = clean_dir / "municipalities.json"
         self._site_data_dir = site_data_dir
@@ -101,7 +103,7 @@ class MeshSource:
 
     def download(self) -> None:
         fetch(MESH_URL, self._mesh_zip, transport=self._transport)
-        fetch(MUNICIPALITIES_URL, self._reference, transport=self._transport)
+        fetch(MUNICIPALITIES_URL, self._raw_reference, transport=self._transport)
 
     def clean(self) -> None:
         with tempfile.TemporaryDirectory() as workdir, zipfile.ZipFile(self._mesh_zip) as archive:
@@ -110,6 +112,7 @@ class MeshSource:
                     archive.extract(member, workdir)
             shapefile = next(Path(workdir).rglob("BR_Municipios_2025.shp"))
             build_mesh(shapefile, topojson=self._topojson, attributes=self._attributes)
+        shutil.copyfile(self._raw_reference, self._reference)
 
     def compute(self) -> None:
         """The mesh has no statistics."""

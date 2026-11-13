@@ -186,7 +186,45 @@ compara todos os JSON com uma referência de 2026, sob relógios de 2026,
 `pipeline_version` identifica o código executado na comparação. Veja os
 [comandos e limites da evidência](data/hpv-temporal-recalculation.md).
 Não é uma nova reprodução pública de `data-2026-11-06`, nem uma correção
-retroativa de seu commit gerador. Os limites de `mesh` e `painel` permanecem.
+retroativa de seu commit gerador. O limite de `painel` permanece; a correção de `mesh` está descrita a seguir.
+
+### Recálculo da malha com o código atual
+
+Estados preparados por `clean` com o código corrigido preservam a lista
+oficial em `data/clean/mesh/ibge_municipalities.json`, junto dos atributos e
+do TopoJSON. `export-release --state-dir` inclui esses três arquivos em
+`state-mesh.tar.gz`; `restore-state` os disponibiliza no novo diretório.
+`validate` e `export` usam somente a referência do estado, sem consultar o
+cache bruto. Referência ausente, ilegível ou incompatível impede a publicação.
+
+Com estado e contrato correspondentes, restaurados pelos comandos existentes,
+use o código gerador da publicação e execute:
+
+```bash
+for step in compute validate export; do
+  uv run --frozen python -m pipeline run --source mesh --step "$step" || exit 1
+done
+```
+
+Pré-requisitos: Python 3.14+ e dependências de `uv sync --frozen`. A preparação
+inicial da malha (`clean`) exige Node e o mapshaper fixado por
+`npm ci --prefix pipeline`; o recálculo da malha restaurada não os executa.
+Não execute `update` para reproduzir sem rede: ele inclui download e, ao
+selecionar `mesh`, atualiza também todas as dependentes.
+
+A prova com fixture executa a preparação, exportação e restauração pela CLI,
+remove o diretório original, bloqueia rede e compara os três documentos com
+uma referência gerada antes da mudança. Nenhum campo ou tipo é ignorado.
+Veja [estado, checksums, comandos e limites](data/mesh-state-recalculation.md).
+Isso não é uma reprodução nacional dos assets de uma Release.
+
+`data-2026-11-06` continua sem a referência no asset de estado, e seu código
+gerador ainda a procura em `data/raw/mesh/`. Usar o código atual com um estado
+antigo também não cria o arquivo ausente: é necessário fornecer a lista IBGE
+correspondente àquela publicação em `data/clean/mesh/ibge_municipalities.json`
+antes da validação. Não se deve substituí-la por uma consulta atual nem por
+uma lista derivada da própria malha. `data-2026-11-05` continua sem estado.
+Nenhuma Release foi modificada, e o limite externo do Painel permanece.
 
 ## Nível 3 — Refazer da origem
 
