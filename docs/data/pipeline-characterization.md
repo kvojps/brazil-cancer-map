@@ -270,3 +270,9 @@ o cache temporário descrito acima. O commit que contém esta seção registra
 as evidências na branch `hml`; não houve push, PR, deploy, alteração dos JSON
 públicos ou nova aquisição nacional. A issue permanece aberta para a avaliação
 humana de legibilidade e a vinculação da entrega remota.
+
+Após esse registro, o mantenedor aprovou a entrega e solicitou o push e o
+encerramento da #14. O aceite usa os percursos documentados e a leitura
+independente por agente descrita acima; não acrescenta evidência de ensaio
+humano. A publicação dos commits em `hml` e os links de conclusão ficam
+registrados na issue. Esse aceite não encerra a spec pai #12 nem implica deploy.
