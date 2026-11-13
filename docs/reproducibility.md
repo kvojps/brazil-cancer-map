@@ -270,6 +270,8 @@ por uma consulta atual. `data-2026-11-05` continua sem estado.
 
 Para comparar cálculo, intermediários e JSON de Painel/HPV sem nova aquisição
 nacional, siga a [base de caracterização da pipeline](data/pipeline-characterization.md).
+A comparação do planejador e executor da #17 também confere seleção, grupos,
+relatórios e snapshots com as mesmas entradas e relógio fixo.
 Ela preserva as referências independentes e nomeia a única diferença permitida
 de metadados: `manifest.json.pipeline_version`. Não substitui a reprodução de
 uma Versão de dados nacional.

@@ -190,3 +190,14 @@ público, isolamento de snapshots e preservação da versão anterior em falha.
 Não basta reempacotar um estado antigo: as páginas não podem ser recuperadas
 do contrato nem substituídas por consultas atuais. Os limites das Releases
 existentes descritos acima continuam válidos; nenhuma foi alterada.
+
+### Onde localizar planejamento e execução
+
+O registro `pipeline/sources/__init__.py` declara insumos, inclusão na atualização
+e aceitação conjunta. `pipeline/update_plan.py` valida a seleção e retorna
+somente grupos ordenados de nomes, sem acessar arquivos ou construir `source`s.
+`pipeline/update.py` executa cada grupo numa cópia do último estado aceito;
+falha descarta o grupo inteiro e permite continuar os grupos independentes.
+Os comandos, o relatório e a publicação posterior permanecem os mesmos.
+A [comparação controlada da #17](data/pipeline-characterization.md#depois-da-extração-do-planejador-17)
+registra a verificação com insumos congelados.

@@ -10,50 +10,15 @@ from pathlib import Path
 
 from pipeline.source import STEPS
 from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition, create_sources, validate_registry
+from pipeline.update_plan import plan_update
 
 
 def update_sources(selected: list[str], directory: Path, clean_dir: Path, output: Path, *,
                    registry: Sequence[SourceDefinition] = SOURCE_DEFINITIONS) -> bool:
     """Leave live data untouched; retain only successful dependency groups in output."""
-    validate_registry(registry)
-    names = [definition.name for definition in registry]
-    unknown = set(selected) - set(names)
-    if not selected or unknown:
-        raise ValueError(f'Select known sources: {", ".join(names)}; unknown: {sorted(unknown)}')
-    selected_set = set(selected)
-    while True:
-        expanded = selected_set | {
-            definition.name for definition in registry
-            if selected_set.intersection(definition.update_with)
-        }
-        if any(definition.includes_all and definition.name in selected_set for definition in registry):
-            expanded.update(names)
-        if expanded == selected_set:
-            break
-        selected_set = expanded
+    groups = plan_update(selected, registry)
     if output.exists() or output.resolve().is_relative_to(directory.resolve()) or output.resolve().is_relative_to(clean_dir.resolve()):
         raise ValueError('Update output must be a new directory outside the input directories')
-    groups = [[name] for name in names if name in selected_set]
-    if any(definition.includes_all and definition.name in selected_set for definition in registry):
-        groups = [[name for name in names if name in selected_set]]
-    else:
-        for definition in registry:
-            if definition.name not in selected_set:
-                continue
-            for partner in definition.accept_with:
-                if partner not in selected_set:
-                    continue
-                joined = {name for group in groups if definition.name in group or partner in group for name in group}
-                position = next(index for index, group in enumerate(groups) if joined.intersection(group))
-                groups = [group for group in groups if not joined.intersection(group)]
-                groups.insert(position, [name for name in names if name in joined])
-    group_index = {name: index for index, group in enumerate(groups) for name in group}
-    for definition in registry:
-        if definition.name not in selected_set:
-            continue
-        for dependency in definition.inputs.values():
-            if dependency.source in selected_set and group_index[dependency.source] > group_index[definition.name]:
-                raise ValueError(f'{definition.name}: joint acceptance conflicts with input producer order')
     output.mkdir(parents=True)
     shutil.copytree(directory, output / 'dados')
     copy_state(clean_dir, output / 'clean', registry=registry)

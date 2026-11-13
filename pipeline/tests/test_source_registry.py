@@ -129,3 +129,70 @@ def test_joint_acceptance_cannot_run_consumer_before_selected_input_producer(tmp
     with pytest.raises(ValueError, match='order'):
         update_sources(['first', 'producer', 'consumer'], live, clean, output, registry=definitions)
     assert not output.exists()
+
+
+@pytest.mark.parametrize('fail_consumer', [False, True])
+def test_independent_group_starts_from_last_accepted_snapshot(tmp_path, fail_consumer):
+    import json
+
+    from pipeline.update import update_sources
+
+    live, clean, output = (tmp_path / name for name in ('live', 'clean', 'review'))
+    live.mkdir()
+    (live / 'municipalities.json').write_text('{}')
+    (clean / 'popsvs').mkdir(parents=True)
+    (clean / 'popsvs/population.parquet').write_bytes(b'old')
+
+    from pathlib import Path
+
+    class SnapshotSource(FakeSource):
+        state: Path
+        data: Path
+        population: Path
+
+    class Population(SnapshotSource):
+        def export(self):
+            (self.state / 'population.parquet').write_bytes(b'new')
+            (self.data / 'population.json').write_text('new')
+
+    class Consumer(SnapshotSource):
+        def validate(self):
+            assert self.population.read_bytes() == b'new'
+            if fail_consumer:
+                raise ValueError('Rejected population group')
+
+    class Independent(SnapshotSource):
+        def download(self):
+            expected = b'old' if fail_consumer else b'new'
+            assert (self.state.parent / 'popsvs/population.parquet').read_bytes() == expected
+            assert (self.data / 'population.json').exists() is (not fail_consumer)
+            (self.data / 'independent.json').write_text('accepted')
+
+    def factory(source_type, name):
+        def build(state, data, inputs):
+            source = source_type(name, [])
+            source.state, source.data = state, data
+            source.population = inputs.get('population_path')
+            return source
+        return build
+
+    registry = (
+        SourceDefinition('popsvs', factory(Population, 'popsvs')),
+        SourceDefinition('new_consumer', factory(Consumer, 'new_consumer'),
+                         inputs={'population_path': SourceInput('popsvs', 'population.parquet')},
+                         update_with=('popsvs',), accept_with=('popsvs',)),
+        SourceDefinition('independent', factory(Independent, 'independent')),
+    )
+    assert update_sources(['independent', 'popsvs'], live, clean, output,
+                          registry=registry) is (not fail_consumer)
+    report = json.loads((output / 'update.json').read_text())
+    assert report['selected'] == ['independent', 'popsvs']
+    assert report['successful'] == (['independent'] if fail_consumer else
+                                    ['popsvs', 'new_consumer', 'independent'])
+    assert report['failures'] == ([{
+        'sources': ['popsvs', 'new_consumer'],
+        'error': 'new_consumer: validate failed: Rejected population group',
+    }] if fail_consumer else [])
+    assert (clean / 'popsvs/population.parquet').read_bytes() == b'old'
+    assert not (live / 'population.json').exists()
+    assert (output / 'dados/independent.json').read_text() == 'accepted'

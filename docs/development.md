@@ -178,11 +178,15 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
    `accept_with=('popsvs',)` une os participantes já selecionados para aceitar
    ou descartar juntos, sem ampliar a seleção. A malha declara
    `includes_all=True`: inclui todas as entradas, inclusive futuras, num grupo.
-   O executor em [`pipeline/update.py`](../pipeline/update.py) lê essas relações,
-   sem segunda lista de consumidores. Nomes duplicados, referências desconhecidas,
+   O planejador puro `plan_update(selected, registry)`, em
+   [`pipeline/update_plan.py`](../pipeline/update_plan.py), lê essas relações
+   e retorna `UpdatePlan`: somente grupos ordenados de nomes, sem arquivos nem
+   construção de instâncias. O executor em
+   [`pipeline/update.py`](../pipeline/update.py) executa esses grupos, sem segunda
+   lista de consumidores. Nomes duplicados, referências desconhecidas,
    ordem incompatível e caminhos de insumos fora do produtor são rejeitados
    antes da construção ou criação da saída. A ordem é declarada, sem ordenação
-   automática. A atualização também rejeita aceitação conjunta que anteciparia
+   automática. O planejador também rejeita aceitação conjunta que anteciparia
    uma consumidora em relação a um produtor de insumo selecionado.
    `run --source` e `run --step` continuam com seleção direta.
 4. Teste as etapas com fixtures em `pipeline/tests/`, incluindo falha de

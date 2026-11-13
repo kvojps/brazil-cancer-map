@@ -505,3 +505,58 @@ Após esse registro, o mantenedor aprovou a entrega da #16 e autorizou o push
 em `hml` e o encerramento da issue. O aceite considera as verificações e
 revisões registradas acima. A publicação dos commits e a conclusão ficam
 registradas na #16; isso não encerra a spec pai #12 nem implica deploy.
+
+## Depois da extração do planejador (#17)
+
+Base deste passo: `1ccf1cea8f92a22c0950df7cb16a99112adcef89`, na branch
+`hml`. `pipeline/update_plan.py` expõe `plan_update(selected, registry)` e
+`UpdatePlan`, uma lista de grupos ordenados de nomes. O planejador valida o
+registro e a seleção, expande os gatilhos até estabilizar e agrupa somente
+participantes selecionados para aceitação conjunta. Não lê arquivos nem
+chama fábricas. A ordem permanece explícita, sem ordenação automática.
+
+`pipeline/update.py` chama o planejador antes de criar a saída e conserva
+pré-condições operacionais, cópias, construção no snapshot, cinco etapas,
+aceitação/descarte e relatório. Cada grupo usa o último estado aceito; uma
+falha descarta o grupo inteiro e permite continuar grupos independentes.
+`run` conserva seleção direta e não passa pelo planejador. Não há segunda
+lista de consumidores nem relações de expansão ou agrupamento no executor.
+
+### Comparação controlada
+
+Em 13/11/2026, a base foi extraída com `git archive` para
+`/tmp/bcm-issue17-before`. Base e entrega usaram o mesmo Python 3.14.4 do
+`.venv`, as dependências do `uv.lock` inalterado e uv 0.13.7. Executou-se
+nos dois checkouts a mesma seleção:
+
+```sh
+uv run pytest pipeline/tests/test_cli.py pipeline/tests/test_update_characterization.py pipeline/tests/test_source_registry.py pipeline/tests/test_calculation_baseline.py pipeline/tests/test_painel_state.py pipeline/tests/test_hpv.py -q
+```
+
+Na base extraída, o comando usou diretamente o Python do mesmo `.venv` com
+`-m pytest`. Antes e depois da extração passaram os mesmos **76 testes**,
+com os mesmos 224 avisos das séries sintéticas, em 31,84 s e 31,65 s,
+respectivamente. Nenhuma fixture foi regenerada e não houve aquisição nacional.
+
+- A caracterização mantém relógio fixo e compara seleção original, ordem das
+  cinco etapas, relatório completo, descarte, continuidade e entradas intactas.
+  SIM não executa POPSVS; POPSVS + Painel mantém o grupo de população antes
+  do Painel; malha mantém todas as entradas num grupo na ordem do registro.
+- Os testes da interface pura usam fábricas que falham se chamadas. Cobrem
+  expansão transitiva, aceitação somente dos participantes selecionados,
+  entradas futuras na malha, seleção inválida e ordem incompatível.
+- Os testes pelo executor acrescentam um consumidor pelo registro e sua
+  fábrica. Um grupo independente verifica o denominador e a publicação do
+  último grupo aceito, tanto após sucesso quanto após descarte do grupo de
+  população. Relatório e entradas originais também são conferidos.
+- O estado público HPV continua restrito a `official.json` e `census.parquet`.
+  As comparações de Painel/HPV conservam cálculo, intermediários e Contrato
+  de dados com os insumos e datas congelados já descritos neste documento.
+  Única diferença permitida no contrato: `manifest.json.pipeline_version`.
+  `update.json.attempted_at` permanece fixo na caracterização; nenhum outro
+  metadado, data ou valor é excluído genericamente.
+
+Os guias de desenvolvimento, atualização e reprodução apontam a nova fronteira.
+Os comandos e pré-requisitos não mudaram. Nenhum erro funcional novo foi
+identificado; a aceitação conjunta incompatível continua sendo rejeitada,
+como na base da #16. A verificação conjunta da spec pai #12 permanece separada.
