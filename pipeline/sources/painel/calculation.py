@@ -9,8 +9,16 @@ from typing import Any
 from pipeline.status import classify_status, status_note
 from pipeline.cascade import Origin, data_origins
 from pipeline.trend import quasi_poisson_trend, trend_window
-from .models import (CANCER_TYPES, WITHOUT_STATUS, MEASURED_CASES, CaseCounts, CleanRow,
-    MonthKey, FirstTreatment)
+
+from .models import (
+    CANCER_TYPES,
+    CaseCounts,
+    CleanRow,
+    FirstTreatment,
+    MEASURED_CASES,
+    MonthKey,
+    WITHOUT_STATUS,
+)
 
 
 def within_60_days_layer(

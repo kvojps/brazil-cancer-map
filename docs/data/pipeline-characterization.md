@@ -216,3 +216,57 @@ Conhecimento ainda necessário: os dois últimos anos são provisórios;
 substitui a Região imediata na cascata. Esses pontos estão nomeados no código
 ou neste percurso. A organização não altera método, comandos, ADRs nem exige
 nova aquisição nacional.
+
+### Verificações e leitura independente deste passo
+
+Em 13/11/2026, com Python 3.14.4, uv 0.13.7, o mesmo `uv.lock` e
+`UV_CACHE_DIR=/tmp/cancer-map-uv`, a base `15c1629` passou nos 13 testes de
+estado do Painel e cálculo congelado antes da movimentação. Depois, os 63
+casos direcionados de limpeza, cálculo, alertas, validação, publicação, estado
+e comparação congelada passaram. O teste adicional da interface em memória
+passou contra as expectativas preexistentes. Nenhuma fixture foi regenerada;
+os hashes de `calculation-baseline.json` e `painel-contract.json` continuam,
+respectivamente, `7ebef92162d91dd1cb18e669fb81d65adde05abf93083c61b22aad08148093c8`
+e `dc559fe8342729b7eb9a4d90f7188fe3df39dd55d95cfdd273546467e7368c3a`.
+A única diferença permitida continua sendo `manifest.json.pipeline_version`.
+
+Uma revisão independente por agente, sem contexto anterior da pipeline, fez
+os dois percursos usando somente o repositório. Arquivos percorridos:
+`docs/development.md`, CLI e registro, `painel/source.py`, `acquisition.py`,
+`models.py`, `persistence.py`, `calculation.py`, `validation.py`, `export.py`,
+`pipeline/publish.py`, esta caracterização e os testes do Painel.
+
+O leitor encontrou o prazo em `acquisition.is_within_60_days`, seus campos de
+entrada e a aplicação na limpeza por `count_cases`. Seguiu os contadores de
+todos os casos e de quimio/radio até Parquet, valor/Situação/Tendência do mapa,
+séries do perfil, comparação TabNet e JSON publicados. Precisou consultar as
+regras de provisórios, denominadores, cascata, contexto da UF e intervalos
+negativos; estavam nomeadas no código ou documentadas. Não restou dúvida que
+impedisse completar os percursos. A navegação atravessa mais arquivos, mas os
+nomes e o guia indicam cada responsabilidade.
+
+Essa é uma leitura independente **por agente**, não um ensaio com pessoa
+contribuidora. A validação humana de legibilidade ainda não foi realizada;
+fica explicitamente pendente para o aceite da #14 e da spec pai #12.
+
+#### Standards
+
+A revisão independente do diff desde `15c1629` não encontrou violações dos
+padrões documentados nem novos problemas acionáveis nas heurísticas de código.
+
+#### Spec
+
+A revisão independente não encontrou desvios funcionais, escopo adicional ou
+requisitos implementados incorretamente. A comparação por AST confirmou os
+helpers existentes de contagem, cálculo, parsing e comparação preservados.
+Ficavam pendentes no momento da revisão o registro final das verificações e
+a validação humana acima. Nenhum erro funcional novo foi identificado.
+
+A verificação final passou com **217 testes** (`uv run pytest`, 99,74 s) e
+**59 arquivos** aprovados pelo `uv run mypy`. Os 492 avisos
+`PerfectSeparationWarning` vêm das séries sintéticas do statsmodels; não houve
+falha. O diff passou em `git diff --check`. Os comandos foram executados com
+o cache temporário descrito acima. O commit que contém esta seção registra
+as evidências na branch `hml`; não houve push, PR, deploy, alteração dos JSON
+públicos ou nova aquisição nacional. A issue permanece aberta para a avaliação
+humana de legibilidade e a vinculação da entrega remota.

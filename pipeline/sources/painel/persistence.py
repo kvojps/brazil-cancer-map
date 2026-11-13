@@ -7,7 +7,15 @@ from typing import Any
 
 import duckdb
 
-from .models import (CANCER_TYPES, CountKey, CaseCounts, MonthKey, FirstTreatment, CleanRow, provisional_years)
+from .models import (
+    CANCER_TYPES,
+    CaseCounts,
+    CleanRow,
+    CountKey,
+    FirstTreatment,
+    MonthKey,
+    provisional_years,
+)
 from .calculation import PainelResult
 
 

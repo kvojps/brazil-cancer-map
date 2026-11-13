@@ -145,4 +145,3 @@ all the cases check the % without treatment information and the case counts."""
 
 TABNET_CANCER_TYPE = "all"
 """The TabNet query reproduces 'Todos' for treatment, so it checks that cancer type."""
-

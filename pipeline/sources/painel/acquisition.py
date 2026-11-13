@@ -11,8 +11,21 @@ import datasus_dbc
 import dbfread
 
 from pipeline.download import fetch, list_ftp, with_retries
-from .models import (CANCER_TYPES, TREATMENT_ALL_CANCERS, NO_TREATMENT_INFO, CHEMO_RADIO,
-    SURGERY, TABNET_TABLES, FirstTreatment, MonthKey, PainelCounts, CountKey, CaseCounts, UfShare)
+
+from .models import (
+    CANCER_TYPES,
+    CHEMO_RADIO,
+    CaseCounts,
+    CountKey,
+    FirstTreatment,
+    MonthKey,
+    NO_TREATMENT_INFO,
+    PainelCounts,
+    SURGERY,
+    TABNET_TABLES,
+    TREATMENT_ALL_CANCERS,
+    UfShare,
+)
 
 
 def is_within_60_days(days: str) -> bool:
