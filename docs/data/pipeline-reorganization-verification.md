@@ -181,3 +181,24 @@ comportamento de produção. A skill TDD foi consultada: as fronteiras
 CLI/Source, atualização com snapshots e cálculo/exportação já estavam
 acordadas na #13. Os testes existentes foram executados nessas fronteiras;
 não foi criado teste que apenas espelhasse a organização dos arquivos.
+
+### Standards
+
+Revisão independente por agente, pela skill `code-review`, do diff desde
+`32430bab29bdd9d4e7ee8a730c3070eabebf8e46`, base confirmada pelo mantenedor,
+até `ca2879b`: **0 achados**. Conferiu padrões documentados, idioma,
+vocabulário, limites declarados, hashes e links locais. Não repetiu testes.
+
+### Spec
+
+Revisão independente por outro agente do mesmo diff: **0 achados**.
+Conferiu matriz da #12, critérios da #18, comparação, leitura autorizada,
+guias e preservação do escopo. Identificou o vínculo remoto e atualização
+da #18 como passos de encerramento, sem defeito no diff. Não repetiu testes.
+
+Total: Standards **0**, Spec **0**, sem achado pendente em nenhum eixo.
+`git diff --check` e conferência dos destinos dos links locais passaram.
+O commit `ca2879b` contém a evidência; este complemento registra as revisões.
+Os commits foram feitos na branch atual `hml`. A publicação e vínculo remoto
+da própria entrega permanecem pendentes; a #18 fica aberta para esse registro.
+A issue pai #12 não foi editada nem encerrada.
