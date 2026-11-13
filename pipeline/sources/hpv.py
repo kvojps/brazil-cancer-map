@@ -6,7 +6,7 @@ import json
 import re
 import time
 import zipfile
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -37,9 +37,11 @@ class HpvSource:
 
     def __init__(self, *, raw_dir: Path = RAW_DIR / 'hpv',
                  clean_dir: Path = CLEAN_DIR / 'hpv', site_data_dir: Path = SITE_DATA_DIR,
-                 years: tuple[int, ...] = tuple(range(2020, datetime.now(UTC).year + 1)),
+                 years: tuple[int, ...] | None = None,
                  validation_path: Path = Path(__file__).resolve().parents[1] / 'references' / 'hpv.json',
                  transport: Transport | None = None) -> None:
+        if years is None:
+            years = tuple(range(2020, datetime.now(UTC).year + 1))
         if (not years or len(set(years)) != len(years)
                 or any(year < 2020 or year > datetime.now(UTC).year for year in years)):
             raise ValueError('HPV years must be distinct years from 2020 through the current year')
@@ -239,9 +241,19 @@ class HpvSource:
         """Compute coverage from qualified official numerators and fixed Census."""
         listing = json.loads((self._site_data_dir / 'municipalities.json').read_text())
         regions = {m['code']: m['immediate_region'] for m in listing['municipalities']}
-        if self._years != tuple(range(2020, max(self._years) + 1)):
-            raise ValueError('compute requires the complete history starting in 2020')
-        today = datetime.now(UTC)
+        official = json.loads((self._clean_dir / 'official.json').read_text())
+        try:
+            extracted = date.fromisoformat(official['extracted_at'])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError('official HPV cohorts require a valid extraction date for temporal context') from error
+        years = official.get('years')
+        if (not isinstance(years, list) or not years
+                or any(type(year) is not int for year in years)
+                or years[-1] > extracted.year
+                or years != list(range(2020, years[-1] + 1))):
+            raise ValueError('official HPV cohorts require complete years starting in 2020')
+        if not official.get('source_url'):
+            raise ValueError('official HPV cohorts require complete years and provenance')
         with duckdb.connect() as db:
             census = db.execute('SELECT municipality, sex, age, population FROM read_parquet(?)',
                                 [str(self._clean_dir / 'census.parquet')]).fetchall()
@@ -261,14 +273,12 @@ class HpvSource:
                 raise ValueError('unexpected municipality missing from Census 2022')
             if missing - {(code, sex, age) for code in absent for sex in ('F', 'M') for age in range(9, 15)}:
                 raise ValueError('Census 2022 does not cover all municipality/sex/age slices; never use POPSVS as fallback')
-        official = json.loads((self._clean_dir / 'official.json').read_text())
-        if (not official.get('source_url') or not official.get('extracted_at')
-                or not set(self._years) <= set(official.get('years', []))):
-            raise ValueError('official HPV cohorts require complete years and provenance')
         counts = {}
         for row in official['records']:
             code, year = row['municipality'], row['year']
-            if code not in regions or year not in self._years:
+            if type(year) is not int or year not in years:
+                raise ValueError('official HPV record year is outside the declared history')
+            if code not in regions:
                 continue
             sex = {'Feminino': 'F', 'Masculino': 'M'}.get(row['sex'])
             if sex is None:
@@ -283,7 +293,7 @@ class HpvSource:
                 raise ValueError('official HPV coverage disagrees with numerator and denominator')
             counts[key_tuple] = int(vaccinated)
         expected = {(code, sex, year) for code in regions if code not in absent
-                    for sex in ('F', 'M') for year in self._years}
+                    for sex in ('F', 'M') for year in years}
         if expected - counts.keys():
             raise ValueError('missing municipality, sex or year in official HPV cohorts')
         # A denominator, rather than dose volume, chooses the origin for the whole card.
@@ -291,8 +301,8 @@ class HpvSource:
         members: dict[str, list[str]] = {f'municipality:{code}': [code] for code in regions}
         for code, region in regions.items():
             members.setdefault(f'immediate_region:{region}', []).append(code)
-        provisional = [year for year in self._years if year >= today.year]
-        consolidated = [year for year in self._years if year not in provisional]
+        provisional = [year for year in years if year >= extracted.year]
+        consolidated = [year for year in years if year not in provisional]
         if not consolidated:
             raise ValueError('HPV requires a complete consolidated year')
         latest = max(consolidated)
@@ -303,7 +313,7 @@ class HpvSource:
                    f'immediate_region:{regions[code]}' if origin is Origin.IMMEDIATE_REGION else None)
             if key and key not in displayed:
                 points = []
-                for year in self._years:
+                for year in years:
                     by_sex = {}
                     numerator = denominator = 0
                     for sex in ('F', 'M'):
@@ -322,7 +332,7 @@ class HpvSource:
             entries[code] = {'origin': origin.value, **result, 'trend': None,
                              'denominator_note': ('Município criado após o Censo 2022; usamos a população do seu município e vizinhos.' if code in absent else None),
                              'quality_band': None, 'without_treatment_info': None, 'series_id': key}
-        period = {'first_year': 2020, 'last_year': max(self._years), 'latest': latest,
+        period = {'first_year': 2020, 'last_year': max(years), 'latest': latest,
                   'trend': [], 'provisional': provisional, 'single_dose_year': 2024,
                   'denominator_year': 2022}
         data = {'period': period, 'reference': {'value': 90, 'label': 'meta para 2030'},

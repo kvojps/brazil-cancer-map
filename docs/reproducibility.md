@@ -118,7 +118,7 @@ inclusive tipos numéricos e `pipeline_version`. Nenhum valor de Indicador mudou
 | `inca` | Igual; usa o insumo versionado em `pipeline/references/`, sem estado próprio |
 | `vigitel` | Igual; o estado inclui entrevistas sem identificadores diretos |
 
-O HPV ainda depende do relógio: exige todos os anos até o ano corrente.
+No código gerador dessa Release, o HPV depende do relógio: exige todos os anos até o ano corrente.
 O estado publicado vai até 2026 e não basta em 2027. A falha em março de 2027
 foi observada com relógio simulado na prova anterior, não numa execução da CLI
 em 2027. Esta Release não altera essa regra do pipeline.
@@ -169,6 +169,24 @@ e registra `0.1.0+df740cd-dirty`. A nova versão remove os metadados antigos
 da auditoria HPV (`audit_last_month` e a lista de ZIPs), sem mudar valores.
 Comandos, checksums e evidência da prova pública estão em
 [Versão de dados rastreável](data/traceable-version.md).
+
+### Recálculo HPV com o código atual
+
+O código atual usa a história contínua em `official.json.years` e o ano da
+data `extracted_at` para manter os provisórios e o último consolidado da
+extração. O estado HPV continua contendo somente `official.json` e
+`census.parquet`. Não são necessários downloads nem Chromium nas etapas
+`compute`, `validate` e `export`; índices municipais e referências oficiais
+continuam necessários. Datas inválidas, lacunas e recortes obrigatórios
+ausentes causam erro explícito.
+
+A prova automatizada empacota e restaura estado em diretório temporário e
+compara todos os JSON com uma referência de 2026, sob relógios de 2026,
+2027 e 2030. Ela preserva tipos, período, valores e proveniência; somente
+`pipeline_version` identifica o código executado na comparação. Veja os
+[comandos e limites da evidência](data/hpv-temporal-recalculation.md).
+Não é uma nova reprodução pública de `data-2026-11-06`, nem uma correção
+retroativa de seu commit gerador. Os limites de `mesh` e `painel` permanecem.
 
 ## Nível 3 — Refazer da origem
 

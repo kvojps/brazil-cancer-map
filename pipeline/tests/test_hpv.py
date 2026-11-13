@@ -3,11 +3,131 @@ import csv
 from datetime import UTC, datetime
 import io
 import json
+from pathlib import Path
+import shutil
 import zipfile
 
 import duckdb
+import pytest
 
 from pipeline.sources.hpv import HpvSource
+
+
+@pytest.mark.parametrize('execution_year', [2026, 2027, 2030])
+def test_restored_state_reproduces_the_independent_2026_contract(tmp_path, monkeypatch, execution_year):
+    from pipeline.publish import pipeline_version
+    from pipeline.release import export_state, restore_state
+
+    source, site, clean = prepared_source(tmp_path, last_year=2026)
+    state = tmp_path / 'state'
+    state.mkdir()
+    shutil.move(clean, state / 'hpv')
+    assets = tmp_path / 'assets'
+    export_state(state, assets)
+    restored = tmp_path / 'restored'
+    restore_state(assets, restored)
+    assert {p.name for p in (restored / 'hpv').iterdir()} == {'official.json', 'census.parquet'}
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(execution_year, 3, 1, tzinfo=UTC)
+
+    monkeypatch.setattr('pipeline.sources.hpv.datetime', Clock)
+    def unexpected_download(*args, **kwargs):
+        pytest.fail('recalculation must not download source inputs')
+
+    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', unexpected_download)
+    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', unexpected_download)
+    source = HpvSource(clean_dir=restored / 'hpv', site_data_dir=site,
+                       validation_path=tmp_path / 'references.json')
+    source.compute()
+    source.validate()
+    source.export()
+    reference = json.loads((Path(__file__).parent / 'fixtures/hpv-2026-contract.json').read_text())
+    reference['manifest.json']['pipeline_version'] = pipeline_version()
+    # Canonical serialization preserves JSON numeric types, booleans and nulls.
+    actual = {p.relative_to(site).as_posix(): json.loads(p.read_text()) for p in site.rglob('*.json')}
+    assert json.dumps(actual, sort_keys=True) == json.dumps(reference, sort_keys=True)
+
+
+@pytest.mark.parametrize('damage', ['internal_year', 'record_year', 'truncated_years',
+                                  'municipality', 'sex', 'date', 'future_year'])
+def test_incomplete_or_undated_state_never_replaces_valid_publication(tmp_path, damage):
+    source, site, clean = prepared_source(tmp_path)
+    source.compute()
+    source.export()
+    previous = {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')}
+    path = clean / 'official.json'
+    official = json.loads(path.read_text())
+    if damage == 'internal_year':
+        official['years'] = [2020, 2022]
+    elif damage == 'record_year':
+        official['records'] = [r for r in official['records'] if r['year'] != 2020]
+    elif damage == 'truncated_years':
+        official['years'] = [2020]
+    elif damage == 'municipality':
+        official['records'] = [r for r in official['records'] if r['municipality'] != '110002']
+    elif damage == 'sex':
+        official['records'] = [r for r in official['records'] if r['sex'] != 'Masculino']
+    elif damage == 'date':
+        official['extracted_at'] = 'unknown'
+    else:
+        official['extracted_at'] = '2020-11-05'
+    path.write_text(json.dumps(official))
+    with pytest.raises(ValueError, match='official HPV'):
+        source.compute()
+    assert {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')} == previous
+
+
+def test_refresh_collects_new_years_instead_of_reusing_restored_period(tmp_path, monkeypatch):
+    source, _, clean = prepared_source(tmp_path)
+    requested = []
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2027, 3, 1, tzinfo=UTC)
+
+    def download(destination, years):
+        requested.append(years)
+        assert destination == clean / 'official.json'
+
+    monkeypatch.setattr('pipeline.sources.hpv.datetime', Clock)
+    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', download)
+    source.download_official()
+    assert requested == [(2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027)]
+
+
+def test_hpv_validation_failure_discards_snapshot_and_preserves_input_state(tmp_path, monkeypatch):
+    from pipeline.update import update_sources
+
+    source, site, clean = prepared_source(tmp_path)
+    source.compute()
+    source.export()
+    state = tmp_path / 'state'
+    state.mkdir()
+    shutil.move(clean, state / 'hpv')
+    previous_site = {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')}
+    previous_state = (state / 'hpv/official.json').read_bytes()
+
+    def download(destination, years):
+        official = json.loads(previous_state)
+        official['extracted_at'] = '2026-11-12'
+        destination.write_text(json.dumps(official))
+
+    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', lambda *args, **kwargs: None)
+    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', download)
+    output = tmp_path / 'proposal'
+    # The fixture municipalities cannot satisfy the production official sample.
+    assert not update_sources(['hpv'], site, state, output)
+    report = json.loads((output / 'update.json').read_text())
+    assert 'validate failed: official HPV sample' in report['failures'][0]['error']
+    assert {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')} == previous_site
+    assert {p.relative_to(output / 'dados'): p.read_bytes()
+            for p in (output / 'dados').rglob('*.json')} == previous_site
+    assert (state / 'hpv/official.json').read_bytes() == previous_state
+    assert (output / 'clean/hpv/official.json').read_bytes() == previous_state
 
 
 def test_monthly_extract_counts_people_once_and_removes_raw(tmp_path):
@@ -88,7 +208,8 @@ def prepared_source(tmp_path, last_year=2021):
             'year': last_year, 'months': list(range(1, datetime.now(UTC).month + 1)),
             'source_url': 'https://example.test/catalog', 'checked_at': '2026-11-05'}))
     (clean / 'official.json').write_text(json.dumps({
-        'source_url': 'https://example.test/official-cohorts', 'extracted_at': '2026-11-05',
+        'source_url': 'https://example.test/official-cohorts',
+        'extracted_at': f'{max(2026, last_year)}-11-05',
         'years': list(range(2020, last_year + 1)), 'records': [
             {'year': year, 'municipality': code, 'sex': sex,
              'vaccinated': count, 'population': population, 'coverage': count / population}

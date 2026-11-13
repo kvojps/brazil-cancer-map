@@ -1,0 +1,1051 @@
+{
+  "manifest.json": {
+    "pipeline_version": "REFERENCE_CODE_VERSION",
+    "sources": {
+      "hpv": {
+        "name": "Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)",
+        "extracted_at": "2026-11-05",
+        "files": [
+          "official.json",
+          "census.parquet"
+        ]
+      }
+    },
+    "indicators": {
+      "hpv": {
+        "all": {
+          "first_year": 2020,
+          "last_year": 2026,
+          "latest": 2025,
+          "trend": [],
+          "provisional": [
+            2026
+          ],
+          "single_dose_year": 2024,
+          "denominator_year": 2022
+        },
+        "cervix": {
+          "first_year": 2020,
+          "last_year": 2026,
+          "latest": 2025,
+          "trend": [],
+          "provisional": [
+            2026
+          ],
+          "single_dose_year": 2024,
+          "denominator_year": 2022
+        }
+      }
+    }
+  },
+  "municipalities.json": {
+    "municipalities": [
+      {
+        "code": "110001",
+        "uf": "RO",
+        "immediate_region": "r1"
+      },
+      {
+        "code": "110002",
+        "uf": "RO",
+        "immediate_region": "r1"
+      },
+      {
+        "code": "110003",
+        "uf": "RO",
+        "immediate_region": "r2"
+      }
+    ]
+  },
+  "profiles/RO.json": {
+    "uf": "RO",
+    "indicators": {
+      "hpv": {
+        "all": {
+          "period": {
+            "first_year": 2020,
+            "last_year": 2026,
+            "latest": 2025,
+            "trend": [],
+            "provisional": [
+              2026
+            ],
+            "single_dose_year": 2024,
+            "denominator_year": 2022
+          },
+          "reference": {
+            "value": 90,
+            "label": "meta para 2030"
+          },
+          "source": {
+            "name": "Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)",
+            "url": "https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv",
+            "conditions": "Dados abertos; reutilização com citação da fonte.",
+            "period": "Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente."
+          },
+          "has_status": true,
+          "has_trend": false,
+          "municipalities": {
+            "110001": {
+              "origin": "municipality",
+              "value": 0.8333333333333334,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": "municipality:110001"
+            },
+            "110002": {
+              "origin": "immediate_region",
+              "value": 0.7575757575757576,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": "immediate_region:r1"
+            },
+            "110003": {
+              "origin": "insufficient",
+              "value": null,
+              "status": null,
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": null,
+                  "status": null,
+                  "status_note": null
+                },
+                "M": {
+                  "value": null,
+                  "status": null,
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": null
+            }
+          },
+          "uf_trend": null,
+          "series": {
+            "immediate_region:r1": [
+              {
+                "year": 2020,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2021,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2022,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2023,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2024,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": true,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2025,
+                "value": 0.7575757575757576,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2026,
+                "value": 0.0,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": true,
+                "without_treatment_info": null
+              }
+            ],
+            "municipality:110001": [
+              {
+                "year": 2020,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2021,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2022,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2023,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2024,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": true,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2025,
+                "value": 0.8333333333333334,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2026,
+                "value": 0.0,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": true,
+                "without_treatment_info": null
+              }
+            ]
+          }
+        },
+        "cervix": {
+          "period": {
+            "first_year": 2020,
+            "last_year": 2026,
+            "latest": 2025,
+            "trend": [],
+            "provisional": [
+              2026
+            ],
+            "single_dose_year": 2024,
+            "denominator_year": 2022
+          },
+          "reference": {
+            "value": 90,
+            "label": "meta para 2030"
+          },
+          "source": {
+            "name": "Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)",
+            "url": "https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv",
+            "conditions": "Dados abertos; reutilização com citação da fonte.",
+            "period": "Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente."
+          },
+          "has_status": true,
+          "has_trend": false,
+          "municipalities": {
+            "110001": {
+              "origin": "municipality",
+              "value": 0.8333333333333334,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": "municipality:110001"
+            },
+            "110002": {
+              "origin": "immediate_region",
+              "value": 0.7575757575757576,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": "immediate_region:r1"
+            },
+            "110003": {
+              "origin": "insufficient",
+              "value": null,
+              "status": null,
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": null,
+                  "status": null,
+                  "status_note": null
+                },
+                "M": {
+                  "value": null,
+                  "status": null,
+                  "status_note": null
+                }
+              },
+              "trend": null,
+              "denominator_note": null,
+              "quality_band": null,
+              "without_treatment_info": null,
+              "series_id": null
+            }
+          },
+          "uf_trend": null,
+          "series": {
+            "immediate_region:r1": [
+              {
+                "year": 2020,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2021,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2022,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2023,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2024,
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": true,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2025,
+                "value": 0.7575757575757576,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.5151515151515151,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2026,
+                "value": 0.0,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": true,
+                "without_treatment_info": null
+              }
+            ],
+            "municipality:110001": [
+              {
+                "year": 2020,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2021,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2022,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2023,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2024,
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": true,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2025,
+                "value": 0.8333333333333334,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 1.6666666666666667,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": false,
+                "without_treatment_info": null
+              },
+              {
+                "year": 2026,
+                "value": 0.0,
+                "status": "far",
+                "status_note": null,
+                "by_sex": {
+                  "F": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  },
+                  "M": {
+                    "value": 0.0,
+                    "status": "far",
+                    "status_note": null
+                  }
+                },
+                "single_dose": false,
+                "provisional": true,
+                "without_treatment_info": null
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "map/hpv/cervix.json": {
+    "period": {
+      "first_year": 2020,
+      "last_year": 2026,
+      "latest": 2025,
+      "trend": [],
+      "provisional": [
+        2026
+      ],
+      "single_dose_year": 2024,
+      "denominator_year": 2022
+    },
+    "reference": {
+      "value": 90,
+      "label": "meta para 2030"
+    },
+    "source": {
+      "name": "Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)",
+      "url": "https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv",
+      "conditions": "Dados abertos; reutilização com citação da fonte.",
+      "period": "Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente."
+    },
+    "has_status": true,
+    "has_trend": false,
+    "indicator": "hpv",
+    "cancer_type": "cervix",
+    "municipalities": {
+      "110001": {
+        "origin": "municipality",
+        "value": 0.8333333333333334,
+        "status": "far",
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": 0.0,
+            "status": "far",
+            "status_note": null
+          },
+          "M": {
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      },
+      "110002": {
+        "origin": "immediate_region",
+        "value": 0.7575757575757576,
+        "status": "far",
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": 0.0,
+            "status": "far",
+            "status_note": null
+          },
+          "M": {
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      },
+      "110003": {
+        "origin": "insufficient",
+        "value": null,
+        "status": null,
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": null,
+            "status": null,
+            "status_note": null
+          },
+          "M": {
+            "value": null,
+            "status": null,
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      }
+    }
+  },
+  "map/hpv/all.json": {
+    "period": {
+      "first_year": 2020,
+      "last_year": 2026,
+      "latest": 2025,
+      "trend": [],
+      "provisional": [
+        2026
+      ],
+      "single_dose_year": 2024,
+      "denominator_year": 2022
+    },
+    "reference": {
+      "value": 90,
+      "label": "meta para 2030"
+    },
+    "source": {
+      "name": "Coortes vacinais HPV — Ministério da Saúde (SI-PNI/RNDS e TabNet)",
+      "url": "https://www.gov.br/saude/pt-br/vacinacao/paineis-de-vacinacao/hpv",
+      "conditions": "Dados abertos; reutilização com citação da fonte.",
+      "period": "Coorte de 9–14 anos; ao menos uma dose de HPV quadrivalente ou nonavalente."
+    },
+    "has_status": true,
+    "has_trend": false,
+    "indicator": "hpv",
+    "cancer_type": "all",
+    "municipalities": {
+      "110001": {
+        "origin": "municipality",
+        "value": 0.8333333333333334,
+        "status": "far",
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": 0.0,
+            "status": "far",
+            "status_note": null
+          },
+          "M": {
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      },
+      "110002": {
+        "origin": "immediate_region",
+        "value": 0.7575757575757576,
+        "status": "far",
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": 0.0,
+            "status": "far",
+            "status_note": null
+          },
+          "M": {
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      },
+      "110003": {
+        "origin": "insufficient",
+        "value": null,
+        "status": null,
+        "status_note": null,
+        "by_sex": {
+          "F": {
+            "value": null,
+            "status": null,
+            "status_note": null
+          },
+          "M": {
+            "value": null,
+            "status": null,
+            "status_note": null
+          }
+        },
+        "trend": null,
+        "denominator_note": null,
+        "quality_band": null,
+        "without_treatment_info": null
+      }
+    }
+  }
+}

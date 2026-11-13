@@ -40,7 +40,7 @@ uv run python -m pipeline update --source painel --source cnes --source hpv --da
 
 `update` executa download, limpeza, cálculo, validação e exportação. A etapa `download` é sempre chamada, com estes comportamentos (conferidos no código):
 
-- `mesh`, `popsvs`, `painel`, `cnes`, `siscan`, `siscan_cytopathology`, `sim` e `hpv` baixam os insumos automaticamente, respeitando os períodos configurados e o cache. O HPV exige Chromium instalado.
+- `mesh`, `popsvs`, `painel`, `cnes`, `siscan`, `siscan_cytopathology`, `sim` e `hpv` baixam os insumos automaticamente, respeitando os períodos configurados e o cache. O HPV exige Chromium instalado e consulta novamente todos os anos desde 2020 até o ano corrente; o período do estado anterior não congela uma nova coleta.
 - `vigitel` apenas verifica se o arquivo local existe. O pipeline não chama `download-vigitel.sh`: execute o script antes de `update --source vigitel`, ou indique um arquivo já baixado por `VIGITEL_INPUT_PATH`.
 - `inca` valida o JSON de referência já versionado no repositório. Não há download; uma nova edição exige transcrição manual e alteração revisada do pipeline.
 
@@ -95,12 +95,12 @@ uv run python -m pipeline restore-state --assets /tmp/cancer-downloaded --output
 
 O destino de `restore-state` precisa ser novo. Para preparar uma atualização, volte a `update`; para recalcular sem baixar de novo, o caminho lido no código é `run --source NOME --step compute`, depois `validate` e `export`, usando o estado em `data/clean` e os caminhos padrão. Isso altera os JSON locais e exige nova revisão.
 
-**Limites atuais:** `data-2026-11-06` contém 18 tabelas CSV/Parquet e nove
+**Limites das versões existentes:** `data-2026-11-06` contém 18 tabelas CSV/Parquet e nove
 arquivos de estado; seu manifesto registra `0.1.0+a98b5fd`, sem `-dirty`.
 A prova pública confirmou 48 arquivos iguais após restauração e recálculo.
 `mesh` ainda exige `data/raw/mesh/ibge_municipalities.json`, `painel` exige
-`data/raw/painel/tabnet/`, e o recálculo HPV exige todos os anos até o ano
-corrente, portanto o estado de 2026 não basta em 2027. Os arquivos externos
+`data/raw/painel/tabnet/`, e o código gerador dessa Release exige, no HPV, todos os anos até o ano
+corrente; nele, o estado de 2026 não basta em 2027. Os arquivos externos
 foram fornecidos localmente na prova, sem acrescentá-los à Release. Não se
 promete retomada completa apenas por usar `--state-dir`.
 A Release anterior, `data-2026-11-05`, não contém estado e seu manifesto
@@ -109,6 +109,17 @@ registra `0.1.0+df740cd-dirty`.
 As decisões, os checksums e a conferência da publicação estão em
 [Versão de dados rastreável](data/traceable-version.md). O estado Vigitel com
 entrevistas sem identificadores diretos foi publicado pelo responsável.
+
+No código atual, o recálculo HPV usa `years` e `extracted_at` de
+`official.json`: preserva a história desde 2020, o ano provisório e o último
+consolidado da extração. Não exige Chromium ou novos downloads para
+`compute`, `validate` e `export`. A data deve ser válida e todos os recortes
+obrigatórios devem estar presentes; falhas impedem o cálculo. O empacotamento
+já preserva esse contexto no próprio agregado, junto de `census.parquet`,
+sem incluir extratos de pacientes. Isso foi verificado com fixtures e datas
+simuladas, sem nova carga real nem publicação; veja a
+[evidência](data/hpv-temporal-recalculation.md). Não se promete que o código
+de Releases antigas passe a funcionar retroativamente.
 
 ## Auditoria HPV opcional
 

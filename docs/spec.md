@@ -124,7 +124,7 @@ Decisão e alternativas: [ADR 5](adr/0005-population-denominators.md).
 ### 6.4 Anos provisórios e séries especiais
 
 - Painel: os 2 anos de diagnóstico mais recentes presentes nos dados são provisórios (hoje 2025 e 2026, com 2026 ainda parcial). SIM: os anos preliminares ficam fora. Os anos provisórios aparecem tracejados no gráfico e não entram na Tendência.
-- HPV: a mudança para dose única em 2024 fica marcada na série. A contagem oficial é "ao menos uma dose" em todos os anos, e a Situação usa o último ano completo.
+- HPV: a mudança para dose única em 2024 fica marcada na série. A contagem oficial é "ao menos uma dose" em todos os anos, e a Situação usa o último ano completo. No recálculo, `years` de `official.json` determina a história contínua desde 2020; o ano de `extracted_at` determina o ano provisório e o último consolidado, sem consultar o relógio. Uma nova coleta continua consultando os anos até o ano corrente.
 - Painel: **quebra de série em maio de 2018**. Com a Portaria SAS nº 643/2018, o exame anatomopatológico (BPA-I) passou a criar casos, os sem tratamento registrado e os operados. A % sem informação vai de ~4% para ~30% (com um segundo degrau em maio de 2019), e a série de todos os casos não é comparável antes e depois. Os casos tratados com quimio ou radio (APAC) não têm degrau, por isso a Tendência usa só eles (seção 7).
 - Painel: **queda das cirurgias a partir de abril de 2024**, de ~6 mil para ~2 mil casos por mês, e assim em 2025. As cirurgias não caíram no SIH: o que se perdeu foi o vínculo da AIH ao caso, em 581 hospitais, coincidindo com a entrada do CPF do paciente na AIH (competência 04/2024). A causa não tem confirmação oficial. Os casos operados somem do Painel em vez de virar "sem informação", e a % em até 60 dias de todos os casos cai de 37,1% (2023) para 33,5% (2024). Por isso o valor e a Situação também usam só quimio e radio (seção 9), série que não é afetada. O pipeline confere a contagem mensal por modalidade para pegar quebras parecidas (seção 14).
 - Citopatológico: a série fica congelada em 2025 e não recebe anos novos. A troca do Papanicolau pelo teste de DNA-HPV, feito a cada 5 anos, reduz a contagem sem representar menos cuidado.
@@ -365,7 +365,7 @@ Decisões a confirmar:
 
 **5. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) tem dois limites, mantidos como ressalva nos guias:
 
-- **HPV:** o `compute` exige em `official.json` todos os anos até o ano corrente. O estado de `data-2026-11-06` vai até 2026, então, pela leitura do código, deixa de recalcular em 01/01/2027. A falha foi observada só com relógio simulado em março de 2027. Falta decidir se o `compute` deve usar os anos do próprio estado.
+- **HPV:** corrigido no código atual: `compute` usa os anos e a data de extração do estado, preservando período, provisoriedade e último consolidado. O teste empacota/restaura agregados e Censo e compara o contrato com referência independente em 2026, 2027 e 2030 simulados. O código gerador de `data-2026-11-06` continua sujeito ao limite antigo; nenhuma Release foi alterada. Evidência e limites em [Recálculo temporal do HPV](data/hpv-temporal-recalculation.md).
 - **`mesh` e `painel`:** `validate` e `export` exigem `data/raw/mesh/ibge_municipalities.json` e as páginas de `data/raw/painel/tabnet/`, que o estado não traz. Falta decidir se esses arquivos entram no estado.
 
 ### Requisitos antes de publicar
