@@ -183,8 +183,34 @@ Cada push na `main` executa, a partir de `site/`, `npm run build` com
 npx wrangler deploy --assets ./dist --name brazil-cancer-map --compatibility-date 2026-11-01
 ```
 
-Outras branches geram previews com `npx wrangler versions upload` e as mesmas
-flags. A publicação usa os JSON commitados e não executa o pipeline.
+A publicação usa os JSON commitados e não executa o pipeline.
+
+### Integração e publicação em lotes
+
+A branch permanente `hml` reúne as mudanças das issues antes da publicação.
+Branches de trabalho partem de `hml` e seus PRs têm `hml` como destino.
+Execute localmente as verificações pertinentes antes de integrar cada mudança.
+Integrar uma issue em `hml` não significa que ela já está disponível no site.
+
+Para publicar, abra um PR de `hml` para `main`, confira o conjunto de mudanças
+e execute as verificações pertinentes ao lote. O merge dispara o build e o
+deploy de produção. Preserve `hml` após o merge e sincronize-a com `main`
+antes de iniciar o próximo lote. Correções urgentes que entrarem diretamente
+em `main` também precisam ser incorporadas à `hml`.
+
+Para que os pushes em `hml` e nas branches de trabalho não consumam builds,
+mantenha `main` como branch de produção e **desative os builds de preview**
+em **Settings → Build → Branch control** do Worker na Cloudflare.
+A configuração anteriormente registrada gerava previews nas outras branches
+com `npx wrangler versions upload` e as mesmas flags do deploy.
+Em 12/11/2026, o mantenedor confirmou que somente `main` dispara builds;
+o painel não foi inspecionado pelo agente. Criar `hml` por si só não altera
+essa configuração.
+
+O fluxo usa validação local enquanto os previews automáticos estiverem
+desativados. No próximo merge em `main`, confira que o lote foi publicado
+normalmente.
+Veja o [controle de branches do Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/).
 
 ## Contribuir
 
