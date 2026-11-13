@@ -560,3 +560,32 @@ Os guias de desenvolvimento, atualização e reprodução apontam a nova frontei
 Os comandos e pré-requisitos não mudaram. Nenhum erro funcional novo foi
 identificado; a aceitação conjunta incompatível continua sendo rejeitada,
 como na base da #16. A verificação conjunta da spec pai #12 permanece separada.
+
+### Verificação final e revisão deste passo
+
+- `UV_CACHE_DIR=/tmp/cancer-map-uv uv run pytest -q`: **242 passaram**, em
+  97,02 s, com os mesmos 498 avisos `PerfectSeparationWarning` das fixtures.
+- `UV_CACHE_DIR=/tmp/cancer-map-uv uv run mypy`: **sem erros em 69 arquivos**.
+  Após acrescentar os atributos explícitos dos doubles de snapshot, os
+  **17 testes** de registro passaram novamente; o comportamento não mudou.
+- `git diff --check`: sem erros de whitespace.
+
+#### Standards
+
+A revisão independente por agente do diff desde `1ccf1ce`, seguindo a skill
+`code-review`, não encontrou violações documentadas ou smells acionáveis:
+**0 achados**. A representação pequena de `UpdatePlan` é coerente com o
+contrato de grupos ordenados e não exige estrutura adicional.
+
+#### Spec
+
+A revisão independente por agente não encontrou requisitos ausentes,
+implementação incorreta ou ampliação de escopo: **0 achados**. Conferiu
+planejamento, execução, seleção, grupos, snapshot, falhas e documentação.
+Os agentes usaram os resultados de testes registrados acima, sem repetir a suíte.
+
+O commit de implementação é `53adb7d`, na branch atual `hml`, conforme a
+instrução da skill `implement`. Não houve push, PR, deploy, mudança dos JSON
+públicos nem nova aquisição nacional. A publicação dos commits e seus links
+remotos permanece pendente; a #17 fica aberta para esse registro final.
+A spec pai #12 permanece aberta para sua verificação conjunta.
