@@ -1,5 +1,6 @@
 """Prepare independently validated source updates for local review."""
 
+from collections.abc import Sequence
 import json
 import shutil
 import sys
@@ -8,12 +9,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pipeline.source import STEPS
-from pipeline.sources import SOURCE_DEFINITIONS, create_sources, validate_registry
+from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition, create_sources, validate_registry
 
 
-def update_sources(selected: list[str], directory: Path, clean_dir: Path, output: Path) -> bool:
+def update_sources(selected: list[str], directory: Path, clean_dir: Path, output: Path, *,
+                   registry: Sequence[SourceDefinition] = SOURCE_DEFINITIONS) -> bool:
     """Leave live data untouched; retain only successful dependency groups in output."""
-    registry = SOURCE_DEFINITIONS
     validate_registry(registry)
     names = [definition.name for definition in registry]
     unknown = set(selected) - set(names)
@@ -32,9 +33,6 @@ def update_sources(selected: list[str], directory: Path, clean_dir: Path, output
         selected_set = expanded
     if output.exists() or output.resolve().is_relative_to(directory.resolve()) or output.resolve().is_relative_to(clean_dir.resolve()):
         raise ValueError('Update output must be a new directory outside the input directories')
-    output.mkdir(parents=True)
-    shutil.copytree(directory, output / 'dados')
-    copy_state(clean_dir, output / 'clean')
     groups = [[name] for name in names if name in selected_set]
     if any(definition.includes_all and definition.name in selected_set for definition in registry):
         groups = [[name for name in names if name in selected_set]]
@@ -49,6 +47,16 @@ def update_sources(selected: list[str], directory: Path, clean_dir: Path, output
                 position = next(index for index, group in enumerate(groups) if joined.intersection(group))
                 groups = [group for group in groups if not joined.intersection(group)]
                 groups.insert(position, [name for name in names if name in joined])
+    group_index = {name: index for index, group in enumerate(groups) for name in group}
+    for definition in registry:
+        if definition.name not in selected_set:
+            continue
+        for dependency in definition.inputs.values():
+            if dependency.source in selected_set and group_index[dependency.source] > group_index[definition.name]:
+                raise ValueError(f'{definition.name}: joint acceptance conflicts with input producer order')
+    output.mkdir(parents=True)
+    shutil.copytree(directory, output / 'dados')
+    copy_state(clean_dir, output / 'clean', registry=registry)
     successful: list[str] = []
     failures: list[dict[str, object]] = []
     for group in groups:
@@ -81,11 +89,12 @@ def update_sources(selected: list[str], directory: Path, clean_dir: Path, output
     return not failures
 
 
-def copy_state(directory: Path, output: Path) -> None:
+def copy_state(directory: Path, output: Path, *,
+               registry: Sequence[SourceDefinition] = SOURCE_DEFINITIONS) -> None:
     """Copy resumable state, excluding patient extracts and optional HPV audit inputs."""
-    validate_registry(SOURCE_DEFINITIONS)
+    validate_registry(registry)
     output.mkdir(parents=True, exist_ok=True)
-    for definition in SOURCE_DEFINITIONS:
+    for definition in registry:
         folder = directory / definition.name
         if not folder.exists():
             continue

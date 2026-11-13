@@ -182,7 +182,9 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
    sem segunda lista de consumidores. Nomes duplicados, referências desconhecidas,
    ordem incompatível e caminhos de insumos fora do produtor são rejeitados
    antes da construção ou criação da saída. A ordem é declarada, sem ordenação
-   automática. `run --source` e `run --step` continuam com seleção direta.
+   automática. A atualização também rejeita aceitação conjunta que anteciparia
+   uma consumidora em relação a um produtor de insumo selecionado.
+   `run --source` e `run --step` continuam com seleção direta.
 4. Teste as etapas com fixtures em `pipeline/tests/`, incluindo falha de
    validação e formato exportado. Execute o arquivo afetado com
    `uv run pytest pipeline/tests/<arquivo>.py`, depois `uv run mypy` e a suíte.

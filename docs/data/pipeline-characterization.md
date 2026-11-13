@@ -401,3 +401,102 @@ push em `hml` e o encerramento da issue. O aceite considera as verificações
 e revisões registradas acima; não acrescenta ensaio humano de legibilidade.
 Os links dos commits publicados e a conclusão ficam registrados na #15.
 Esse aceite não encerra a spec pai #12 nem implica deploy em produção.
+
+## Depois da centralização do registro (#16)
+
+A base deste passo é `db863460ebbf0904c21b6af9fcac8a15bea4102d`.
+O registro ordenado `SOURCE_DEFINITIONS`, em `pipeline/sources/__init__.py`,
+substitui a lista de construção. `SourceDefinition` separa a fábrica,
+os insumos consumidos (`inputs`), os gatilhos de atualização (`update_with`)
+e a aceitação conjunta dos participantes selecionados (`accept_with`).
+`SourceInput` identifica produtor e arquivo relativo ao estado desse produtor.
+A política `includes_all` da malha abrange entradas futuras.
+
+`create_sources(clean_dir, site_data_dir)` e `SOURCES` conservam as interfaces
+e a ordem anteriores. A fábrica recebe o diretório da própria `source`, o
+diretório de publicação e os insumos resolvidos na mesma cópia de trabalho.
+SIM, mamografia e citopatológico recebem `population_path` nomeado.
+A validação rejeita duplicações, referências desconhecidas e relações fora
+da ordem antes de construir instâncias ou criar a saída de `update`.
+Também rejeita caminhos absolutos ou com `..` nos insumos.
+
+O executor atual lê expansão e aceitação do registro, sem `POPULATION_USERS`.
+Continua responsável por cópias, etapas, descarte e relatório. A extração do
+planejador puro pertence ao próximo passo; nenhum novo comando foi introduzido.
+Para localizar um consumidor, leia sua definição e depois sua fábrica, sem
+procurar outra lista de construção ou de consumidores em `update.py`.
+
+### Comparação controlada
+
+Em 13/11/2026, o código da base foi extraído com `git archive` para
+`/tmp/bcm-issue16-before`. Base e entrega executaram o mesmo interpretador
+Python 3.14.4 e as mesmas dependências do `.venv`, definidas pelo `uv.lock`
+inalterado (uv 0.13.7). Foram mantidos os preparadores, os relógios e as
+referências congeladas descritos acima. Não houve aquisição nacional.
+
+Comando nos dois diretórios (na base, usando diretamente o Python do mesmo
+`.venv` para executar `-m pytest`):
+
+```sh
+uv run pytest pipeline/tests/test_cli.py pipeline/tests/test_update_characterization.py pipeline/tests/test_calculation_baseline.py pipeline/tests/test_painel_state.py pipeline/tests/test_hpv.py -q
+```
+
+- Antes: **61 passaram**. Depois: os mesmos **61 passaram**, mais **14**
+  testes de `test_source_registry.py`, totalizando **75** na execução conjunta
+  inicial. Após a revisão, foi acrescentado um teste de ordem cruzada entre
+  insumo e aceitação conjunta; os **24** testes de registro e atualização
+  passaram na verificação direcionada final.
+- POPSVS + Painel continua executando e aceitando primeiro
+  `[popsvs, siscan, siscan_cytopathology, sim]`, depois `[painel]`.
+  SIM isolado não executa POPSVS. Malha continua incluindo todas as entradas.
+  Falha tardia descarta o grupo inteiro e permite grupos independentes.
+  Relatório, seleção original, ordem e entradas preservadas continuam iguais.
+- Novo consumidor declarado no registro recebe o insumo no snapshot e é
+  incluído por `update_with`, sem outra lista de construção. Aceitação sozinha
+  e consumo sozinho não ampliam a seleção. A política da malha inclui a nova
+  entrada. Esses cenários usam Sources de teste, sem acesso às Fontes.
+- Mamografia e citopatológico reais executam `compute` e `export` pela CLI
+  com população presente somente no snapshot; os valores conhecidos são
+  respectivamente `0.8` e `1.2`. A prova existente do SIM executa `compute`
+  com o denominador do snapshot. Instâncias novas preservam etapas isoladas.
+- Cálculo, intermediários e Contrato de dados de Painel e HPV continuam
+  comparados com as mesmas referências independentes. Única diferença
+  permitida: `manifest.json.pipeline_version`, por identificar o checkout.
+  Não foram ignorados outros metadados, datas ou valores.
+- Os avisos `PerfectSeparationWarning` das séries artificiais permanecem
+  informativos. Nenhum erro funcional preexistente foi identificado neste passo.
+
+### Revisão deste passo
+
+#### Standards
+
+O primeiro relatório apontou substituição de um colaborador interno nos testes
+novos. Resolvido: `update_sources` e `copy_state` aceitam `registry` como
+argumento opcional, mantendo os padrões públicos; os testes fornecem o registro
+explicitamente, sem monkeypatch dessa dependência. A segunda revisão não
+identificou achados pendentes.
+
+#### Spec
+
+O primeiro relatório identificou que uma aceitação conjunta poderia antecipar
+uma consumidora em relação a outro produtor selecionado. O novo teste mostrou
+a execução incorreta antes da correção. Agora a atualização verifica a ordem
+dos grupos e rejeita essa configuração antes de criar a saída, sem ordenar o
+registro automaticamente. A comparação vigente de POPSVS e malha permanece
+inalterada. Esse defeito foi encontrado na implementação nova e corrigido
+neste passo, sem alterar método estatístico.
+
+A segunda revisão de Spec confirmou **zero achados pendentes**.
+
+### Verificação final
+
+- `UV_CACHE_DIR=/tmp/cancer-map-uv uv run pytest -q`: **235 passaram**, com
+  498 avisos `PerfectSeparationWarning` das fixtures, em 101,85 s.
+- `UV_CACHE_DIR=/tmp/cancer-map-uv uv run mypy`: **sem erros em 67 arquivos**.
+- `git diff --check`: sem erros de whitespace.
+- Standards: **0 achados pendentes**; Spec: **0 achados pendentes**.
+
+Os commits foram feitos na branch atual `hml`, conforme a instrução de
+implementação. Não houve push, PR ou deploy. A publicação dos commits e seus
+links remotos permanece pendente; por isso a issue #16 fica aberta para esse
+registro final. A spec pai #12 permanece aberta.
