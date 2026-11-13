@@ -73,6 +73,12 @@ UV_CACHE_DIR=/tmp/cancer-uv-cache uv run mypy
 UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest
 ```
 
+Em 12/11/2026, os testes direcionados passaram e a suíte Python completa
+concluiu com **185 testes aprovados**, em 87,26 s. Houve 274 avisos
+`PerfectSeparationWarning` do statsmodels nas fixtures estatísticas.
+`mypy` passou em modo estrito nos 48 arquivos. A revisão do diff desde
+`0755266` não encontrou achados nos eixos Standards e Spec.
+
 ## Limites
 
 Esta é uma prova com fixtures e datas simuladas, não uma nova carga nacional
