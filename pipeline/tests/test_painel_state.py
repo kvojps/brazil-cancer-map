@@ -51,7 +51,7 @@ def prepare(tmp_path, monkeypatch):
                                            ('3', '+0090', 60), ('5', '', 20)):
                 for _ in range(count):
                     yield record(cid=cid, year=year, municipality='110020', treatment=treatment, days=days)
-    monkeypatch.setattr('pipeline.sources.painel._read_dbc', decode)
+    monkeypatch.setattr('pipeline.sources.painel.source.read_dbc', decode)
     source = PainelSource(raw_dir=raw, clean_dir=clean / 'painel', site_data_dir=site)
     for step in ('clean', 'compute', 'validate', 'export'):
         assert main(['run', '--source', 'painel', '--step', step], [source]) == 0
@@ -134,7 +134,7 @@ def test_update_snapshot_isolates_treatment_pages_and_failure_preserves_previous
 
     def unavailable_ftp(directory):
         raise OSError('fixture: DATASUS is unavailable')
-    monkeypatch.setattr('pipeline.sources.painel.list_ftp', unavailable_ftp)
+    monkeypatch.setattr('pipeline.sources.painel.acquisition.list_ftp', unavailable_ftp)
     failed = tmp_path / 'failed'
     assert main(['update', '--source', 'painel', '--data-dir', str(proposal / 'dados'),
                  '--clean-dir', str(proposal / 'clean'), '--output', str(failed)], []) == 1

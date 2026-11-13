@@ -1,4 +1,5 @@
-from pipeline.sources.painel import FirstTreatment, monthly_drops
+from pipeline.sources.painel.models import FirstTreatment
+from pipeline.sources.painel.calculation import monthly_drops
 
 SURGERY, CHEMO_RADIO = FirstTreatment.SURGERY, FirstTreatment.CHEMO_RADIO
 

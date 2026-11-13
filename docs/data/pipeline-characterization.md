@@ -159,3 +159,60 @@ O mypy passou novamente com 52 arquivos. As revisões independentes de padrões
 identificaram achados em nenhum dos dois eixos. A entrega foi commitada
 separadamente na branch atual `hml`; publicação remota e deploy não fazem parte
 desta prova local.
+
+## Depois da reorganização do Painel (#14)
+
+Base deste passo: `15c16299b7591fc7332c147c8790475996e967ff` (entrega da
+#13). Os percursos anteriores acima descrevem essa base; `painel.py` foi
+substituído pelo pacote `pipeline/sources/painel/`. O import público
+`from pipeline.sources.painel import PainelSource` permanece disponível.
+Helpers são importados diretamente do módulo responsável.
+
+### Indicador da entrada até os JSON
+
+1. CLI e registro continuam chegando a `PainelSource`, reexportada pelo
+   `__init__.py` e coordenada em `source.py`, com as mesmas cinco etapas.
+2. `acquisition.py` obtém FTP/TabNet, decodifica DBC, interpreta as tabelas e
+   fornece `count_cases`. `source.clean` continua chamando a contagem durante
+   a limpeza, fixando a extração pelo mtime e preservando as páginas oficiais.
+   `models.py` nomeia contagens, modalidades, recortes e linhas limpas.
+3. `persistence.py` lê/escreve `cases.parquet`, `months.parquet` e
+   `extract.json`, sem mudar colunas ou destinos. Em `source.compute`, os
+   dados e a relação territorial são carregados antes de chamar
+   `calculation.calculate(rows, monthly_counts, immediate_region_of)`.
+4. `calculation.py` devolve `PainelResult` com `layers`, `profiles` por Tipo
+   de câncer e `monthly_alerts`. Não acessa caminhos nem grava arquivos.
+   `persistence.write_result` conserva `monthly_alerts.json` e
+   `layers/<tipo>{,-profiles}.json`. Uma nova instância pode retomar daí.
+5. `source.validate` carrega referências e camadas, emite os alertas uma vez
+   nessa etapa e entrega dados carregados a `validation.check`. A comparação
+   com TabNet e as verificações bloqueantes estão em `validation.py`.
+6. `source.export` repete as verificações bloqueantes sem reemitir alertas,
+   carrega o resultado e os perfis existentes e chama `export.documents`.
+   Esse montador conserva os outros indicadores e produz mapa e perfil sem
+   recalcular estatística. A coordenação atualiza o manifesto e usa
+   `pipeline/publish.py` para publicar o conjunto.
+
+### Regra de prazo até seus efeitos
+
+1. Os códigos de modalidades estão em `models.py`; `is_within_60_days` e
+   `count_cases`, em `acquisition.py`. `source.clean` usa essas funções antes
+   de `persistence.write_clean`. Isso explicita a contagem na limpeza.
+2. Em `calculation.py`, `within_60_days_layer` usa `_group_series`,
+   `_trend_and_shares`, `uf_quality` e os métodos existentes de Tendência,
+   cascata e Situação. A origem territorial é decidida nessa camada.
+3. `calculate` passa essa mesma camada a `within_60_days_profiles`: a origem
+   escolhe `series_id`, inclusive região e Dado insuficiente. O resultado
+   reúne as duas saídas; exportação só monta os documentos correspondentes.
+   O contexto da UF continua sendo calculado em `within_60_days_profiles`.
+4. Os testes de limpeza, cálculo, alertas e comparação oficial mantêm suas
+   entradas e expectativas. Os testes de publicação/estado acompanham a regra
+   até os JSON. `test_calculation_baseline.py` compara intermediários e contrato
+   com as referências congeladas e também chama o cálculo em memória depois
+   de remover os diretórios originais, verificando que as entradas não mudam.
+
+Conhecimento ainda necessário: os dois últimos anos são provisórios;
+`count_cases` pertence à limpeza; a UF fornece contexto e qualidade, mas não
+substitui a Região imediata na cascata. Esses pontos estão nomeados no código
+ou neste percurso. A organização não altera método, comandos, ADRs nem exige
+nova aquisição nacional.

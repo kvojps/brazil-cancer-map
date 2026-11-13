@@ -1,4 +1,5 @@
-from pipeline.sources.painel import CaseCounts, within_60_days_layer
+from pipeline.sources.painel.models import CaseCounts
+from pipeline.sources.painel.calculation import within_60_days_layer
 
 YEARS = range(2014, 2027)
 PROVISIONAL = {2025, 2026}

@@ -177,6 +177,25 @@ procedimento de comparação com fixtures estão em
 [Caracterização da pipeline](data/pipeline-characterization.md). Use essa base
 para conferir cálculo, intermediários, documentos e orquestração em cada passo.
 
+### Navegação do Painel
+
+O import público é `pipeline.sources.painel.PainelSource`. Dentro de
+`pipeline/sources/painel/`, `source.py` coordena as etapas; `acquisition.py`
+obtém e interpreta DBC/TabNet e fornece a contagem usada na limpeza;
+`models.py` define registros e recortes; `persistence.py` mantém os
+intermediários; `calculation.py` calcula com dados em memória;
+`validation.py` confere dados carregados; `export.py` monta os documentos.
+Importe helpers do módulo responsável, sem passar pelo `__init__.py`.
+
+`calculate(rows, monthly_counts, immediate_region_of)` retorna `PainelResult`
+com camadas, séries de perfis e alertas mensais. Carregue a relação territorial
+antes da chamada. Mapa e perfil usam a mesma origem decidida no cálculo.
+`compute` carrega, calcula e persiste; `validate` e `export` podem rodar em
+novas instâncias, usando o estado persistido. A exportação revalida antes da
+publicação conjunta. Os comandos e caminhos de estado permanecem os mesmos.
+Os dois percursos de leitura e a comparação congelada estão em
+[Caracterização da pipeline](data/pipeline-characterization.md#depois-da-reorganização-do-painel-14).
+
 ## Deploy: Cloudflare Workers
 
 Configuração registrada no repositório, sem executar deploy nesta verificação:
