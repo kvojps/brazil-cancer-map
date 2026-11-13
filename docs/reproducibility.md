@@ -185,6 +185,10 @@ compara todos os JSON com uma referência de 2026, sob relógios de 2026,
 2027 e 2030. Ela preserva tipos, período, valores e proveniência; somente
 `pipeline_version` identifica o código executado na comparação. Veja os
 [comandos e limites da evidência](data/hpv-temporal-recalculation.md).
+O cálculo atual está em `pipeline/sources/hpv/calculation.py`; a coordenação
+e a persistência estão no mesmo pacote. A auditoria em `audit.py` permanece
+local e fora do estado público. A [comparação da reorganização](data/pipeline-characterization.md#depois-da-reorganização-do-hpv-15)
+confere insumos, resultado intermediário e contrato com fixtures congeladas.
 Não é uma nova reprodução pública de `data-2026-11-06`, nem uma correção
 retroativa de seu commit gerador. As correções atuais de `mesh` e `painel` estão descritas a seguir.
 

@@ -56,16 +56,16 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
                 from pipeline.update import update_sources
                 return 0 if update_sources(args.source, args.data_dir, args.clean_dir, args.output) else 1
             if args.command == 'hpv-audit':
-                from pipeline.sources.hpv import HpvSource
+                from pipeline.sources.hpv.audit import HpvAudit
                 if args.year is not None and args.step == 'compute':
                     raise ValueError('Audit compute requires the full history; omit --year')
-                audit_source = HpvSource(years=(args.year,)) if args.year is not None else HpvSource()
+                audit_source = HpvAudit(years=(args.year,)) if args.year is not None else HpvAudit()
                 if args.step == 'download':
-                    audit_source.download_audit()
+                    audit_source.download()
                 elif args.step == 'clean':
-                    audit_source.clean_audit()
+                    audit_source.clean()
                 else:
-                    audit_source.compute_audit()
+                    audit_source.compute()
             elif args.command == 'restore-state':
                 restore_state(args.assets, args.output)
             elif args.command == 'restore-release':

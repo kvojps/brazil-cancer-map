@@ -150,7 +150,9 @@ limitações já documentadas; não houve nova carga, publicação ou deploy.
 
 ## Auditoria HPV opcional
 
-`update --source hpv` usa agregados oficiais. A auditoria com microdados é separada e local, nunca requisito de publicação:
+`update --source hpv` usa agregados oficiais, coordenados por
+`pipeline/sources/hpv/source.py`. `hpv-audit` usa a entrada independente
+`pipeline.sources.hpv.audit.HpvAudit`. A auditoria com microdados é separada e local, nunca requisito de publicação:
 
 ```bash
 uv run python -m pipeline hpv-audit --step download --year 2020

@@ -196,6 +196,29 @@ publicação conjunta. Os comandos e caminhos de estado permanecem os mesmos.
 Os dois percursos de leitura e a comparação congelada estão em
 [Caracterização da pipeline](data/pipeline-characterization.md#depois-da-reorganização-do-painel-14).
 
+### Navegação do HPV
+
+O import público continua sendo `pipeline.sources.hpv.HpvSource`. No pacote
+`pipeline/sources/hpv/`, `source.py` coordena as cinco etapas oficiais;
+`models.py` define `HpvResult` e as linhas do Censo; `persistence.py` carrega
+os insumos e conserva `computed.json`; `calculation.py` calcula em memória;
+`validation.py` verifica dados carregados; `export.py` monta mapa e perfis.
+A aquisição reutiliza `pipeline/hpv_official.py` e `pipeline/hpv_inputs.py`.
+
+`calculate(official_cohorts, census_rows, immediate_region_of)` recebe as
+coortes com proveniência e data de extração, o Censo carregado e a relação
+territorial. Retorna período, Referência, municípios com origem e `series_id`
+e séries por origem e sexo. A data de extração determina a consolidação.
+Mapa e perfil usam a origem escolhida nesse resultado; exportação revalida
+antes da publicação conjunta e preserva os outros indicadores.
+
+A auditoria tem entrada própria em `pipeline.sources.hpv.audit.HpvAudit`,
+usada por `hpv-audit`, com `download`, `clean` e `compute`. Mantém os arquivos
+locais e não alimenta o cálculo oficial. Os comandos e opções do CLI continuam
+iguais. Apenas `official.json` e `census.parquet` integram o estado público.
+Veja os percursos e a comparação em
+[Caracterização da pipeline](data/pipeline-characterization.md#depois-da-reorganização-do-hpv-15).
+
 ## Deploy: Cloudflare Workers
 
 Configuração registrada no repositório, sem executar deploy nesta verificação:

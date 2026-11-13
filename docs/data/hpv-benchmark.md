@@ -37,10 +37,10 @@ uv run python -m pipeline hpv-audit --step download --year 2020
 Para uma medição mensal isolada, a mesma interface pública usada pelo baixador pode ser executada assim:
 
 ```sh
-uv run python -c 'from pipeline.sources.hpv import HpvSource; HpvSource().download_month(2020, 5)'
+uv run python -c 'from pipeline.sources.hpv.audit import HpvAudit; HpvAudit().download_month(2020, 5)'
 ```
 
-O metadado `data/clean/hpv/months/<ano>/<mes>.json` registra tamanho e data de origem, duração total, duração do download, se houve download, linhas, elegíveis, motivos de exclusão e pico dos diretórios da fonte. Se o mês já estiver atualizado, ele é reaproveitado e a medição anterior é preservada. Para medir novamente a rede, use diretórios novos ao construir `HpvSource`, sem apagar estado válido.
+O metadado `data/clean/hpv/months/<ano>/<mes>.json` registra tamanho e data de origem, duração total, duração do download, se houve download, linhas, elegíveis, motivos de exclusão e pico dos diretórios da fonte. Se o mês já estiver atualizado, ele é reaproveitado e a medição anterior é preservada. Para medir novamente a rede, use diretórios novos ao construir `HpvAudit`, sem apagar estado válido.
 
 ## Insumos fixos e publicação
 

@@ -4,7 +4,8 @@
 
 A implementação da issue [#2](https://github.com/kvojps/brazil-cancer-map/issues/2)
 parte do commit `0755266acc6b332df1d4564906da77e04c53af32`.
-A alteração está em `pipeline/sources/hpv.py`, com testes em
+O cálculo está em `pipeline/sources/hpv/calculation.py`, coordenado por
+`pipeline/sources/hpv/source.py` (antes da #15, `pipeline/sources/hpv.py`), com testes em
 `pipeline/tests/test_hpv.py`. Não altera método estatístico, interface do site,
 Releases existentes ou dados commitados.
 

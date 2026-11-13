@@ -276,3 +276,96 @@ encerramento da #14. O aceite usa os percursos documentados e a leitura
 independente por agente descrita acima; não acrescenta evidência de ensaio
 humano. A publicação dos commits em `hml` e os links de conclusão ficam
 registrados na issue. Esse aceite não encerra a spec pai #12 nem implica deploy.
+
+## Depois da reorganização do HPV (#15)
+
+Base deste passo: `e749ba0f9309abb5fcc7f8e50eace7101df8130e`, na branch
+`hml`. `pipeline/sources/hpv.py` foi substituído pelo pacote
+`pipeline/sources/hpv/`, preservando `from pipeline.sources.hpv import HpvSource`.
+Não houve nova aquisição nacional nem alteração dos JSON publicados.
+
+### Indicador oficial da entrada até os JSON
+
+1. CLI e registro chegam a `HpvSource`, reexportada por `__init__.py` e
+   coordenada em `source.py`. `download` reutiliza `pipeline/hpv_inputs.py`
+   para o Censo e `pipeline/hpv_official.py` para as coortes qualificadas.
+   `clean` permanece sem operação: esses insumos já chegam padronizados.
+2. `persistence.read_official` carrega `official.json` com `source_url`,
+   `extracted_at`, anos e registros; `read_census` carrega as linhas do
+   `census.parquet`. A coordenação carrega a relação territorial do índice
+   municipal antes de chamar `calculation.calculate`.
+3. `calculate(official_cohorts, census_rows, immediate_region_of)` valida o
+   histórico declarado, a proveniência e a data, confere as fatias do Censo
+   e os denominadores oficiais e retorna `models.HpvResult` em memória.
+   Não lê arquivos nem consulta o relógio. O resultado reúne período,
+   Referência, municípios com origem e `series_id` e séries por origem e sexo.
+4. `persistence.write_result` conserva o formato e o destino `computed.json`.
+   `validate` e `export` podem retomar esse resultado em novas instâncias.
+   `validation.check` recebe resultado, códigos municipais e referências já
+   carregados e mantém os bloqueios. O destino padrão das referências continua
+   sendo `pipeline/references/hpv.json`, ajustado à profundidade do pacote.
+5. `source.export` revalida, carrega perfis existentes e chama
+   `export.documents`, que monta os mapas `all`/`cervix` e perfis por UF sem
+   escolher outra origem ou refazer estatística. A coordenação atualiza o
+   manifesto e usa a mesma publicação conjunta de `pipeline/publish.py`.
+   Os outros indicadores, metadados de perfil e Fontes são preservados.
+
+### Regra temporal e territorial até seus efeitos
+
+1. `calculation.calculate` lê `years` e `extracted_at` das coortes. O ano da
+   extração determina provisoriedade e último consolidado. O relógio só
+   participa da seleção de anos para uma nova aquisição em `source.py`.
+2. O Censo 2022 fornece o denominador fixo. `data_origins` decide entre
+   município, Região imediata e Dado insuficiente usando esse denominador.
+   Boa Esperança do Norte continua sem população inventada.
+3. A mesma decisão escolhe `series_id`, a série exibida e o ponto consolidado
+   do município. `HpvResult` carrega essas decisões até o intermediário;
+   `export.documents` apenas seleciona os campos do mapa e as séries dos perfis.
+4. `test_calculation_baseline.py` compara o intermediário completo e o
+   Contrato de dados com as fixtures independentes; também remove os
+   diretórios antes de calcular em memória e verifica entradas intactas.
+   `test_hpv.py` cobre cascata, sexos, dose única, valores acima de 100%,
+   falhas bloqueantes, revalidação, snapshot e reprodução em anos distintos.
+
+### Auditoria e estado público
+
+`hpv-audit` agora chega diretamente a `audit.HpvAudit`, com `download`, `clean`
+e `compute`. A seleção de ano, catálogo, redução mensal, medições, legado
+TabNet e reconstrução ficam nesse módulo. Os seis corpos de métodos foram
+comparados por AST com a base: são iguais, descontando os nomes das três
+entradas. Os comandos, opções e arquivos locais permanecem os mesmos.
+O cálculo oficial não importa auditoria nem consome `audit.json`.
+
+O teste da CLI reduz um ZIP real de fixture com `--step clean --year 2020`;
+outro reconstrói o histórico local e verifica que resultado oficial e
+publicação permanecem idênticos, além de rejeitar `compute --year`.
+Os testes de Release e reprodução continuam conferindo que somente
+`official.json` e `census.parquet` integram o estado público HPV, mesmo com
+extratos de pacientes e auditoria disponíveis localmente.
+
+### Comparação controlada
+
+Em 13/11/2026, com Python 3.14.4, uv 0.13.7, o mesmo `uv.lock` e
+`UV_CACHE_DIR=/tmp/cancer-map-uv`, a base passou em **28 testes** de HPV e
+caracterização antes da movimentação. Depois, os **29 casos** desses dois
+arquivos passaram com a nova interface em memória; os **27 casos** do
+arquivo HPV passaram após acrescentar a verificação da auditoria pela CLI e
+a preservação de outros indicadores e metadados.
+
+Os insumos, datas e expectativas congeladas não foram regenerados.
+SHA-256 de `calculation-baseline.json`:
+`7ebef92162d91dd1cb18e669fb81d65adde05abf93083c61b22aad08148093c8`;
+de `hpv-2026-contract.json`:
+`5613611f3708336511d04cb94f135ef2b754b1fbc8494e5f2ab9e0834e7dc9f6`.
+Nos intermediários não há diferenças permitidas. No contrato, somente
+`manifest.json.pipeline_version` pode diferir, identificando o checkout.
+A reprodução com estado empacotado/restaurado confere o contrato independente
+sob relógios de 2026, 2027 e 2030. A execução das etapas em instâncias novas
+confere também os insumos lógicos e `computed.json` contra a base.
+
+Conhecimento ainda necessário: a coleta inclui o ano corrente, mas o recálculo
+usa a data de extração; a origem depende do denominador fixo; a reconstrução
+não equivale ao numerador qualificado. Esses pontos estão nos módulos, ADRs e
+nos percursos acima. Não houve ensaio humano de legibilidade nem identificação
+de novo erro funcional durante este passo. A verificação conjunta da spec pai
+#12 permanece separada.

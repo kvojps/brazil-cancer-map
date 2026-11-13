@@ -11,6 +11,7 @@ import duckdb
 import pytest
 
 from pipeline.sources.hpv import HpvSource
+from pipeline.sources.hpv.audit import HpvAudit
 
 
 @pytest.mark.parametrize('execution_year', [2026, 2027, 2030])
@@ -33,12 +34,12 @@ def test_restored_state_reproduces_the_independent_2026_contract(tmp_path, monke
         def now(cls, tz=None):
             return cls(execution_year, 3, 1, tzinfo=UTC)
 
-    monkeypatch.setattr('pipeline.sources.hpv.datetime', Clock)
+    monkeypatch.setattr('pipeline.sources.hpv.source.datetime', Clock)
     def unexpected_download(*args, **kwargs):
         pytest.fail('recalculation must not download source inputs')
 
-    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', unexpected_download)
-    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', unexpected_download)
+    monkeypatch.setattr('pipeline.sources.hpv.source.download_fixed_inputs', unexpected_download)
+    monkeypatch.setattr('pipeline.sources.hpv.source.download_official_cohorts', unexpected_download)
     source = HpvSource(clean_dir=restored / 'hpv', site_data_dir=site,
                        validation_path=tmp_path / 'references.json')
     source.compute()
@@ -93,8 +94,8 @@ def test_refresh_collects_new_years_instead_of_reusing_restored_period(tmp_path,
         requested.append(years)
         assert destination == clean / 'official.json'
 
-    monkeypatch.setattr('pipeline.sources.hpv.datetime', Clock)
-    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', download)
+    monkeypatch.setattr('pipeline.sources.hpv.source.datetime', Clock)
+    monkeypatch.setattr('pipeline.sources.hpv.source.download_official_cohorts', download)
     source.download_official()
     assert requested == [(2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027)]
 
@@ -116,8 +117,8 @@ def test_hpv_validation_failure_discards_snapshot_and_preserves_input_state(tmp_
         official['extracted_at'] = '2026-11-12'
         destination.write_text(json.dumps(official))
 
-    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', lambda *args, **kwargs: None)
-    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', download)
+    monkeypatch.setattr('pipeline.sources.hpv.source.download_fixed_inputs', lambda *args, **kwargs: None)
+    monkeypatch.setattr('pipeline.sources.hpv.source.download_official_cohorts', download)
     output = tmp_path / 'proposal'
     # The fixture municipalities cannot satisfy the production official sample.
     assert not update_sources(['hpv'], site, state, output)
@@ -130,7 +131,7 @@ def test_hpv_validation_failure_discards_snapshot_and_preserves_input_state(tmp_
     assert (output / 'clean/hpv/official.json').read_bytes() == previous_state
 
 
-def test_monthly_extract_counts_people_once_and_removes_raw(tmp_path):
+def test_monthly_extract_counts_people_once_and_removes_raw(tmp_path, monkeypatch):
     raw = tmp_path / 'raw'
     raw.mkdir()
     path = raw / 'vacinacao_jan_2020_csv.zip'
@@ -149,8 +150,12 @@ def test_monthly_extract_counts_people_once_and_removes_raw(tmp_path):
     ])
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('vaccination.csv', stream.getvalue().encode('latin1'))
-    source = HpvSource(raw_dir=raw, clean_dir=tmp_path / 'clean', years=(2020,))
-    source.clean_audit()
+    from functools import partial
+    from pipeline.cli import main
+
+    monkeypatch.setattr('pipeline.sources.hpv.audit.HpvAudit',
+                        partial(HpvAudit, raw_dir=raw, clean_dir=tmp_path / 'clean'))
+    assert main(['hpv-audit', '--step', 'clean', '--year', '2020'], []) == 0
     assert not path.exists()
     with duckdb.connect() as db:
         assert db.execute('SELECT patient, sex, age FROM read_parquet(?) ORDER BY patient',
@@ -251,11 +256,11 @@ def test_missing_month_or_baseline_never_becomes_zero_coverage(tmp_path):
     original = path.read_bytes()
     path.unlink()
     with pytest.raises(ValueError, match='every published monthly'):
-        source.compute_audit()
+        HpvAudit(clean_dir=clean, years=(2020, 2021)).compute()
     path.write_bytes(original)
     (clean / 'legacy.json').unlink()
     with pytest.raises(ValueError, match='complete TabNet D1 history'):
-        source.compute_audit()
+        HpvAudit(clean_dir=clean, years=(2020, 2021)).compute()
 
 
 def test_above_100_is_kept_and_invalid_export_preserves_previous_files(tmp_path):
@@ -362,17 +367,17 @@ def test_current_year_uses_catalog_boundary_and_rejects_internal_gaps(tmp_path):
         'source_url': f'https://dadosabertos.saude.gov.br/dataset/pni-{current}',
         'checked_at': datetime.now(UTC).date().isoformat(),
     }))
-    source.compute_audit()
+    HpvAudit(clean_dir=clean, years=tuple(range(2020, current + 1))).compute()
     assert json.loads((clean / 'audit.json').read_text())['records']
     (clean / 'months' / str(current) / '01.parquet').unlink()
     with pytest.raises(ValueError, match='every published monthly'):
-        source.compute_audit()
+        HpvAudit(clean_dir=clean, years=tuple(range(2020, current + 1))).compute()
 
 
 def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_path, monkeypatch):
     import pytest
     from pipeline.download import DownloadError, RemoteInfo
-    from pipeline.sources.hpv import CATALOG_ROOT, MONTHS, S3_ROOT
+    from pipeline.sources.hpv.audit import CATALOG_ROOT, MONTHS, S3_ROOT
     current = datetime.now(UTC).year
     clean = tmp_path / 'clean'
     folder = clean / 'months' / str(current)
@@ -400,20 +405,19 @@ def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_p
             return RemoteInfo(100, 10)
 
     transport = CatalogTransport()
-    monkeypatch.setattr('pipeline.sources.hpv.download_fixed_inputs', lambda *args: None)
-    monkeypatch.setattr('pipeline.sources.hpv.download_official_cohorts', lambda *args: None)
+    monkeypatch.setattr('pipeline.sources.hpv.audit.download_fixed_inputs', lambda *args: None)
     monkeypatch.setattr('pipeline.download.time.sleep', lambda seconds: None)
-    source = HpvSource(clean_dir=clean, years=(current,), transport=transport)
-    source.download_audit()
+    source = HpvAudit(clean_dir=clean, years=(current,), transport=transport)
+    source.download()
     assert transport.inspected == [f'{S3_ROOT}vacinacao_{name}_{current}_csv.zip' for name in ('jan', 'fev')]
     assert json.loads((clean / 'availability.json').read_text())['months'] == [1, 2]
     transport.catalog_months = [1, 3]
     with pytest.raises(ValueError, match='internal gaps'):
-        source.download_audit()
+        source.download()
     transport.catalog_months = [1, 2]
     transport.fail = True
     with pytest.raises(DownloadError, match='advertised resource unavailable'):
-        source.download_audit()
+        source.download()
 
 
 def test_official_qualified_cohorts_override_the_local_audit(tmp_path):
@@ -432,7 +436,7 @@ def test_official_qualified_cohorts_override_the_local_audit(tmp_path):
     source.compute()
     data = json.loads((clean / 'computed.json').read_text())
     assert data['municipalities']['110001']['value'] == 20
-    source.compute_audit()
+    HpvAudit(clean_dir=clean, years=(2020, 2021)).compute()
     audit = json.loads((clean / 'audit.json').read_text())
     assert next(row for row in audit['records'] if row['municipality'] == '110001'
                 and row['sex'] == 'F' and row['year'] == 2021)['vaccinated'] == 1
@@ -479,3 +483,46 @@ def test_indicator_clean_does_not_run_optional_patient_audit(tmp_path):
     (raw / 'vacinacao_jan_2020_csv.zip').write_bytes(b'incomplete audit download')
     HpvSource(raw_dir=raw, clean_dir=tmp_path / 'clean', years=(2020,)).clean()
     assert (raw / 'vacinacao_jan_2020_csv.zip').exists()
+
+
+def test_audit_command_reconstructs_locally_without_changing_official_publication(tmp_path, monkeypatch):
+    from functools import partial
+    from pipeline.cli import main
+
+    source, site, clean = prepared_source(tmp_path)
+    source.compute()
+    source.export()
+    previous = {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')}
+    computed = (clean / 'computed.json').read_bytes()
+    monkeypatch.setattr('pipeline.sources.hpv.audit.HpvAudit',
+                        partial(HpvAudit, clean_dir=clean, years=(2020, 2021)))
+
+    assert main(['hpv-audit', '--step', 'compute'], []) == 0
+    audit = json.loads((clean / 'audit.json').read_text())
+    assert audit == {'records': [
+        {'municipality': '110001', 'sex': sex, 'year': year, 'vaccinated': 1}
+        for sex in ('F', 'M') for year in (2020, 2021)]}
+    assert (clean / 'computed.json').read_bytes() == computed
+    assert {p.relative_to(site): p.read_bytes() for p in site.rglob('*.json')} == previous
+    assert main(['hpv-audit', '--step', 'compute', '--year', '2020'], []) == 1
+
+
+def test_export_preserves_other_profile_indicators_and_source_metadata(tmp_path):
+    source, site, _ = prepared_source(tmp_path)
+    (site / 'profiles').mkdir()
+    (site / 'profiles/RO.json').write_text(json.dumps({
+        'uf': 'RO', 'indicators': {'sentinel': {'all': {'value': 42}}},
+        'municipalities': {'110001': {'name': 'Preservado'}},
+    }))
+    (site / 'manifest.json').write_text(json.dumps({
+        'sources': {'sentinel': {'extracted_at': '2026-10-01'}},
+        'indicators': {'sentinel': {'all': {'latest': 2025}}},
+    }))
+    source.compute()
+    source.export()
+    profile = json.loads((site / 'profiles/RO.json').read_text())
+    assert profile['indicators']['sentinel'] == {'all': {'value': 42}}
+    assert profile['municipalities'] == {'110001': {'name': 'Preservado'}}
+    manifest = json.loads((site / 'manifest.json').read_text())
+    assert manifest['sources']['sentinel'] == {'extracted_at': '2026-10-01'}
+    assert manifest['indicators']['sentinel'] == {'all': {'latest': 2025}}

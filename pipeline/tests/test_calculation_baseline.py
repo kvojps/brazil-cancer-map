@@ -92,3 +92,28 @@ def test_painel_calculates_in_memory_without_the_original_state(tmp_path, monkey
     assert (rows, monthly_counts, regions) == (original_rows, original_months, original_regions)
     assert not clean.exists()
     assert not site.exists()
+
+
+def test_hpv_calculates_in_memory_without_the_original_state(tmp_path):
+    from copy import deepcopy
+    from dataclasses import asdict
+
+    from pipeline.sources.hpv.calculation import calculate
+    from pipeline.sources.hpv.persistence import read_census, read_official
+
+    _, site, clean = prepared_source(tmp_path, last_year=2026)
+    official = read_official(clean)
+    census = read_census(clean)
+    listing = json.loads((site / 'municipalities.json').read_text())
+    regions = {m['code']: m['immediate_region'] for m in listing['municipalities']}
+    original = deepcopy((official, census, regions))
+    expected = json.loads((FIXTURES / 'calculation-baseline.json').read_text())['hpv']['json']['computed.json']
+    shutil.rmtree(clean)
+    shutil.rmtree(site)
+
+    result = calculate(official, census, regions)
+
+    assert json.dumps(asdict(result), sort_keys=True) == json.dumps(expected, sort_keys=True)
+    assert (official, census, regions) == original
+    assert not clean.exists()
+    assert not site.exists()
