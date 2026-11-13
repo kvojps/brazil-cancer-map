@@ -500,3 +500,8 @@ Os commits foram feitos na branch atual `hml`, conforme a instrução de
 implementação. Não houve push, PR ou deploy. A publicação dos commits e seus
 links remotos permanece pendente; por isso a issue #16 fica aberta para esse
 registro final. A spec pai #12 permanece aberta.
+
+Após esse registro, o mantenedor aprovou a entrega da #16 e autorizou o push
+em `hml` e o encerramento da issue. O aceite considera as verificações e
+revisões registradas acima. A publicação dos commits e a conclusão ficam
+registradas na #16; isso não encerra a spec pai #12 nem implica deploy.
