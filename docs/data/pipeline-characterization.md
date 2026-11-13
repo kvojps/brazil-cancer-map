@@ -369,3 +369,29 @@ não equivale ao numerador qualificado. Esses pontos estão nos módulos, ADRs e
 nos percursos acima. Não houve ensaio humano de legibilidade nem identificação
 de novo erro funcional durante este passo. A verificação conjunta da spec pai
 #12 permanece separada.
+
+### Verificação final e revisão deste passo
+
+A suíte completa `uv run pytest -q` passou: **220 testes**, em 103,22 s,
+com os mesmos 492 avisos `PerfectSeparationWarning` nas séries sintéticas.
+`uv run mypy` aprovou **66 arquivos**, e `git diff --check` passou.
+O commit de implementação é `f2414a4` na branch atual `hml`.
+
+#### Standards
+
+A revisão independente do diff desde `e749ba0`, seguindo a skill
+`code-review`, não encontrou violações documentadas nem smells acionáveis:
+**0 achados**. A manutenção dos parâmetros do construtor foi tratada como
+preservação da interface pública, sem ampliar o escopo para removê-los.
+
+#### Spec
+
+A revisão independente não encontrou requisitos ausentes, ampliação de escopo
+ou implementação incorreta: **0 achados**. Conferiu cálculo em memória,
+origem compartilhada, referências, revalidação, publicação, auditoria e
+cobertura das fixtures. Os agentes revisaram o código e a documentação;
+usaram os resultados de execução acima, sem repetir a suíte.
+
+Não houve push, PR ou deploy nesta entrega. O vínculo remoto dos commits e
+o encerramento da #15 ficam pendentes de sua publicação; isso não encerra
+a spec pai #12.
