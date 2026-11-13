@@ -395,3 +395,9 @@ usaram os resultados de execução acima, sem repetir a suíte.
 Não houve push, PR ou deploy nesta entrega. O vínculo remoto dos commits e
 o encerramento da #15 ficam pendentes de sua publicação; isso não encerra
 a spec pai #12.
+
+Após esse registro, o mantenedor aprovou a entrega da #15 e autorizou seu
+push em `hml` e o encerramento da issue. O aceite considera as verificações
+e revisões registradas acima; não acrescenta ensaio humano de legibilidade.
+Os links dos commits publicados e a conclusão ficam registrados na #15.
+Esse aceite não encerra a spec pai #12 nem implica deploy em produção.
