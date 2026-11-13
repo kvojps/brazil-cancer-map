@@ -262,6 +262,14 @@ atual e estado antigo, seria necessário fornecer as páginas efetivamente
 usadas naquela publicação em `data/clean/painel/tabnet/`; não as substitua
 por uma consulta atual. `data-2026-11-05` continua sem estado.
 
+### Comparar reorganizações com insumos congelados
+
+Para comparar cálculo, intermediários e JSON de Painel/HPV sem nova aquisição
+nacional, siga a [base de caracterização da pipeline](data/pipeline-characterization.md).
+Ela preserva as referências independentes e nomeia a única diferença permitida
+de metadados: `manifest.json.pipeline_version`. Não substitui a reprodução de
+uma Versão de dados nacional.
+
 ## Nível 3 — Refazer da origem
 
 Baixa os insumos disponíveis hoje, limpa, calcula, valida e exporta. As Fontes podem regravar séries: não há promessa de igualdade com uma Release antiga. A comparação é com referências oficiais e com as validações abaixo. A carga completa não foi repetida para este guia.

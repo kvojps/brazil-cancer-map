@@ -1,0 +1,2903 @@
+{
+  "painel": {
+    "json": {
+      "monthly_alerts.json": [],
+      "extract.json": {
+        "extracted_at": "2026-10-17"
+      },
+      "layers/lung-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/lung.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": {
+          "value": 100,
+          "label": "o que a lei garante"
+        }
+      },
+      "layers/colorectal-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/colorectal.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": {
+          "value": 100,
+          "label": "o que a lei garante"
+        }
+      },
+      "layers/prostate-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": null,
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/prostate.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": null,
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": null
+      },
+      "layers/cervix-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/cervix.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": {
+          "value": 100,
+          "label": "o que a lei garante"
+        }
+      },
+      "layers/breast-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/breast.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": {
+          "value": 100,
+          "label": "o que a lei garante"
+        }
+      },
+      "layers/all-profiles.json": {
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A",
+            "series_id": "municipality:110020"
+          }
+        },
+        "series": {
+          "municipality:110020": [
+            {
+              "year": 2014,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2015,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2016,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2017,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2018,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2019,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2020,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2021,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2022,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2023,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2024,
+              "provisional": false,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2025,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            },
+            {
+              "year": 2026,
+              "provisional": true,
+              "value": 40.0,
+              "without_treatment_info": 10.0
+            }
+          ]
+        },
+        "uf_trends": {
+          "11": "stable"
+        }
+      },
+      "layers/all.json": {
+        "period": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "quality": {
+          "11": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          }
+        },
+        "municipalities": {
+          "110020": {
+            "origin": "municipality",
+            "status": "far",
+            "status_note": null,
+            "trend": "stable",
+            "value": 40.0,
+            "without_treatment_info": 10.0,
+            "quality_band": "A"
+          }
+        },
+        "reference": {
+          "value": 100,
+          "label": "o que a lei garante"
+        }
+      }
+    },
+    "parquet": {
+      "cases.parquet": {
+        "columns": [
+          "year",
+          "municipality",
+          "cancer_type",
+          "provisional",
+          "cases",
+          "within_60_days",
+          "without_treatment_info",
+          "chemo_radio",
+          "chemo_radio_within_60_days"
+        ],
+        "rows": [
+          [
+            2014,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2014,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2014,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2014,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2014,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2014,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2015,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2015,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2015,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2015,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2015,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2015,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2016,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2016,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2016,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2016,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2016,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2016,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2017,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2017,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2017,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2017,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2017,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2017,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2018,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2018,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2018,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2018,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2018,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2018,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2019,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2019,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2019,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2019,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2019,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2019,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2020,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2020,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2020,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2020,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2020,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2020,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2021,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2021,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2021,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2021,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2021,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2021,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2022,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2022,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2022,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2022,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2022,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2022,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2023,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2023,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2023,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2023,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2023,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2023,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2024,
+            "110020",
+            "all",
+            false,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2024,
+            "110020",
+            "breast",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2024,
+            "110020",
+            "cervix",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2024,
+            "110020",
+            "colorectal",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2024,
+            "110020",
+            "lung",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2024,
+            "110020",
+            "prostate",
+            false,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2025,
+            "110020",
+            "all",
+            true,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2025,
+            "110020",
+            "breast",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2025,
+            "110020",
+            "cervix",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2025,
+            "110020",
+            "colorectal",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2025,
+            "110020",
+            "lung",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2025,
+            "110020",
+            "prostate",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2026,
+            "110020",
+            "all",
+            true,
+            1000,
+            600,
+            100,
+            500,
+            200
+          ],
+          [
+            2026,
+            "110020",
+            "breast",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2026,
+            "110020",
+            "cervix",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2026,
+            "110020",
+            "colorectal",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2026,
+            "110020",
+            "lung",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ],
+          [
+            2026,
+            "110020",
+            "prostate",
+            true,
+            200,
+            120,
+            20,
+            100,
+            40
+          ]
+        ]
+      },
+      "months.parquet": {
+        "columns": [
+          "month",
+          "first_treatment",
+          "cases"
+        ],
+        "rows": [
+          [
+            "2014-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2014-03",
+            "surgery",
+            400
+          ],
+          [
+            "2014-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2015-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2015-03",
+            "surgery",
+            400
+          ],
+          [
+            "2015-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2016-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2016-03",
+            "surgery",
+            400
+          ],
+          [
+            "2016-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2017-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2017-03",
+            "surgery",
+            400
+          ],
+          [
+            "2017-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2018-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2018-03",
+            "surgery",
+            400
+          ],
+          [
+            "2018-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2019-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2019-03",
+            "surgery",
+            400
+          ],
+          [
+            "2019-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2020-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2020-03",
+            "surgery",
+            400
+          ],
+          [
+            "2020-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2021-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2021-03",
+            "surgery",
+            400
+          ],
+          [
+            "2021-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2022-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2022-03",
+            "surgery",
+            400
+          ],
+          [
+            "2022-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2023-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2023-03",
+            "surgery",
+            400
+          ],
+          [
+            "2023-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2024-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2024-03",
+            "surgery",
+            400
+          ],
+          [
+            "2024-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2025-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2025-03",
+            "surgery",
+            400
+          ],
+          [
+            "2025-03",
+            "without_treatment_info",
+            100
+          ],
+          [
+            "2026-03",
+            "chemo_radio",
+            500
+          ],
+          [
+            "2026-03",
+            "surgery",
+            400
+          ],
+          [
+            "2026-03",
+            "without_treatment_info",
+            100
+          ]
+        ]
+      }
+    }
+  },
+  "hpv": {
+    "json": {
+      "computed.json": {
+        "period": {
+          "first_year": 2020,
+          "last_year": 2026,
+          "latest": 2025,
+          "trend": [],
+          "provisional": [
+            2026
+          ],
+          "single_dose_year": 2024,
+          "denominator_year": 2022
+        },
+        "reference": {
+          "value": 90,
+          "label": "meta para 2030"
+        },
+        "municipalities": {
+          "110001": {
+            "origin": "municipality",
+            "value": 0.8333333333333334,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "trend": null,
+            "denominator_note": null,
+            "quality_band": null,
+            "without_treatment_info": null,
+            "series_id": "municipality:110001"
+          },
+          "110002": {
+            "origin": "immediate_region",
+            "value": 0.7575757575757576,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "trend": null,
+            "denominator_note": null,
+            "quality_band": null,
+            "without_treatment_info": null,
+            "series_id": "immediate_region:r1"
+          },
+          "110003": {
+            "origin": "insufficient",
+            "value": null,
+            "status": null,
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": null,
+                "status": null,
+                "status_note": null
+              },
+              "M": {
+                "value": null,
+                "status": null,
+                "status_note": null
+              }
+            },
+            "trend": null,
+            "denominator_note": null,
+            "quality_band": null,
+            "without_treatment_info": null,
+            "series_id": null
+          }
+        },
+        "series": {
+          "municipality:110001": [
+            {
+              "year": 2020,
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2021,
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2022,
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2023,
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2024,
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": true,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2025,
+              "value": 0.8333333333333334,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.6666666666666667,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2026,
+              "value": 0.0,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": true,
+              "without_treatment_info": null
+            }
+          ],
+          "immediate_region:r1": [
+            {
+              "year": 2020,
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2021,
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2022,
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2023,
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2024,
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": true,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2025,
+              "value": 0.7575757575757576,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 1.5151515151515151,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": false,
+              "without_treatment_info": null
+            },
+            {
+              "year": 2026,
+              "value": 0.0,
+              "status": "far",
+              "status_note": null,
+              "by_sex": {
+                "F": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                },
+                "M": {
+                  "value": 0.0,
+                  "status": "far",
+                  "status_note": null
+                }
+              },
+              "single_dose": false,
+              "provisional": true,
+              "without_treatment_info": null
+            }
+          ]
+        }
+      },
+      "official.json": {
+        "source_url": "https://example.test/official-cohorts",
+        "extracted_at": "2026-11-05",
+        "years": [
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "records": [
+          {
+            "year": 2020,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2020,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2020,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2020,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2020,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2020,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2021,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2021,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2021,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2021,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2021,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2021,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2022,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2022,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2022,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2022,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2022,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2022,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2023,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2023,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2023,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2023,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2023,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2023,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2024,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2024,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2024,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2024,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2024,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2024,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2025,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 60,
+            "coverage": 0.0
+          },
+          {
+            "year": 2025,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 1,
+            "population": 60,
+            "coverage": 0.016666666666666666
+          },
+          {
+            "year": 2025,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2025,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2025,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2025,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110001",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 60,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110001",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 60,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110002",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110002",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110003",
+            "sex": "Feminino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          },
+          {
+            "year": 2026,
+            "municipality": "110003",
+            "sex": "Masculino",
+            "vaccinated": 0,
+            "population": 6,
+            "coverage": 0.0
+          }
+        ]
+      }
+    },
+    "parquet": {
+      "census.parquet": {
+        "columns": [
+          "municipality",
+          "sex",
+          "age",
+          "population"
+        ],
+        "rows": [
+          [
+            "110001",
+            "F",
+            9,
+            10
+          ],
+          [
+            "110001",
+            "F",
+            10,
+            10
+          ],
+          [
+            "110001",
+            "F",
+            11,
+            10
+          ],
+          [
+            "110001",
+            "F",
+            12,
+            10
+          ],
+          [
+            "110001",
+            "F",
+            13,
+            10
+          ],
+          [
+            "110001",
+            "F",
+            14,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            9,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            10,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            11,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            12,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            13,
+            10
+          ],
+          [
+            "110001",
+            "M",
+            14,
+            10
+          ],
+          [
+            "110002",
+            "F",
+            9,
+            1
+          ],
+          [
+            "110002",
+            "F",
+            10,
+            1
+          ],
+          [
+            "110002",
+            "F",
+            11,
+            1
+          ],
+          [
+            "110002",
+            "F",
+            12,
+            1
+          ],
+          [
+            "110002",
+            "F",
+            13,
+            1
+          ],
+          [
+            "110002",
+            "F",
+            14,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            9,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            10,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            11,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            12,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            13,
+            1
+          ],
+          [
+            "110002",
+            "M",
+            14,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            9,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            10,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            11,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            12,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            13,
+            1
+          ],
+          [
+            "110003",
+            "F",
+            14,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            9,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            10,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            11,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            12,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            13,
+            1
+          ],
+          [
+            "110003",
+            "M",
+            14,
+            1
+          ]
+        ]
+      }
+    }
+  }
+}

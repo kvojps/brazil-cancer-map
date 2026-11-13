@@ -172,6 +172,11 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
 5. Se o contrato mudar, atualize a spec e seus consumidores no site. Registre
    insumos e validações em `data-sources.md` e método na Metodologia.
 
+A base anterior à reorganização, os dois percursos de leitura da pipeline e o
+procedimento de comparação com fixtures estão em
+[Caracterização da pipeline](data/pipeline-characterization.md). Use essa base
+para conferir cálculo, intermediários, documentos e orquestração em cada passo.
+
 ## Deploy: Cloudflare Workers
 
 Configuração registrada no repositório, sem executar deploy nesta verificação:
