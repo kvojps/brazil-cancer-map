@@ -189,10 +189,12 @@ flags. A publicação usa os JSON commitados e não executa o pipeline.
 ## Contribuir
 
 Abra uma [GitHub Issue](https://github.com/kvojps/brazil-cancer-map/issues)
-para relatar problema ou propor mudança. GitHub Issues é o canal externo;
-o trabalho aceito é acompanhado no tracker local, conforme
-[as convenções do tracker](agents/issue-tracker.md). Os esforços são arquivados
-e removidos depois de suas decisões vigentes serem registradas no repositório.
+para relatar problema ou propor mudança. Issues e specs de trabalho são
+acompanhadas no próprio GitHub, conforme
+[as convenções do tracker](agents/issue-tracker.md). Descreva contexto,
+resultado esperado e critérios de aceite. Vincule o PR à issue com
+`Closes #<n>` quando aplicável. Decisões permanentes e evidências necessárias
+ficam na spec, nos ADRs e em `docs/`.
 
 Antes de alterar uma regra, leia a seção pertinente da [spec](spec.md) e os
 [ADRs](adr/). Use os termos do [glossário](../GLOSSARY.md). Código, nomes de

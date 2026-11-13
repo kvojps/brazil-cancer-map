@@ -4,7 +4,7 @@ O projeto é o Observatório do Câncer no Brasil. A **spec** é [`docs/spec.md`
 
 **Guias:** para setup, testes e contribuição, leia [`docs/development.md`](docs/development.md); para atualizar e publicar dados, [`docs/data-update.md`](docs/data-update.md); para verificar ou reproduzir dados, [`docs/reproducibility.md`](docs/reproducibility.md). Mudança em comando do CLI, fluxo de atualização ou pré-requisito atualiza o guia correspondente no mesmo commit.
 
-**Tracker:** os esforços vivem em `.scratch/<feature>/`. Antes de excluir um esforço concluído, registre as decisões vigentes na spec e nos ADRs e preserve as evidências necessárias em `docs/`, sem referências ao esforço. O responsável faz a exclusão; consulte o ciclo de vida em [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+**Tracker:** issues e specs de trabalho ficam no [GitHub Issues](https://github.com/kvojps/brazil-cancer-map/issues). Para criar, consultar, organizar ou fechar tickets, siga [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md). Decisões permanentes e evidências necessárias ficam na spec, nos ADRs e em `docs/`.
 
 Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15): os JSON em `site/public/dados/`.
 
@@ -13,7 +13,7 @@ Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15):
 
 `data/raw/` e `data/clean/` são locais e ficam fora do git.
 
-**Fechar um ticket:** ao terminar um ticket, marque todas as caixas de critério, troque a linha de status para `**Status:** resolved` e acrescente ao fim do arquivo, sob `## Comments`, os commits que o resolveram. Faça isso no mesmo commit da última mudança do ticket.
+**Fechar um ticket:** marque os critérios atendidos, registre a solução e os links para commits ou PR na issue e feche como concluída quando todos os critérios estiverem atendidos. Use `Closes #<n>` no PR quando aplicável.
 
 **Idioma:** código e commits em inglês: identificadores, módulos, nomes de arquivo, flags do CLI, testes, comentários, docstrings e mensagens de commit. Em português ficam os textos que o público lê no site e os documentos (spec, tickets, glossário, README). Ao traduzir um termo do `GLOSSARY.md` para o código, use sempre a mesma palavra em inglês (por exemplo Tendência → `trend`, Situação → `status`, Região imediata → `immediate_region`).
 
@@ -21,12 +21,12 @@ Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15):
 
 ### Issue tracker
 
-Issues live as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+Issues e specs de trabalho ficam no GitHub Issues de `kvojps/brazil-cancer-map`. Veja `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-Default five-role vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix), recorded as `Status:` lines. See `docs/agents/triage-labels.md`.
+Cinco labels: needs-triage, needs-info, ready-for-agent, ready-for-human e wontfix. Veja `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Contexto único: `GLOSSARY.md` e `docs/adr/` na raiz. Veja `docs/agents/domain.md`.

@@ -1,40 +1,52 @@
-# Issue tracker: Local Markdown
+# Tracker: GitHub Issues
 
-Os tickets e as specs de trabalho vivem em `.scratch/<feature>/`. A spec vigente do produto está em `docs/spec.md`; em divergência, vale o ADR mais recente em `docs/adr/`.
+Issues e specs de trabalho ficam em
+https://github.com/kvojps/brazil-cancer-map/issues.
+Use o CLI `gh` dentro deste repositório.
 
-## Conventions
+A spec vigente do produto continua em `docs/spec.md`.
+Em divergência, vale o ADR mais recente em `docs/adr/`.
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`, or a named `spec-*.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+## Operações
 
-## When a skill says "publish to the issue tracker"
+- Confirme o destino com `gh repo view --json nameWithOwner`.
+- Crie issues com `gh issue create --title "..." --body-file <arquivo>`.
+- Leia com `gh issue view <n> --json number,title,body,labels,comments`.
+- Liste com `gh issue list --state open`.
+- Comente com `gh issue comment <n> --body-file <arquivo>`.
+- Aplique ou remova labels com `gh issue edit <n> --add-label "..."` ou `--remove-label "..."`.
+- Publique tickets e specs de trabalho como issues, sem duplicá-los em arquivos locais.
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+## Organização
 
-## When a skill says "fetch the relevant ticket"
+Cada issue descreve contexto, resultado esperado e critérios de aceite.
+Use sub-issues para dividir esforços e dependências nativas para
+bloqueios. Quando indisponíveis, use listas de tarefas no pai e
+referências `Part of #<n>` e `Blocked by: #<n>` nas filhas.
+Uma issue está desbloqueada quando todos os seus bloqueadores estão fechados.
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
+Para exploração com wayfinder, a issue principal guarda notas,
+decisões e dúvidas e usa o label `wayfinder:map`. As filhas usam labels
+`wayfinder:<tipo>` (`research`, `prototype`, `grilling` ou `task`).
+A próxima filha é a primeira na ordem do mapa que esteja aberta,
+desbloqueada e sem responsável. Assuma uma filha atribuindo-a a você
+com `gh issue edit <n> --add-assignee @me`; registre a resposta antes
+de fechá-la e acrescente a referência na issue principal.
+Crie os labels de wayfinder ao adotar esse fluxo, caso ainda não existam.
 
-## Wayfinding operations
+## Conclusão
 
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
+Marque os critérios atendidos e registre a solução com links para
+os commits ou PR. Use `Closes #<n>` no PR quando aplicável.
+Feche como concluída somente quando os critérios estiverem atendidos.
+Para fechamento manual, publique a explicação com `gh issue comment`
+e então execute `gh issue close <n>`.
 
-- **Map**: `.scratch/<effort>/map.md` (the Notes / Decisions-so-far / Fog body).
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+Decisões permanentes e evidências necessárias ficam na spec,
+nos ADRs e em `docs/`.
 
-## Ciclo de vida
+`.scratch/` pode guardar rascunhos temporários; não é um tracker.
 
-GitHub Issues é o canal externo. O que exigir trabalho vira ticket local no tracker.
-Ao concluir um esforço, registre suas decisões vigentes em `docs/spec.md` e
-`docs/adr/` e copie para `docs/` as evidências necessárias para operar, verificar
-ou entender o projeto. Confira que nenhum arquivo permanente depende do esforço.
-Só então o responsável exclui o diretório do esforço; o agente não faz a exclusão.
-Fora do tracker, apenas `AGENTS.md` e `docs/agents/` podem citar a convenção da
-pasta, nunca um esforço ou arquivo específico.
+## Pull requests como entrada de triagem
+
+**PRs as a request surface: no.**
