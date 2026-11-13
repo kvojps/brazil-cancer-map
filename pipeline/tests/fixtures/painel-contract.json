@@ -1,0 +1,1232 @@
+{
+  "manifest.json": {
+    "pipeline_version": "0.1.0+79992ad-dirty",
+    "sources": {
+      "painel": {
+        "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+        "extracted_at": "2026-10-17"
+      }
+    },
+    "indicators": {
+      "within_60_days": {
+        "all": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "breast": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "cervix": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "prostate": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "colorectal": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        },
+        "lung": {
+          "first_year": 2014,
+          "last_year": 2026,
+          "provisional": [
+            2025,
+            2026
+          ],
+          "latest": 2024,
+          "trend": [
+            2015,
+            2024
+          ],
+          "trend_cases": "chemo_radio",
+          "value_cases": "chemo_radio",
+          "quality_years": [
+            2020,
+            2024
+          ]
+        }
+      }
+    }
+  },
+  "municipalities.json": {
+    "municipalities": [
+      {
+        "code": "110020",
+        "name": "Porto Velho",
+        "uf": "RO",
+        "immediate_region": "110001"
+      }
+    ]
+  },
+  "profiles/RO.json": {
+    "uf": "RO",
+    "indicators": {
+      "within_60_days": {
+        "all": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": true,
+          "reference": {
+            "value": 100,
+            "label": "o que a lei garante"
+          },
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": "far",
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        },
+        "breast": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": true,
+          "reference": {
+            "value": 100,
+            "label": "o que a lei garante"
+          },
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": "far",
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        },
+        "cervix": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": true,
+          "reference": {
+            "value": 100,
+            "label": "o que a lei garante"
+          },
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": "far",
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        },
+        "prostate": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": false,
+          "reference": null,
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": null,
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        },
+        "colorectal": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": true,
+          "reference": {
+            "value": 100,
+            "label": "o que a lei garante"
+          },
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": "far",
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        },
+        "lung": {
+          "period": {
+            "first_year": 2014,
+            "last_year": 2026,
+            "provisional": [
+              2025,
+              2026
+            ],
+            "latest": 2024,
+            "trend": [
+              2015,
+              2024
+            ],
+            "trend_cases": "chemo_radio",
+            "value_cases": "chemo_radio",
+            "quality_years": [
+              2020,
+              2024
+            ]
+          },
+          "source": {
+            "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+            "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+            "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+            "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+          },
+          "has_status": true,
+          "reference": {
+            "value": 100,
+            "label": "o que a lei garante"
+          },
+          "quality": {
+            "band": "A",
+            "without_treatment_info": 10.0
+          },
+          "uf_trend": "stable",
+          "municipalities": {
+            "110020": {
+              "origin": "municipality",
+              "status": "far",
+              "status_note": null,
+              "trend": "stable",
+              "value": 40.0,
+              "without_treatment_info": 10.0,
+              "quality_band": "A",
+              "series_id": "municipality:110020"
+            }
+          },
+          "series": {
+            "municipality:110020": [
+              {
+                "year": 2014,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2015,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2016,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2017,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2018,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2019,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2020,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2021,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2022,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2023,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2024,
+                "provisional": false,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2025,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              },
+              {
+                "year": 2026,
+                "provisional": true,
+                "value": 40.0,
+                "without_treatment_info": 10.0
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "map/within_60_days/lung.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "lung",
+    "has_status": true,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": "far",
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": {
+      "value": 100,
+      "label": "o que a lei garante"
+    }
+  },
+  "map/within_60_days/colorectal.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "colorectal",
+    "has_status": true,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": "far",
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": {
+      "value": 100,
+      "label": "o que a lei garante"
+    }
+  },
+  "map/within_60_days/prostate.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "prostate",
+    "has_status": false,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": null,
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": null
+  },
+  "map/within_60_days/cervix.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "cervix",
+    "has_status": true,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": "far",
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": {
+      "value": 100,
+      "label": "o que a lei garante"
+    }
+  },
+  "map/within_60_days/breast.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "breast",
+    "has_status": true,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": "far",
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": {
+      "value": 100,
+      "label": "o que a lei garante"
+    }
+  },
+  "map/within_60_days/all.json": {
+    "indicator": "within_60_days",
+    "cancer_type": "all",
+    "has_status": true,
+    "source": {
+      "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",
+      "url": "ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Dados/",
+      "conditions": "Dados abertos do Ministério da Saúde (DATASUS), com citação da fonte. Dicionário e nota técnica: ftp://ftp.datasus.gov.br/dissemin/publicos/painel_oncologia/Doc/",
+      "period": "Anos de diagnóstico 2014–2026 (2025, 2026 provisórios). Tendência 2015–2024 e valor de 2024 medidos nos casos tratados com quimioterapia ou radioterapia; % sem informação de 2024 sobre todos os casos diagnosticados; faixa de qualidade 2020–2024, por UF, sobre todos os casos diagnosticados"
+    },
+    "period": {
+      "first_year": 2014,
+      "last_year": 2026,
+      "provisional": [
+        2025,
+        2026
+      ],
+      "latest": 2024,
+      "trend": [
+        2015,
+        2024
+      ],
+      "trend_cases": "chemo_radio",
+      "value_cases": "chemo_radio",
+      "quality_years": [
+        2020,
+        2024
+      ]
+    },
+    "quality": {
+      "11": {
+        "band": "A",
+        "without_treatment_info": 10.0
+      }
+    },
+    "municipalities": {
+      "110020": {
+        "origin": "municipality",
+        "status": "far",
+        "status_note": null,
+        "trend": "stable",
+        "value": 40.0,
+        "without_treatment_info": 10.0,
+        "quality_band": "A"
+      }
+    },
+    "reference": {
+      "value": 100,
+      "label": "o que a lei garante"
+    }
+  }
+}

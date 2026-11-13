@@ -167,3 +167,24 @@ Em 06/11/2026 foram executados `update --source inca` e `export-release`, em pas
 Depois dessa preparação, a Release `data-2026-11-06` foi publicada pelo
 responsável e os assets públicos foram restaurados e recalculados. A prova
 completa e os limites estão em [Versão de dados rastreável](data/traceable-version.md).
+
+## Referências do tratamento no estado
+
+No código corrigido, `painel.clean` preserva em `clean/painel/tabnet/` apenas
+as páginas oficiais necessárias aos anos observados: todos os casos e o
+recorte de quimio e radio. Use `clean/` e `dados/` da mesma proposta revisada
+em `export-release --state-dir`. O asset `state-painel.tar.gz` preserva essas
+páginas, sem incluir o cache bruto, DBC ou extratos de pacientes. A exclusão
+da auditoria HPV e o limite de menos de 2 GiB por asset continuam vigentes.
+
+A preparação inicial exige os DBC e as páginas TabNet correspondentes.
+Depois de restaurar estado e contrato no código gerador, `run --source painel
+--step compute`, `validate` e `export` dispensam rede e arquivos brutos.
+A validação continua comparando contagens e percentuais nas duas tabelas;
+páginas ausentes, inválidas ou divergentes impedem a publicação.
+
+A [prova com fixture](data/painel-state-recalculation.md) verifica o fluxo
+público, isolamento de snapshots e preservação da versão anterior em falha.
+Não basta reempacotar um estado antigo: as páginas não podem ser recuperadas
+do contrato nem substituídas por consultas atuais. Os limites das Releases
+existentes descritos acima continuam válidos; nenhuma foi alterada.

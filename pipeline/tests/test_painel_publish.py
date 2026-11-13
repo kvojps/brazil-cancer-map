@@ -49,15 +49,15 @@ def build_source(
         for cancer_type in CANCER_TYPES
     }
     write_clean(clean, counts, steady_months() if months is None else months, extracted_at="2026-10-17")
-    (raw / "tabnet" / "chemo_radio").mkdir(parents=True)
+    (clean / "tabnet" / "chemo_radio").mkdir(parents=True)
     for year in YEARS:
         on_time = tabnet_on_time_in_2020 if year == 2020 else 600
         without_info = tabnet_without_info_in_2020 if year == 2020 else 100
         page = tabnet_page({"11 Rondônia": (on_time, 0, 1000 - on_time - without_info, without_info)})
-        (raw / "tabnet" / f"{year}.html").write_text(page)
+        (clean / "tabnet" / f"{year}.html").write_text(page)
         on_time = chemo_radio_on_time_in_2020 if year == 2020 else 200
         page = tabnet_page({"11 Rondônia": (on_time, 0, 500 - on_time, 0)})
-        (raw / "tabnet" / "chemo_radio" / f"{year}.html").write_text(page)
+        (clean / "tabnet" / "chemo_radio" / f"{year}.html").write_text(page)
     listing = {"municipalities": [{"code": "110020", "name": "Porto Velho", "uf": "RO", "immediate_region": "110001"}]}
     (site).mkdir()
     (site / "municipalities.json").write_text(json.dumps(listing))

@@ -2,6 +2,7 @@
 
 import json
 import re
+import shutil
 import statistics
 import sys
 import tempfile
@@ -496,7 +497,7 @@ class PainelValidationError(Exception):
 
 
 class TabnetTable(NamedTuple):
-    """One TabNet comparison: which cases it covers, and where it is saved under `raw/painel/tabnet/`."""
+    """One TabNet comparison: case filters and relative directory in the snapshot."""
 
     label: str
     directory: str
@@ -701,7 +702,23 @@ class PainelSource:
         # DATASUS rewrites every file each month; the newest file date is the extract's.
         written = max(path.stat().st_mtime for path in files)
         extracted_at = datetime.fromtimestamp(written, UTC).date().isoformat()
+        # Preserve only the official comparisons for the observed diagnosis years.
+        # Later validation must not depend on a mutable cache on the original machine.
+        pages = {
+            Path(table.directory) / f"{year}.html": self._tabnet_page(table, year).read_bytes()
+            for year in sorted({year for year, _, _ in counts.by_municipality})
+            for table in TABNET_TABLES
+        }
+        for page in pages.values():
+            parse_tabnet(page.decode("latin-1"))
         write_clean(self._clean_dir, counts.by_municipality, counts.by_month, extracted_at=extracted_at)
+        references = self._clean_dir / "tabnet"
+        if references.exists():
+            shutil.rmtree(references)
+        for name, page in pages.items():
+            destination = references / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(page)
 
     def compute(self) -> None:
         rows = read_clean(self._clean_dir)
@@ -747,7 +764,7 @@ class PainelSource:
         problems = []
         for table in TABNET_TABLES:
             for year, by_uf in sorted(by_year.items()):
-                page = self._tabnet_page(table, year)
+                page = self._clean_dir / "tabnet" / table.directory / f"{year}.html"
                 if not page.exists():
                     problems.append(f"{table.label}, {year}: no TabNet table to compare with")
                     continue
@@ -758,6 +775,8 @@ class PainelSource:
                         uf: UfShare(c.within_60_days, c.cases, c.without_treatment_info) for uf, c in by_uf.items()
                     }
                 official = parse_tabnet(page.read_text("latin-1"))
+                if not official:
+                    problems.append(f"{table.label}, {year}: empty TabNet table")
                 problems += [
                     f"{table.label}, {problem}" for problem in compare_with_tabnet(ours, official, year=year)
                 ]

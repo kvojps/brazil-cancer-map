@@ -186,7 +186,7 @@ compara todos os JSON com uma referência de 2026, sob relógios de 2026,
 `pipeline_version` identifica o código executado na comparação. Veja os
 [comandos e limites da evidência](data/hpv-temporal-recalculation.md).
 Não é uma nova reprodução pública de `data-2026-11-06`, nem uma correção
-retroativa de seu commit gerador. O limite de `painel` permanece; a correção de `mesh` está descrita a seguir.
+retroativa de seu commit gerador. As correções atuais de `mesh` e `painel` estão descritas a seguir.
 
 ### Recálculo da malha com o código atual
 
@@ -224,7 +224,43 @@ antigo também não cria o arquivo ausente: é necessário fornecer a lista IBGE
 correspondente àquela publicação em `data/clean/mesh/ibge_municipalities.json`
 antes da validação. Não se deve substituí-la por uma consulta atual nem por
 uma lista derivada da própria malha. `data-2026-11-05` continua sem estado.
-Nenhuma Release foi modificada, e o limite externo do Painel permanece.
+Nenhuma Release foi modificada. A correção atual do Painel está descrita a seguir.
+
+### Recálculo do tratamento com o código atual
+
+Estados preparados por `painel.clean` com o código corrigido preservam em
+`data/clean/painel/tabnet/` as páginas de todos os casos (`ANO.html`) e do
+recorte de quimio e radio (`chemo_radio/ANO.html`), para cada ano observado
+nos dados limpos. `state-painel.tar.gz` inclui essas páginas; a restauração
+as disponibiliza sem depender do caminho bruto da máquina original.
+
+Com o contrato e o estado correspondentes restaurados, no código gerador:
+
+```bash
+for step in compute validate export; do
+  uv run --frozen python -m pipeline run --source painel --step "$step" || exit 1
+done
+```
+
+São necessários Python 3.14+, dependências de `uv sync --frozen` e o índice
+municipal do contrato correspondente. Essas três etapas não consultam a rede,
+não exigem os DBC originais nem executam downloads. A preparação inicial
+continua exigindo os DBC e as duas tabelas TabNet por ano. Não use `update`
+para esse recálculo: ele coleta novamente os insumos.
+
+`validate` e `export` leem somente as páginas do estado. Página obrigatória
+ausente, inválida, vazia ou com divergências fora das tolerâncias bloqueia a
+publicação, preservando o contrato anterior. O teste compara todos os JSON,
+tipos, períodos e proveniência com uma referência anterior à mudança;
+`pipeline_version` é conferido separadamente por identificar o código atual.
+Veja [a prova, os comandos e os limites](data/painel-state-recalculation.md).
+
+A garantia vale para estados preparados com o fluxo corrigido. Não é uma
+nova reprodução nacional. `data-2026-11-06` continua sem as páginas nos assets;
+seu código gerador ainda as procura em `data/raw/painel/tabnet/`. Com código
+atual e estado antigo, seria necessário fornecer as páginas efetivamente
+usadas naquela publicação em `data/clean/painel/tabnet/`; não as substitua
+por uma consulta atual. `data-2026-11-05` continua sem estado.
 
 ## Nível 3 — Refazer da origem
 
