@@ -199,6 +199,8 @@ A base anterior à reorganização, os dois percursos de leitura da pipeline e o
 procedimento de comparação com fixtures estão em
 [Caracterização da pipeline](data/pipeline-characterization.md). Use essa base
 para conferir cálculo, intermediários, documentos e orquestração em cada passo.
+A [verificação conjunta da reorganização](data/pipeline-reorganization-verification.md)
+reúne a matriz de critérios, as integrações e a leitura independente dos percursos finais.
 
 ### Navegação do Painel
 

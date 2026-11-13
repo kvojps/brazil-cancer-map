@@ -80,7 +80,7 @@ referência, rode o teste correspondente e confirme falha; restaure a cópia ant
 de prosseguir. Erros funcionais encontrados devem ter issue própria, com insumo,
 resultado observado e esperado. Não devem ser corrigidos junto da reorganização.
 
-## Percurso atual: Indicador do Painel até os JSON
+## Percurso anterior à reorganização: Indicador do Painel até os JSON
 
 1. `pipeline/__main__.py` fornece `SOURCES` à CLI em `pipeline/cli.py`.
    `pipeline/source.py` define as cinco etapas. `pipeline/sources/__init__.py`
@@ -107,7 +107,7 @@ funções, e saber que a contagem começa em `clean` exige ler a coordenação.
 Não houve ensaio com leitor independente nesta etapa; esse aceite pertence à
 spec pai após a reorganização.
 
-## Percurso atual: regra de cálculo até seus efeitos
+## Percurso anterior à reorganização: regra de cálculo até seus efeitos
 
 Exemplo: prazo de até 60 dias, apenas quimio/radio, conforme ADR 0003.
 
@@ -589,3 +589,11 @@ instrução da skill `implement`. Não houve push, PR, deploy, mudança dos JSON
 públicos nem nova aquisição nacional. A publicação dos commits e seus links
 remotos permanece pendente; a #17 fica aberta para esse registro final.
 A spec pai #12 permanece aberta para sua verificação conjunta.
+
+## Verificação conjunta final (#18)
+
+A [verificação conjunta](pipeline-reorganization-verification.md) cruza todos
+os critérios da #12 com as entregas, testes e percursos finais. Registra nova
+comparação com a base #13 e leitura independente por agente aceita pelo
+mantenedor. Os percursos anteriores deste documento são históricos.
+A conclusão da #18 não altera nem encerra a spec pai #12.

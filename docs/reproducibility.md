@@ -275,6 +275,8 @@ relatórios e snapshots com as mesmas entradas e relógio fixo.
 Ela preserva as referências independentes e nomeia a única diferença permitida
 de metadados: `manifest.json.pipeline_version`. Não substitui a reprodução de
 uma Versão de dados nacional.
+A [verificação conjunta final](data/pipeline-reorganization-verification.md)
+registra a comparação com a base anterior à reorganização, hashes e limites.
 
 ## Nível 3 — Refazer da origem
 

@@ -50,6 +50,10 @@ Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `s
 
 ## Revisar antes de publicar
 
+A [verificação conjunta da reorganização](data/pipeline-reorganization-verification.md)
+confere registro, planejador e executor com fixtures, incluindo descarte,
+continuidade e isolamento. Ela não substitui a revisão de uma nova proposta.
+
 1. Leia `update.json`: confira `selected`, `successful`, `failures` e a data da tentativa. Não publique uma tentativa com falhas sem investigar e preparar uma nova proposta coerente.
 2. Compare os contratos: `git diff --no-index --stat site/public/dados /tmp/cancer-update/dados` e depois `git diff --no-index site/public/dados /tmp/cancer-update/dados`. Código de saída 1 significa diferença; os JSON compactos podem produzir diffs extensos.
 3. Confira `/tmp/cancer-update/dados/manifest.json`: commit em `pipeline_version` sem `-dirty`, extrações e proveniência em `sources`, períodos por Indicador e Tipo de câncer em `indicators`. `mesh` e `popsvs` não têm entrada própria no manifesto.
