@@ -15,6 +15,8 @@ Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15):
 
 **Fechar um ticket:** marque os critérios atendidos, registre a solução e os links para commits ou PR na issue e feche como concluída quando todos os critérios estiverem atendidos. Use `Closes #<n>` no PR quando aplicável.
 
+**Issues pai de especificação:** concluir todas as sub-issues não encerra automaticamente a especificação. Antes de fechar a pai, confira todos os critérios da spec e as verificações conjuntas, registre um resumo com links para as entregas e feche somente quando tudo estiver atendido. Se restar trabalho, mantenha a pai aberta e registre-o em novas sub-issues.
+
 **Idioma:** código e commits em inglês: identificadores, módulos, nomes de arquivo, flags do CLI, testes, comentários, docstrings e mensagens de commit. Em português ficam os textos que o público lê no site e os documentos (spec, tickets, glossário, README). Ao traduzir um termo do `GLOSSARY.md` para o código, use sempre a mesma palavra em inglês (por exemplo Tendência → `trend`, Situação → `status`, Região imediata → `immediate_region`).
 
 ## Agent skills
