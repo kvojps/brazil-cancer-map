@@ -18,8 +18,8 @@ from scipy import stats
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
 from pipeline.sources.inca import CAPITALS
-from pipeline.status import classify_status
-from pipeline.trend import weighted_prevalence_trend
+from pipeline.calculation.status import classify_status
+from pipeline.calculation.trend import weighted_prevalence_trend
 
 CITY_UFS = 'SE PA MG RR MS MT PR SC CE GO PB AP AL AM RN TO RS RO PE AC RJ BA MA SP PI ES DF'.split()
 REFERENCE = Path(__file__).resolve().parents[1] / 'references' / 'vigitel.json'

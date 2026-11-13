@@ -47,7 +47,7 @@ def test_invalid_registry_rejected_before_factories_create_output(tmp_path, inva
     with pytest.raises(ValueError):
         create_sources(tmp_path / 'clean', tmp_path / 'dados', registry=definitions)
     assert not (tmp_path / 'dados').exists()
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     with pytest.raises(ValueError):
         update_sources(['consumer'], tmp_path / 'live', tmp_path / 'clean', tmp_path / 'review', registry=definitions)
@@ -63,7 +63,7 @@ def test_invalid_registry_rejected_before_factories_create_output(tmp_path, inva
 ])
 def test_update_uses_new_consumer_relations_and_future_mesh_entries(
         tmp_path, selected, expected, update_with, accept_with):
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     log: list[tuple[str, str]] = []
 
@@ -113,7 +113,7 @@ def test_screening_factories_compute_with_population_only_in_snapshot(tmp_path, 
 
 
 def test_joint_acceptance_cannot_run_consumer_before_selected_input_producer(tmp_path):
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     live, clean, output = (tmp_path / name for name in ('live', 'clean', 'review'))
     live.mkdir()
@@ -135,7 +135,7 @@ def test_joint_acceptance_cannot_run_consumer_before_selected_input_producer(tmp
 def test_independent_group_starts_from_last_accepted_snapshot(tmp_path, fail_consumer):
     import json
 
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     live, clean, output = (tmp_path / name for name in ('live', 'clean', 'review'))
     live.mkdir()

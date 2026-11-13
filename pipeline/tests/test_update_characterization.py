@@ -61,8 +61,8 @@ def scenario(tmp_path, monkeypatch):
     def registry(clean_dir=clean, site_data_dir=live, **kwargs):
         return [WritingSource(name, clean_dir, site_data_dir) for name in NAMES]
 
-    monkeypatch.setattr('pipeline.update.create_sources', registry)
-    monkeypatch.setattr('pipeline.update.datetime', Clock)
+    monkeypatch.setattr('pipeline.operations.update.create_sources', registry)
+    monkeypatch.setattr('pipeline.operations.update.datetime', Clock)
     return live, clean, output, log, failures
 
 
@@ -141,7 +141,7 @@ def test_mesh_failure_discards_every_source(scenario):
 
 @pytest.mark.parametrize('selected', [[], ['missing']])
 def test_invalid_selection_creates_no_output(scenario, selected):
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     live, clean, output, log, _ = scenario
     with pytest.raises(ValueError, match='Select known sources'):

@@ -9,13 +9,13 @@ from typing import Any
 
 import duckdb
 
-from pipeline.cascade import Origin, data_origins
+from pipeline.calculation.cascade import Origin, data_origins
 from pipeline.download import FtpTransport, Transport, fetch, with_retries
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.population import Population
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
-from pipeline.status import classify_status, status_note
-from pipeline.trend import quasi_poisson_trend
+from pipeline.calculation.status import classify_status, status_note
+from pipeline.calculation.trend import quasi_poisson_trend
 
 YEARS = tuple(range(2016, 2026))
 """Fixed historical window: cytopathology must never acquire a new year."""

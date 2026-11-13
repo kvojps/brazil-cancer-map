@@ -4,7 +4,7 @@ from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition
 
 
 def test_population_and_panel_plan_without_constructing_sources():
-    from pipeline.update_plan import plan_update
+    from pipeline.operations.update_plan import plan_update
 
     def forbidden_factory(clean, data, inputs):
         raise AssertionError('Planning must not construct sources')
@@ -29,13 +29,13 @@ def definition(name, **relations):
 
 
 def test_sim_alone_does_not_select_its_population_producer():
-    from pipeline.update_plan import plan_update
+    from pipeline.operations.update_plan import plan_update
 
     assert plan_update(['sim'], SOURCE_DEFINITIONS) == [['sim']]
 
 
 def test_mesh_includes_future_entries_in_registry_order():
-    from pipeline.update_plan import plan_update
+    from pipeline.operations.update_plan import plan_update
 
     registry = (*SOURCE_DEFINITIONS, definition('future'))
     assert plan_update(['mesh'], registry) == [[
@@ -46,7 +46,7 @@ def test_mesh_includes_future_entries_in_registry_order():
 
 def test_expansion_is_transitive_and_acceptance_only_joins_selected_participants():
     from pipeline.sources import SourceInput
-    from pipeline.update_plan import plan_update
+    from pipeline.operations.update_plan import plan_update
 
     registry = (
         definition('population'),
@@ -69,7 +69,7 @@ def test_invalid_selection_and_registry_are_rejected_without_construction():
     import pytest
 
     from pipeline.sources import SourceInput
-    from pipeline.update_plan import plan_update
+    from pipeline.operations.update_plan import plan_update
 
     for selected in ([], ['missing']):
         with pytest.raises(ValueError, match='Select known sources'):

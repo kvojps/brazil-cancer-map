@@ -1,6 +1,6 @@
 import pytest
 
-from pipeline.status import classify_status
+from pipeline.calculation.status import classify_status
 
 
 @pytest.mark.parametrize(('value', 'expected'), [(100, 'reached'), (110, 'reached'), (80, 'near'), (79.99, 'far'), (None, None)])
@@ -14,7 +14,7 @@ def test_smoking_reverses_the_reference_bands(value, expected):
 
 
 def test_values_above_the_possible_keep_their_class_and_carry_a_note():
-    from pipeline.status import status_note
+    from pipeline.calculation.status import status_note
 
     assert classify_status(123, reference=90) == 'reached'
     assert status_note(123, maximum=100) == 'valor acima do esperado, provavelmente erro no registro ou na estimativa de população'

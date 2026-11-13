@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pipeline.download import HttpTransport, Transport, with_retries
-from pipeline.hpv_inputs import download_fixed_inputs
-from pipeline.hpv_official import download_official_cohorts
+from pipeline.sources.hpv.historical_inputs import download_fixed_inputs
+from pipeline.sources.hpv.vaccination_data import download_official_cohorts
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
 from pipeline.sources.hpv.calculation import calculate

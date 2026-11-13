@@ -13,12 +13,12 @@ import datasus_dbc
 import dbfread
 import duckdb
 
-from pipeline.cascade import Origin, data_origins
+from pipeline.calculation.cascade import Origin, data_origins
 from pipeline.download import FtpTransport, Transport, fetch
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.population import Population
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
-from pipeline.trend import quasi_poisson_trend, trend_window
+from pipeline.calculation.trend import quasi_poisson_trend, trend_window
 
 YEARS = tuple(range(2014, 2025))
 WEIGHTS = dict(zip(range(0, 81, 5), (12000, 10000, 9000, 9000, 8000, 8000, 6000,

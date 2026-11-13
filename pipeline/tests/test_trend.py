@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from pipeline.trend import Trend, TrendClass, quasi_poisson_trend
+from pipeline.calculation.trend import Trend, TrendClass, quasi_poisson_trend
 
 YEARS = list(range(2015, 2025))
 

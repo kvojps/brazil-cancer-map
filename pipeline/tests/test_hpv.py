@@ -17,7 +17,7 @@ from pipeline.sources.hpv.audit import HpvAudit
 @pytest.mark.parametrize('execution_year', [2026, 2027, 2030])
 def test_restored_state_reproduces_the_independent_2026_contract(tmp_path, monkeypatch, execution_year):
     from pipeline.publish import pipeline_version
-    from pipeline.release import export_state, restore_state
+    from pipeline.operations.release import export_state, restore_state
 
     source, site, clean = prepared_source(tmp_path, last_year=2026)
     state = tmp_path / 'state'
@@ -101,7 +101,7 @@ def test_refresh_collects_new_years_instead_of_reusing_restored_period(tmp_path,
 
 
 def test_hpv_validation_failure_discards_snapshot_and_preserves_input_state(tmp_path, monkeypatch):
-    from pipeline.update import update_sources
+    from pipeline.operations.update import update_sources
 
     source, site, clean = prepared_source(tmp_path)
     source.compute()

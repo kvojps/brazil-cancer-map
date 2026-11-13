@@ -150,6 +150,6 @@ def test_update_snapshot_isolates_treatment_pages_and_failure_preserves_previous
 
 def test_treatment_state_asset_respects_size_limit(tmp_path, monkeypatch):
     _, clean, site = prepare(tmp_path, monkeypatch)
-    monkeypatch.setattr('pipeline.release.MAX_ASSET_BYTES', 1)
+    monkeypatch.setattr('pipeline.operations.release.MAX_ASSET_BYTES', 1)
     assert main(['export-release', '--data-dir', str(site), '--state-dir', str(clean),
                  '--output', str(tmp_path / 'assets')], []) == 1

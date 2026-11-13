@@ -109,7 +109,7 @@ def test_update_snapshot_retains_mesh_reference_and_isolates_it_from_input(tmp_p
 
 def test_mesh_state_asset_respects_size_limit(tmp_path, monkeypatch):
     _, clean, site = prepare(tmp_path)
-    monkeypatch.setattr('pipeline.release.MAX_ASSET_BYTES', 1)
+    monkeypatch.setattr('pipeline.operations.release.MAX_ASSET_BYTES', 1)
     assert main(['export-release', '--data-dir', str(site), '--state-dir', str(clean),
                  '--output', str(tmp_path / 'assets')], []) == 1
 

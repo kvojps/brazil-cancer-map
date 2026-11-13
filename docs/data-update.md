@@ -170,6 +170,9 @@ Download e limpeza podem ser feitos por ano. `compute` exige o histórico comple
 
 Em 06/11/2026 foram executados `update --source inca` e `export-release`, em pasta temporária, com o contrato atual como entrada e um caminho de estado inicialmente ausente. O INCA usa a referência versionada e não exige estado limpo nem download de rede. Essa execução verifica preparação e exportação tabular; não comprova estado completo, atualização das demais `source`, autenticação GitHub, publicação, restauração ou deploy. `site/public/dados/` permaneceu sem alterações. Os demais comandos, dependências e tratamentos de falha acima vieram da leitura de `pipeline/cli.py`, `pipeline/update.py`, `pipeline/release.py`, `pipeline/publish.py` e das `source`, apoiada nos registros de [Fontes de dados](data-sources.md).
 
+Os caminhos desse registro são históricos; a navegação atual está em
+[Onde localizar planejamento e execução](#onde-localizar-planejamento-e-execução).
+
 Depois dessa preparação, a Release `data-2026-11-06` foi publicada pelo
 responsável e os assets públicos foram restaurados e recalculados. A prova
 completa e os limites estão em [Versão de dados rastreável](data/traceable-version.md).
@@ -198,9 +201,9 @@ existentes descritos acima continuam válidos; nenhuma foi alterada.
 ### Onde localizar planejamento e execução
 
 O registro `pipeline/sources/__init__.py` declara insumos, inclusão na atualização
-e aceitação conjunta. `pipeline/update_plan.py` valida a seleção e retorna
+e aceitação conjunta. `pipeline/operations/update_plan.py` valida a seleção e retorna
 somente grupos ordenados de nomes, sem acessar arquivos ou construir `source`s.
-`pipeline/update.py` executa cada grupo numa cópia do último estado aceito;
+`pipeline/operations/update.py` executa cada grupo numa cópia do último estado aceito;
 falha descarta o grupo inteiro e permite continuar os grupos independentes.
 Os comandos, o relatório e a publicação posterior permanecem os mesmos.
 A [comparação controlada da #17](data/pipeline-characterization.md#depois-da-extração-do-planejador-17)

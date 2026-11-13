@@ -12,7 +12,7 @@ from pathlib import Path
 import duckdb
 
 from pipeline.download import HttpTransport, Transport, fetch, with_retries
-from pipeline.hpv_inputs import download_fixed_inputs
+from pipeline.sources.hpv.historical_inputs import download_fixed_inputs
 from pipeline.paths import CLEAN_DIR, RAW_DIR
 
 EXTRACT_VERSION = 1

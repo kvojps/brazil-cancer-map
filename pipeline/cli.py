@@ -8,7 +8,7 @@ from collections.abc import Sequence
 
 from pipeline.source import STEPS, Source
 from pipeline.paths import CLEAN_DIR, REPO_DIR, SITE_DATA_DIR
-from pipeline.release import export_release, publish_release, restore_release, export_state, restore_state
+from pipeline.operations.release import export_release, publish_release, restore_release, export_state, restore_state
 
 STEP_ORDER = " → ".join(STEPS)
 
@@ -53,7 +53,7 @@ def main(argv: Sequence[str], sources: Sequence[Source]) -> int:
     if args.command != 'run':
         try:
             if args.command == 'update':
-                from pipeline.update import update_sources
+                from pipeline.operations.update import update_sources
                 return 0 if update_sources(args.source, args.data_dir, args.clean_dir, args.output) else 1
             if args.command == 'hpv-audit':
                 from pipeline.sources.hpv.audit import HpvAudit

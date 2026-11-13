@@ -597,3 +597,31 @@ os critérios da #12 com as entregas, testes e percursos finais. Registra nova
 comparação com a base #13 e leitura independente por agente aceita pelo
 mantenedor. Os percursos anteriores deste documento são históricos.
 A conclusão da #18 não altera nem encerra a spec pai #12.
+
+## Navegação após a reorganização da raiz (#19)
+
+Os percursos históricos acima preservam os caminhos usados em cada
+verificação. Para o código atual, use `pipeline/calculation/{trend,cascade,status}.py`
+e `pipeline/operations/{update,update_plan,release}.py`. A aquisição do HPV está
+em `pipeline/sources/hpv/historical_inputs.py` (antes `pipeline/hpv_inputs.py`)
+e `pipeline/sources/hpv/vaccination_data.py` (antes `pipeline/hpv_official.py`).
+O [guia de desenvolvimento](../development.md#navegação-do-pipeline) descreve
+as responsabilidades atuais.
+
+### Verificação da #19 em 13/11/2026
+
+A base anterior à movimentação é `0ab9f978b34e79c3ec10d6fd4d6441599232bcfd`.
+Antes da mudança, a seleção de `test_cli.py`, `test_update_characterization.py`,
+`test_calculation_baseline.py`, `test_painel_state.py` e `test_hpv.py` passou
+nos mesmos 61 casos (32,43 s, 218 avisos). Depois, `UV_CACHE_DIR=/tmp/cancer-map-uv
+uv run pytest -q` passou nos 242 testes da suíte, incluindo esses 61 casos
+(101,68 s, 498 avisos de separação perfeita do statsmodels). As fixtures
+congeladas, o `uv.lock` e os JSON publicados permaneceram inalterados.
+
+`UV_CACHE_DIR=/tmp/cancer-map-uv uv run mypy` passou nos 71 arquivos Python;
+`uv run python -m pipeline run --list`, com o mesmo cache, manteve as cinco
+etapas e as dez `source`s na mesma ordem. `npm run check --prefix site`
+passou nos 71 arquivos, sem erros, avisos ou sugestões, após atualizar os
+caminhos citados na metodologia. A comparação textual dos oito módulos
+movidos com a base confirmou somente mudanças de imports. `git diff --check`
+passou. Não houve nova carga nacional, build do site nem deploy nesta verificação.

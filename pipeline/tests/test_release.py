@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pipeline.release import export_release, restore_release
+from pipeline.operations.release import export_release, restore_release
 
 
 @pytest.mark.parametrize('format', ['csv', 'parquet'])
@@ -38,7 +38,7 @@ def test_release_rebuilds_every_contract_file_with_source_and_period(tmp_path, f
 
 def test_cli_publishes_versioned_assets_and_rejects_oversized_files(tmp_path, monkeypatch):
     from pipeline.cli import main
-    from pipeline.release import publish_release
+    from pipeline.operations.release import publish_release
 
     data = tmp_path / 'data'
     data.mkdir()
@@ -53,7 +53,7 @@ def test_cli_publishes_versioned_assets_and_rejects_oversized_files(tmp_path, mo
     assert str(tmp_path / 'assets/contract.csv') in command
     assert str(tmp_path / 'assets/contract.parquet') in command
     large = tmp_path / 'large.csv'
-    monkeypatch.setattr('pipeline.release.MAX_ASSET_BYTES', 2)
+    monkeypatch.setattr('pipeline.operations.release.MAX_ASSET_BYTES', 2)
     large.write_bytes(b'ab')
     with pytest.raises(ValueError, match='2 GiB'):
         publish_release([large], 'data-2026-11', repository='owner/repo')
@@ -75,7 +75,7 @@ def test_all_published_indicators_can_rebuild_the_complete_site_contract(tmp_pat
 
 
 def test_update_state_roundtrip_excludes_patient_audit(tmp_path):
-    from pipeline.release import export_state, restore_state
+    from pipeline.operations.release import export_state, restore_state
     clean = tmp_path / 'clean'
     (clean / 'hpv/months/2020').mkdir(parents=True)
     (clean / 'hpv/official.json').write_text('{"years":[2020]}')

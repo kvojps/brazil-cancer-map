@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pipeline.source import STEPS
 from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition, create_sources, validate_registry
-from pipeline.update_plan import plan_update
+from pipeline.operations.update_plan import plan_update
 
 
 def update_sources(selected: list[str], directory: Path, clean_dir: Path, output: Path, *,

@@ -1,4 +1,4 @@
-from pipeline.cascade import Origin, data_origins
+from pipeline.calculation.cascade import Origin, data_origins
 
 IMMEDIATE_REGION_OF = {"261160": "260001", "260005": "260001", "261390": "260001", "355030": "350001"}
 """Recife and two small neighbours in one immediate region; São Paulo in another."""

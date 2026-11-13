@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-from pipeline.status import classify_status, status_note
-from pipeline.cascade import Origin, data_origins
-from pipeline.trend import quasi_poisson_trend, trend_window
+from pipeline.calculation.status import classify_status, status_note
+from pipeline.calculation.cascade import Origin, data_origins
+from pipeline.calculation.trend import quasi_poisson_trend, trend_window
 
 from .models import (
     CANCER_TYPES,

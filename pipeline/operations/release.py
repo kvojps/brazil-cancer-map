@@ -141,7 +141,7 @@ def export_state(directory: Path, output: Path) -> list[Path]:
     """Package resumable clean state, never the local HPV patient audit."""
     import tarfile
     import tempfile
-    from pipeline.update import copy_state
+    from pipeline.operations.update import copy_state
 
     output.mkdir(parents=True, exist_ok=True)
     assets = []

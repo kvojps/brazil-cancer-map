@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from dataclasses import asdict
 from typing import Any
 
-from pipeline.status import classify_status
+from pipeline.calculation.status import classify_status
 from pipeline.sources.hpv.models import HpvResult
 
 

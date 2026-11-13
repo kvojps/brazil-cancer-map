@@ -143,6 +143,25 @@ downloads e exportações. Para preparar dados para revisão, use o fluxo
 
 ## Arquitetura e nova `source`
 
+### Navegação do pipeline
+
+- `pipeline/cli.py` recebe os comandos; `__main__.py` é a entrada de
+  `python -m pipeline`, e `source.py` define o protocolo e as cinco etapas.
+- `pipeline/sources/` reúne as unidades de processamento e seu registro.
+- `pipeline/calculation/` reúne as regras compartilhadas de Tendência
+  (`trend.py`), Situação (`status.py`) e cascata territorial (`cascade.py`).
+- `pipeline/operations/` reúne atualização (`update.py`), planejamento dos
+  grupos (`update_plan.py`) e exportação, publicação e restauração de Versões
+  de dados e estado (`release.py`).
+- Na raiz, `download.py` cuida do transporte, `publish.py` da publicação
+  conjunta dos documentos, `paths.py` dos caminhos e `population.py` da
+  consulta aos denominadores populacionais em Parquet.
+
+Os imports internos usam diretamente esses módulos, sem módulos antigos de
+compatibilidade. A organização preserva os comandos e o Contrato de dados.
+
+### Contrato e registro
+
 `pipeline/` e `site/` se ligam somente pelo **Contrato de dados** em
 `site/public/dados/`, definido na [spec, seção 15](spec.md#15-contrato-de-dados).
 O pipeline entrega valores, classes de Tendência, Situação, origem na cascata
@@ -179,10 +198,10 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
    ou descartar juntos, sem ampliar a seleção. A malha declara
    `includes_all=True`: inclui todas as entradas, inclusive futuras, num grupo.
    O planejador puro `plan_update(selected, registry)`, em
-   [`pipeline/update_plan.py`](../pipeline/update_plan.py), lê essas relações
+   [`pipeline/operations/update_plan.py`](../pipeline/operations/update_plan.py), lê essas relações
    e retorna `UpdatePlan`: somente grupos ordenados de nomes, sem arquivos nem
    construção de instâncias. O executor em
-   [`pipeline/update.py`](../pipeline/update.py) executa esses grupos, sem segunda
+   [`pipeline/operations/update.py`](../pipeline/operations/update.py) executa esses grupos, sem segunda
    lista de consumidores. Nomes duplicados, referências desconhecidas,
    ordem incompatível e caminhos de insumos fora do produtor são rejeitados
    antes da construção ou criação da saída. A ordem é declarada, sem ordenação
@@ -228,7 +247,10 @@ O import público continua sendo `pipeline.sources.hpv.HpvSource`. No pacote
 `models.py` define `HpvResult` e as linhas do Censo; `persistence.py` carrega
 os insumos e conserva `computed.json`; `calculation.py` calcula em memória;
 `validation.py` verifica dados carregados; `export.py` monta mapa e perfis.
-A aquisição reutiliza `pipeline/hpv_official.py` e `pipeline/hpv_inputs.py`.
+A aquisição usa `vaccination_data.py`, no mesmo pacote, para extrair os
+agregados do painel de vacinação do Ministério da Saúde. `historical_inputs.py`
+obtém o Censo 2022 e, somente para a auditoria opcional, as doses históricas
+do TabNet de 2015–2019. Ambos obtêm dados oficiais.
 
 `calculate(official_cohorts, census_rows, immediate_region_of)` recebe as
 coortes com proveniência e data de extração, o Censo carregado e a relação
