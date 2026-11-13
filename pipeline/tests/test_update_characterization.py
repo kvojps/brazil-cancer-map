@@ -58,7 +58,7 @@ def scenario(tmp_path, monkeypatch):
             if self.name == 'painel' and ('popsvs', 'export') in log and 'sim' not in failures:
                 assert (self.data / 'popsvs.json').exists()
 
-    def registry(clean_dir=clean, site_data_dir=live):
+    def registry(clean_dir=clean, site_data_dir=live, **kwargs):
         return [WritingSource(name, clean_dir, site_data_dir) for name in NAMES]
 
     monkeypatch.setattr('pipeline.update.create_sources', registry)

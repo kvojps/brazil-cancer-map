@@ -161,11 +161,28 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
 1. Crie o módulo em `pipeline/sources/` implementando o protocolo. Use uma
    `source` existente como exemplo; mantenha caminhos de estado e saída
    configuráveis para trabalhar em snapshots.
-2. Registre a instância em `create_sources`, em
-   [`pipeline/sources/__init__.py`](../pipeline/sources/__init__.py), depois
-   das dependências que ela lê. `SOURCES` recebe esse registro.
-3. Confira o agrupamento de dependências em [`pipeline/update.py`](../pipeline/update.py)
-   para que uma falha não misture indicador e denominador de versões diferentes.
+2. Acrescente uma `SourceDefinition` ao registro ordenado `SOURCE_DEFINITIONS`,
+   em [`pipeline/sources/__init__.py`](../pipeline/sources/__init__.py), depois
+   das entradas referenciadas. Declare `name`, `factory` e as relações abaixo.
+   `create_sources` valida o registro e constrói as instâncias; `SOURCES`
+   conserva a lista pública na mesma ordem.
+3. A fábrica recebe o diretório de estado **da própria source**, o diretório
+   de publicação e um mapa de insumos resolvidos no mesmo snapshot. Passe-os
+   ao construtor por argumentos nomeados. Por exemplo,
+   `inputs={'population_path': SourceInput('popsvs', 'population.parquet')}`
+   resolve `clean/popsvs/population.parquet`; a fábrica usa
+   `population_path=inputs['population_path']`. Não use um caminho global de
+   população ao construir para outra cópia de trabalho.
+   `inputs` apenas fornece arquivos, sem executar o produtor.
+   `update_with=('popsvs',)` inclui a consumidora quando POPSVS é atualizado;
+   `accept_with=('popsvs',)` une os participantes já selecionados para aceitar
+   ou descartar juntos, sem ampliar a seleção. A malha declara
+   `includes_all=True`: inclui todas as entradas, inclusive futuras, num grupo.
+   O executor em [`pipeline/update.py`](../pipeline/update.py) lê essas relações,
+   sem segunda lista de consumidores. Nomes duplicados, referências desconhecidas,
+   ordem incompatível e caminhos de insumos fora do produtor são rejeitados
+   antes da construção ou criação da saída. A ordem é declarada, sem ordenação
+   automática. `run --source` e `run --step` continuam com seleção direta.
 4. Teste as etapas com fixtures em `pipeline/tests/`, incluindo falha de
    validação e formato exportado. Execute o arquivo afetado com
    `uv run pytest pipeline/tests/<arquivo>.py`, depois `uv run mypy` e a suíte.

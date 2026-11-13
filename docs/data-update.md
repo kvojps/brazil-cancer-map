@@ -46,7 +46,7 @@ uv run python -m pipeline update --source painel --source cnes --source hpv --da
 
 `update` não é o caminho para recalcular sem consultar a origem. A proposta fica em `/tmp/cancer-update/dados`, o estado em `/tmp/cancer-update/clean` e o relatório em `/tmp/cancer-update/update.json`. Os dados do site não são alterados.
 
-Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `siscan` (mamografia), `siscan_cytopathology` e `sim` no mesmo grupo: todos dependem daquela população. Escolher `mesh` inclui **todas** as `source` no mesmo grupo. Uma falha descarta as mudanças do grupo inteiro. Grupos independentes bem-sucedidos permanecem na proposta mesmo quando o comando retorna erro.
+Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `siscan` (mamografia), `siscan_cytopathology` e `sim` no mesmo grupo: todos dependem daquela população. Escolher `mesh` inclui **todas** as `source` no mesmo grupo. As relações estão no registro `SOURCE_DEFINITIONS` em `pipeline/sources/__init__.py`: consumo de insumo (`inputs`), inclusão na atualização (`update_with`) e aceitação conjunta (`accept_with`) são declarações distintas. A política `includes_all` da malha inclui também futuras entradas. Atualizar somente `sim` usa a população já disponível no snapshot, sem executar POPSVS. Uma falha descarta as mudanças do grupo inteiro. Grupos independentes bem-sucedidos permanecem na proposta mesmo quando o comando retorna erro.
 
 ## Revisar antes de publicar
 
