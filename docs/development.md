@@ -169,13 +169,37 @@ e faixa A/B/C prontos. O front os exibe, sem refazer estatística.
 O método está na [Metodologia](https://brazil-cancer-map.kvojps.workers.dev/metodologia/)
 e o vocabulário no [glossário](../GLOSSARY.md).
 
+Uma **Fonte** é o provedor oficial citado no site; uma `source` é a unidade
+de processamento. Não há correspondência obrigatória de um para um:
+SISCAN alimenta `siscan` (mamografia) e `siscan_cytopathology`.
+
 O protocolo [`Source`](../pipeline/source.py) define `name`, `download`,
 `clean`, `compute`, `validate` e `export`. As etapas rodam nessa ordem;
 uma exceção interrompe as etapas restantes daquela `source`. A estatística
 fica em `compute`, com a exceção de limpeza do C55 registrada na
 [spec, seção 14](spec.md#14-pipeline).
 
-Para adicionar uma unidade de processamento (orientação pela leitura do código):
+### Roteiro de criação e revisão
+
+Antes de criar uma `source`, confira o Indicador e o Contrato de dados na
+spec e os ADRs pertinentes. Prepare uma fixture pequena com dados brutos,
+estado limpo, população quando necessária e `municipalities.json` coerentes
+entre si, em diretórios temporários. Inclua sucesso e falha de validação.
+Consulte os insumos e as validações por Fonte em [Fontes de dados](data-sources.md).
+Não use `site/public/dados/` como saída do experimento. A operação continua
+manual, local e gratuita, conforme o [ADR 6](adr/0006-manual-local-data-update.md).
+
+Responsabilidades das cinco etapas (orientação pela spec e pelo código):
+
+| Etapa | Responsabilidade e resultado a revisar |
+| --- | --- |
+| `download` | Obter os insumos oficiais, com cache e novas tentativas; manter brutos fora do git. No SISCAN, reduzir cada CSV antes de baixar o próximo. |
+| `clean` | Padronizar códigos, recortes e contagens em intermediários, sem antecipar cálculo do Indicador. A redistribuição do C55 no SIM é a única exceção estatística declarada, restrita ao colo do útero pelo [ADR 9](adr/0009-c55-redistribution-cervix-only.md); não é modelo para novos cálculos. |
+| `compute` | Produzir os valores, Situação, Tendência e origem na cascata, com faixa A/B/C quando aplicável; persistir o resultado para as etapas seguintes. |
+| `validate` | Conferir cobertura municipal e plausibilidade, além da comparação oficial quando disponível. SISCAN não tem comparação externa com números oficiais. |
+| `export` | Entregar mapa, perfis e manifesto no Contrato de dados, preservando outros indicadores em documentos compartilhados. No SISCAN, revalidar inclusive na exportação isolada. |
+
+Para implementar e registrar a unidade (orientação pela leitura do código):
 
 1. Crie o módulo em `pipeline/sources/` implementando o protocolo. Use uma
    `source` existente como exemplo; mantenha caminhos de estado e saída
@@ -213,6 +237,78 @@ Para adicionar uma unidade de processamento (orientação pela leitura do códig
    `uv run pytest pipeline/tests/<arquivo>.py`, depois `uv run mypy` e a suíte.
 5. Se o contrato mudar, atualize a spec e seus consumidores no site. Registre
    insumos e validações em `data-sources.md` e método na Metodologia.
+
+Para verificar uma proposta real, siga [Atualização de dados](data-update.md),
+que reúne seleção, revisão de `update.json`, comparação dos documentos e
+publicação posterior. Para restaurar estado e recalcular sem nova aquisição,
+use [Reprodução](reproducibility.md); não suponha que toda Release antiga
+contenha todos os insumos necessários.
+
+Lista curta para revisão:
+
+- Etapas respeitam as responsabilidades acima e os termos do glossário;
+  método e ressalvas permanecem na Metodologia.
+- Fábrica recebe estado, publicação e insumos do mesmo snapshot; relações
+  e ordem do registro correspondem ao comportamento desejado.
+- Fixtures verificam resultado exportado, falha, código de saída e
+  preservação do vigente nos pontos de entrada pertinentes, sem rede oficial.
+- Mapas, perfis e manifesto concordam em período, origem e valores prontos;
+  o site não calcula estatística.
+- Insumos, validações por Fonte e instruções operacionais estão documentados;
+  o relato separa execução efetiva, leitura de código e limites.
+
+**Limite de publicação:** `publish_together` escreve todos os `.part` antes
+de substituir os destinos, mas faz as substituições sequencialmente. Isso
+não garante atomicidade multiarquivo nem recuperação após interrupção entre
+trocas. O descarte de grupos de `update` cobre falhas capturadas na preparação
+isolada; não demonstra recuperação de uma publicação interrompida. Essa
+lacuna permanece fora desta entrega, conforme a [issue #23](https://github.com/kvojps/brazil-cancer-map/issues/23).
+
+### Conferência com a consumidora `siscan`
+
+Em 14/11/2026, foram executados os testes abaixo com fixtures locais e
+diretórios temporários. O percurso real de mamografia está em
+[`SiscanSource`](../pipeline/sources/siscan.py): CSVs de 2016–2025 →
+`exams/<ano>.parquet` e metadados → `layer.json` e `profiles.json` →
+validação → `map/mammography/{all,breast}.json`, `profiles/PE.json` e
+`manifest.json` na fixture. A população vem de
+`clean/popsvs/population.parquet` e a relação territorial de
+`municipalities.json` no diretório de publicação do snapshot.
+
+```sh
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest pipeline/tests/test_source_registry.py -q
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest pipeline/tests/test_cli.py pipeline/tests/test_update_plan.py pipeline/tests/test_update_characterization.py pipeline/tests/test_siscan.py -q
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run mypy
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest
+```
+
+`UV_CACHE_DIR` apenas mantém o cache de uv em pasta temporária; não seleciona
+dados. Resultados: 17 testes do registro e 34 dos outros quatro arquivos
+passaram; `mypy` passou em 71 arquivos; a suíte completa passou com 242 testes
+em 100,49 s. Todos esses comandos terminaram com código 0. A suíte registrou
+498 avisos `PerfectSeparationWarning` do statsmodels nas fixtures, sem falhas.
+A revisão de padrões e de aderência à issue não encontrou pendências.
+O alcance dos cenários é:
+
+| Arquivo / teste existente | O que efetivamente confere |
+| --- | --- |
+| `test_siscan.py::test_download_reduces_each_file_before_next_and_reuses_unchanged_extracts` | Aquisição com transporte simulado, redução em fluxo e reutilização de extratos inalterados; não acessa o FTP oficial. |
+| `test_siscan.py::test_clean_counts_screening_exams_by_residence_and_removes_raw` e `test_failed_clean_keeps_raw_and_last_good_aggregate` | Recortes dos CSVs e Parquet; remoção após sucesso e preservação do bruto e do agregado anterior em falha. |
+| `test_source_registry.py::test_screening_factories_compute_with_population_only_in_snapshot` | Move a única população da fixture para o snapshot, constrói pelo registro público e chama `main` com `run --source siscan --step compute` e `export`: ambos retornam 0 e publicam valor 0,8 para Recife. Também cobre citopatológico (1,2). Não executa o produtor POPSVS. |
+| `test_siscan.py::test_source_publishes_ratio_numerator_cascade_and_shared_profile_series` e `test_published_trend_is_the_class_without_the_change_estimate` | `clean`, `compute`, `validate` e `export` reais: valor 0,8, Situação `near`, Tendência `stable`, origem regional compartilhada, Dado insuficiente, mapas por tipo, série de dez anos e período no manifesto; sem `trend_estimate`. Confere conteúdo compatível com a seção 15, numa malha reduzida, não os 5.571 municípios. |
+| `test_siscan.py::test_export_rejects_bad_values_or_missing_municipalities_without_publishing` | Exportação isolada rejeita valores implausíveis e município ausente. Compara o manifesto anterior nos casos de valor inválido; não compara todos os documentos em cada falha. |
+| `test_cli.py` | Seleção direta e cinco etapas com dublês; validação falha bloqueia exportação e retorna erro. `update` real com INCA retorna 0; falta de insumo HPV ou falha simulada de POPSVS retorna 1, preserva manifesto anterior e permite INCA independente. |
+| `test_update_plan.py` e `test_source_registry.py` | Distinção das três relações, expansão transitiva, malha incluindo entradas futuras, ordem inválida rejeitada e população resolvida por nome no snapshot. Com dublês, grupo independente lê o último snapshot aceito, inclusive após descarte do grupo populacional. |
+| `test_update_characterization.py` | Pelo CLI, com dublês de etapas: sucesso retorna 0, falha tardia retorna 1, descarta o grupo populacional inteiro e continua independentes; falha no grupo da malha descarta tudo. Compara todos os bytes dos dados e estado vigentes antes/depois e verifica isolamento da proposta. |
+
+Essas provas se complementam: não há aqui uma única execução pelo CLI de
+todas as cinco etapas reais de SISCAN junto da aquisição real de POPSVS.
+O download foi simulado, a limpeza e o contrato foram conferidos diretamente,
+e o registro com população isolada foi conferido pelo CLI em `compute` e
+`export`. Os demais testes de SISCAN cobrem denominador variável, ano sem
+população, recorte incompleto e município novo. Não houve carga oficial,
+Release, deploy ou simulação de interrupção entre trocas de arquivos.
+As garantias de falha não devem ser ampliadas além desses cenários.
 
 A base anterior à reorganização, os dois percursos de leitura da pipeline e o
 procedimento de comparação com fixtures estão em
