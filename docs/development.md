@@ -183,8 +183,8 @@ fica em `compute`, com a exceção de limpeza do C55 registrada na
 
 Antes de criar uma `source`, confira o Indicador e o Contrato de dados na
 spec e os ADRs pertinentes. Prepare uma fixture pequena com dados brutos,
-estado limpo, população quando necessária e `municipalities.json` coerentes
-entre si, em diretórios temporários. Inclua sucesso e falha de validação.
+estado limpo, denominador próprio ou insumo de outra `source` quando necessário
+e `municipalities.json` coerentes entre si, em diretórios temporários. Inclua sucesso e falha de validação.
 Consulte os insumos e as validações por Fonte em [Fontes de dados](data-sources.md).
 Não use `site/public/dados/` como saída do experimento. A operação continua
 manual, local e gratuita, conforme o [ADR 6](adr/0006-manual-local-data-update.md).
@@ -194,7 +194,7 @@ Responsabilidades das cinco etapas (orientação pela spec e pelo código):
 | Etapa | Responsabilidade e resultado a revisar |
 | --- | --- |
 | `download` | Obter os insumos oficiais, com cache e novas tentativas; manter brutos fora do git. No SISCAN, reduzir cada CSV antes de baixar o próximo. |
-| `clean` | Padronizar códigos, recortes e contagens em intermediários, sem antecipar cálculo do Indicador. A redistribuição do C55 no SIM é a única exceção estatística declarada, restrita ao colo do útero pelo [ADR 9](adr/0009-c55-redistribution-cervix-only.md); não é modelo para novos cálculos. |
+| `clean` | No HPV, os agregados e o Censo já são padronizados durante `download`; `clean` não executa a auditoria opcional. Nas demais `source`, padronizar códigos, recortes e contagens em intermediários, sem antecipar cálculo do Indicador. A redistribuição do C55 no SIM é a única exceção estatística declarada, restrita ao colo do útero pelo [ADR 9](adr/0009-c55-redistribution-cervix-only.md); não é modelo para novos cálculos. |
 | `compute` | Produzir os valores, Situação, Tendência e origem na cascata, com faixa A/B/C quando aplicável; persistir o resultado para as etapas seguintes. |
 | `validate` | Conferir cobertura municipal e plausibilidade, além da comparação oficial quando disponível. SISCAN não tem comparação externa com números oficiais. |
 | `export` | Entregar mapa, perfis e manifesto no Contrato de dados, preservando outros indicadores em documentos compartilhados. No SISCAN, revalidar inclusive na exportação isolada. |
@@ -216,6 +216,9 @@ Para implementar e registrar a unidade (orientação pela leitura do código):
    resolve `clean/popsvs/population.parquet`; a fábrica usa
    `population_path=inputs['population_path']`. Não use um caminho global de
    população ao construir para outra cópia de trabalho.
+   Para aquisição própria, como HPV, não declare dependência de POPSVS:
+   a fábrica recebe `clean_dir` e `site_data_dir`, e `download` prepara
+   `official.json` e `census.parquet` no estado da própria `source`.
    `inputs` apenas fornece arquivos, sem executar o produtor.
    `update_with=('popsvs',)` inclui a consumidora quando POPSVS é atualizado;
    `accept_with=('popsvs',)` une os participantes já selecionados para aceitar
@@ -248,7 +251,8 @@ Lista curta para revisão:
 
 - Etapas respeitam as responsabilidades acima e os termos do glossário;
   método e ressalvas permanecem na Metodologia.
-- Fábrica recebe estado, publicação e insumos do mesmo snapshot; relações
+- Fábrica recebe estado, publicação e insumos do mesmo snapshot; aquisição
+  própria fica na própria `source`, sem dependências artificiais; relações
   e ordem do registro correspondem ao comportamento desejado.
 - Fixtures verificam resultado exportado, falha, código de saída e
   preservação do vigente nos pontos de entrada pertinentes, sem rede oficial.
@@ -361,6 +365,83 @@ locais e não alimenta o cálculo oficial. Os comandos e opções do CLI continu
 iguais. Apenas `official.json` e `census.parquet` integram o estado público.
 Veja os percursos e a comparação em
 [Caracterização da pipeline](data/pipeline-characterization.md#depois-da-reorganização-do-hpv-15).
+
+### Conferência com aquisição própria: `hpv`
+
+Em 14/11/2026, o segundo percurso foi conferido com a fixture
+`prepared_source` de [`test_hpv.py`](../pipeline/tests/test_hpv.py), em
+pastas temporárias. Pelo código de
+[`HpvSource`](../pipeline/sources/hpv/source.py), `download` obtém Censo
+2022 do SIDRA e coortes oficiais via Chromium, sem histórico TabNet ou
+ZIPs de pacientes (`include_legacy=False`). Essa aquisição oficial e a
+conversão das respostas do SIDRA foram **apenas inspecionadas**, sem nova
+consulta às Fontes. `clean` não tem trabalho adicional nesse percurso.
+O registro não declara relações com POPSVS: o Censo é próprio e fixo,
+conforme os [ADRs 4](adr/0004-hpv-from-official-aggregates.md) e
+[5](adr/0005-population-denominators.md).
+
+A conferência adicional chamou `pipeline.cli.main` com a `HpvSource` real
+retornada por `prepared_source`, executando
+`['run', '--source', 'hpv', '--step', step]` para `clean`, `compute`,
+`validate` e `export`. Todos retornaram 0. Foram conferidos valor
+`100 * 2 / 120`, Situação `far`, ausência de Tendência, origem regional e
+Dado insuficiente nos três municípios da fixture; os mapas
+`map/hpv/{all,cervix}.json` têm os mesmos municípios, o perfil `profiles/RO.json`
+contém 2020–2021 e o manifesto declara apenas `official.json` e
+`census.parquet`. Em seguida, alterar a primeira observação de
+`references.json` para 50 fez `validate` e `export` retornarem 1; todos os
+JSON permaneceram byte a byte iguais aos anteriores. Foi uma execução
+pontual em Python, reutilizando a fixture existente, sem adicionar testes
+ou mudar o CLI. Os metadados distinguem os tipos de câncer; a igualdade
+conferida entre os mapas cobre somente seus municípios.
+
+Comandos dos testes existentes executados na raiz:
+
+```sh
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest pipeline/tests/test_hpv.py pipeline/tests/test_cli.py pipeline/tests/test_source_registry.py pipeline/tests/test_update_characterization.py -q
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run mypy
+UV_CACHE_DIR=/tmp/cancer-uv-cache uv run pytest
+```
+
+Os quatro arquivos passaram com 63 testes e 20 avisos
+`PerfectSeparationWarning`; `mypy` passou nos 71 arquivos. A suíte completa
+passou com 242 testes em 99,31 s e 498 avisos da mesma classe. A evidência complementar se distribui assim:
+
+| Testes existentes executados | Alcance efetivo |
+| --- | --- |
+| `test_restored_state_reproduces_the_independent_2026_contract` | Empacota e restaura somente agregados e Censo; executa métodos reais e compara os cinco documentos com referência independente, em 2026, 2027 e 2030 simulados. Não passa pelo CLI. |
+| `test_official_comparison_is_required_and_divergence_blocks_publication`, `test_official_cohorts_require_complete_census_matched_slices` e `test_above_100_is_kept_and_invalid_export_preserves_previous_files` | Referências obrigatórias, divergência, denominador, recortes ausentes, valores acima de 100% e rejeição de exportação inválida. A preservação nesses testes compara o manifesto, não todos os documentos. |
+| `test_publication_uses_only_official_aggregates_and_census` e `test_export_preserves_other_profile_indicators_and_source_metadata` | Publicação sem auditoria; estado declarado no manifesto e preservação de outros indicadores e metadados. Chamadas diretas aos métodos. |
+| `test_hpv_validation_failure_discards_snapshot_and_preserves_input_state` | `update_sources` real com aquisição simulada: rejeita a amostra incompatível e preserva JSON e `official.json` da entrada e da proposta; não chama o CLI. |
+| `test_cli.py` e `test_update_characterization.py` | CLI de atualização: falha HPV por insumos ausentes preserva manifesto e permite INCA independente; dublês verificam descarte por grupo e preservação de todos os bytes. Não são uma atualização HPV bem-sucedida com aquisição oficial. |
+| `test_monthly_extract_counts_people_once_and_removes_raw` e `test_audit_command_reconstructs_locally_without_changing_official_publication` | CLI `hpv-audit`: reduz ZIP local, deduplica, remove bruto após sucesso e reconstrói auditoria sem alterar JSON publicados nem cálculo oficial; `compute --year` retorna 1. |
+
+A auditoria tem entrada e insumos próprios; não substitui a coorte oficial
+nem é requisito para publicar. Preparação, comandos e limites estão em
+[Atualização: auditoria opcional](data-update.md#auditoria-hpv-opcional),
+[Fontes de dados](data-sources.md#hpv) e
+[Reprodução: recálculo HPV](reproducibility.md#recálculo-hpv-com-o-código-atual).
+Estes resultados não comprovam aquisição atual, cobertura nacional,
+recuperação após interrupção ou atomicidade multiarquivo. Não houve Release,
+publicação ou deploy; permanece o limite de `publish_together` descrito acima.
+
+A matriz de entrega da [#23](https://github.com/kvojps/brazil-cancer-map/issues/23)
+combina a [#24](https://github.com/kvojps/brazil-cancer-map/issues/24)
+e a [#25](https://github.com/kvojps/brazil-cancer-map/issues/25):
+
+| Critério da #23 | Evidência nas duas entregas |
+| --- | --- |
+| Roteiro integrado, preparação, cinco etapas, registro e revisão | #24: roteiro e lista acima; #25: aquisição própria e `clean` sem trabalho adicional no HPV. |
+| Fonte/`source` e três relações do registro | #24: conceitos e snapshot POPSVS; #25: HPV sem dependência artificial de população. |
+| Dois exemplos existentes, um consumidor de população | #24: `siscan`; #25: `hpv`, com métodos reais e conferência adicional pelo CLI. |
+| Comandos, resultados e limites | Seções de conferência dos dois exemplos, com separação entre execução, simulação e inspeção. |
+| Contrato, métodos e operação manual preservados | Ambas alteram somente este guia; nenhuma nova camada ou infraestrutura de testes. |
+| Referências canônicas e limites de publicação | Links no roteiro e nas duas conferências; atomicidade e recuperação após interrupção continuam fora do escopo. |
+
+Não foi identificada pendência documental nesses critérios. A verificação
+conjunta e o fechamento da issue pai continuam a cargo da revisão da #23;
+esta entrega não a modifica nem a encerra.
+
 
 ## Deploy: Cloudflare Workers
 
