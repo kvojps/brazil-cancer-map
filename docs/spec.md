@@ -277,7 +277,7 @@ Decisão e alternativas: [ADR 1](adr/0001-static-site-with-committed-json.md).
 - **Mapa:** uma ilha em TypeScript + MapLibre GL JS (BSD-3), com TopoJSON da malha IBGE 2025 simplificado a 1–2% com mapshaper (hoje 1,5%, 0,71 MB gzip), sem as 2 lagoas, **sem mapa base**, com `promoteId: "CD_MUN"` e `feature-state` para trocar indicador e ano.
 - **O front não faz conta estatística.** Taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C chegam prontas do pipeline.
 - **Hospedagem:** Cloudflare Workers com assets estáticos, no plano gratuito, em `workers.dev`. O painel da Cloudflare deixou de oferecer a criação de projetos Pages, previstos no início. Os limites são os mesmos: 20.000 arquivos de até 25 MiB. O GitHub Pages segue como alternativa prevista, com limite de 1 GB de site. Não usa DuckDB-WASM nem PMTiles.
-- **Orçamento:** as metas são ~1,3 MB na primeira visita e menos de 30 MB no site inteiro. Elas não estão cumpridas, e o excesso é dívida conhecida que não bloqueia a V1 por orçamento (seção 17). Acessibilidade, validação dos dados e verificação da hospedagem continuam exigidas.
+- **Orçamento:** os valores de ~1,3 MB na primeira visita e menos de 30 MB no site inteiro vieram das estimativas iniciais, anteriores às páginas municipais completas (ADR 1). Não são critérios de aceite atuais. Em 14/11/2026, o responsável considerou satisfatório o carregamento do site e retirou a redução de tamanho e a verificação da hospedagem das pendências atuais. Essa avaliação de uso não constitui medição de compressão. As medições históricas permanecem em `docs/validation/accessibility-audit.md`. Acessibilidade e validação dos dados continuam exigidas.
 
 ## 14. Pipeline
 
@@ -330,23 +330,14 @@ Decisão e alternativas: [ADR 6](adr/0006-manual-local-data-update.md).
 
 ### Dívidas conhecidas
 
-**1. Redução de tamanho.** A medição é de 06/11/2026, com HTTP gzip local, sem conferir a compressão na hospedagem.
+**1. Sessão humana de acessibilidade.** Não há registro de sessão com leitor de tela. A automação não a substitui: o axe 4.14 não encontrou violação confirmada nas 24 análises, mas deixou verificações inconclusivas (3.498 nós de contraste e 48 de nome acessível), e os 316 testes de navegador não verificam anúncios. A sessão precisa registrar data, responsável, sistema, navegador e leitor de tela, e conferir também a semântica da Lista. O roteiro está em `docs/validation/accessibility-audit.md`. A verificação em celular real foi declarada pelo responsável ("Aconteceu, sem problemas"), sem registro de aparelho, sistema ou navegador.
 
-| Medida | Medido | Meta |
-|---|---:|---:|
-| Saída estática completa | 999.530.479 bytes | menos de 30 MB |
-| Primeira visita, cache vazio | 1.369.414 bytes gzip | cerca de 1,3 MB |
-
-Os 5.571 documentos municipais somam 893.552.632 bytes, e os 27 perfis por UF, 81.654.299. Só os perfis já passam de 30 MB, então reduzir assets ou HTML não basta. O responsável decidiu em 06/11/2026 adiar a redução para depois da V1, e essa decisão substitui o bloqueio anterior por orçamento. A direção aceita para investigar é usar páginas compartilhadas para séries, explicações e Ações completas, acessíveis por links no Meu município, preservando os resultados e avisos locais dos seis Tipos de câncer e a leitura sem JavaScript. Não há arquitetura validada nem mudança de contrato autorizada.
-
-**2. Sessão humana de acessibilidade.** Não há registro de sessão com leitor de tela. A automação não a substitui: o axe 4.14 não encontrou violação confirmada nas 24 análises, mas deixou verificações inconclusivas (3.498 nós de contraste e 48 de nome acessível), e os 316 testes de navegador não verificam anúncios. A sessão precisa registrar data, responsável, sistema, navegador e leitor de tela, e conferir também a semântica da Lista. O roteiro está em `docs/validation/accessibility-audit.md`. A verificação em celular real foi declarada pelo responsável ("Aconteceu, sem problemas"), sem registro de aparelho, sistema ou navegador.
-
-**3. Revisão clínica das Ações.** O código registra `reviewer: null` em todas as Ações, e o site trata a revisão como pendente: os detalhes clínicos seguem ocultos (seção 10.4). `reviewer` não é preenchido sem nome, data e versão reais. Na revisão, reconferir também os pontos com data:
+**2. Revisão clínica das Ações.** O código registra `reviewer: null` em todas as Ações, e o site trata a revisão como pendente: os detalhes clínicos seguem ocultos (seção 10.4). `reviewer` não é preenchido sem nome, data e versão reais. Na revisão, reconferir também os pontos com data:
 
 - o resgate do HPV para 15–19 anos, até 31/12/2026, que o site não menciona hoje;
 - o início do FIT nas UBS, previsto para novembro de 2026, que a Ação descreve como implantação gradual.
 
-**4. Textos propostos e decisões a confirmar.** Os textos atuais continuam valendo até a decisão do responsável.
+**3. Textos propostos e decisões a confirmar.** Os textos atuais continuam valendo até a decisão do responsável.
 
 Textos propostos, ainda não aprovados:
 
@@ -363,7 +354,7 @@ Decisões a confirmar:
 - **Lista:** "Tendência: Série curta, ainda sem direção" no HPV, sob o rótulo Tendência; "por 100 mil" em 12 px sob o número da mortalidade, na forma estreita; as linhas que continuam abertas ao trocar os filtros; e a Faixa C com Dado insuficiente sem a marca na linha fechada.
 - **Municípios por UF e Metodologia:** `/municipios/?municipio=<código>` carregando a seleção; o índice da Metodologia que também fecha com clique fora e ao sair dele com Tab; e a linha do sumário e os resultados da busca sem preenchimento nem sublinhado.
 
-**5. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) registra os limites e as correções abaixo, mantidos como ressalva nos guias:
+**4. Limites do recálculo só com o estado publicado.** O nível 2 de [reprodução](reproducibility.md) registra os limites e as correções abaixo, mantidos como ressalva nos guias:
 
 - **HPV:** corrigido no código atual: `compute` usa os anos e a data de extração do estado, preservando período, provisoriedade e último consolidado. O teste empacota/restaura agregados e Censo e compara o contrato com referência independente em 2026, 2027 e 2030 simulados. O código gerador de `data-2026-11-06` continua sujeito ao limite antigo; nenhuma Release foi alterada. Evidência e limites em [Recálculo temporal do HPV](data/hpv-temporal-recalculation.md).
 - **`mesh`:** corrigido no código atual: `clean` preserva a lista municipal efetivamente usada em `clean/mesh/ibge_municipalities.json`; `validate` e `export` leem somente essa cópia do snapshot. O asset `state-mesh.tar.gz` a inclui, sem o ZIP da malha nem outros brutos. A prova restaura estado e contrato fora do diretório original, sem rede, e compara conteúdo, tipos e metadados com referência independente. Estados antigos continuam exigindo o insumo externo correspondente; nenhuma Release foi alterada. Evidência em [Restauração da referência da malha](data/mesh-state-recalculation.md).
@@ -375,9 +366,8 @@ Já cumpridos: `LICENSE`, declarações de licença no README e link para o cód
 
 Continuam abertos:
 
-- revisor clínico convidado e revisão registrada (seção 10.4 e dívida 3);
+- revisor clínico convidado e revisão registrada (seção 10.4 e dívida 2);
 - reconferência das fontes das Ações: 50–74 na mamografia, FIT, resgate do HPV e listas de sinais;
-- verificação da hospedagem, inclusive a compressão.
 
 ### Após o MVP
 
