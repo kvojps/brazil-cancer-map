@@ -21,6 +21,10 @@ Monorepo com duas partes, ligadas só pelo contrato de dados (spec, seção 15):
 
 ## Agent skills
 
+### Grill with docs
+
+Ao executar `grill-with-docs`, siga o fluxo `grill-with-docs` → `to-spec` → `to-tickets`: transforme o entendimento acordado em especificação e depois em tickets. A implementação direta é uma exceção e exige autorização explícita do usuário para implementar. Concordar com o diagnóstico, o escopo ou as recomendações não constitui essa autorização.
+
 ### Issue tracker
 
 Issues e specs de trabalho ficam no GitHub Issues de `kvojps/brazil-cancer-map`. Veja `docs/agents/issue-tracker.md`.
