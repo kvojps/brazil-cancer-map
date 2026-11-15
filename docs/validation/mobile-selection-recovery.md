@@ -55,6 +55,40 @@ outra seleção. Os detalhes abertos são medidos como resumo apenas para decidi
 a composição; seu estado visível é restaurado. A navegação continua a controlar
 expansão, histórico e seleção.
 
+A revisão identificou que a medição temporária também poderia limitar a
+rolagem ao recolher os detalhes ou retirar a consulta do fluxo. Dois testes
+públicos reproduziram a perda de posição: painel aberto e rolado a 390 × 844
+e página em fluxo rolada a 390 × 568, seguidos de aumento de 1 px de altura.
+Ambos falharam antes do ajuste (no painel, de 609 px para zero). A medição
+agora conserva e restaura a rolagem da página e do painel antes de notificar
+a composição definitiva.
+
+## Verificações
+
+```sh
+npm run check --prefix site
+npm test --prefix site
+npm run preview --prefix site -- --host 127.0.0.1 --port 4322
+SITE_URL=http://127.0.0.1:4322 CHROMIUM_PATH=/caminho/para/chromium node --test --test-concurrency=3 site/browser-tests/*.test.mjs
+```
+
+`check` passou sem diagnósticos em 82 arquivos. `npm test` passou nos 88
+casos e gerou 5.574 páginas. Os dois novos testes de posição de leitura
+passaram isoladamente depois da correção. A primeira execução completa de
+navegador foi interrompida para incorporar a correção de rolagem identificada
+na revisão; não é contabilizada como aprovação da suíte. A execução completa
+final passou nos **351 testes**, sem falhas ou casos ignorados, em 310,85 s.
+Inclui telas estreitas/baixas, horizontal, ressalvas longas, rotação, temas,
+zoom nativo, desktop, ausência de JavaScript/mapa e auditoria axe. O axe
+não encontrou violações e registrou verificações inconclusivas que exigem
+revisão humana. Não se afirma validação por leitor de tela.
+
+A revisão de padrões não encontrou violações documentadas nem smells
+relevantes. A revisão da spec identificou a perda de posição durante a medição;
+foi reproduzida, corrigida e recebeu os dois testes públicos. A revisão do
+ajuste não identificou novos problemas. O atendimento integral do relato
+original permanece pendente da conferência do responsável.
+
 ## Limites e acompanhamento
 
 A falha de recuperação está reproduzida e corrigida na emulação. A hipótese de

@@ -9,6 +9,8 @@ export function mountMobileLayout(): void {
   const crowded = (height: number) => {
     const inFlow = root.hasAttribute('data-mobile-flow');
     const collapsed = panel.hasAttribute('data-collapsed');
+    const pagePosition = { left: scrollX, top: scrollY };
+    const panelPosition = panel.scrollTop;
     // Measure the candidate composition, not the taller header and expanded details in flow.
     // Restore synchronously before painting or notifying the rest of the interface.
     mutations.disconnect();
@@ -21,6 +23,9 @@ export function mountMobileLayout(): void {
     } finally {
       panel.toggleAttribute('data-collapsed', collapsed);
       root.toggleAttribute('data-mobile-flow', inFlow);
+      // The layout read can clamp scrolling when the consultation temporarily leaves the flow.
+      panel.scrollTop = panelPosition;
+      window.scrollTo({ ...pagePosition, behavior: 'instant' });
       mutations.observe(panel, observation);
     }
   };

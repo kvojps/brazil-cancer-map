@@ -188,5 +188,7 @@ e retorno à exploração com seleção e geografia preservadas.
 A regressão da #32 em `map-touch.test.mjs` verifica a recuperação do resumo
 flutuante após reduzir e restaurar a altura útil, com toque no canvas,
 Filtros fechados, foco e rolagem observados, detalhes deliberados e câmera
-preservada. Diagnóstico, comandos e limites da emulação ficam em
+preservada. `mobile-reading.test.mjs` confere a conservação da posição de
+leitura nos detalhes e no fluxo durante a medição. Diagnóstico, comandos e
+limites da emulação ficam em
 [Recuperação da seleção mobile](../../docs/validation/mobile-selection-recovery.md).

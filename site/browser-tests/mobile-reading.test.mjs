@@ -111,3 +111,25 @@ test('a long caveat without municipal selection also moves the controls into pag
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   } finally { await page.close(); }
 });
+
+for (const composition of ['floating details', 'page flow']) {
+  test(`layout measurements preserve the reading position in ${composition}`, async () => {
+    const height = composition === 'page flow' ? 568 : 844;
+    const page = await browser.newPage({ viewport: { width: 390, height }, isMobile: true, hasTouch: true });
+    try {
+      await page.goto(base + '/municipio/261160-recife/');
+      await page.locator('.result-value').waitFor();
+      if (composition === 'floating details') await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+      await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
+      const position = () => page.evaluate(() => ({ page: scrollY, panel: document.querySelector('#municipality-preview').scrollTop }));
+      const before = await position();
+      assert.ok(before.page + before.panel > 200, 'the consultation has been scrolled');
+      await page.setViewportSize({ width: 390, height: height + 1 });
+      await page.waitForTimeout(300);
+      const after = await position();
+      assert.ok(Math.abs(before.page - after.page) < 3, 'page reading position survives measurement');
+      assert.ok(Math.abs(before.panel - after.panel) < 3, 'panel reading position survives measurement');
+      assert.equal(await page.locator('#municipality-preview').evaluate(node => getComputedStyle(node).position), composition === 'page flow' ? 'static' : 'fixed');
+    } finally { await page.close(); }
+  });
+}
