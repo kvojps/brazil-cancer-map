@@ -178,3 +178,9 @@ Lista após seleção pela busca em 320 × 568, 390 × 844, 568 × 320, 844 × 3
 `map-touch.test.mjs` também compara a geografia visível após girar a janela e
 voltar, depois de alterar o zoom. Resultados e limites em
 [Leitura mobile](../../docs/validation/mobile-reading.md).
+
+A [validação integrada mobile](../../docs/validation/mobile-integrated.md) cruza
+os critérios da #26 com os percursos dessas suítes, registra a execução conjunta
+e mantém a conferência em aparelho real separada. Os cenários de primeiro toque,
+busca e link direto de `map-touch.test.mjs` também percorrem resumo, quatro Eixos
+e retorno à exploração com seleção e geografia preservadas.

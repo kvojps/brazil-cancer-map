@@ -264,7 +264,7 @@ test('the search expands over the header and closes when a municipality is chose
     const result = page.locator('#municipality-results button').first();
     assert.ok((await result.boundingBox()).height >= 44);
     await result.click();
-    assert.equal(await input.isVisible(), false);
+    await input.waitFor({ state: 'hidden' });
     assert.equal(await isFocused(page.locator('#preview-heading')), true, 'focus goes to the name of the municipality');
     await page.waitForURL(/\/municipio\/261160-recife\//);
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });

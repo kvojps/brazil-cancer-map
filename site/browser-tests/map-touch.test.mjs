@@ -91,6 +91,15 @@ for (const arrival of ['direct link', 'search']) {
       assert.equal(new URL(page.url()).searchParams.get('tipo'), 'breast');
       assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
       assert.equal(await page.locator('[data-toggle-profile]').getAttribute('aria-expanded'), 'false');
+      assert.ok((await page.locator('[data-profile-result]').innerText()).trim(), 'the summary has a readable result');
+      const selectedUrl = page.url();
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+      assert.equal(await page.locator('[data-profile-axis]').count(), 4);
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+      assert.equal(page.url(), selectedUrl, 'returning keeps the selected municipality and filters');
+      for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'returning keeps the arrival framing');
     } finally { await page.close(); }
   });
 }
@@ -128,6 +137,15 @@ test('the first canvas touch opens only the collapsed sheet and paints a selecti
     }, png.toString('base64'));
     assert.ok(blackPixels > 4, 'the black selection outline is visible on the light map');
     assert.ok((await visibleSamples(page)).some(sample => sample.name === name), 'the selected municipality remains visible outside the sheet');
+    assert.ok((await page.locator('[data-profile-result]').innerText()).trim(), 'the touch selection has a readable summary');
+    const selectedUrl = page.url();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    assert.equal(await page.locator('[data-profile-axis]').count(), 4);
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(page.url(), selectedUrl);
+    assert.equal(await labelAt(page, point), name, 'returning preserves the touched territory at the same point');
   } finally { await page.close(); }
 });
 
