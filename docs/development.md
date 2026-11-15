@@ -45,13 +45,13 @@ antes de rodá-lo.
 A saída atual ocupa **cerca de 1 GB**, principalmente pelas páginas municipais.
 Reserve espaço para o clone, dependências e essa saída. Veja a dívida de tamanho
 na [spec, seção 17](spec.md#17-pendências).
-Se o servidor de desenvolvimento encerrar por falta de memória do Node,
-reinicie com um limite maior, desde que a máquina tenha memória disponível
-(encerre antes qualquer instância ainda ativa com `dev -- stop`):
-
-```sh
-NODE_OPTIONS=--max-old-space-size=5120 npm run dev --prefix site
-```
+As páginas municipais leem os perfis estaduais diretamente do diretório público
+no servidor, compartilhando cada UF entre seus municípios. Isso evita transformar
+os JSON volumosos em módulos do Vite, operação que esgotava o heap de 2 GiB
+na primeira consulta municipal em desenvolvimento. Não é necessário aumentar
+`NODE_OPTIONS` para esse fluxo.
+Se substituir os JSON dos perfis com o servidor aberto, reinicie `dev` para
+recarregar os dados municipais.
 
 ## Testes e verificações
 
@@ -64,7 +64,9 @@ npm test --prefix site
 
 - `npm run check`: tipos e diagnósticos dos arquivos Astro e TypeScript.
 - `npm test`: testes Node de contratos, dados publicados e lógica do site,
-  incluindo enquadramento e tons do mapa. Não abre navegador.
+  incluindo enquadramento e tons do mapa. Também inicia um servidor local
+  temporário e consulta páginas municipais com heap limitado a 2 GiB para
+  detectar regressões de memória no desenvolvimento. Não abre navegador.
 - `uv run mypy`: tipos do pipeline Python em modo estrito.
 - `uv run pytest`: suíte Python de processamento, cálculos, validações,
   contrato, atualização e Releases, com fixtures e serviços simulados.

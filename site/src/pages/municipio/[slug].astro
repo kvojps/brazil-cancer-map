@@ -1,4 +1,6 @@
 ---
+import { readFileSync } from 'node:fs';
+import { publicDir } from 'astro:config/server';
 import Base from '../../layouts/Base.astro';
 import '../../profile/profile.css';
 import MapExperience from '../../components/MapExperience.astro';
@@ -8,10 +10,15 @@ import listing from '../../../public/dados/municipalities.json';
 import { municipalityPath, type UfProfile } from '../../profile/profile';
 
 export function getStaticPaths() {
-  const profiles = import.meta.glob('../../../public/dados/profiles/*.json', { eager: true, import: 'default' });
+  // Read data directly: Vite's dev JSON transformation exceeds the Node heap.
+  // Share each parsed UF across its municipalities instead of parsing per page.
+  const profiles = new Map<string, UfProfile>();
   return listing.municipalities.map(municipality => {
-    const profile = profiles[`../../../public/dados/profiles/${municipality.uf}.json`] as UfProfile | undefined;
-    if (!profile) throw new Error(`Missing municipality profile for ${municipality.uf}; run the pipeline export.`);
+    let profile = profiles.get(municipality.uf);
+    if (!profile) {
+      profile = JSON.parse(readFileSync(new URL(`dados/profiles/${municipality.uf}.json`, publicDir), 'utf8')) as UfProfile;
+      profiles.set(municipality.uf, profile);
+    }
     return { params: { slug: municipalityPath(municipality).split('/')[2] }, props: { municipality, profile } };
   });
 }
