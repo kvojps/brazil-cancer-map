@@ -130,3 +130,16 @@ test('an unavailable result is distinct from a load error and still offers the o
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
   } finally { await page.close(); }
 });
+
+test('reloading a details history entry keeps its control and Back coherent', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.reload();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor({ timeout: 5000 });
+    await page.goBack();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(new URL(page.url()).pathname, RECIFE);
+  } finally { await page.close(); }
+});
