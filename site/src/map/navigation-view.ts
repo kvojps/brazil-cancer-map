@@ -139,7 +139,13 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
       shownIndicator = state.indicator;
       if (initialAnchor && isSheet()) {
-        history.replaceState({ ...history.state, municipalDetails: location.pathname }, '', location.href);
+        if (!detailsOpen()) {
+          const anchored = new URL(location.href);
+          const collapsed = new URL(anchored);
+          collapsed.hash = '';
+          history.replaceState(history.state, '', collapsed);
+          history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', anchored);
+        }
         expand(true);
       }
       initialAnchor = '';
@@ -238,8 +244,19 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   // A link to an Eixo inside a card opens it: browsers only reveal closed details around a target, not the target itself.
   content.addEventListener('click', event => {
     const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
-    if (!link || link.pathname !== location.pathname) return;
-    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) if (`#${axis.id}` === link.hash) axis.open = true;
+    const click = event as MouseEvent;
+    if (!link || link.pathname !== location.pathname || click.ctrlKey || click.metaKey || click.shiftKey || click.altKey || click.button !== 0) return;
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
+      if (`#${axis.id}` !== link.hash) continue;
+      axis.open = true;
+      if (isSheet()) {
+        // Axis navigation belongs to this details entry, so Back still returns to the summary.
+        event.preventDefault();
+        history.replaceState(history.state, '', link.href);
+        axis.querySelector('summary')!.focus({ preventScroll: true });
+        requestAnimationFrame(() => axis.scrollIntoView({ block: 'start' }));
+      }
+    }
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
     preserveCameraFor = fromMap ? place.code : undefined;

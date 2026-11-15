@@ -86,9 +86,47 @@ test('municipal anchors reach their axis and returning keeps the selected munici
     await page.goto(base + RECIFE + '#prevencao');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.goBack();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+  } finally { await page.close(); }
+});
+
+test('links between axes keep mobile details open without adding a step before collapse', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE + '?indicador=mortality');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.locator('#panorama [data-cancer-type="all"] a[href$="#prevencao"]').last().click();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true, 'the destination stays visible');
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    await page.goBack();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(new URL(page.url()).pathname, RECIFE);
+    await page.goForward();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+  } finally { await page.close(); }
+});
+
+test('an unavailable result is distinct from a load error and still offers the other axes', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.route('**/dados/profiles/PE.json', async route => {
+      const response = await route.fetch();
+      const data = await response.json();
+      delete data.indicators.within_60_days.all.municipalities['261160'];
+      await route.fulfill({ json: data });
+    });
+    await page.goto(base + RECIFE);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.match(await page.locator('[data-profile-result]').innerText(), /Sem dado neste recorte/);
+    assert.doesNotMatch(await page.locator('[data-profile-result]').innerText(), /Dado insuficiente|Não foi possível/);
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    assert.equal(await page.locator('[data-profile-axis]').count(), 4);
   } finally { await page.close(); }
 });

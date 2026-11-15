@@ -59,6 +59,16 @@ test('canvas touch clears hover and successive selections preserve the visible g
       await page.mouse.move(point.x + 2, point.y + 2);
       assert.equal(await labelAt(page, point), name);
     }
+    const beforeReturn = [];
+    for (const [, point] of points) beforeReturn.push(await labelAt(page, point));
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    for (const [index, [, point]] of points.entries()) assert.equal(await labelAt(page, point), beforeReturn[index], 'returning from details preserves the camera');
+    await page.locator('[data-view="lista"]').click();
+    await page.locator('.indicator-table tbody tr').first().waitFor();
+    await page.locator('[data-view="mapa"]').click();
+    for (const [index, [, point]] of points.entries()) assert.equal(await labelAt(page, point), beforeReturn[index], 'switching visualizations preserves the camera');
   } finally { await page.close(); }
 });
 

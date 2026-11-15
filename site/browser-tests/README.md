@@ -157,7 +157,10 @@ Lista preserva o filtro de UF e as linhas expandidas.
 
 `mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno por
 Mapa/Lista, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
-da posição de exploração da Lista ao alternar visualizações. Falha com nova tentativa
+da posição de exploração da Lista ao alternar visualizações. Cobre chegada por âncora,
+links entre Eixos sem etapas extras no histórico e indisponibilidade no recorte.
+`map-touch.test.mjs` confere também a preservação da câmera ao retornar dos detalhes
+e ao alternar Mapa/Lista, por rótulos geográficos em pontos da tela. Falha com nova tentativa
 no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos
 de origem regional, Faixa C, Dado insuficiente, mortalidade e leitura sem JavaScript
 permanecem em `municipal-panel.test.mjs`. Não há teto percentual de altura do resumo.
