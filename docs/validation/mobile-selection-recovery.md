@@ -98,6 +98,8 @@ Firefox, leitor de tela, publicação ou deploy. A correção local não altera 
 versão atualmente publicada.
 
 Os resultados devem ser referenciados na #31 antes de reavaliar a validação
-integrada. A #26 não é encerrada automaticamente. A #32 permanece aberta
-até a conferência do cenário relatado; os resultados automatizados não
-substituem esse retorno.
+integrada. A #26 não é encerrada automaticamente. Posteriormente, o responsável aprovou e encerrou a #32 e a #31 pela entrega
+técnica, sem declarar sessão física completa. A conferência do cenário relatado
+continua na [#33](https://github.com/kvojps/brazil-cancer-map/issues/33), vinculada
+à #26; os resultados automatizados não substituem esse retorno. Veja a
+[revisão conjunta](mobile-integrated.md#revisão-conjunta-da-especificação-26--15112026).

@@ -119,8 +119,8 @@ requisito físico ainda pendente.
 ## Conferência física pendente
 
 Em 15/11/2026, o responsável informou nesta sessão: “Ainda não conferi”. Não há
-sessão física documentada. A #31 permanece aberta e a #26 não é editada nem
-encerrada por esta entrega. A tarefa restante é executar o roteiro abaixo em
+sessão física documentada. Naquela execução, a #31 permaneceu aberta e a #26 não foi editada nem
+encerrada pela entrega. A tarefa restante é executar o roteiro abaixo em
 aparelho real, corrigir falhas ou abrir trabalho explícito e anexar o resultado
 na #31 e neste registro antes de reavaliar o fechamento.
 
@@ -143,3 +143,32 @@ Não houve teste físico, Safari/Firefox, leitor de tela, deploy nem nova carga 
 dados. Emulação não comprova teclado virtual, barras móveis, GPU ou gesto do
 sistema; axe e foco automatizado não comprovam anúncios de leitor de tela.
 Uma sessão com leitor de tela continua distinta desta conferência.
+
+## Revisão conjunta da especificação #26 — 15/11/2026
+
+A revisão da pai conferiu a matriz das 30 histórias acima, as regras vigentes
+na seção 11 da spec e no contrato de interface e a correção posterior da #32.
+As entregas #27–#30 e a validação #31 estão concluídas; #32 também foi aprovada.
+Isso não constitui, por si só, comprovação física dos critérios conjuntos.
+
+A última execução registrada, após a correção de recuperação e posição de
+leitura, está em [seleção municipal](mobile-selection-recovery.md): 351 testes
+de navegador, 88 testes Node, tipos e build aprovados. Esta revisão documental
+não repetiu os testes nem alterou o produto. Commits das entregas:
+`61402d2` (#27), `133169a`, `b6617ab` e `1455822` (#28), `0db7b09` (#29),
+`c020065`, `2f51fdc` e `98e3e69` (#30), `399a2e7` (#31),
+`1a19394` e `62f03d9` (#32).
+
+O responsável aprovou o fechamento técnico da #31 e da #32, conforme os
+[registros da #31](https://github.com/kvojps/brazil-cancer-map/issues/31#issuecomment-6901723490)
+e da [#32](https://github.com/kvojps/brazil-cancer-map/issues/32#issuecomment-6901700572).
+Essas aprovações não foram registradas como execução física. A condição de
+fechamento da especificação pai continua exigindo essa evidência.
+A pendência tem acompanhamento próprio na
+[#33](https://github.com/kvojps/brazil-cancer-map/issues/33), evitando deixar
+trabalho humano sem ticket após o encerramento da #31.
+
+Nesta revisão, o responsável informou: “Conferi; vou informar os resultados”.
+Os campos e resultados da sessão ainda aguardam o relato; não se presume
+aprovação de cenários individuais. A #26 permanece aberta até completar a
+conferência conjunta com essa evidência.
