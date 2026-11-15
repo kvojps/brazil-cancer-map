@@ -30,7 +30,7 @@ os dados continuam expressos em texto.
 `map-touch.test.mjs` usa WebGL e toque emulado no canvas, sem disparar o evento
 interno de seleção. Cobre o primeiro toque e o contorno renderizado, hover e
 alternância mouse/toque, seleções sucessivas após zoom e deslocamento manual,
-busca e link direto. Confere a câmera pela geografia visível; na borda,
+busca e link direto. A regressão de primeira chegada cobre 390 × 568/664/740/844, carga fria, cache, falha/nova tentativa, seleção substituída e rolagem deliberada durante carga demorada; exige o resultado visível após a composição final, com Filtros fechado e foco coerente. Confere a câmera pela geografia visível; na borda,
 localiza uma fronteira municipal com precisão de um pixel para detectar até
 pequenos deslocamentos indevidos. A emulação não comprova toque em aparelho real.
 

@@ -40,6 +40,30 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let initialAnchor = location.hash.slice(1);
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
+  // An explicit selection owns one arrival, until another action takes over.
+  let arrival: { code: string; scroll: number } | undefined;
+  const cancelArrival = () => { arrival = undefined; };
+  for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
+    window.addEventListener(event, cancelArrival, { passive: true, capture: true });
+  }
+  const beginArrival = () => {
+    arrival = selected ? { code: selected.code, scroll: scrollY } : undefined;
+  };
+  const finishArrival = () => {
+    const pending = arrival;
+    // The first frame lets mobile-layout measure the loaded summary and notify
+    // details; the next observes that composition rather than the loading shell.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!pending || arrival !== pending || selected?.code !== pending.code) return;
+      arrival = undefined;
+      if (Math.abs(scrollY - pending.scroll) > 2) return;
+      if (!isSheet() && matchMedia('(max-width: 767px)').matches) {
+        heading.focus({ preventScroll: true });
+        panel.scrollIntoView({ block: 'start', behavior: 'instant' });
+      }
+    }));
+  };
+
   // What the floating controls and the sheet are placed against. The open sheet keeps the collapsed height, so nothing moves behind it.
   const syncSheetMetrics = () => {
     root.style.setProperty('--notice-height', `${document.querySelector('.construction-notice')!.getBoundingClientRect().height}px`);
@@ -151,6 +175,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       }
       initialAnchor = '';
     }
+    finishArrival();
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
     // Only now does the result have its final height; keep the selection clear using its arrival rule.
     if (frameOnRender) { frameOnRender = false; if (isSheet()) frame(selected.code); }
@@ -208,6 +233,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     },
     show: render,
     clear: () => {
+      cancelArrival();
       panel.hidden = true;
       panelLegend.hidden = true;
       selected = undefined;
@@ -232,9 +258,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const retry = document.createElement('button');
     retry.type = 'button';
     retry.textContent = 'Tentar novamente';
-    retry.onclick = () => { if (selected) void navigation.select(selected, false).catch(failed); };
+    retry.onclick = () => {
+      if (selected) { beginArrival(); void navigation.select(selected, false).catch(failed); }
+    };
     resultBlock.dataset.kind = 'error';
     resultBlock.append(note, retry);
+    finishArrival();
   };
   clear.onclick = () => { navigation.close(); restoreFocus(); };
   panelTypeSelect.addEventListener('change', () => {
@@ -263,7 +292,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     preserveCameraFor = fromMap ? place.code : undefined;
     if (isSheet()) expand(false);
     returnFocus = focusAfterwards;
-    void navigation.select(place).catch(failed);
+    const loading = navigation.select(place);
+    beginArrival();
+    void loading.catch(failed);
   };
   const selectFromSearch = (place: MunicipalityListing['municipalities'][number]) => {
     results.replaceChildren();
@@ -321,8 +352,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const place = listing.municipalities.find(place => place.code === code);
     if (!place) return;
     select(place, input, true);
-    // In flow the panel is further down the page; on a sheet or beside the map it is already in view.
-    if (!isSheet() && matchMedia('(max-width: 767px)').matches) panel.scrollIntoView({ block: 'start' });
   });
   return (nextLayer: IndicatorLayer | undefined, nextState: MapState) => {
     void nextLayer;
