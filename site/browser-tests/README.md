@@ -184,3 +184,9 @@ os critérios da #26 com os percursos dessas suítes, registra a execução conj
 e mantém a conferência em aparelho real separada. Os cenários de primeiro toque,
 busca e link direto de `map-touch.test.mjs` também percorrem resumo, quatro Eixos
 e retorno à exploração com seleção e geografia preservadas.
+
+A regressão da #32 em `map-touch.test.mjs` verifica a recuperação do resumo
+flutuante após reduzir e restaurar a altura útil, com toque no canvas,
+Filtros fechados, foco e rolagem observados, detalhes deliberados e câmera
+preservada. Diagnóstico, comandos e limites da emulação ficam em
+[Recuperação da seleção mobile](../../docs/validation/mobile-selection-recovery.md).

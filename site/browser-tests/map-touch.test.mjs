@@ -119,6 +119,10 @@ test('the first canvas touch opens only the collapsed sheet and paints a selecti
     assert.equal(await page.locator('.maplibregl-popup').count(), 0);
     assert.equal(await page.locator('[data-toggle-profile]').getAttribute('aria-expanded'), 'false');
     assert.match(new URL(page.url()).pathname, /^\/municipio\/\d{6}-/);
+    assert.equal(await page.evaluate(() => scrollY), 0, 'first touch preserves page scroll');
+    assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
+    assert.equal(await page.locator('#map-indicator').isVisible(), false, 'permanent filters stay out of the floating composition');
+    assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), false);
     // Hide only HTML overlays for this capture; the geographic outline must be painted in WebGL.
     const png = await page.locator('.maplibregl-canvas').screenshot({ style: '.site-header, .map-controls, .filters-toggle, .map-notes, .legend-corner, .view-controls, #municipality-preview, [data-panel-legend], .maplibregl-control-container { visibility: hidden !important; }' });
     const blackPixels = await page.evaluate(async base64 => {
@@ -201,5 +205,35 @@ test('rotation keeps the selected municipality and the explored zoom when return
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(400);
     for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'rotation does not refit the municipality or lose the explored zoom');
+  } finally { await page.close(); }
+});
+
+test('recovering useful height restores canvas exploration without exposing permanent filters', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 740 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(`${base}/municipio/261160-recife/?tipo=breast&theme=dark`);
+    await page.locator('.map-status').waitFor({ state: 'hidden' });
+    await page.locator('.result-value').waitFor();
+    const samples = await visibleSamples(page);
+    const recife = samples.find(sample => sample.name === 'Recife (PE)');
+    assert.ok(recife, 'Recife is reachable on the canvas');
+    const url = page.url();
+    await page.setViewportSize({ width: 390, height: 390 });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'static');
+    await page.setViewportSize({ width: 390, height: 740 });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'fixed', null, { timeout: 3000 });
+    await page.touchscreen.tap(recife.point.x, recife.point.y);
+    await page.waitForFunction(() => document.querySelector('[data-toggle-profile]').getAttribute('aria-expanded') === 'false');
+    assert.equal(await page.locator('#preview-heading').innerText(), recife.name);
+    assert.equal(page.url(), url);
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
+    assert.equal(await page.locator('#map-indicator').isVisible(), false);
+    assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), false, 'canvas selection does not focus the heading');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(page.url(), url);
+    for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'height recovery and details preserve the camera');
   } finally { await page.close(); }
 });
