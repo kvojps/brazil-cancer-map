@@ -80,16 +80,19 @@ test('Back and Forward cross municipalities and filters without extra details en
   } finally { await page.close(); }
 });
 
-test('municipal anchors reach their axis and returning keeps the selected municipality', async () => {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+for (const height of [568, 844]) test(`municipal anchors at ${height} reach their axis without a synthetic history step`, async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height }, isMobile: true, hasTouch: true });
   try {
+    await page.goto(base + '/municipios/');
     await page.goto(base + RECIFE + '#prevencao');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
-    await page.goBack();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await page.goBack();
+    assert.equal(new URL(page.url()).pathname, '/municipios/');
   } finally { await page.close(); }
 });
 
@@ -143,3 +146,55 @@ test('reloading a details history entry keeps its control and Back coherent', as
     assert.equal(new URL(page.url()).pathname, RECIFE);
   } finally { await page.close(); }
 });
+
+for (const [width, height] of [[390, 568], [390, 664], [390, 740], [390, 844], [664, 390]]) {
+  test(`${width}x${height}: summary and deliberate details survive composition changes`, async () => {
+    const page = await browser.newPage({ viewport: { width, height }, isMobile: true, hasTouch: true });
+    try {
+      await page.goto(base + RECIFE);
+      await page.locator('.result-value').waitFor();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      await page.locator('.panel-result').tap();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      const toggle = page.getByRole('button', { name: 'Ver detalhes', exact: true });
+      await toggle.press('Enter');
+      await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
+      await page.setViewportSize({ width: 390, height: 360 });
+      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+      await page.setViewportSize({ width, height });
+      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+      await toggle.waitFor();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      await page.goForward();
+      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    } finally { await page.close(); }
+  });
+}
+
+for (const height of [568, 844]) {
+  test(`list return at ${height} restores the position before selection, UF and open rows`, async () => {
+    const page = await browser.newPage({ viewport: { width: 390, height }, isMobile: true, hasTouch: true });
+    try {
+      await page.goto(base + '/?visualizacao=lista&tipo=breast');
+      await page.locator('.indicator-table select').selectOption('PE');
+      const row = page.locator('tr[data-code="260960"]');
+      await row.locator('button').click();
+      const link = row.locator('a');
+      await link.scrollIntoViewIfNeeded();
+      const position = await page.evaluate(() => scrollY);
+      await link.tap();
+      await page.locator('.result-value').waitFor();
+      await page.waitForTimeout(200);
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+      await page.locator('#acesso [data-cancer-type="breast"] .card-action').scrollIntoViewIfNeeded();
+      await page.getByRole('button', { name: 'Voltar à lista', exact: true }).click();
+      await page.waitForTimeout(200);
+      assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'returns to exploration before selection');
+      assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
+      assert.equal(await row.locator('button').getAttribute('aria-expanded'), 'true');
+      assert.equal(new URL(page.url()).pathname, '/municipio/260960-olinda/');
+    } finally { await page.close(); }
+  });
+}

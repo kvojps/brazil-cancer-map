@@ -83,13 +83,6 @@
 /* With the select above, the type would be said twice where a card repeats it under its Eixo. */
 #municipality-preview[data-enhanced] :is(#acesso, #panorama) > [data-cancer-type] > h3 { display: none; }
 
-/* On the sheet only the collapsed form shortens the prostate caveat. */
-@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-  @scope (:root:not([data-mobile-flow])) {
-    #municipality-preview[data-collapsed] .result-caveat-short { display: block; }
-    #municipality-preview[data-collapsed] .result-caveat-full { display: none; }
-  }
-}
 /* Compact form on a low screen: the same block in less height, with the warning whole. */
 @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) and (max-height: 600px) {
   @scope (:root:not([data-mobile-flow])) {

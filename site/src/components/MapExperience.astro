@@ -76,7 +76,7 @@ const period = manifest.indicators[indicator].all;
   .panel-bar h2 { flex: 1; min-width: 0; margin: 0; }
   .panel-icon, .panel-icon:hover:not(:disabled) { flex: none; display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; font-size: var(--text-16); color: var(--text); background: transparent; }
   .panel-icon:hover:not(:disabled) { background: var(--soft); }
-  /* The control only exists on the sheet: anywhere else the panel is always whole. */
+  /* Desktop keeps the complete consultation; scripting adds deliberate details on phones. */
   [data-toggle-profile], .panel-legend { display: none; }
   .panel-type { display: flex; align-items: center; gap: .75rem; margin-block: 0 .75rem; font-size: var(--text-14); font-weight: 500; }
   .panel-type select { flex: 1; min-width: 0; }
@@ -105,6 +105,8 @@ const period = manifest.indicators[indicator].all;
   /* In flow, the panel and everything else are a plain page, also under 200% zoom. */
   @media (max-width: 767px) {
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+    #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
+    #municipality-preview[data-enhanced][data-collapsed] [data-preview-content] { display: none; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
     @scope (:global(:root:not([data-mobile-flow]))) {

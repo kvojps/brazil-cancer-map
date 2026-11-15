@@ -263,6 +263,11 @@ for (const height of [568, 664, 740, 844]) {
       assert.equal(await page.locator('#municipality-content .profile').getAttribute('data-code'), new URL(page.url()).pathname.split('/')[2].slice(0, 6));
       assert.ok(arrival.top >= arrival.clearance - 1 && arrival.top < arrival.height, JSON.stringify(arrival));
       assert.ok(arrival.bottom <= arrival.height, 'the current result is visible');
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false, 'first touch keeps deliberate details in every composition');
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).tap();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).tap();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
       if (arrival.flow) { assert.ok(arrival.scroll > 0); assert.equal(arrival.focus, true); }
       else { assert.equal(arrival.scroll, 0); assert.equal(arrival.canvasFocus, true); }

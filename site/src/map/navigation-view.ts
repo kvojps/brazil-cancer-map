@@ -8,6 +8,7 @@ import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/
 
 /** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
 const SHEET = '(max-width: 767px) and (min-width: 300px) and (min-height: 520px)';
+const isPhone = () => matchMedia('(max-width: 767px)').matches;
 const isSheet = () => matchMedia(SHEET).matches && !document.documentElement.hasAttribute('data-mobile-flow');
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined, preserveCamera?: boolean) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
@@ -99,11 +100,20 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const syncDetails = () => {
     const hadFocus = panel.contains(document.activeElement);
     const wasExpanded = !panel.hasAttribute('data-collapsed');
-    expand(!isSheet() || detailsOpen());
-    if (isSheet() && hadFocus && wasExpanded && !detailsOpen() && !toggle.hidden) toggle.focus({ preventScroll: true });
+    expand(!isPhone() || detailsOpen());
+    if (isPhone() && wasExpanded && !detailsOpen()) {
+      if (hadFocus && !toggle.hidden) toggle.focus({ preventScroll: true });
+      const position = history.state?.municipalExploration;
+      if (position) requestAnimationFrame(() => window.scrollTo({ ...position, behavior: 'instant' }));
+    }
   };
   const openDetails = () => {
-    if (!detailsOpen()) history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', location.href);
+    cancelArrival();
+    if (!detailsOpen()) {
+      const exploration = history.state?.municipalExploration ?? { left: 0, top: 0 };
+      history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
+      history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', location.href);
+    }
     expand(true);
     heading.focus({ preventScroll: true });
   };
@@ -111,13 +121,15 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     if (!detailsOpen()) openDetails();
     else if (history.state?.detailsEntry) history.back();
     else {
-      history.replaceState({ ...history.state, municipalDetails: undefined }, '', location.href);
+      const url = new URL(location.href);
+      url.hash = '';
+      history.replaceState({ ...history.state, municipalDetails: undefined }, '', url);
       syncDetails();
     }
   };
   window.addEventListener('popstate', syncDetails);
   window.addEventListener('navigation-state-change', syncDetails);
-  matchMedia(SHEET).addEventListener('change', syncDetails);
+  matchMedia('(max-width: 767px)').addEventListener('change', syncDetails);
   window.addEventListener('mobile-layout-change', syncDetails);
   const prepareAxes = () => {
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
@@ -163,15 +175,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
       for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
       shownIndicator = state.indicator;
-      if (initialAnchor && isSheet()) {
-        if (!detailsOpen()) {
-          const anchored = new URL(location.href);
-          const collapsed = new URL(anchored);
-          collapsed.hash = '';
-          history.replaceState(history.state, '', collapsed);
-          history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', anchored);
-        }
+      if (initialAnchor && isPhone()) {
+        // A shared anchor is already the destination, not a synthetic details visit.
+        history.replaceState({ ...history.state, municipalDetails: location.pathname, detailsEntry: false }, '', location.href);
         expand(true);
+        const target = content.querySelector<HTMLElement>(`#${axisId}`);
+        requestAnimationFrame(() => target?.scrollIntoView({ block: 'start' }));
       }
       initialAnchor = '';
     }
@@ -200,7 +209,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         shownCode = '';
         frameOnCollapse = false;
         frameOnRender = true;
-        expand(!isSheet());
+        expand(!isPhone() || detailsOpen());
       }
       if (changed) frame(place.code);
       status.textContent = `${place.name} (${place.uf}) selecionado.`;
@@ -279,7 +288,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
       if (`#${axis.id}` !== link.hash) continue;
       axis.open = true;
-      if (isSheet()) {
+      if (isPhone()) {
         // Axis navigation belongs to this details entry, so Back still returns to the summary.
         event.preventDefault();
         history.replaceState(history.state, '', link.href);
@@ -290,9 +299,11 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
     preserveCameraFor = fromMap ? place.code : undefined;
-    if (isSheet()) expand(false);
+    const exploration = { left: scrollX, top: scrollY };
+    if (isPhone()) expand(false);
     returnFocus = focusAfterwards;
     const loading = navigation.select(place);
+    history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
     beginArrival();
     void loading.catch(failed);
   };

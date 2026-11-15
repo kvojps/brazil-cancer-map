@@ -64,8 +64,9 @@ test('Alcântara: the longest block keeps origin and warning at 320 × 568, with
     assert.match(text, /Seu município e vizinhos — região de São Luís/);
     assert.ok(text.includes(WARNING));
     assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static');
-    assert.equal(await toggle(page).isVisible(), false, 'the consultation is fully readable in page flow');
-    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    assert.equal(await toggle(page).isVisible(), true, 'flow keeps deliberate details');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await toggle(page).click();
     await page.locator('#preview-heading').scrollIntoViewIfNeeded();
     const name = await box(page, '#preview-heading');
     assert.ok(name.top >= (await box(page, '.construction-notice')).bottom, 'the name is clear of the notice');
@@ -92,11 +93,10 @@ test('Araioses: Dado insuficiente takes the place of the number, and the warning
   } finally { await page.close(); }
 });
 
-test('prostate: the short caveat collapsed, the whole one open, and no long box over the map', async () => {
+test('prostate: the whole caveat is visible collapsed and open', async () => {
   const page = await openPanel(`${RECIFE}?tipo=prostate`, PHONE);
   try {
-    assert.match(await blockText(page), /Sem comparação com o prazo da lei: vigilância ativa pode ser a conduta correta/);
-    assert.doesNotMatch(await blockText(page), /acompanhar o câncer antes de tratar/);
+    assert.match(await blockText(page), /Na próstata, acompanhar o câncer antes de tratar \(vigilância ativa\) pode ser a conduta correta/);
     assert.equal(await page.locator('#indicator-caveat').isVisible(), false);
     await toggle(page).click();
     assert.match(await blockText(page), /Na próstata, acompanhar o câncer antes de tratar \(vigilância ativa\) pode ser a conduta correta/);
@@ -346,7 +346,9 @@ for (const [width, height] of [[195, 422], [320, 450], [640, 400]]) {
     const page = await openPanel(ALCANTARA, { width, height });
     try {
       assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static');
-      assert.equal(await toggle(page).isVisible(), false);
+      assert.equal(await toggle(page).isVisible(), true);
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      await toggle(page).click();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
       assert.ok((await blockText(page)).includes(WARNING));
       assert.equal(await noHorizontalScroll(page), true);

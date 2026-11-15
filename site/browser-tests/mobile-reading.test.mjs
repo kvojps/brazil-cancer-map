@@ -119,7 +119,7 @@ for (const composition of ['floating details', 'page flow']) {
     try {
       await page.goto(base + '/municipio/261160-recife/');
       await page.locator('.result-value').waitFor();
-      if (composition === 'floating details') await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
       await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
       const position = () => page.evaluate(() => ({ page: scrollY, panel: document.querySelector('#municipality-preview').scrollTop }));
       const before = await position();

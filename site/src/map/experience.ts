@@ -56,7 +56,7 @@ function showNotes(layer: IndicatorLayer): void {
   if (caveat) {
     caveat.textContent = !layer.has_status ? noStatusNote(layer) : layer.indicator === 'hpv' ? 'Série curta, ainda sem direção: o HPV tem apenas Situação.' : '';
     caveat.hidden = !caveat.textContent;
-    // On a phone with a municipality selected, the panel says this one: short collapsed and whole open.
+    // With a municipality selected, the panel carries this caveat in full.
     caveat.toggleAttribute('data-in-panel', layer.indicator === 'within_60_days' && !layer.has_status);
   }
   if (!notes) return;
