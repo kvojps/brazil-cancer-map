@@ -60,20 +60,7 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
   </div>
 </form>
 
-<script>
-  const sheet = document.querySelector<HTMLElement>('#map-filters');
-  const closeSheet = () => { if (sheet?.matches(':popover-open')) sheet.hidePopover(); };
-  // Unlike an auto popover, a manual one does not give focus back when it closes.
-  sheet?.addEventListener('beforetoggle', event => {
-    if ((event as ToggleEvent).newState === 'closed' && sheet.contains(document.activeElement)) document.querySelector<HTMLElement>('.filters-toggle')?.focus();
-  });
-  // A manual popover has no native Escape, and the sheet belongs to the floating composition only.
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSheet(); });
-  // A popover sits above everything else on the page, so it gives way to what opens from the header.
-  document.querySelector('.site-menu')?.addEventListener('toggle', event => { if ((event.target as HTMLDetailsElement).open) closeSheet(); });
-  document.querySelector('.search-toggle')?.addEventListener('click', closeSheet);
-  matchMedia('(max-width: 767px) and (min-width: 300px) and (min-height: 520px)').addEventListener('change', closeSheet);
-</script>
+
 
 <style>
   .map-controls {

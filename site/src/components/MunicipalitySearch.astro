@@ -12,25 +12,8 @@
 </div>
 
 <script>
-  const header = document.querySelector<HTMLElement>('.site-header');
-  const toggle = document.querySelector<HTMLAnchorElement>('.search-toggle');
-  const input = document.querySelector<HTMLInputElement>('#municipality-search');
-  if (header && toggle && input) {
-    const close = () => { delete header.dataset.searchOpen; };
-    const closeAndReturn = () => { close(); toggle.focus(); };
-    toggle.addEventListener('click', event => {
-      event.preventDefault();
-      header.dataset.searchOpen = '';
-      input.focus();
-    });
-    document.querySelector('.search-close')?.addEventListener('click', closeAndReturn);
-    document.addEventListener('keydown', event => { if (event.key === 'Escape' && 'searchOpen' in header.dataset) closeAndReturn(); });
-    // Before the button acts: the panel waits behind the open search, and the selection takes focus to its name.
-    document.querySelector('#municipality-results')?.addEventListener('click', event => {
-      if (event.target instanceof Element && event.target.closest('button')) close();
-    }, { capture: true });
-    window.addEventListener('municipality-map-select', close);
-  }
+  import { mountTemporarySurfaces } from '../shared/temporary-surfaces';
+  mountTemporarySurfaces();
 </script>
 
 <style>

@@ -164,3 +164,9 @@ e ao alternar Mapa/Lista, por rótulos geográficos em pontos da tela. Falha com
 no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos
 de origem regional, Faixa C, Dado insuficiente, mortalidade e leitura sem JavaScript
 permanecem em `municipal-panel.test.mjs`. Não há teto percentual de altura do resumo.
+
+`mobile-surfaces.test.mjs` percorre busca, filtros e legenda no celular, com
+ativação por teclado, fechamento, exclusividade e retorno de foco. A partir de
+Mapa e Lista, verifica consulta anterior, filtros aplicados, UF e linhas abertas,
+e seleção pela busca com resumo recolhido. Usa emulação de Chromium; não comprova
+teclado virtual ou comportamento em aparelho físico.
