@@ -325,16 +325,19 @@ test('the list scrolls normally with the notice on top, Mapa/Lista fixed and the
   } finally { await page.close(); }
 });
 
-test('a caveat floats under Filtros and follows its height', async () => {
+test('a long caveat moves filters into flow and stays clear of their controls', async () => {
   const page = await open({ viewport: { width: 320, height: 568 } });
   try {
     await filtersReady(page);
     await page.locator('.filters-toggle').click();
     await page.locator('#cancer-type').selectOption('prostate');
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.map-controls')).position === 'relative');
+    assert.equal(await page.locator('.filters-toggle').isVisible(), false);
+    assert.match(await page.locator('#indicator-caveat').innerText(), /vigilância ativa/);
+    assert.ok((await box(page, '.map-notes')).top >= (await box(page, '#cancer-type')).bottom);
     await page.locator('#map-indicator').selectOption('mortality');
-    await page.getByRole('button', { name: 'Ver mapa' }).click();
-    await page.locator('#indicator-caveat').waitFor();
-    assert.ok((await box(page, '.map-notes')).top >= (await box(page, '.filters-toggle')).bottom);
+    await page.waitForFunction(() => document.querySelector('#indicator-caveat').textContent.includes('só Tendência'));
+    assert.ok((await box(page, '.map-notes')).top >= (await box(page, '#cancer-type')).bottom);
     assert.equal(await noHorizontalScroll(page), true);
   } finally { await page.close(); }
 });
