@@ -239,6 +239,8 @@ A apresentação é a do **Console horizontal**, aprovado pelo responsável em 0
   - Situação: "A cor mostra a distância até a referência. Não é um ranking entre municípios."
 - **Tooltip:** nome do lugar, indicador, período, classe e origem geográfica do dado. Quando usa a região: **"Seu município e vizinhos — região de X"**.
 - **Interação:** clicar num município, buscá-lo ou abrir seu link seleciona e destaca o município, abrindo a consulta completa no dashboard, sem tela municipal separada. Painel lateral no desktop; inferior, resumido e expansível no celular. Sem seleção, Brasil inteiro e nenhum painel vazio. Lista substitui o mapa na mesma área e preserva filtros e seleção; busca e lista independem do mapa. O índice por UF fica em `/municipios/`, com item na navegação principal.
+- **Toque e hover:** o toque no mapa apresenta somente o painel inferior recolhido no celular e remove qualquer tooltip anterior. Tooltip e contorno de hover respondem ao mouse, inclusive depois de alternar entre mouse e toque em dispositivo híbrido; a modalidade não é inferida pela largura da tela. O toque não move o foco.
+- **Enquadramento da seleção:** selecionar pelo mapa conserva posição e zoom; só admite deslocamento mínimo para deixar o ponto selecionado fora das sobreposições. Busca e link municipal direto enquadram o município consultado na área útil, descontando painel e controles, sem usar a UF inteira como alvo. O carregamento do resultado mantém a mesma regra de enquadramento da seleção.
 
 ### 11.2 Meu município (consulta integrada)
 

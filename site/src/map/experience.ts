@@ -87,10 +87,15 @@ if (container && status) {
       let showOnMap = (_layer: IndicatorLayer | undefined, _mode: MapState['mode']) => {};
       let mapLayer: IndicatorLayer | undefined;
       let mapState = initial;
-      let selectOnMap = (_code: string | undefined) => {};
+      let selectOnMap = (_code: string | undefined, _preserveCamera = false) => {};
       let frameCountryOnce = () => {};
       let selectedCode: string | undefined;
-      const mapSelection = { focus: (code: string | undefined) => { selectedCode = code; selectOnMap(code); } };
+      let preserveCamera = false;
+      const mapSelection = { focus: (code: string | undefined, preserve = false) => {
+        selectedCode = code;
+        preserveCamera = preserve;
+        selectOnMap(code, preserve);
+      } };
       const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
       const notice = document.querySelector<HTMLElement>("#map-selection-notice");
       let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
@@ -177,9 +182,9 @@ if (container && status) {
         // The list view hides the map, which cannot be framed until it comes back.
         let frameWhenShown = false;
         const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
-        selectOnMap = code => {
+        selectOnMap = (code, preserve = false) => {
           frameWhenShown = !!code && !container.clientWidth;
-          if (code) renderer.focusMunicipality(map, code, overlays);
+          if (code) renderer.focusMunicipality(map, code, overlays, preserve);
           else renderer.clearMunicipality(map);
         };
         // The legend reserves its area only once a layer has filled it, and the list hides the map.
@@ -190,10 +195,10 @@ if (container && status) {
           renderer.frameCountry(map, overlays);
         };
         map.on('resize', () => {
-          if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode);
+          if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);
           frameCountryOnce();
         });
-        selectOnMap(selectedCode);
+        selectOnMap(selectedCode, preserveCamera);
         frameCountryOnce();
         renderer.onMunicipalityClick(map, code => {
           window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));

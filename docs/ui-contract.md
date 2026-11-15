@@ -133,8 +133,10 @@ Vale a partir de 768 px.
 - **Tipo de câncer:** seletor nativo no painel, ligado ao do mapa. Sem JavaScript, links nativos dos seis Tipos.
 - **Textos sobre a interface:** saem "Consulta pronta…" e "Meu município — dados sobre…". A nota sobre "Todos os cânceres" fica em "Por que 'Todos os cânceres' muda entre os Eixos?", e a nota de 2018 e 2024 em "O que é este número?".
 - **Status:** só para leitores de tela. Selecionar um município não muda a altura do cabeçalho nem dos controles.
-- **Foco:** a busca leva o foco ao nome do município. Recolher mantém o foco no controle. Limpar devolve o foco à busca ou ao seu botão. **A confirmar:** o toque no mapa não move o foco.
+- **Foco:** a busca leva o foco ao nome do município. Recolher mantém o foco no controle. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa não move o foco.
 - **Contorno de seleção:** ganha uma borda externa na cor da superfície.
+- **Toque no canvas:** seleciona e destaca o município e, no modo de folha, apresenta somente o painel recolhido, sem tooltip concorrente. Remove o hover anterior. Tooltip e contorno de hover voltam com movimento real de mouse, inclusive em dispositivo híbrido e independentemente da largura. O tooltip não intercepta o ponteiro nem o toque.
+- **Câmera:** seleção pelo mapa preserva zoom e posição. Se o painel ou os controles encobrirem o ponto tocado, apenas o menor deslocamento que o revele é permitido, sem zoom. Busca e link direto enquadram os limites do município, usando a malha já carregada e a área útil fora das sobreposições. A chegada dos dados ao painel respeita a origem da seleção, sem reenquadrar a UF.
 - **Na próstata:** o painel recolhido usa a versão curta "Sem comparação com o prazo da lei: vigilância ativa pode ser a conduta correta", e o aberto traz o texto integral. **A confirmar:** só a ressalva da próstata sai de cima do mapa com município selecionado.
 - **A confirmar:** C55 não calculável sem os pontos, e "Sem dado neste recorte" com amostra neutra, sem os pontos.
 - **Fora do modo flutuante:** o painel faz parte de uma página comum, sem folha nem controle de recolher. Um toque no mapa leva a página ao painel.

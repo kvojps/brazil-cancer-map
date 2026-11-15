@@ -175,12 +175,15 @@ test('the sheet gives way to the menu and the search, which it would otherwise c
     const sheet = page.locator('#map-filters');
     await page.locator('.filters-toggle').click();
     await page.locator('.site-menu summary').click();
+    // Native details dispatches toggle asynchronously; wait for its sheet-closing handler.
+    await sheet.waitFor({ state: 'hidden' });
     assert.equal(await sheet.isVisible(), false);
     const last = page.getByRole('navigation', { name: 'Menu' }).locator('[data-theme-toggle]');
     await last.click({ trial: true });
     await page.locator('.site-menu summary').click();
     await page.locator('.filters-toggle').click();
     await page.locator('.search-toggle').click();
+    await sheet.waitFor({ state: 'hidden' });
     assert.equal(await sheet.isVisible(), false);
   } finally { await page.close(); }
 });

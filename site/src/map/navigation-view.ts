@@ -10,7 +10,7 @@ import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/
 const SHEET = '(max-width: 767px) and (min-width: 300px) and (min-height: 520px)';
 const isSheet = () => matchMedia(SHEET).matches;
 
-export function mountMunicipalityNavigation(map: { focus: (code: string | undefined) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
+export function mountMunicipalityNavigation(map: { focus: (code: string | undefined, preserveCamera?: boolean) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
   const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
   initialUrl.searchParams.delete('municipio');
@@ -55,11 +55,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     target?.focus({ preventScroll: true });
   };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
-  // The state is framed above the collapsed sheet: under an open one, it waits for the sheet to come down.
+  // Frame above the collapsed sheet; an arrival under an open sheet waits for it to come down.
   let frameOnCollapse = false;
+  let preserveCameraFor: string | undefined;
   const frame = (code: string) => {
     frameOnCollapse = isSheet() && !panel.hasAttribute('data-collapsed');
-    if (!frameOnCollapse) map.focus(code);
+    if (!frameOnCollapse) map.focus(code, preserveCameraFor === code);
   };
   const expand = (expanded: boolean) => {
     panel.toggleAttribute('data-collapsed', !expanded);
@@ -121,7 +122,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       initialAnchor = '';
     }
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
-    // The sheet of a new selection has its final height only now, and the state must be framed above it.
+    // Only now does the result have its final height; keep the selection clear using its arrival rule.
     if (frameOnRender) { frameOnRender = false; if (isSheet()) frame(selected.code); }
   };
   const navigation = createMunicipalityNavigation({
@@ -130,6 +131,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     setUrl: url => { history.pushState(null, '', url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
       const changed = selected?.code !== place.code;
+      if (changed && preserveCameraFor !== place.code) preserveCameraFor = undefined;
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
       for (const button of [toggle, clear, panelLegend]) button.hidden = false;
@@ -215,7 +217,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     if (!link || link.pathname !== location.pathname) return;
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) if (`#${axis.id}` === link.hash) axis.open = true;
   });
-  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input) => {
+  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
+    preserveCameraFor = fromMap ? place.code : undefined;
+    if (fromMap && isSheet()) expand(false);
     returnFocus = focusAfterwards;
     void navigation.select(place).catch(failed);
   };
@@ -274,7 +278,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const code = (event as CustomEvent<string>).detail;
     const place = listing.municipalities.find(place => place.code === code);
     if (!place) return;
-    select(place);
+    select(place, input, true);
     // In flow the panel is further down the page; on a sheet or beside the map it is already in view.
     if (!isSheet() && matchMedia('(max-width: 767px)').matches) panel.scrollIntoView({ block: 'start' });
   });

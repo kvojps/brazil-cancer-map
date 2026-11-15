@@ -27,6 +27,13 @@ Esses testes não substituem uma sessão com leitor de tela nem a auditoria de
 acessibilidade do lançamento (docs/validation/accessibility-audit.md). Os anúncios usam regiões de status e
 os dados continuam expressos em texto.
 
+`map-touch.test.mjs` usa WebGL e toque emulado no canvas, sem disparar o evento
+interno de seleção. Cobre o primeiro toque e o contorno renderizado, hover e
+alternância mouse/toque, seleções sucessivas após zoom e deslocamento manual,
+busca e link direto. Confere a câmera pela geografia visível; na borda,
+localiza uma fronteira municipal com precisão de um pixel para detectar até
+pequenos deslocamentos indevidos. A emulação não comprova toque em aparelho real.
+
 A ficha municipal também é verificada em `municipality.test.mjs`: links estáticos
 para os seis Tipos de câncer, âncora direta que prevalece sobre um filtro anterior,
 preservação de tema e retorno, ativação de links e expansões pelo teclado e a
