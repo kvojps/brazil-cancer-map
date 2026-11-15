@@ -39,11 +39,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let shownCode = '';
   let shownIndicator = '';
   let initialAnchor = location.hash.slice(1);
+  let anchorArrival = true;
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
   // An explicit selection owns one arrival, until another action takes over.
   let arrival: { code: string; scroll: number } | undefined;
-  const cancelArrival = () => { arrival = undefined; };
+  const cancelArrival = () => { arrival = undefined; anchorArrival = false; };
   for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
     window.addEventListener(event, cancelArrival, { passive: true, capture: true });
   }
@@ -177,10 +178,15 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       shownIndicator = state.indicator;
       if (initialAnchor && isPhone()) {
         // A shared anchor is already the destination, not a synthetic details visit.
-        history.replaceState({ ...history.state, municipalDetails: location.pathname, detailsEntry: false }, '', location.href);
+        if (!detailsOpen()) history.replaceState({ ...history.state, municipalDetails: location.pathname, detailsEntry: false,
+          municipalExploration: history.state?.municipalExploration ?? { left: 0, top: 0 },
+        }, '', location.href);
         expand(true);
         const target = content.querySelector<HTMLElement>(`#${axisId}`);
-        requestAnimationFrame(() => target?.scrollIntoView({ block: 'start' }));
+        const code = selected.code;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (anchorArrival && selected?.code === code && detailsOpen()) target?.scrollIntoView({ block: 'start' });
+        }));
       }
       initialAnchor = '';
     }
@@ -298,6 +304,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     }
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
+    initialAnchor = '';
     preserveCameraFor = fromMap ? place.code : undefined;
     const exploration = { left: scrollX, top: scrollY };
     if (isPhone()) expand(false);

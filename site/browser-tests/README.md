@@ -80,7 +80,7 @@ conferido em capturas; a conta da área reservada está em `tests/framing.test.m
 
 `municipal-panel.test.mjs` verifica o painel Meu município com os casos difíceis: Balsas
 (faixa C), Alcântara (Região imediata e faixa C, o bloco mais longo, a 320 × 568), Araioses
-(Dado insuficiente) e próstata (ressalva curta e integral). Cobre o mesmo bloco recolhido e
+(Dado insuficiente) e próstata (ressalva integral no resumo e nos detalhes). Cobre o mesmo bloco recolhido e
 aberto, a folha de ponta a ponta que abre por ação explícita até o aviso, Filtros, menu e busca no lugar da
 folha, a coluna de 400 e 480 px com o nome fixo, os Eixos com resultado no título e um aberto
 por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensagem de status só
@@ -157,8 +157,12 @@ Lista preserva o filtro de UF e as linhas expandidas.
 
 `mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno por
 Mapa/Lista, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
-da posição de exploração da Lista ao alternar visualizações. Cobre chegada por âncora,
-links entre Eixos sem etapas extras no histórico e indisponibilidade no recorte.
+da posição de exploração da Lista ao alternar visualizações. Cobre resumo recolhido e retorno em fluxo e composição flutuante a 390 ×
+568/664/740/844 e em horizontal, com UF e linhas abertas preservadas. Âncoras
+revelam o Eixo após a composição final, sem entrada artificial no histórico;
+interação deliberada durante carga cancela o deslocamento, e nova seleção
+substitui a âncora pendente. Cobre também links entre Eixos e indisponibilidade
+no recorte.
 `map-touch.test.mjs` confere também a preservação da câmera ao retornar dos detalhes
 e ao alternar Mapa/Lista, por rótulos geográficos em pontos da tela. Falha com nova tentativa
 no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos
@@ -192,3 +196,6 @@ preservada. `mobile-reading.test.mjs` confere a conservação da posição de
 leitura nos detalhes e no fluxo durante a medição. Diagnóstico, comandos e
 limites da emulação ficam em
 [Recuperação da seleção mobile](../../docs/validation/mobile-selection-recovery.md).
+
+A [verificação de resumo, detalhes e retorno em fluxo](../../docs/validation/mobile-details-flow.md)
+registra a entrega da #36 e a conferência conjunta com a chegada da #34.

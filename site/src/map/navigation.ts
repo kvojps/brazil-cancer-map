@@ -40,7 +40,7 @@ export function createMunicipalityNavigation<T>(options: {
         const url = options.getUrl();
         url.pathname = municipalityPath(place);
         url.searchParams.delete('municipio');
-        if (url.hash.startsWith('#tipo-')) url.hash = '';
+        url.hash = '';
         options.setUrl(url);
       }
       try {

@@ -271,6 +271,10 @@ A tabela permanece disponível. Evidência e limites: [leitura mobile](validatio
 - **Nota de "Todos os cânceres"** junto ao seletor: "Cada eixo usa os registros adequados ao seu indicador. No tratamento, excluímos alguns tipos com informação incompleta. Por isso, 'Todos os cânceres' não reúne exatamente os mesmos tipos em todos os eixos."
 - A página de cada município funciona sem JavaScript para a leitura básica.
 
+A [verificação de resumo, detalhes e retorno em fluxo](validation/mobile-details-flow.md)
+registra a entrega da #36 e os percursos conjuntos com a chegada da #34,
+com limites de emulação e conferência física separada.
+
 ## 12. Metodologia pública ("Como calculamos")
 
 É uma seção do site, em linguagem simples e com detalhe técnico suficiente para reproduzir cada número. Ela só detalha regras desta spec e não cria regra nova. Para **cada indicador**, documenta:

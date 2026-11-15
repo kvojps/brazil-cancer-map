@@ -87,6 +87,11 @@ for (const height of [568, 844]) test(`municipal anchors at ${height} reach thei
     await page.goto(base + RECIFE + '#prevencao');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#prevencao > summary').evaluate(node => {
+      const r = node.getBoundingClientRect();
+      return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
+    }), true, 'the requested axis is visible after the final composition');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
@@ -110,6 +115,11 @@ test('links between axes keep mobile details open without adding a step before c
     await page.goForward();
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#prevencao > summary').evaluate(node => {
+      const r = node.getBoundingClientRect();
+      return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
+    }), true, 'the requested axis is visible after the final composition');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
   } finally { await page.close(); }
@@ -198,3 +208,66 @@ for (const height of [568, 844]) {
     } finally { await page.close(); }
   });
 }
+
+test('deliberate scrolling during an anchored load cancels late positioning', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let requested;
+  const started = new Promise(resolve => { requested = resolve; });
+  try {
+    await page.route('**/dados/profiles/PE.json', async route => { requested(); await held; await route.continue(); });
+    await page.goto(base + RECIFE + '#prevencao');
+    await started;
+    await page.keyboard.press('Control+Home');
+    await page.waitForTimeout(200);
+    const position = await page.evaluate(() => scrollY);
+    assert.equal(position, 0, 'the user has returned to the start during loading');
+    release();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'loading respects the deliberate reading position');
+  } finally { release(); await page.close(); }
+});
+
+test('a new search selection supersedes an anchor still loading', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let requested;
+  const started = new Promise(resolve => { requested = resolve; });
+  try {
+    await page.route('**/dados/profiles/PE.json', async route => { requested(); await held; await route.continue(); });
+    await page.goto(base + RECIFE + '#prevencao');
+    await started;
+    if (await page.locator('.search-toggle').isVisible()) await page.locator('.search-toggle').click();
+    await page.locator('#municipality-search').fill('Olinda PE');
+    await page.locator('#municipality-search').press('Enter');
+    release();
+    await page.locator('.profile[data-code="260960"]').waitFor({ state: 'attached' });
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator('#preview-heading').innerText(), 'Olinda (PE)');
+    assert.equal(new URL(page.url()).hash, '', 'new selection discards the superseded anchor');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    await page.reload();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+  } finally { release(); await page.close(); }
+});
+
+test('reloading an axis inside a deliberate details entry preserves its return history', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + '/municipios/');
+    await page.goto(base + RECIFE + '?indicador=mortality');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.locator('#panorama [data-cancer-type="all"] a[href$="#prevencao"]').last().click();
+    await page.reload();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    await page.goBack();
+    assert.equal(new URL(page.url()).pathname, '/municipios/', 'return consumes the existing details entry');
+  } finally { await page.close(); }
+});

@@ -382,6 +382,12 @@ test('native 200% zoom on a phone keeps the plain page and the warning in both t
       assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static', colorScheme);
       assert.ok((await blockText(page)).includes(WARNING), colorScheme);
       assert.equal(await noHorizontalScroll(page), true, colorScheme);
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      await toggle(page).click();
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+      await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
+      await toggle(page).click();
+      await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     } finally { await context.close(); }
   }
 });
