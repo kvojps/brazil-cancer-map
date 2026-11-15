@@ -87,7 +87,7 @@ As decisões de UI que os testes e o CSS usam como contrato. Comentários no có
 
 ## Primeira tela no celular
 
-Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(max-width: 767px) and (min-width: 300px) and (min-height: 520px)`. Essa condição se repete nos componentes, porque CSS não tem media query nomeada.
+Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(max-width: 767px) and (min-width: 300px) and (min-height: 520px)`. Essa condição se repete nos componentes. Com JavaScript, as regras flutuantes também exigem ausência de `data-mobile-flow` na raiz: a altura disponível da viewport visual e o espaço consumido pelo resumo podem exigir fluxo mesmo nessa faixa.
 
 - **Tela:** o aviso no topo, e o mapa de ponta a ponta em toda a altura abaixo dele. O resto flutua sobre o mapa. Um dedo move o mapa, a tela do mapa não rola, e o rodapé não é alcançado ali: o menu leva a fontes, licenças e código.
 - **Aviso:** faixa invertida, sempre visível, inclusive na Lista e com a página rolada.
@@ -98,6 +98,7 @@ Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(ma
 - **Mapa/Lista:** canto inferior direito. Na Lista, fica fixo na tela.
 - **Enquadramento:** o país vai até Fernando de Noronha, e não até a Ilha da Trindade, reservando a altura de Filtros e da legenda (`site/src/map/framing.ts`).
 - **Busca:** "1 município encontrado." e "N municípios encontrados.". **A confirmar:** sem "Abrir consulta" nos resultados no modo flutuante.
+- **Adaptação ao espaço:** abaixo de 768 px, usa fluxo quando a viewport visual tem menos de 520 px de altura ou a largura é menor que 300 px. Com resumo recolhido, desconta aviso, cabeçalho, altura natural do resumo e 120 px para controles e espaçamento; se restarem menos de 160 px para explorar o mapa, passa ao fluxo. São margens de composição, não um teto percentual do resumo. Os detalhes abertos não entram nessa medição. Enquanto estiver em fluxo, conserva a medida do resumo para evitar alternância de composição causada pela própria expansão. Limpar a seleção ou recuperar espaço pode restabelecer o modo flutuante.
 - **Fora do modo flutuante**, como no zoom de 200%: cabeçalho, seletores, busca, legenda e Mapa/Lista ficam em fluxo, fora do mapa, e a página rola até o rodapé. O botão Filtros não existe nesse modo, porque os seletores ficam à vista.
 
 ## Desktop em tela cheia
@@ -139,6 +140,7 @@ Vale a partir de 768 px.
 - **Falha:** mensagem e “Tentar novamente” no resumo, sem expansão automática. O mapa continua disponível; falha, Dado insuficiente e “Sem dado neste recorte” são estados distintos. Uma resposta atrasada nunca aparece como resultado da seleção atual.
 - **Contorno de seleção:** ganha uma borda externa na cor da superfície.
 - **Toque no canvas:** seleciona e destaca o município e, no modo de folha, apresenta somente o painel recolhido, sem tooltip concorrente. Remove o hover anterior. Tooltip e contorno de hover voltam com movimento real de mouse, inclusive em dispositivo híbrido e independentemente da largura. O tooltip não intercepta o ponteiro nem o toque.
+- **Rotação e viewport visual:** preservam seleção, filtros, Eixo e histórico; não reenquadram o município nem a UF. Depois da mudança de tamanho ou composição, a câmera só recebe o deslocamento mínimo para revelar seleção encoberta, sem alterar o zoom. A busca continua no fluxo quando a altura útil cai; os resultados e controles podem ser alcançados por rolagem.
 - **Câmera:** seleção pelo mapa preserva zoom e posição. Se o painel ou os controles encobrirem o ponto tocado, apenas o menor deslocamento que o revele é permitido, sem zoom. Busca e link direto enquadram os limites do município, usando a malha já carregada e a área útil fora das sobreposições. A chegada dos dados ao painel respeita a origem da seleção, sem reenquadrar a UF.
 - **Na próstata:** o painel recolhido usa a versão curta "Sem comparação com o prazo da lei: vigilância ativa pode ser a conduta correta", e o aberto traz o texto integral. **A confirmar:** só a ressalva da próstata sai de cima do mapa com município selecionado.
 - **A confirmar:** C55 não calculável sem os pontos, e "Sem dado neste recorte" com amostra neutra, sem os pontos.
@@ -229,3 +231,18 @@ Conhecidos e aceitos ao entregar cada parte:
 - **Enquadramento e contorno dentro do WebGL:** conferidos em capturas, não por teste automático.
 - **Falha intermitente:** o teste do cabeçalho em `/municipios/` com JavaScript falhou duas vezes contra o servidor de desenvolvimento, logo após editar arquivos, sem causa confirmada. Rode a suíte contra a saída estática.
 - **Gesto de arrastar a folha:** não foi implementado.
+
+## Séries históricas em telas estreitas
+
+Os cinco gráficos de série compartilham a apresentação responsiva, sem refazer
+estatística: apenas as coordenadas horizontais são adaptadas à largura do cartão.
+Mantêm altura de 200 px, rótulos de 16 px, margem esquerda de 64 px e direita de
+32 px; anos finais alinham à direita e a nota de dose única permanece dentro do
+gráfico. A largura mínima é 240 px: abaixo dela, a rolagem fica restrita ao
+gráfico, com foco por teclado, mantendo o piso de 12 px. Sem JavaScript, o SVG
+original de 570 px permanece legível em uma área com rolagem. A série em tabela
+continua disponível em todos os casos.
+
+Cenários, comandos, resultados e limites desta adaptação ficam em
+[Leitura mobile](validation/mobile-reading.md). Teclado virtual é aproximado por
+redução de área útil; não existe evidência de verificação física nesta entrega.

@@ -48,15 +48,17 @@ const classes = {
     :global(.map-and-profile:has(#municipality-preview:not([hidden]))) .legend-corner-caveat { display: none; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    /* The ⓘ holds the reading of the color and every caveat: the card keeps only period and classes. */
-    .legend-corner { position: absolute; left: .5rem; bottom: .5rem; z-index: 3; width: 11rem; max-width: calc(100% - 1rem); padding: .25rem .5rem .5rem; font-size: var(--text-12); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    .legend-corner-title { padding-right: 1.75rem; }
-    .legend-corner-caveat { display: none; }
-    ul { gap: 0; line-height: 1.5; }
-    .swatch { width: .75rem; height: .75rem; }
-    /* The panel covers this corner on a phone, and its own Legenda button opens the full legend. */
-    :global(.map-and-profile:has(#municipality-preview[data-enhanced]:not([hidden]))) .legend-corner { display: none; }
-  }
+    @scope (:global(:root:not([data-mobile-flow]))) {
+      /* The ⓘ holds the reading of the color and every caveat: the card keeps only period and classes. */
+      .legend-corner { position: absolute; left: .5rem; bottom: .5rem; z-index: 3; width: 11rem; max-width: calc(100% - 1rem); padding: .25rem .5rem .5rem; font-size: var(--text-12); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+      .legend-corner-title { padding-right: 1.75rem; }
+      .legend-corner-caveat { display: none; }
+      ul { gap: 0; line-height: 1.5; }
+      .swatch { width: .75rem; height: .75rem; }
+      /* The panel covers this corner on a phone, and its own Legenda button opens the full legend. */
+      :global(.map-and-profile:has(#municipality-preview[data-enhanced]:not([hidden]))) .legend-corner { display: none; }
+    }
+}
   /* Clear of the map's attribution on the narrowest floating screens. */
   @media (max-width: 339px) and (min-width: 300px) and (min-height: 520px) {
     .legend-corner { width: 10.5rem; }

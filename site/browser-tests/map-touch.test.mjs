@@ -164,3 +164,24 @@ test('an unobstructed touch near the canvas edge does not shift a visible munici
     for (let i = 0; i < boundary.length; i++) assert.equal(await labelAt(page, boundary[i]), before[i], 'the rendered boundary stays at the same pixel');
   } finally { await page.close(); }
 });
+
+test('rotation keeps the selected municipality and the explored zoom when returning to portrait', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(`${base}/municipio/261160-recife/?tipo=breast&theme=dark`);
+    await page.locator('.map-status').waitFor({ state: 'hidden' });
+    await page.locator('.result-value').waitFor();
+    await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    await page.waitForTimeout(400);
+    const samples = await visibleSamples(page);
+    assert.ok(samples.length > 2, 'the zoomed map shows geography to compare after rotation');
+    const url = page.url();
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
+    assert.equal(page.url(), url);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(400);
+    for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'rotation does not refit the municipality or lose the explored zoom');
+  } finally { await page.close(); }
+});

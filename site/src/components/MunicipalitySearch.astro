@@ -31,18 +31,20 @@
     #municipality-results :global(button) { width: 100%; text-align: left; background-color: transparent; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    .search-toggle { display: grid; place-items: center; flex: none; width: var(--control-height); height: var(--control-height); color: var(--text); border-radius: var(--control-radius); }
-    .municipality-search { display: none; position: absolute; inset: 0 0 auto; z-index: 1; padding: 0; background: var(--surface); border-radius: var(--control-radius); }
-    :global(.site-header[data-search-open]) .municipality-search { display: block; }
-    label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    input { display: block; padding-right: var(--control-height); }
-    input::-webkit-search-cancel-button { display: none; }
-    .search-close, .search-close:hover:not(:disabled) { display: grid; place-items: center; position: absolute; top: 0; right: 0; width: var(--control-height); padding: 0; font-size: var(--text-24); background: transparent; }
-    /* Short enough to stay above a virtual keyboard, which does not change the height of the page. */
-    #municipality-results { position: absolute; top: calc(100% + .25rem); inset-inline: 0; max-height: 26dvh; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    /* The button already opens the consultation, and each row stays one touch target above the keyboard. */
-    #municipality-results :global(a:not(.search-result)) { display: none; }
-  }
+    @scope (:global(:root:not([data-mobile-flow]))) {
+      .search-toggle { display: grid; place-items: center; flex: none; width: var(--control-height); height: var(--control-height); color: var(--text); border-radius: var(--control-radius); }
+      .municipality-search { display: none; position: absolute; inset: 0 0 auto; z-index: 1; padding: 0; background: var(--surface); border-radius: var(--control-radius); }
+      :global(.site-header[data-search-open]) .municipality-search { display: block; }
+      label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      input { display: block; padding-right: var(--control-height); }
+      input::-webkit-search-cancel-button { display: none; }
+      .search-close, .search-close:hover:not(:disabled) { display: grid; place-items: center; position: absolute; top: 0; right: 0; width: var(--control-height); padding: 0; font-size: var(--text-24); background: transparent; }
+      /* Short enough to stay above a virtual keyboard, which does not change the height of the page. */
+      #municipality-results { position: absolute; top: calc(100% + .25rem); inset-inline: 0; max-height: 26dvh; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+      /* The button already opens the consultation, and each row stays one touch target above the keyboard. */
+      #municipality-results :global(a:not(.search-result)) { display: none; }
+    }
+}
   @media (min-width: 768px) {
     .municipality-search { flex: 0 1 15rem; }
     label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -340,7 +340,7 @@ test('a caveat floats under Filtros and follows its height', async () => {
 });
 
 test('the full legend is one button away above the sheet, and the notice is never covered', async () => {
-  const page = await open({ viewport: { width: 390, height: 664 } }, RECIFE);
+  const page = await open({ viewport: { width: 390, height: 844 } }, RECIFE);
   try {
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     const panel = await box(page, '#municipality-preview');
@@ -352,14 +352,16 @@ test('the full legend is one button away above the sheet, and the notice is neve
   } finally { await page.close(); }
 });
 
-test('the collapsed panel leaves Filtros readable on a short screen', async () => {
+test('a short screen keeps filters readable in page flow after selecting a municipality', async () => {
   const page = await open({ viewport: { width: 320, height: 568 } }, RECIFE);
   try {
-    await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-    const filters = await box(page, '.filters-toggle');
-    assert.equal(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y).closest('.filters-toggle') !== null, { x: filters.left + 100, y: filters.bottom - 4 }), true);
-    await page.locator('.filters-toggle').click();
-    assert.equal(await page.locator('#map-filters').isVisible(), true);
+    await page.locator('.result-value').waitFor();
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'static');
+    assert.equal(await page.locator('.filters-toggle').isVisible(), false);
+    await page.locator('#map-indicator').scrollIntoViewIfNeeded();
+    assert.equal(await page.locator('#map-indicator').isVisible(), true);
+    await page.locator('#cancer-type').selectOption('breast');
+    assert.equal(new URL(page.url()).searchParams.get('tipo'), 'breast');
   } finally { await page.close(); }
 });
 

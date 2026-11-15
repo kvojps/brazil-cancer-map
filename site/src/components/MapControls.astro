@@ -114,23 +114,25 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
     .cancer-type-heading { justify-content: space-between; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    /* The floating column under the header. It takes no taps of its own, so the map stays in reach beside
-       its children, and it leaves room for the zoom buttons. */
-    .map-controls { position: absolute; top: 3.75rem; left: .5rem; right: 3.5rem; z-index: 5; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: .5rem; padding: 0; pointer-events: none; }
-    .map-controls > * { flex: none; pointer-events: auto; }
-    .filters-toggle { display: flex; align-items: center; gap: .5rem; max-width: 100%; padding: .25rem .75rem; text-align: left; background-color: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    .filters-toggle:hover:not(:disabled) { background-color: var(--surface); }
-    .filters-toggle strong { flex: none; font-size: var(--text-14); }
-    .filters-toggle span { font-size: var(--text-12); font-weight: 400; line-height: 1.25; color: var(--muted); }
-    .map-notes { flex: none; padding: .25rem .5rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    .view-controls { position: fixed; right: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem); z-index: 7; padding: .25rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-    .view-controls button { min-width: 3.5rem; padding-inline: .5rem; font-size: var(--text-14); }
-    /* With a municipality selected, the panel carries the long caveat of the prostate. */
-    :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) #indicator-caveat[data-in-panel] { display: none; }
-    :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) .map-notes:has(#indicator-caveat[data-in-panel]):has(#map-selection-notice[hidden]) { display: none; }
-    /* In the list the column enters the flow, above the rows it would otherwise cover. */
-    :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
-  }
+    @scope (:global(:root:not([data-mobile-flow]))) {
+      /* The floating column under the header. It takes no taps of its own, so the map stays in reach beside
+         its children, and it leaves room for the zoom buttons. */
+      .map-controls { position: absolute; top: 3.75rem; left: .5rem; right: 3.5rem; z-index: 5; flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: .5rem; padding: 0; pointer-events: none; }
+      .map-controls > * { flex: none; pointer-events: auto; }
+      .filters-toggle { display: flex; align-items: center; gap: .5rem; max-width: 100%; padding: .25rem .75rem; text-align: left; background-color: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+      .filters-toggle:hover:not(:disabled) { background-color: var(--surface); }
+      .filters-toggle strong { flex: none; font-size: var(--text-14); }
+      .filters-toggle span { font-size: var(--text-12); font-weight: 400; line-height: 1.25; color: var(--muted); }
+      .map-notes { flex: none; padding: .25rem .5rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+      .view-controls { position: fixed; right: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem); z-index: 7; padding: .25rem; background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+      .view-controls button { min-width: 3.5rem; padding-inline: .5rem; font-size: var(--text-14); }
+      /* With a municipality selected, the panel carries the long caveat of the prostate. */
+      :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) #indicator-caveat[data-in-panel] { display: none; }
+      :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) .map-notes:has(#indicator-caveat[data-in-panel]):has(#map-selection-notice[hidden]) { display: none; }
+      /* In the list the column enters the flow, above the rows it would otherwise cover. */
+      :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
+    }
+}
   @media (min-width: 768px) {
     .map-controls { position: relative; z-index: 6; flex: none; align-items: center; gap: .5rem 1.25rem; min-height: 56px; padding: .25rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
     label, .cancer-type { flex: 0 1 auto; flex-direction: row; align-items: center; gap: .5rem; white-space: nowrap; }

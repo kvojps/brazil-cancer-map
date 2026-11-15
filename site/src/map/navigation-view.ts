@@ -8,7 +8,7 @@ import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/
 
 /** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
 const SHEET = '(max-width: 767px) and (min-width: 300px) and (min-height: 520px)';
-const isSheet = () => matchMedia(SHEET).matches;
+const isSheet = () => matchMedia(SHEET).matches && !document.documentElement.hasAttribute('data-mobile-flow');
 
 export function mountMunicipalityNavigation(map: { focus: (code: string | undefined, preserveCamera?: boolean) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
@@ -94,6 +94,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   window.addEventListener('popstate', syncDetails);
   window.addEventListener('navigation-state-change', syncDetails);
   matchMedia(SHEET).addEventListener('change', syncDetails);
+  window.addEventListener('mobile-layout-change', syncDetails);
   const prepareAxes = () => {
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
       axis.name = 'profile-axis';

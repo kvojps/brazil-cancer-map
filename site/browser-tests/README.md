@@ -170,3 +170,11 @@ ativação por teclado, fechamento, exclusividade e retorno de foco. A partir de
 Mapa e Lista, verifica consulta anterior, filtros aplicados, UF e linhas abertas,
 e seleção pela busca com resumo recolhido. Usa emulação de Chromium; não comprova
 teclado virtual ou comportamento em aparelho físico.
+
+`mobile-reading.test.mjs` cobre rótulos renderizados dos gráficos (piso de 12 px,
+eixos sem cortes e tabela), resumo longo em fluxo e acesso à última linha da
+Lista após seleção pela busca em 320 × 568, 390 × 844, 568 × 320, 844 × 390 e
+390 × 360. A janela de altura reduzida é uma aproximação de teclado aberto.
+`map-touch.test.mjs` também compara a geografia visível após girar a janela e
+voltar, depois de alterar o zoom. Resultados e limites em
+[Leitura mobile](../../docs/validation/mobile-reading.md).

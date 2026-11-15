@@ -63,17 +63,13 @@ test('Alcântara: the longest block keeps origin and warning at 320 × 568, with
     const text = await blockText(page);
     assert.match(text, /Seu município e vizinhos — região de São Luís/);
     assert.ok(text.includes(WARNING));
-    const sheet = await box(page, '#municipality-preview');
-    assert.equal(sheet.bottom, 568);
-    assert.ok(sheet.top >= (await box(page, '.construction-notice')).bottom, 'the summary stays below the notice');
-    assert.equal(await page.locator('#municipality-preview').evaluate(element => element.scrollHeight <= element.clientHeight), true, 'nothing cut from the collapsed sheet');
+    assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static');
+    assert.equal(await toggle(page).isVisible(), false, 'the consultation is fully readable in page flow');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    await page.locator('#preview-heading').scrollIntoViewIfNeeded();
     const name = await box(page, '#preview-heading');
-    for (const selector of ['[data-panel-legend]', '.view-controls']) {
-      const control = await box(page, selector);
-      assert.equal(overlaps(control, name), false, selector);
-      assert.ok(control.bottom <= sheet.top, selector);
-      assert.ok(control.top >= (await box(page, '.filters-toggle')).bottom, `${selector} under Filtros`);
-    }
+    assert.ok(name.top >= (await box(page, '.construction-notice')).bottom, 'the name is clear of the notice');
+    assert.equal(overlaps(await box(page, '.view-controls'), name), false);
     assert.equal(await noHorizontalScroll(page), true);
   } finally { await page.close(); }
 });
@@ -327,7 +323,7 @@ test('selecting keeps the bars still, speaks only to screen readers and takes fo
 });
 
 test('the sheet works by keyboard, with visible focus', async () => {
-  const page = await openPanel(BALSAS, { width: 390, height: 664 });
+  const page = await openPanel(BALSAS, PHONE);
   try {
     await toggle(page).focus();
     assert.equal(await toggle(page).innerText(), 'Ver detalhes');

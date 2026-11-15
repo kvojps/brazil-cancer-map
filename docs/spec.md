@@ -223,6 +223,19 @@ O "Saiba mais" do 60 dias traz os direitos e canais: Lei 12.732/2012 (60 dias), 
 
 A apresentação é a do **Console horizontal**, aprovado pelo responsável em 04/11/2026: a consulta municipal acontece no próprio dashboard e substitui a separação entre prévia e ficha. A aparência segue "sóbrio e preciso": menos bordas e caixas, tipografia e números fortes, cor reservada aos dados. No celular, "compatibilidade" significa layout e toque. As decisões de UI que os testes usam como contrato estão em `docs/ui-contract.md`.
 
+No celular, a composição flutuante depende do espaço útil, além da largura e
+altura da janela. Se o resumo, ressalvas e controles deixarem menos de 160 px
+para explorar o mapa, a consulta passa ao fluxo com rolagem, sem ocultar textos
+nem reduzir fontes abaixo de 12 px. A viewport visual com menos de 520 px de
+altura também usa fluxo, inclusive na aproximação de teclado aberto. As margens
+e a medição estão no contrato de interface; não há teto percentual do resumo.
+Rotação preserva seleção, filtros, Eixo, zoom e histórico, com correção mínima de
+posição apenas para revelar seleção encoberta. As séries adaptam os eixos à
+largura do cartão e mantêm texto de 16 px; abaixo de 240 px de largura útil,
+rolam localmente. Sem JavaScript, conservam a série original com rolagem local.
+A tabela permanece disponível. Evidência e limites: [leitura mobile](validation/mobile-reading.md).
+
+
 ### 11.1 Mapa inicial
 
 - A página inicial é o mapa do Brasil por município, com a busca de município, o seletor de Tipo de câncer e o seletor do que o mapa mostra (indicador e modo).

@@ -219,9 +219,10 @@
   }
   /* A phone holding the floating composition: only this line stays with the page scrolled, under the notice. */
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    .list-bar { position: sticky; top: var(--notice-height, 6rem); z-index: 3; }
-    :global(html:has(.indicator-table:not([hidden]))) { scroll-padding-block: calc(var(--notice-height, 6rem) + 3.5rem) calc(var(--sheet-height, 0px) + 5rem); }
-  }
+    @scope (:global(:root:not([data-mobile-flow]))) {
+      .list-bar { position: sticky; top: var(--notice-height, 6rem); z-index: 3; }
+    }
+}
   /* From 768 px the list takes the map's area: its rows scroll inside and the bars stay in view. */
   @media (min-width: 768px) {
     .indicator-table { grid-template-rows: auto auto minmax(16rem, 1fr); height: 100%; overflow: auto; }

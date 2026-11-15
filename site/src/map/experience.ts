@@ -1,3 +1,5 @@
+import { mountSeriesCharts } from '../profile/series-chart';
+import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization } from './view';
 import { mountMunicipalityNavigation } from "../map/navigation-view";
 import { mountIndicatorTable } from "../map/indicator-table";
@@ -68,6 +70,8 @@ function showNotes(layer: IndicatorLayer): void {
 }
 
 if (container && status) {
+  mountSeriesCharts();
+  mountMobileLayout();
   mountVisualization();
   const { meshUrl, listingUrl } = container.dataset;
   const initialUrl = new URL(location.href);
@@ -198,6 +202,21 @@ if (container && status) {
           if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);
           frameCountryOnce();
         });
+        let resizing = false;
+        const revealAfterResize = () => {
+          if (resizing) return;
+          resizing = true;
+          requestAnimationFrame(() => {
+            resizing = false;
+            const panel = document.querySelector('#municipality-preview');
+            const inFlow = document.documentElement.hasAttribute('data-mobile-flow') || !matchMedia('(max-width: 767px) and (min-height: 520px)').matches;
+            if (selectedCode && container.clientWidth && (inFlow || panel?.hasAttribute('data-collapsed'))) {
+              renderer.focusMunicipality(map, selectedCode, overlays, true);
+            }
+          });
+        };
+        window.addEventListener('resize', revealAfterResize);
+        window.addEventListener('mobile-layout-change', revealAfterResize);
         selectOnMap(selectedCode, preserveCamera);
         frameCountryOnce();
         renderer.onMunicipalityClick(map, code => {

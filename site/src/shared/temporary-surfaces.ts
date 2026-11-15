@@ -82,5 +82,10 @@ export function mountTemporarySurfaces(): void {
     hide(legend);
     switching = false;
   });
-  floating.addEventListener('change', () => { closeSearch(); hide(filters); });
+  const adapt = () => {
+    closeSearch(); hide(filters); hide(legend);
+    if (document.activeElement === searchToggle && input.checkVisibility()) input.focus({ preventScroll: true });
+  };
+  floating.addEventListener('change', adapt);
+  window.addEventListener('mobile-layout-change', adapt);
 }

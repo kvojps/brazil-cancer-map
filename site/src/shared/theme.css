@@ -245,17 +245,29 @@ footer p { margin: 0; flex-basis: 100%; }
   body:has(.home) > main { padding: 0; }
 }
 @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-  body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
-  body:has(.home)::before { content: ""; grid-area: 1 / 1 / 3 / 2; height: 100dvh; visibility: hidden; pointer-events: none; }
-  body:has(.home) > .construction-notice { grid-area: 1 / 1; }
-  body:has(.home) > main { grid-area: 2 / 1; display: flex; min-width: 0; min-height: 0; }
-  body:has(.home) > .site-header { grid-area: 2 / 1; align-self: start; flex-wrap: nowrap; min-height: var(--control-height); margin: .5rem; padding: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-  body:has(.home) > footer { grid-area: 3 / 1; padding-bottom: 5rem; }
-  /* One finger moves the map, so the map screen does not scroll. The list and a profile rendered in the
-     document, as without JavaScript, do, down to the footer. */
-  html:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
-  body:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) > footer { display: none; }
-  .maplibregl-map .maplibregl-ctrl-top-right { top: 3.25rem; }
-  /* The attribution stays clear of the sheet. */
-  .maplibregl-map .maplibregl-ctrl-bottom-right, .maplibregl-map .maplibregl-ctrl-bottom-left { bottom: var(--sheet-height, 0px); }
+  html:not([data-mobile-flow]):has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
+  @scope (:root:not([data-mobile-flow])) {
+    body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
+    body:has(.home)::before { content: ""; grid-area: 1 / 1 / 3 / 2; height: 100dvh; visibility: hidden; pointer-events: none; }
+    body:has(.home) > .construction-notice { grid-area: 1 / 1; }
+    body:has(.home) > main { grid-area: 2 / 1; display: flex; min-width: 0; min-height: 0; }
+    body:has(.home) > .site-header { grid-area: 2 / 1; align-self: start; flex-wrap: nowrap; min-height: var(--control-height); margin: .5rem; padding: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+    body:has(.home) > footer { grid-area: 3 / 1; padding-bottom: 5rem; }
+    /* One finger moves the map, so the map screen does not scroll. The list and a profile rendered in the
+       document, as without JavaScript, do, down to the footer. */
+    body:has(.home):not(:has(.indicator-table:not([hidden]))):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) > footer { display: none; }
+    .maplibregl-map .maplibregl-ctrl-top-right { top: 3.25rem; }
+    /* The attribution stays clear of the sheet. */
+    .maplibregl-map .maplibregl-ctrl-bottom-right, .maplibregl-map .maplibregl-ctrl-bottom-left { bottom: var(--sheet-height, 0px); }
+  }
 }
+
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
+  html:not([data-mobile-flow]):has(.indicator-table:not([hidden])) { scroll-padding-block: calc(var(--notice-height, 6rem) + 3.5rem) calc(var(--sheet-height, 0px) + 5rem); }
+}
+
+/* The same in-flow composition is used when overlays or a visual keyboard leave too little map. */
+html[data-mobile-flow] { overflow: auto; overscroll-behavior: auto; scroll-padding-top: var(--notice-height, 6rem); }
+html[data-mobile-flow] .filters-sheet:not(:popover-open) { display: contents; }
+html[data-mobile-flow] .map-and-profile { grid-template-columns: minmax(0, 1fr); }
+html[data-mobile-flow] .panel-bar { scroll-margin-top: var(--notice-height, 6rem); }

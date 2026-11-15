@@ -1,0 +1,7 @@
+---
+interface Props { titleId: string }
+const { titleId } = Astro.props;
+---
+<div class="series-chart" tabindex="0" role="group" aria-label="Série histórica; valores também disponíveis na tabela seguinte">
+  <svg viewBox="0 0 570 200" role="img" aria-labelledby={titleId}><slot /></svg>
+</div>
