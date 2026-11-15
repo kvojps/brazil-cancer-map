@@ -38,13 +38,13 @@ test('selection loads four axes, filters all types and distinguishes returning f
 });
 
 test('a delayed previous municipality cannot overwrite the current selection', async () => {
-  const page = await browser.newPage();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   let release;
   const delayed = new Promise(resolve => { release = resolve; });
   try {
     await page.route('**/municipio/120050-*', async route => { await delayed; await route.continue(); });
     await page.goto(base + '/');
-    await page.locator('#municipality-search:enabled').waitFor();
+    await page.locator('#municipality-search:enabled').waitFor({ state: 'attached' });
     await select(page, '120050');
     await select(page, '261160');
     await ready(page);
@@ -56,19 +56,24 @@ test('a delayed previous municipality cannot overwrite the current selection', a
 });
 
 test('profile failure clears old results and offers retry without claiming insufficient data', async () => {
-  const page = await browser.newPage();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(base + '/?municipio=261160');
     await ready(page);
     await page.route('**/dados/profiles/AC.json', route => route.fulfill({ status: 503, body: '' }));
     await select(page, '120050');
-    await page.getByRole('button', { name: 'Tentar carregar a consulta novamente' }).waitFor();
+    await page.getByRole('button', { name: 'Tentar novamente' }).waitFor();
     assert.equal(await page.locator('#municipality-content .profile').count(), 0);
-    assert.match(await page.locator('#municipality-content').textContent(), /Isso não significa dado insuficiente/);
+    assert.match(await page.locator('[data-profile-result]').textContent(), /Isso não significa dado insuficiente/);
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(await page.locator('[data-map-view]').isVisible(), true);
+    assert.equal(await page.locator('.result-value').count(), 0);
     await page.unroute('**/dados/profiles/AC.json');
-    await page.getByRole('button', { name: 'Tentar carregar a consulta novamente' }).click();
+    await page.getByRole('button', { name: 'Tentar novamente' }).click();
     await ready(page);
     assert.equal(await page.locator('#municipality-content .profile').getAttribute('data-code'), '120050');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
   } finally { await page.close(); }
 });
 

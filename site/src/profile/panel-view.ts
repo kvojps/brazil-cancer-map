@@ -31,9 +31,11 @@ export function renderResult(block: HTMLElement, result: PanelResult): void {
     const headline = element('p', 'result-headline');
     headline.append(swatch(result.swatch), document.createTextNode(result.classLabel));
     children.push(headline);
+    if (result.measure) children.push(element('p', 'result-measure', result.measure));
     if (result.explanation) children.push(element('p', 'result-note', result.explanation));
   }
-  if (result.withoutInformation) children.push(element('p', 'result-note', result.withoutInformation));
+  if (result.withoutInformation) children.push(element('p', 'result-note', `${result.withoutInformation}. Falta de registro não significa falta de tratamento.`));
+  if (result.period) children.push(element('p', 'result-note', result.period));
   if (result.origin) children.push(element('p', 'result-note', result.origin));
   if (result.warning) {
     const warning = element('p', 'result-warning');

@@ -81,7 +81,7 @@ conferido em capturas; a conta da área reservada está em `tests/framing.test.m
 `municipal-panel.test.mjs` verifica o painel Meu município com os casos difíceis: Balsas
 (faixa C), Alcântara (Região imediata e faixa C, o bloco mais longo, a 320 × 568), Araioses
 (Dado insuficiente) e próstata (ressalva curta e integral). Cobre o mesmo bloco recolhido e
-aberto, a folha de ponta a ponta que abre até o aviso, Filtros, menu e busca no lugar da
+aberto, a folha de ponta a ponta que abre por ação explícita até o aviso, Filtros, menu e busca no lugar da
 folha, a coluna de 400 e 480 px com o nome fixo, os Eixos com resultado no título e um aberto
 por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensagem de status só
 para leitores de tela e a página comum em janelas baixas, no zoom nativo de 200% e sem
@@ -154,3 +154,10 @@ os milhares de links municipais com os mesmos filtros e que os links de retorno
 e os links novos do painel continuam recebendo o contexto correto. Também
 confirma que o Mapa deixa as linhas da Lista fora do documento e que reabrir a
 Lista preserva o filtro de UF e as linhas expandidas.
+
+`mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno por
+Mapa/Lista, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
+da posição de exploração da Lista ao alternar visualizações. Falha com nova tentativa
+no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos
+de origem regional, Faixa C, Dado insuficiente, mortalidade e leitura sem JavaScript
+permanecem em `municipal-panel.test.mjs`. Não há teto percentual de altura do resumo.

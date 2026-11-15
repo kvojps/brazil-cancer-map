@@ -65,7 +65,7 @@ test('Alcântara: the longest block keeps origin and warning at 320 × 568, with
     assert.ok(text.includes(WARNING));
     const sheet = await box(page, '#municipality-preview');
     assert.equal(sheet.bottom, 568);
-    assert.ok(sheet.height <= 568 * .55, `compact form, ${sheet.height} px`);
+    assert.ok(sheet.top >= (await box(page, '.construction-notice')).bottom, 'the summary stays below the notice');
     assert.equal(await page.locator('#municipality-preview').evaluate(element => element.scrollHeight <= element.clientHeight), true, 'nothing cut from the collapsed sheet');
     const name = await box(page, '#preview-heading');
     for (const selector of ['[data-panel-legend]', '.view-controls']) {
@@ -162,8 +162,8 @@ test('the sheet runs edge to edge, opens up to the notice and takes the floating
     assert.deepEqual([collapsed.left, collapsed.right, collapsed.bottom], [0, 390, 844]);
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     assert.equal(await page.locator('.site-header').isVisible(), true);
-    await page.locator('.panel-result').click();
-    assert.equal(await toggle(page).getAttribute('aria-expanded'), 'true', 'a tap on the sheet opens it');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    assert.equal(await toggle(page).getAttribute('aria-expanded'), 'true', 'the explicit action opens details');
     const open = await box(page, '#municipality-preview');
     const notice = await box(page, '.construction-notice');
     assert.ok(open.top >= notice.bottom, 'the notice is never covered');
@@ -330,13 +330,15 @@ test('the sheet works by keyboard, with visible focus', async () => {
   const page = await openPanel(BALSAS, { width: 390, height: 664 });
   try {
     await toggle(page).focus();
-    assert.equal(await toggle(page).getAttribute('aria-label'), 'Expandir Meu município');
+    assert.equal(await toggle(page).innerText(), 'Ver detalhes');
     await page.keyboard.press('Enter');
-    assert.equal(await toggle(page).getAttribute('aria-label'), 'Recolher Meu município');
+    assert.equal(await toggle(page).innerText(), 'Voltar ao mapa');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-    assert.equal(await toggle(page).evaluate(element => element === document.activeElement), true, 'focus stays on the control');
+    assert.equal(await page.locator('#preview-heading').evaluate(element => element === document.activeElement), true, 'focus enters the details heading');
     await page.keyboard.press('Tab');
     assert.equal(await page.locator('[data-clear-profile]').evaluate(element => element === document.activeElement), true);
+    await page.keyboard.press('Tab');
+    assert.equal(await toggle(page).evaluate(element => element === document.activeElement), true);
     await page.keyboard.press('Tab');
     assert.equal(await page.locator('[data-panel-cancer-type]').evaluate(element => element === document.activeElement), true);
     assert.notEqual(await page.locator('[data-panel-cancer-type]').evaluate(element => getComputedStyle(element).outlineStyle), 'none');

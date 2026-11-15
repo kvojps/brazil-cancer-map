@@ -15,7 +15,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
   initialUrl.searchParams.delete('municipio');
   if (initialPlace) initialUrl.pathname = municipalityPath(initialPlace);
-  history.replaceState(null, '', initialUrl);
+  history.replaceState(history.state, '', initialUrl);
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   panel.dataset.enhanced = '';
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
@@ -62,20 +62,38 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     frameOnCollapse = isSheet() && !panel.hasAttribute('data-collapsed');
     if (!frameOnCollapse) map.focus(code, preserveCameraFor === code);
   };
+  const detailsOpen = () => history.state?.municipalDetails === location.pathname;
+  const returnLabel = () => new URLSearchParams(location.search).get('visualizacao') === 'lista' ? 'Voltar à lista' : 'Voltar ao mapa';
   const expand = (expanded: boolean) => {
     panel.toggleAttribute('data-collapsed', !expanded);
     toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.setAttribute('aria-label', expanded ? 'Recolher Meu município' : 'Expandir Meu município');
+    toggle.textContent = expanded ? returnLabel() : 'Ver detalhes';
     if (!expanded) panel.scrollTop = 0;
     syncSheetMetrics();
     if (!expanded && frameOnCollapse && selected) frame(selected.code);
   };
-  toggle.onclick = () => expand(toggle.getAttribute('aria-expanded') !== 'true');
-  // The whole collapsed sheet opens it; what is inside keeps its own action.
-  panel.addEventListener('click', event => {
-    if (!isSheet() || !panel.hasAttribute('data-collapsed') || !(event.target instanceof Element) || event.target.closest('button, a, select')) return;
+  const syncDetails = () => {
+    const hadFocus = panel.contains(document.activeElement);
+    const wasExpanded = !panel.hasAttribute('data-collapsed');
+    expand(!isSheet() || detailsOpen());
+    if (isSheet() && hadFocus && wasExpanded && !detailsOpen() && !toggle.hidden) toggle.focus({ preventScroll: true });
+  };
+  const openDetails = () => {
+    if (!detailsOpen()) history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', location.href);
     expand(true);
-  });
+    heading.focus({ preventScroll: true });
+  };
+  toggle.onclick = () => {
+    if (!detailsOpen()) openDetails();
+    else if (history.state?.detailsEntry) history.back();
+    else {
+      history.replaceState({ ...history.state, municipalDetails: undefined }, '', location.href);
+      syncDetails();
+    }
+  };
+  window.addEventListener('popstate', syncDetails);
+  window.addEventListener('navigation-state-change', syncDetails);
+  matchMedia(SHEET).addEventListener('change', syncDetails);
   const prepareAxes = () => {
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
       axis.name = 'profile-axis';
@@ -92,6 +110,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const region = listing.immediate_regions[selected.immediate_region];
     const result = panelResult(selected, profile, state, region);
     renderResult(resultBlock, result);
+    toggle.hidden = false;
     panelType.hidden = false;
     panelTypeSelect.value = state.cancerType;
     panelLegend.dataset.reading = state.mode;
@@ -119,6 +138,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
       for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
       shownIndicator = state.indicator;
+      if (initialAnchor && isSheet()) {
+        history.replaceState({ ...history.state, municipalDetails: location.pathname }, '', location.href);
+        expand(true);
+      }
       initialAnchor = '';
     }
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
@@ -134,9 +157,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       if (changed && preserveCameraFor !== place.code) preserveCameraFor = undefined;
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
-      for (const button of [toggle, clear, panelLegend]) button.hidden = false;
+      for (const button of [clear, panelLegend]) button.hidden = false;
       if (changed) {
         panel.hidden = false;
+        toggle.hidden = true;
         resultBlock.removeAttribute('data-kind');
         resultBlock.textContent = 'Carregando o resultado…';
         panelType.hidden = true;
@@ -146,7 +170,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         frameOnRender = true;
         expand(!isSheet());
       }
-      frame(place.code);
+      if (changed) frame(place.code);
       status.textContent = `${place.name} (${place.uf}) selecionado.`;
     },
     load: async place => {
@@ -194,16 +218,16 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     resultBlock.replaceChildren();
     panelType.hidden = true;
     shownCode = '';
-    // What can be done about it is inside: a collapsed sheet would hide the retry button.
-    expand(true);
+    toggle.hidden = true;
     status.textContent = 'Não foi possível carregar a consulta municipal. Isso não significa dado insuficiente.';
     const note = document.createElement('p');
     note.textContent = status.textContent;
     const retry = document.createElement('button');
     retry.type = 'button';
-    retry.textContent = 'Tentar carregar a consulta novamente';
+    retry.textContent = 'Tentar novamente';
     retry.onclick = () => { if (selected) void navigation.select(selected, false).catch(failed); };
-    content.append(note, retry);
+    resultBlock.dataset.kind = 'error';
+    resultBlock.append(note, retry);
   };
   clear.onclick = () => { navigation.close(); restoreFocus(); };
   panelTypeSelect.addEventListener('change', () => {
@@ -219,7 +243,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
     preserveCameraFor = fromMap ? place.code : undefined;
-    if (fromMap && isSheet()) expand(false);
+    if (isSheet()) expand(false);
     returnFocus = focusAfterwards;
     void navigation.select(place).catch(failed);
   };

@@ -30,10 +30,10 @@ const period = manifest.indicators[indicator].all;
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading" tabindex="0">
       <div class="panel-bar">
         <h2 id="preview-heading" tabindex="-1">{heading}</h2>
-        <button type="button" class="panel-icon" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" aria-label="Expandir Meu município" hidden><span aria-hidden="true"></span></button>
         <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
       </div>
       <div class="panel-result" data-profile-result></div>
+      <button type="button" class="panel-navigation" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Ver detalhes</button>
       <div id="municipality-content" data-preview-content>
         <label class="panel-type" hidden>Tipo de câncer
           <select data-panel-cancer-type>
@@ -71,12 +71,11 @@ const period = manifest.indicators[indicator].all;
   .map-heading h2 { margin: .25rem 0; }
   .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
   #municipality-preview { min-width: 0; padding: 0 1rem 1rem; background: var(--surface); }
+  .panel-navigation { display: none; margin-block: .25rem .5rem; }
   .panel-bar { display: flex; align-items: center; gap: .25rem; min-height: 3rem; background: var(--surface); }
   .panel-bar h2 { flex: 1; min-width: 0; margin: 0; }
   .panel-icon, .panel-icon:hover:not(:disabled) { flex: none; display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; font-size: var(--text-16); color: var(--text); background: transparent; }
   .panel-icon:hover:not(:disabled) { background: var(--soft); }
-  [data-toggle-profile] span::before { content: "⌃"; }
-  [data-toggle-profile][aria-expanded="true"] span::before { content: "⌄"; }
   /* The control only exists on the sheet: anywhere else the panel is always whole. */
   [data-toggle-profile], .panel-legend { display: none; }
   .panel-type { display: flex; align-items: center; gap: .75rem; margin-block: 0 .75rem; font-size: var(--text-14); font-weight: 500; }
@@ -120,7 +119,7 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 0; z-index: 25; max-height: calc(100dvh - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
     #municipality-preview[data-enhanced] .panel-bar { position: sticky; top: 0; z-index: 2; }
     #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
-    #municipality-preview[data-collapsed] { z-index: 4; cursor: pointer; padding-bottom: .5rem; }
+    #municipality-preview[data-collapsed] { z-index: 4; padding-bottom: .5rem; }
     #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
     /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
     :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),

@@ -73,7 +73,7 @@ if (container && status) {
   const initialUrl = new URL(location.href);
   const anchorType = initialUrl.hash.startsWith('#tipo-') ? initialUrl.hash.slice(6) : '';
   if (Object.hasOwn(CANCER_TYPES, anchorType)) initialUrl.searchParams.set('tipo', anchorType);
-  history.replaceState(null, '', initialUrl);
+  history.replaceState(history.state, '', initialUrl);
   const initial = readMapState(new URLSearchParams(location.search));
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
   const retry = document.querySelector<HTMLButtonElement>('#retry-data')!;
@@ -139,7 +139,7 @@ if (container && status) {
         if (url.hash.startsWith('#tipo-')) url.hash = '';
         url.search = writeMapState(state, url.searchParams).toString();
         if (push) history.pushState(null, "", url);
-        else history.replaceState(null, "", url);
+        else history.replaceState(history.state, "", url);
         window.dispatchEvent(new Event('navigation-state-change'));
         showInTable(shown, state.mode);
         updatePreview(shown, state);
@@ -236,7 +236,10 @@ if (container && status) {
         const params = new URLSearchParams(location.search);
         const anchorType = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
         if (Object.hasOwn(CANCER_TYPES, anchorType)) params.set('tipo', anchorType);
-        void selectState(readMapState(params), "", false);
+        const restored = readMapState(params);
+        if (restored.indicator === current.indicator && restored.cancerType === current.cancerType && restored.mode === current.mode) {
+          updatePreview(mapLayer, current);
+        } else void selectState(restored, "", false);
       });
     })
     .catch((error: unknown) => {

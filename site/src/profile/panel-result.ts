@@ -12,6 +12,7 @@ type Place = MunicipalityListing['municipalities'][number];
 /** What the panel says first, the same with the sheet collapsed or open (decision 04 of the UI polish). */
 export interface PanelResult {
   kind: 'value' | 'insufficient' | 'adjustment' | 'unavailable';
+  period: string | null;
   /** Why there is no number, or what a C55 adjustment that cannot be calculated means for it. */
   explanation: string | null;
   value: string | null;
@@ -93,7 +94,7 @@ function indicatorData(profile: UfProfile, indicator: string, cancerType: string
 }
 
 const unavailable = (explanation: string | null): PanelResult => ({
-  kind: 'unavailable', explanation, value: null, measure: null, classLabel: UNAVAILABLE_LABEL, classContext: null,
+  kind: 'unavailable', period: null, explanation, value: null, measure: null, classLabel: UNAVAILABLE_LABEL, classContext: null,
   swatch: NO_CLASS_SWATCH, withoutInformation: null, origin: null, warning: null, caveat: null,
 });
 
@@ -106,15 +107,16 @@ export function panelResult(place: Place, profile: UfProfile, state: MapState, r
   const caveat = treatment && !data.has_status ? { short: SHORT_NO_STATUS_NOTE, full: NO_STATUS_NOTE } : null;
   const missing = withoutNumber(entry);
   if (missing) return {
-    kind: missing.kind, classLabel: missing.label, swatch: missing.swatch, caveat,
+    kind: missing.kind, period: `Período dos dados: ${data.period.first_year}–${data.period.last_year}. Último ano consolidado: ${data.period.latest}.`, classLabel: missing.label, swatch: missing.swatch, caveat,
     explanation: missing.kind === 'adjustment' ? `${originText(entry, region)}.` : INSUFFICIENT_TEXT[indicator]!,
-    value: null, measure: null, classContext: null, withoutInformation: null, origin: null, warning: null,
+    value: null, measure: INDICATORS[indicator]!.name, classContext: null, withoutInformation: null, origin: null, warning: null,
   };
   const mode = readingMode(indicator, state.mode, data);
   const { label, swatch } = classOf(indicator, entry, mode);
   const { period, reference } = data;
   return {
     kind: 'value',
+    period: null,
     explanation: entry.adjustment_note ? `${originText(entry, region)}.` : null,
     value: formatIndicatorValue(indicator, entry.value),
     measure: `${MEASURES[indicator]} · ${period.latest}`,

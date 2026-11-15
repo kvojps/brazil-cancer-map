@@ -91,7 +91,7 @@ export function mountSharedNavigation(): void {
     if (current.pathname === '/metodologia/') {
       const canonical = navigationUrl(current, current);
       if (canonical.href !== current.href) {
-        history.replaceState(null, '', canonical);
+        history.replaceState(history.state, '', canonical);
         current.href = canonical.href;
       }
     }
@@ -101,7 +101,7 @@ export function mountSharedNavigation(): void {
     } else if (document.documentElement.hasAttribute('data-theme')) delete document.documentElement.dataset.theme;
     if (!theme && current.searchParams.has('theme')) {
       current.searchParams.delete('theme');
-      history.replaceState(null, '', current);
+      history.replaceState(history.state, '', current);
     }
     for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) updateLink(link, current);
   };

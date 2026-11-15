@@ -24,7 +24,7 @@ As decisões de UI que os testes e o CSS usam como contrato. Comentários no có
 - Navegação principal: "Mapa", "Municípios por UF" e "Como calculamos". O índice só existe em `/municipios/`, nunca na inicial nem abaixo do mapa.
 - A busca de município fica no cabeçalho de todas as páginas.
 - O tema é um único controle com nome acessível: lua no claro, para ativar o escuro, e sol no escuro, para ativar o claro.
-- Selecionar um município no mapa, na busca, na lista ou por link abre Meu município no próprio dashboard, sem etapa de prévia nem ficha separada.
+- Selecionar um município no mapa, na busca, na Lista ou por link apresenta Meu município no próprio dashboard: resumo recolhido no celular e consulta completa no desktop, sem ficha separada.
 - O aviso de construção fica em todas as páginas, integral e sem fechar (spec, seção 2).
 
 ## Estado e URL
@@ -121,26 +121,28 @@ Vale a partir de 768 px.
 
 ## Painel Meu município
 
-- **Bloco de resultado, igual recolhido e aberto:** número em 32 px, o que ele mede e o ano; a classe da leitura do mapa com a cor e a textura do mapa, mais o período da Tendência ou a Referência; no 60 dias, a % de todos os casos sem informação; a origem, quando regional; e o aviso da Faixa C.
+- **Resumo do Indicador:** número em 32 px, o que ele mede e o ano; a classe da leitura do mapa com a cor e a textura do mapa, mais o período da Tendência ou a Referência; no 60 dias, a % de todos os casos sem informação; a origem, quando regional; e o aviso da Faixa C.
 - **Dado insuficiente:** o texto ocupa o lugar do número, com a textura de pontos e a explicação. O aviso da Faixa C sai do bloco e fica no Eixo aberto, junto da Tendência do estado e da Ação.
 - **Mortalidade:** a taxa em destaque, ao lado da classe, sem contagem de óbitos e sem Situação (spec, seção 11.2).
-- **Celular, recolhido:** folha de ponta a ponta na base. Tocar nela a abre. Acima ficam o botão Legenda, com as cores, e Mapa/Lista. O enquadramento desconta a folha e os controles. Até 600 px de altura, os textos auxiliares caem a 12 px, sem cortar nada, e o número continua em 32 px.
+- **Celular, recolhido:** folha de ponta a ponta na base, com nome/UF, resultado e período; “Ver detalhes” é a ação para expandir. Tocar no texto não abre os detalhes. Acima ficam o botão Legenda, com as cores, e Mapa/Lista. O enquadramento desconta a folha e os controles. Até 600 px de altura, os textos auxiliares caem a 12 px, e o número continua em 32 px. Não há teto percentual de altura acordado; origem regional, Faixa C e ressalvas essenciais permanecem legíveis.
 - **Celular, aberto:** a folha sobe até o aviso, que nunca é coberto. Cabeçalho, Filtros, Legenda e Mapa/Lista saem de cena. Filtros, menu e busca, quando abertos, tomam o lugar da folha.
 - **Desktop:** coluna ao lado do mapa, com o nome fixo no topo.
-- **Ações:** um único controle recolhe e expande, só no celular, e ✕ limpa a seleção. Saem "Voltar ao mapa" e "Reabrir".
+- **Ações:** “Ver detalhes” expande, só no celular; aberto, o controle diz “Voltar ao mapa” ou “Voltar à lista”, conforme a visualização. Recolher mantém seleção e contexto; ✕, com nome acessível “Limpar seleção”, é uma ação distinta. Os quatro Eixos e as Ações continuam acessíveis com Dado insuficiente.
 - **Eixos:** um aberto por vez, começando pelo Eixo do indicador do mapa, com Acesso ao tratamento primeiro. Os fechados mostram os próprios resultados no título. A textura da Faixa C no título vale só para o 60 dias. **A confirmar:** "Fumantes na capital" e "Casos estimados na UF" nos títulos.
 - **Ordem no Eixo aberto:** título, período dos dados, Situação e Referência, Tendência, % sem informação, Ação, série e, por fim, fonte e método.
 - **Tipo de câncer:** seletor nativo no painel, ligado ao do mapa. Sem JavaScript, links nativos dos seis Tipos.
 - **Textos sobre a interface:** saem "Consulta pronta…" e "Meu município — dados sobre…". A nota sobre "Todos os cânceres" fica em "Por que 'Todos os cânceres' muda entre os Eixos?", e a nota de 2018 e 2024 em "O que é este número?".
 - **Status:** só para leitores de tela. Selecionar um município não muda a altura do cabeçalho nem dos controles.
-- **Foco:** a busca leva o foco ao nome do município. Recolher mantém o foco no controle. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa não move o foco.
+- **Foco:** a busca leva o foco ao nome do município. Expandir leva o foco ao nome nos detalhes; recolher devolve ao botão “Ver detalhes”. O conteúdo recolhido sai da ordem de foco. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa não move o foco.
+- **Histórico e contexto:** abrir detalhes acrescenta uma entrada ao histórico; o primeiro Voltar recolhe, os seguintes percorrem municípios e filtros. Avançar restaura os detalhes quando pertinente. O retorno explícito reutiliza a entrada anterior, sem duplicar etapas. Mapa/Lista preservam seleção, filtros, posição e zoom do mapa, UF e linhas abertas da Lista e a posição de rolagem de cada visualização durante a visita.
+- **Falha:** mensagem e “Tentar novamente” no resumo, sem expansão automática. O mapa continua disponível; falha, Dado insuficiente e “Sem dado neste recorte” são estados distintos. Uma resposta atrasada nunca aparece como resultado da seleção atual.
 - **Contorno de seleção:** ganha uma borda externa na cor da superfície.
 - **Toque no canvas:** seleciona e destaca o município e, no modo de folha, apresenta somente o painel recolhido, sem tooltip concorrente. Remove o hover anterior. Tooltip e contorno de hover voltam com movimento real de mouse, inclusive em dispositivo híbrido e independentemente da largura. O tooltip não intercepta o ponteiro nem o toque.
 - **Câmera:** seleção pelo mapa preserva zoom e posição. Se o painel ou os controles encobrirem o ponto tocado, apenas o menor deslocamento que o revele é permitido, sem zoom. Busca e link direto enquadram os limites do município, usando a malha já carregada e a área útil fora das sobreposições. A chegada dos dados ao painel respeita a origem da seleção, sem reenquadrar a UF.
 - **Na próstata:** o painel recolhido usa a versão curta "Sem comparação com o prazo da lei: vigilância ativa pode ser a conduta correta", e o aberto traz o texto integral. **A confirmar:** só a ressalva da próstata sai de cima do mapa com município selecionado.
 - **A confirmar:** C55 não calculável sem os pontos, e "Sem dado neste recorte" com amostra neutra, sem os pontos.
 - **Fora do modo flutuante:** o painel faz parte de uma página comum, sem folha nem controle de recolher. Um toque no mapa leva a página ao painel.
-- **Sem JavaScript:** no celular, a página de município é uma página comum, sem mapa nem filtros, com os Eixos abertos. O bloco de resultado existe só com JavaScript, e o número fica no cartão.
+- **Sem JavaScript:** no celular, a página de município é uma página comum, sem mapa nem filtros, com os Eixos abertos. O bloco de resultado existe só com JavaScript, e o número fica no cartão. Com JavaScript, uma âncora municipal abre o painel e o Eixo de destino; não é necessário passar pelo botão para alcançar o destino do link.
 
 ### Campos do Contrato de dados
 
