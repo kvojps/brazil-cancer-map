@@ -26,7 +26,7 @@ for (const colorScheme of ['light', 'dark']) {
             await page.goto(base + path);
             await page.evaluate(() => document.fonts.ready);
             if (javaScriptEnabled && (path === '/' || path.startsWith('/municipio/'))) {
-              await page.locator('.indicator-table tbody tr').first().waitFor({ state: 'attached' });
+              await page.waitForFunction(() => document.querySelector('#data-status')?.textContent === '');
               await page.locator('[data-view="lista"]').click();
               await page.locator('.indicator-table tbody tr').first().waitFor();
               await page.locator('.indicator-table select').selectOption('PE');

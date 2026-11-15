@@ -97,7 +97,12 @@ export function mountIndicatorTable(
   let currentMode: MapMode = "trend";
   const render = () => {
     const layer = current;
-    if (!layer) return;
+    // Hidden rows still make document-wide style and history updates expensive on phones.
+    // Keep the filters and expanded-row state here, and rebuild the rows when the list is shown.
+    if (root.hidden || !layer) {
+      if (body.firstChild) body.replaceChildren();
+      return;
+    }
     const labels = Object.fromEntries(headers.map((th) => [th.dataset.column!, th.textContent ?? ""]));
     const columnIndex = Object.fromEntries(headers.filter((th) => !th.hidden).map((th) => [th.dataset.column!, th.getAttribute("aria-colindex")!]));
     const shown = rows.filter((m) => !filter.value || m.uf === filter.value);
@@ -150,6 +155,7 @@ export function mountIndicatorTable(
     count.textContent = `${shown.length.toLocaleString("pt-BR")} municípios`;
   };
   filter.addEventListener("change", render);
+  new MutationObserver(render).observe(root, { attributes: true, attributeFilter: ['hidden'] });
 
   return (layer, mode) => {
     current = layer;

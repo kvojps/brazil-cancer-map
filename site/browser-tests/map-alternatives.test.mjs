@@ -16,7 +16,7 @@ before(async () => {
 after(async () => { await browser?.close(); });
 
 async function waitForData(page) {
-  await page.waitForFunction(() => document.querySelector('.indicator-table tbody')?.children.length > 0);
+  await page.waitForFunction(() => document.querySelector('#data-status')?.textContent === '');
 }
 
 async function disableWebGL(page) {

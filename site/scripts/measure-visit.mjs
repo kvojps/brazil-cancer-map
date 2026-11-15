@@ -34,7 +34,7 @@ try {
   const external = [];
   page.on('request', request => { if (!request.url().startsWith(base) && /^https?:/.test(request.url())) external.push(request.url()); });
   await page.goto(base);
-  await page.locator('.indicator-table tbody tr').first().waitFor({ state: 'attached' });
+  await page.waitForFunction(() => document.querySelector('#data-status')?.textContent === '');
   await page.waitForFunction(() => {
     const status = document.querySelector('.map-status');
     return status.hidden || status.textContent.includes('Não foi possível');

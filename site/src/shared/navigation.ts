@@ -50,11 +50,23 @@ export function mountSharedNavigation(): void {
   mountSiteMenu();
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   const destinations = new WeakMap<HTMLAnchorElement, string>();
+  const fixedMunicipalDestinations = new WeakSet<HTMLAnchorElement>();
+  const contexts = new WeakMap<HTMLAnchorElement, string>();
   const destination = (link: HTMLAnchorElement) => {
-    if (!destinations.has(link)) destinations.set(link, link.getAttribute('href')!);
+    if (!destinations.has(link)) {
+      const href = link.getAttribute('href')!;
+      destinations.set(link, href);
+      // Absolute municipal destinations inherit filters, but never the selected municipality.
+      if ((href.startsWith('/') || URL.canParse(href)) && new URL(href, location.href).pathname.startsWith('/municipio/')) fixedMunicipalDestinations.add(link);
+    }
     return new URL(destinations.get(link)!, location.href);
   };
   const updateLink = (link: HTMLAnchorElement, current: URL) => {
+    // Remember the original destination before testing which context affects it.
+    if (!destinations.has(link)) destination(link);
+    const context = `${systemTheme.matches}:${fixedMunicipalDestinations.has(link) && !link.dataset.themeChoice ? current.search : current.href}`;
+    if (contexts.get(link) === context) return;
+    contexts.set(link, context);
     if (link.dataset.themeChoice) {
       if (link.hasAttribute('data-theme-toggle')) {
         const active = readTheme(current.searchParams) ?? (systemTheme.matches ? 'dark' : 'light');
@@ -84,8 +96,9 @@ export function mountSharedNavigation(): void {
       }
     }
     const theme = readTheme(current.searchParams);
-    if (theme) document.documentElement.dataset.theme = theme;
-    else delete document.documentElement.dataset.theme;
+    if (theme) {
+      if (document.documentElement.dataset.theme !== theme) document.documentElement.dataset.theme = theme;
+    } else if (document.documentElement.hasAttribute('data-theme')) delete document.documentElement.dataset.theme;
     if (!theme && current.searchParams.has('theme')) {
       current.searchParams.delete('theme');
       history.replaceState(null, '', current);
@@ -101,5 +114,13 @@ export function mountSharedNavigation(): void {
   }, true);
   window.addEventListener('popstate', sync);
   window.addEventListener('navigation-state-change', sync);
-  new MutationObserver(sync).observe(document.body, { childList: true, subtree: true });
+  // A result or profile arriving changes only its new links, not every municipal link in the list.
+  new MutationObserver(records => {
+    const current = new URL(location.href);
+    for (const record of records) for (const node of record.addedNodes) {
+      if (!(node instanceof Element) || !node.isConnected) continue;
+      if (node.matches('a[href]')) updateLink(node as HTMLAnchorElement, current);
+      for (const link of node.querySelectorAll<HTMLAnchorElement>('a[href]')) updateLink(link, current);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 }

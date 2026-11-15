@@ -137,3 +137,13 @@ CHROMIUM_PATH=/caminho/para/chromium npm run measure:visit --prefix site
 A segunda medição inicia seu próprio servidor HTTP local com gzip e usa contexto
 novo do navegador; soma corpos comprimidos, sem cabeçalhos. Registra primeira
 visita e seleção de Recife na mesma sessão. Não comprova compressão no provedor.
+
+Para diagnosticar o tempo da seleção municipal, rode
+`node scripts/measure-selection.mjs` a partir de `site/`, depois do build e sem
+outros testes de navegador em paralelo. O cenário móvel, a guarda de tempo e os
+limites da simulação estão no [guia de desenvolvimento](../../docs/development.md).
+`municipality-selection.test.mjs` verifica que trocar de município não reescreve
+os milhares de links municipais com os mesmos filtros e que os links de retorno
+e os links novos do painel continuam recebendo o contexto correto. Também
+confirma que o Mapa deixa as linhas da Lista fora do documento e que reabrir a
+Lista preserva o filtro de UF e as linhas expandidas.

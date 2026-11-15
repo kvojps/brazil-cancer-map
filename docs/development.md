@@ -94,6 +94,24 @@ Esses testes não substituem a revisão humana com leitor de tela.
 Para a matriz completa, relatórios e execução de um arquivo por vez, veja
 [os testes de navegador](../site/browser-tests/README.md).
 
+Para medir a seleção municipal, depois do build, sem outra execução de navegador
+em paralelo:
+
+```sh
+node site/scripts/measure-selection.mjs
+```
+
+O script inicia um servidor local e usa Chromium em 390 × 844, com CPU reduzida
+em 4 vezes. Alterna Recife e Olinda e distingue o callback síncrono, o perfil
+inserido no DOM e dois frames seguintes; estes não comprovam o instante exato
+de apresentação na tela. As últimas quatro consultas reaproveitam os dados.
+Falha se o maior callback dessas consultas atingir 200 ms, uma guarda local de
+diagnóstico, não uma meta validada para aparelhos reais. `CHROMIUM_PATH` escolhe
+o navegador, `CPU_RATE` e `SELECTION_SYNC_BUDGET_MS` ajustam o cenário e
+`PROFILE_PATH` grava um perfil de CPU. O evento de seleção é o mesmo usado pelo
+mapa, disparado pelo script; a medição não cobre o reconhecimento do toque,
+a rede publicada ou a GPU do celular. Confirme a percepção no aparelho físico.
+
 **O repositório não tem CI**: nenhuma verificação roda automaticamente em push
 ou pull request. Execute localmente as que cobrem a sua mudança antes de
 publicá-la: `mypy` e `pytest` no pipeline; `check`, `build`, `npm test`,
