@@ -52,7 +52,7 @@ const insufficient = entry?.origin === 'insufficient' && !entry.adjustment_note;
             {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="var(--chart)" />}
           </>;
         })}
-        <text x="42" y="185">2014</text><text x="505" y="185">2024</text>
+        <text x="42" y="185">2014</text><text data-series-end x="505" y="185">2024</text>
       </SeriesChart>
       <details><summary>Ver a série em tabela</summary><table>
         <caption>Taxa de mortalidade padronizada por idade</caption>

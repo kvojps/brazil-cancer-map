@@ -98,7 +98,7 @@ Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(ma
 - **Mapa/Lista:** canto inferior direito. Na Lista, fica fixo na tela.
 - **Enquadramento:** o país vai até Fernando de Noronha, e não até a Ilha da Trindade, reservando a altura de Filtros e da legenda (`site/src/map/framing.ts`).
 - **Busca:** "1 município encontrado." e "N municípios encontrados.". **A confirmar:** sem "Abrir consulta" nos resultados no modo flutuante.
-- **Adaptação ao espaço:** abaixo de 768 px, usa fluxo quando a viewport visual tem menos de 520 px de altura ou a largura é menor que 300 px. Com resumo recolhido, desconta aviso, cabeçalho, altura natural do resumo e 120 px para controles e espaçamento; se restarem menos de 160 px para explorar o mapa, passa ao fluxo. São margens de composição, não um teto percentual do resumo. Os detalhes abertos não entram nessa medição. Enquanto estiver em fluxo, conserva a medida do resumo para evitar alternância de composição causada pela própria expansão. Limpar a seleção ou recuperar espaço pode restabelecer o modo flutuante.
+- **Adaptação ao espaço:** abaixo de 768 px, usa fluxo quando a viewport visual tem menos de 520 px de altura ou a largura é menor que 300 px. Com resumo recolhido ou sem seleção, desconta aviso, cabeçalho, altura natural do resumo, altura real dos controles e ressalvas, maior altura dos controles/legenda inferiores e 32 px de espaçamento; se restarem menos de 160 px para explorar o mapa, passa ao fluxo. São margens de composição, não um teto percentual do resumo. Os detalhes abertos não entram nessa medição. Enquanto estiver em fluxo, conserva a medida do resumo para evitar alternância de composição causada pela própria expansão. Limpar a seleção ou recuperar espaço pode restabelecer o modo flutuante.
 - **Fora do modo flutuante**, como no zoom de 200%: cabeçalho, seletores, busca, legenda e Mapa/Lista ficam em fluxo, fora do mapa, e a página rola até o rodapé. O botão Filtros não existe nesse modo, porque os seletores ficam à vista.
 
 ## Desktop em tela cheia
@@ -212,7 +212,7 @@ Substitui o mapa na mesma área, pelo alternador "Mapa | Lista", preservando fil
 
 Conhecidos e aceitos ao entregar cada parte:
 
-- **Texto de gráfico:** 12,6 px a partir de 768 px, mas 6,5 px a 320 px, abaixo do piso de 12 px. Corrigir exige redesenhar o gráfico, e a série continua legível em "Ver a série em tabela".
+- **Texto de gráfico:** a limitação de 6,5 px a 320 px foi corrigida na #30; valem as regras de [séries históricas em telas estreitas](#séries-históricas-em-telas-estreitas), com texto de 16 px e alternativa em tabela.
 - **Aviso a 320 px com zoom de 200%:** ocupa 212 de 450 px, 47% da altura. A 320 px sem zoom, 94 de 900 px.
 - **Teclado com todas as UFs na Lista:** 5.571 links e 5.571 botões na ordem de tabulação. O filtro por UF é a saída.
 - **Distância de cor:** no tema claro, "Longe" contra "Dado insuficiente" fica em 7,2 a 7,5, abaixo da meta de 8. **Esse par não foi listado na decisão de tons**, e passa pelo piso de 6.

@@ -13,12 +13,12 @@ export function mountSeriesCharts(): void {
           originals.set(node, coordinates);
         }
         for (const [key, value] of coordinates) node.setAttribute(key, String(value === 0 ? 0 : 64 + (value - 42) * (width - 96) / 500));
-        if (node.tagName === 'text' && coordinates.get('x') === 505) {
+        if (node.tagName === 'text' && node.hasAttribute('data-series-end')) {
           node.setAttribute('x', String(width - 32));
           node.setAttribute('text-anchor', 'end');
         }
         // The dose-change annotation has a longer label than the endpoint years.
-        if (node.tagName === 'text' && node.getAttribute('y') === '18') {
+        if (node.tagName === 'text' && node.hasAttribute('data-series-annotation')) {
           node.setAttribute('x', String(width - 8));
           node.setAttribute('text-anchor', 'end');
         }

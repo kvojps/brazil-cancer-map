@@ -8,7 +8,7 @@ URLs municipais estáticas e consulta integrada ao dashboard.
 
 O [contrato de interface](../ui-contract.md) registra a decisão de composição:
 fluxo abaixo de 300 px de largura, abaixo de 520 px de altura visual ou quando
-aviso, cabeçalho, resumo recolhido e 120 px de controles/espaçamento deixarem
+aviso, cabeçalho, resumo recolhido, alturas reais dos controles e ressalvas, maior altura da legenda/controles inferiores e 32 px de espaçamento deixarem
 menos de 160 px para explorar o mapa. A última medida de resumo flutuante é
 conservada durante o fluxo, evitando oscilação ao mostrar os detalhes completos.
 Não é um limite percentual nem uma redução de conteúdo. Filtros, busca, legenda,

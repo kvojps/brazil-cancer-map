@@ -10,7 +10,7 @@ before(async () => {
 after(async () => { await browser?.close(); });
 
 for (const theme of ['light', 'dark']) {
-  test(`${theme}: chart labels remain at least 12 px wide-screen and narrow-screen`, async () => {
+  test(`${theme}: chart labels remain at least 12 px in a narrow screen`, async () => {
     const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
     try {
       await page.goto(`${base}/municipio/261160-recife/?theme=${theme}`);
@@ -54,11 +54,11 @@ test('a long summary leaves the map useful by moving the consultation into page 
   } finally { await page.close(); }
 });
 
-for (const [width, height] of [[390, 844], [320, 568], [844, 390], [568, 320], [390, 360]]) {
-  test(`${width}x${height}: search, last list row and panel actions remain reachable`, async () => {
+for (const theme of ['light', 'dark']) for (const [width, height] of [[390, 844], [320, 568], [844, 390], [568, 320], [390, 360]]) {
+  test(`${theme} ${width}x${height}: search, last list row and panel actions remain reachable`, async () => {
     const page = await browser.newPage({ viewport: { width, height }, isMobile: true, hasTouch: true });
     try {
-      await page.goto(base + '/?visualizacao=lista');
+      await page.goto(`${base}/?visualizacao=lista&theme=${theme}`);
       await page.locator('.indicator-table select').selectOption('PE');
       const input = page.locator('#municipality-search');
       if (!await input.isVisible()) await page.locator('.search-toggle').click();
@@ -80,3 +80,34 @@ for (const [width, height] of [[390, 844], [320, 568], [844, 390], [568, 320], [
     } finally { await page.close(); }
   });
 }
+
+test('reducing the search viewport keeps its results and keyboard focus reachable', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + '/');
+    await page.locator('.search-toggle').click();
+    const input = page.locator('#municipality-search');
+    await input.fill('Recife');
+    await page.locator('#municipality-results button').first().waitFor();
+    await page.setViewportSize({ width: 390, height: 360 });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.municipality-search')).position === 'relative');
+    assert.equal(await input.evaluate(node => node === document.activeElement), true);
+    await input.press('Enter');
+    await page.locator('.result-value').waitFor();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.match(page.url(), /261160-recife/);
+  } finally { await page.close(); }
+});
+
+test('a long caveat without municipal selection also moves the controls into page flow', async () => {
+  const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + '/?tipo=prostate');
+    await page.locator('#indicator-caveat').waitFor();
+    assert.match(await page.locator('#indicator-caveat').innerText(), /vigilância ativa/);
+    assert.equal(await page.locator('.map-controls').evaluate(node => getComputedStyle(node).position), 'relative');
+    await page.locator('#indicator-caveat').scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  } finally { await page.close(); }
+});

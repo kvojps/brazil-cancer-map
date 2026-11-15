@@ -61,7 +61,7 @@ const insufficient = entry.origin === 'insufficient';
           {point.value !== null && <circle cx={pointX(point.year)} cy={pointY(point.value)} r="3" fill="var(--chart)" />}
         </>;
       })}
-      <text x="42" y="185">{period.first_year}</text><text x="505" y="185">{period.last_year}</text>
+      <text x="42" y="185">{period.first_year}</text><text data-series-end x="505" y="185">{period.last_year}</text>
     </SeriesChart>
     <p>Anos provisórios: {period.provisional.join(', ')} (tracejados). Não entram na Tendência.</p>
     <details><summary>Ver a série em tabela</summary><table>

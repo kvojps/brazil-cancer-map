@@ -50,7 +50,7 @@ const chartId = `smoking-series-${cancerType}`;
           <circle cx={x(point.year)} cy={y(point.value)} r="3" fill="var(--chart)" />
         </>;
       })}
-      <text x="42" y="185">{first}</text><text x="505" y="185">{last}</text>
+      <text x="42" y="185">{first}</text><text data-series-end x="505" y="185">{last}</text>
     </SeriesChart>
     <details><summary>O que é este número? Fonte e série em tabela</summary>
       <p>Percentual ponderado de pessoas de 18 anos ou mais que fumam cigarros diariamente ou ocasionalmente, entrevistadas pelo Vigitel em {data.capital_name}. Não inclui dispositivos eletrônicos. Não há coleta em 2022; a lacuna não foi preenchida.</p>
