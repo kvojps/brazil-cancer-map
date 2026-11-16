@@ -122,11 +122,14 @@ for (const composition of ['floating details', 'short screen']) {
       await page.locator('.result-value').waitFor();
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
       await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
-      const position = () => page.evaluate(() => ({ page: scrollY, panel: document.querySelector('#municipality-preview').scrollTop }));
+      const position = () => page.evaluate(() => {
+        const reading = document.querySelector('.panel-reading');
+        return { page: scrollY, panel: reading.scrollTop, height: reading.clientHeight };
+      });
       const before = await position();
       assert.ok(before.page + before.panel > 200, 'the consultation has been scrolled');
       await page.setViewportSize({ width: 390, height: height + 1 });
-      await page.waitForTimeout(300);
+      await page.waitForFunction(height => document.querySelector('.panel-reading').clientHeight !== height, before.height);
       const after = await position();
       assert.ok(Math.abs(before.page - after.page) < 3, 'page reading position survives measurement');
       assert.ok(Math.abs(before.panel - after.panel) < 3, 'panel reading position survives measurement');

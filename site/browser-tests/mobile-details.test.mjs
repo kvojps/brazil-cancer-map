@@ -87,11 +87,10 @@ for (const height of [568, 844]) test(`municipal anchors at ${height} reach thei
     await page.goto(base + RECIFE + '#prevencao');
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
-    await page.waitForTimeout(200);
-    assert.equal(await page.locator('#prevencao > summary').evaluate(node => {
-      const r = node.getBoundingClientRect();
+    await page.waitForFunction(() => {
+      const r = document.querySelector('#prevencao > summary').getBoundingClientRect();
       return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
-    }), true, 'the requested axis is visible after the final composition');
+    });
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
@@ -115,11 +114,10 @@ test('links between axes keep mobile details open without adding a step before c
     await page.goForward();
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
-    await page.waitForTimeout(200);
-    assert.equal(await page.locator('#prevencao > summary').evaluate(node => {
-      const r = node.getBoundingClientRect();
+    await page.waitForFunction(() => {
+      const r = document.querySelector('#prevencao > summary').getBoundingClientRect();
       return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
-    }), true, 'the requested axis is visible after the final composition');
+    });
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
   } finally { await page.close(); }
@@ -195,13 +193,11 @@ for (const height of [568, 844]) {
       const position = await page.evaluate(() => scrollY);
       await link.tap();
       await page.locator('.result-value').waitFor();
-      await page.waitForTimeout(200);
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
       await page.locator('#acesso [data-cancer-type="breast"] .card-action').scrollIntoViewIfNeeded();
       await page.getByRole('button', { name: 'Voltar à lista', exact: true }).click();
-      await page.waitForTimeout(200);
-      assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'returns to exploration before selection');
+      await page.waitForFunction(position => document.querySelector('#municipality-preview').hasAttribute('data-collapsed') && Math.abs(scrollY - position) < 3, position);
       assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
       assert.equal(await row.locator('button').getAttribute('aria-expanded'), 'true');
       assert.equal(new URL(page.url()).pathname, '/municipio/260960-olinda/');
@@ -220,12 +216,10 @@ test('deliberate scrolling during an anchored load cancels late positioning', as
     await page.goto(base + RECIFE + '#prevencao');
     await started;
     await page.keyboard.press('Control+Home');
-    await page.waitForTimeout(200);
     const position = await page.evaluate(() => scrollY);
     assert.equal(position, 0, 'the user has returned to the start during loading');
     release();
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
-    await page.waitForTimeout(200);
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
     assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'loading respects the deliberate reading position');
   } finally { release(); await page.close(); }
@@ -246,7 +240,6 @@ test('a new search selection supersedes an anchor still loading', async () => {
     await page.locator('#municipality-search').press('Enter');
     release();
     await page.locator('.profile[data-code="260960"]').waitFor({ state: 'attached' });
-    await page.waitForTimeout(200);
     assert.equal(await page.locator('#preview-heading').innerText(), 'Olinda (PE)');
     assert.equal(new URL(page.url()).hash, '', 'new selection discards the superseded anchor');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
@@ -269,5 +262,40 @@ test('reloading an axis inside a deliberate details entry preserves its return h
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     await page.goBack();
     assert.equal(new URL(page.url()).pathname, '/municipios/', 'return consumes the existing details entry');
+  } finally { await page.close(); }
+});
+
+test('details keep the reading axis for type changes and follow an actual indicator change', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(5000);
+  try {
+    await page.goto(base + RECIFE);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    await page.locator('#prevencao > summary').click();
+    await page.locator('[data-panel-cancer-type]').selectOption('prostate');
+    await page.waitForFunction(() => document.querySelector('#cancer-type').value === 'prostate');
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    await page.locator('[data-details-menu]').click();
+    await page.locator('#details-menu').getByRole('button', { name: 'Filtros', exact: true }).click();
+    await page.locator('#map-indicator').selectOption('mortality');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => document.querySelector('#panorama').open);
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    await page.locator('[data-details-menu]').click();
+    await page.locator('#details-menu').getByRole('button', { name: 'Filtros', exact: true }).click();
+    await page.locator('#cancer-type').selectOption('breast');
+    await page.locator('#map-indicator').selectOption('mammography');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => document.querySelector('#deteccao').open);
+    await page.locator('#prevencao > summary').click();
+    await page.locator('[data-panel-cancer-type]').selectOption('prostate');
+    await page.waitForFunction(() => document.querySelector('#acesso').open && document.querySelector('#map-indicator').value === 'within_60_days');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(new URL(page.url()).pathname, RECIFE);
   } finally { await page.close(); }
 });

@@ -333,6 +333,7 @@ test('a long caveat keeps filters available without scrolling the document', asy
     await page.locator('#cancer-type').selectOption('prostate');
     assert.equal(await page.locator('.filters-toggle').isVisible(), true);
     assert.equal(await page.evaluate(() => scrollY), 0);
+    await page.waitForFunction(() => document.querySelector('#indicator-caveat').textContent.includes('vigilância ativa'));
     assert.match(await page.locator('#indicator-caveat').innerText(), /vigilância ativa/);
     assert.equal(await page.evaluate(() => scrollY), 0);
     await page.locator('#map-indicator').selectOption('mortality');

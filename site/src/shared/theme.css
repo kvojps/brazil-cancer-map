@@ -271,3 +271,8 @@ html[data-mobile-flow] { overflow: auto; overscroll-behavior: auto; scroll-paddi
 html[data-mobile-flow] .filters-sheet:not(:popover-open) { display: contents; }
 html[data-mobile-flow] .map-and-profile { grid-template-columns: minmax(0, 1fr); }
 html[data-mobile-flow] .panel-bar { scroll-margin-top: var(--notice-height, 6rem); }
+
+/* Details keep their own reading area even when the exploration is a scrolling List. */
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
+  html[data-js]:not([data-mobile-flow]):has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) { overflow: hidden; overscroll-behavior: none; }
+}

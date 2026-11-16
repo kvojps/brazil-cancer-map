@@ -8,17 +8,23 @@ export function mountTemporarySurfaces(): void {
   const filters = document.querySelector<HTMLElement>('#map-filters');
   const legend = document.querySelector<HTMLElement>('#legend-full');
   const menu = document.querySelector<HTMLDetailsElement>('.site-menu');
+  const detailsMenu = document.querySelector<HTMLElement>('#details-menu');
+  const detailsToggle = document.querySelector<HTMLElement>('[data-details-menu]');
+  let searchOpener: HTMLElement = searchToggle;
+  let filtersOpener: HTMLElement | null = document.querySelector('.filters-toggle');
   const floating = matchMedia('(max-width: 767px) and (min-width: 300px) and (min-height: 520px)');
   let switching = false;
   let legendOpener: HTMLElement | undefined;
   const focus = (element: HTMLElement | undefined | null) => {
-    if (element?.checkVisibility()) element.focus({ preventScroll: true });
+    const target = element?.checkVisibility({ visibilityProperty: true }) ? element : detailsToggle;
+    if (target?.checkVisibility({ visibilityProperty: true })) target.focus({ preventScroll: true });
   };
+  const openerFor = (surface: HTMLElement) => surface === filters ? filtersOpener : surface === detailsMenu ? detailsToggle : legendOpener;
   const closeSearch = (returnFocus = true) => {
-    const hadFocus = search.contains(document.activeElement);
+    const wasOpen = 'searchOpen' in header.dataset;
     delete header.dataset.searchOpen;
     searchToggle.setAttribute('aria-expanded', 'false');
-    if (returnFocus && hadFocus) focus(searchToggle);
+    if (returnFocus && wasOpen) focus(searchOpener);
   };
   const hide = (surface: HTMLElement | null) => {
     if (surface?.matches(':popover-open')) surface.hidePopover();
@@ -26,7 +32,7 @@ export function mountTemporarySurfaces(): void {
   const replace = (next: HTMLElement) => {
     switching = true;
     if (next !== search) closeSearch(false);
-    for (const surface of [filters, legend]) if (surface !== next) hide(surface);
+    for (const surface of [filters, legend, detailsMenu]) if (surface !== next) hide(surface);
     if (menu?.open) menu.open = false;
     switching = false;
   };
@@ -35,6 +41,7 @@ export function mountTemporarySurfaces(): void {
   search.id = 'municipality-search-surface';
   searchToggle.addEventListener('click', event => {
     event.preventDefault();
+    searchOpener = searchToggle;
     replace(search);
     header.dataset.searchOpen = '';
     searchToggle.setAttribute('aria-expanded', 'true');
@@ -45,28 +52,49 @@ export function mountTemporarySurfaces(): void {
   document.addEventListener('click', event => {
     const opener = event.target instanceof Element ? event.target.closest<HTMLElement>('[popovertarget="legend-full"]') : null;
     if (opener && opener.getAttribute('popovertargetaction') !== 'hide') legendOpener = opener;
+    const filterButton = event.target instanceof Element ? event.target.closest<HTMLElement>('[popovertarget="map-filters"]') : null;
+    if (filterButton && filterButton.getAttribute('popovertargetaction') !== 'hide') filtersOpener = filterButton;
   }, true);
-  for (const surface of [filters, legend]) surface?.addEventListener('beforetoggle', event => {
+  for (const surface of [filters, legend, detailsMenu]) surface?.addEventListener('beforetoggle', event => {
     const opening = (event as ToggleEvent).newState === 'open';
     if (opening) {
-      if (floating.matches) replace(surface);
-      // Focus the first control after the popover has become visible.
-      queueMicrotask(() => focus(surface.querySelector<HTMLElement>('select, button')));
-    } else if (!switching && surface.contains(document.activeElement)) {
-      queueMicrotask(() => focus(surface === filters ? document.querySelector<HTMLElement>('.filters-toggle') : legendOpener));
+      if (floating.matches || surface === detailsMenu) replace(surface);
+      // The toggle event below runs after native popover focus handling.
+    } else if (!switching && (floating.matches || surface === detailsMenu || surface.contains(document.activeElement))) {
+      queueMicrotask(() => focus(openerFor(surface)));
     }
+  });
+  for (const surface of [filters, legend, detailsMenu]) surface?.addEventListener('toggle', event => {
+    if ((event as ToggleEvent).newState === 'open' && surface.matches(':popover-open')) focus(surface.querySelector<HTMLElement>('select, button'));
   });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     if ('searchOpen' in header.dataset) {
       closeSearch(false);
-      focus(searchToggle);
+      focus(searchOpener);
     }
-    for (const surface of [filters, legend]) {
+    for (const surface of [filters, legend, detailsMenu]) {
       if (!surface?.matches(':popover-open')) continue;
       event.preventDefault();
       hide(surface);
-      focus(surface === filters ? document.querySelector<HTMLElement>('.filters-toggle') : legendOpener);
+      focus(openerFor(surface));
+    }
+  });
+  detailsMenu?.addEventListener('click', event => {
+    const command = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-details-command]')?.dataset.detailsCommand : undefined;
+    if (!command) return;
+    if (command === 'search') {
+      searchOpener = detailsToggle!;
+      replace(search);
+      header.dataset.searchOpen = '';
+      searchToggle.setAttribute('aria-expanded', 'true');
+      input.focus({ preventScroll: true });
+      queueMicrotask(() => input.focus({ preventScroll: true }));
+    } else {
+      const surface = command === 'filters' ? filters : legend;
+      if (command === 'filters') filtersOpener = detailsToggle!;
+      else legendOpener = detailsToggle!;
+      if (surface) { replace(surface); surface.showPopover(); }
     }
   });
   // Selecting a result also works through Enter in the search field.
@@ -76,15 +104,17 @@ export function mountTemporarySurfaces(): void {
   window.addEventListener('municipality-map-select', () => closeSearch());
   menu?.addEventListener('toggle', () => {
     if (!menu.open) return;
+    focus(menu.querySelector<HTMLElement>('nav a'));
     switching = true;
     closeSearch(false);
     hide(filters);
     hide(legend);
+    hide(detailsMenu);
     switching = false;
   });
   const adapt = () => {
-    closeSearch(); hide(filters); hide(legend);
-    if (document.activeElement === searchToggle && input.checkVisibility()) input.focus({ preventScroll: true });
+    closeSearch(); hide(filters); hide(legend); hide(detailsMenu);
+    if (document.activeElement === searchToggle && input.checkVisibility({ visibilityProperty: true })) input.focus({ preventScroll: true });
   };
   floating.addEventListener('change', adapt);
   window.addEventListener('mobile-layout-change', adapt);

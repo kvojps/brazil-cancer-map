@@ -30,19 +30,29 @@ const period = manifest.indicators[indicator].all;
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading" tabindex="0">
       <div class="panel-bar">
         <h2 id="preview-heading" tabindex="-1">{heading}</h2>
+        <button type="button" class="details-menu-toggle" data-details-menu popovertarget="details-menu">Menu</button>
         <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
       </div>
-      <div class="panel-result" data-profile-result></div>
-      <button type="button" class="panel-navigation" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Ver detalhes</button>
-      <div id="municipality-content" data-preview-content>
-        <label class="panel-type" hidden>Tipo de câncer
-          <select data-panel-cancer-type>
-            {Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}
-          </select>
-        </label>
-        <div data-profile-slot><slot /></div>
+      <div class="panel-reading">
+        <div class="panel-result" data-profile-result></div>
+        <button type="button" class="panel-navigation" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Ver detalhes</button>
+        <div id="municipality-content" data-preview-content>
+          <button type="button" class="details-legend" popovertarget="legend-full">Legenda</button>
+          <label class="panel-type" hidden>Tipo de câncer
+            <select data-panel-cancer-type>
+              {Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}
+            </select>
+          </label>
+          <div data-profile-slot><slot /></div>
+        </div>
       </div>
     </aside>
+    <div id="details-menu" class="details-menu" popover role="dialog" aria-label="Comandos da consulta">
+      <button type="button" data-details-command="search">Buscar município</button>
+      <button type="button" data-details-command="filters">Filtros</button>
+      <button type="button" data-details-command="legend">Legenda</button>
+      <button type="button" popovertarget="details-menu" popovertargetaction="hide">Fechar menu</button>
+    </div>
     <!-- Over the map, above the sheet: the card it replaces would not fit there on a phone. -->
     <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>
       <span class="panel-legend-swatches" data-mode="trend" aria-hidden="true">{TREND_STATES.map(state => <span style={`background: ${trendSwatch(state)}`} />)}</span>
@@ -71,6 +81,9 @@ const period = manifest.indicators[indicator].all;
   .map-heading h2 { margin: .25rem 0; }
   .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
   #municipality-preview { min-width: 0; padding: 0 1rem 1rem; background: var(--surface); }
+  .details-menu-toggle, .details-legend { display: none; }
+  .details-menu:popover-open { position: fixed; inset: var(--notice-height, 6rem) .5rem auto auto; margin: .5rem; padding: .5rem; max-height: calc(100dvh - var(--notice-height, 6rem) - 1rem); overflow: auto; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+  .details-menu button { display: block; width: 100%; text-align: left; }
   .panel-navigation { display: none; margin-block: .25rem .5rem; }
   .panel-bar { display: flex; align-items: center; gap: .25rem; min-height: 3rem; background: var(--surface); }
   .panel-bar h2 { flex: 1; min-width: 0; margin: 0; }
@@ -106,6 +119,13 @@ const period = manifest.indicators[indicator].all;
   @media (max-width: 767px) {
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
     #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) :is(.details-menu-toggle, .details-legend) { display: block; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex-wrap: wrap; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar h2 { flex-basis: 100%; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: none; position: sticky; top: 0; z-index: 2; }
+
     #municipality-preview[data-enhanced][data-collapsed] [data-preview-content] { display: none; }
   }
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
@@ -128,6 +148,8 @@ const period = manifest.indicators[indicator].all;
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .map-controls),
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .panel-legend) { visibility: hidden; }
+      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header[data-search-open]) { visibility: visible; }
+      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) #map-filters:popover-open) { visibility: visible; }
       /* Filters, menu and search take the place of the sheet while open. It keeps its box for the framing. */
       :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) #municipality-preview[data-enhanced]),
       :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) .panel-legend) { visibility: hidden; }

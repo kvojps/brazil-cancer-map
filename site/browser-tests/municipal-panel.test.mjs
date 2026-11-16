@@ -339,12 +339,10 @@ test('the sheet works by keyboard, with visible focus', async () => {
     assert.equal(await toggle(page).innerText(), 'Voltar ao mapa');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
     assert.equal(await page.locator('#preview-heading').evaluate(element => element === document.activeElement), true, 'focus enters the details heading');
-    await page.keyboard.press('Tab');
-    assert.equal(await page.locator('[data-clear-profile]').evaluate(element => element === document.activeElement), true);
-    await page.keyboard.press('Tab');
-    assert.equal(await toggle(page).evaluate(element => element === document.activeElement), true);
-    await page.keyboard.press('Tab');
-    assert.equal(await page.locator('[data-panel-cancer-type]').evaluate(element => element === document.activeElement), true);
+    for (const selector of ['[data-toggle-profile]', '[data-details-menu]', '[data-clear-profile]', '.details-legend', '[data-panel-cancer-type]']) {
+      await page.keyboard.press('Tab');
+      assert.equal(await page.locator(selector).evaluate(element => element === document.activeElement), true, selector);
+    }
     assert.notEqual(await page.locator('[data-panel-cancer-type]').evaluate(element => getComputedStyle(element).outlineStyle), 'none');
   } finally { await page.close(); }
 });

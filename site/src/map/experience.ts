@@ -142,7 +142,7 @@ if (container && status) {
         const url = new URL(location.href);
         if (url.hash.startsWith('#tipo-')) url.hash = '';
         url.search = writeMapState(state, url.searchParams).toString();
-        if (push) history.pushState(null, "", url);
+        if (push) history.pushState(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, "", url);
         else history.replaceState(history.state, "", url);
         window.dispatchEvent(new Event('navigation-state-change'));
         showInTable(shown, state.mode);

@@ -95,3 +95,53 @@ test('Escape returns to the invoker after Tab leaves a nonmodal surface', async 
     }
   } finally { await page.close(); }
 });
+
+test('details commands preserve reading and expose one surface with a visible return focus', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(5000);
+  try {
+    await page.goto(`${base}/municipio/261160-recife/`);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.locator('#prevencao > summary').click();
+    await page.locator('#prevencao [data-cancer-type="all"] .card-action').first().scrollIntoViewIfNeeded();
+    const position = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    const entries = await page.evaluate(() => history.length);
+    for (const command of ['Buscar município', 'Filtros', 'Legenda']) {
+      await page.locator('[data-details-menu]').click();
+      await page.waitForFunction(() => document.querySelector('#details-menu').contains(document.activeElement));
+      await page.locator('#details-menu').getByRole('button', { name: command, exact: true }).click();
+      await page.waitForFunction(() => !document.querySelector('#details-menu').matches(':popover-open'));
+      const surface = command === 'Buscar município' ? '.municipality-search' : command === 'Filtros' ? '#map-filters' : '#legend-full';
+      await page.waitForFunction(selector => { const node = document.querySelector(selector); return node.checkVisibility({ visibilityProperty: true }) && node.contains(document.activeElement); }, surface);
+      assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => document.activeElement?.matches('[data-details-menu]'));
+      assert.equal(await page.locator('[data-details-menu]').isVisible(), true);
+      assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), position);
+      assert.equal(await page.evaluate(() => history.length), entries);
+    }
+    await page.locator('[data-details-menu]').click();
+    await page.locator('#details-menu').getByRole('button', { name: 'Fechar menu', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.matches('[data-details-menu]'));
+    await page.locator('[data-details-menu]').click();
+    await page.locator('.construction-notice').click();
+    await page.waitForFunction(() => !document.querySelector('#details-menu').matches(':popover-open') && document.activeElement?.matches('[data-details-menu]'));
+    assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), position);
+    await page.locator('.details-legend').click();
+    await page.getByRole('button', { name: 'Fechar legenda', exact: true }).click();
+    await page.waitForFunction(() => document.activeElement?.matches('.details-legend'));
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    assert.equal(await page.locator('.panel-bar').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && rect.bottom <= innerHeight;
+    }), true);
+    await page.locator('[data-details-menu]').click();
+    await page.locator('#details-menu').getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.locator('#municipality-search').fill('Olinda PE');
+    await page.locator('#municipality-search').press('Enter');
+    await page.locator('.profile[data-code="260960"]').waitFor({ state: 'attached' });
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    assert.equal(await page.locator('#municipality-search').isVisible(), false);
+  } finally { await page.close(); }
+});

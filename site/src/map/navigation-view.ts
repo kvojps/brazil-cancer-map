@@ -27,6 +27,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const resultBlock = panel.querySelector<HTMLElement>('[data-profile-result]')!;
   const heading = panel.querySelector<HTMLElement>('#preview-heading')!;
   const toggle = panel.querySelector<HTMLButtonElement>('[data-toggle-profile]')!;
+  const panelBar = panel.querySelector<HTMLElement>('.panel-bar')!;
+  const detailsMenu = panel.querySelector<HTMLElement>('[data-details-menu]')!;
   const clear = panel.querySelector<HTMLButtonElement>('[data-clear-profile]')!;
   const panelType = panel.querySelector<HTMLLabelElement>('.panel-type')!;
   const panelTypeSelect = panelType.querySelector<HTMLSelectElement>('select')!;
@@ -76,6 +78,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     panel.toggleAttribute('data-collapsed', !expanded);
     toggle.setAttribute('aria-expanded', String(expanded));
     toggle.textContent = expanded ? returnLabel() : 'Ver detalhes';
+    // Keep the same action in the summary and in the details bar.
+    if (expanded && toggle.parentElement !== panelBar) panelBar.insertBefore(toggle, detailsMenu);
+    else if (!expanded && toggle.parentElement === panelBar) resultBlock.after(toggle);
     if (!expanded) panel.scrollTop = 0;
     syncSheetMetrics();
     if (!expanded && frameOnCollapse && selected) frame(selected.code);
@@ -97,6 +102,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
       history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', location.href);
     }
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(state.indicator);
     expand(true);
     heading.focus({ preventScroll: true });
   };
@@ -153,10 +159,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const lines = axisResults(selected, profile, state);
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) renderAxisResults(axis, lines[axis.id] ?? []);
     if (shownIndicator !== state.indicator) {
+      const indicatorChanged = shownIndicator !== '';
       const axisId = ['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor)
         ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
       for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
       shownIndicator = state.indicator;
+      if (indicatorChanged && isPhone() && detailsOpen()) content.querySelector<HTMLElement>(`#${axisId}`)?.scrollIntoView({ block: 'start' });
       if (initialAnchor && isPhone()) {
         // A shared anchor is already the destination, not a synthetic details visit.
         if (!detailsOpen()) history.replaceState({ ...history.state, municipalDetails: location.pathname, detailsEntry: false,
