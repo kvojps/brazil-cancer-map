@@ -18,7 +18,7 @@ test('municipal selections preserve list links without rewriting thousands of un
     await page.evaluate(() => {
       window.listLinkWrites = 0;
       new MutationObserver(records => { window.listLinkWrites += records.length; })
-        .observe(document.querySelector('.indicator-table tbody'), { attributes: true, attributeFilter: ['href'], subtree: true });
+        .observe(document.querySelector('.indicator-table tbody'), { attributes: true, attributeFilter: ['href'], childList: true, subtree: true });
     });
     for (const code of ['261160', '260960', '261160']) {
       await page.evaluate(code => window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code })), code);

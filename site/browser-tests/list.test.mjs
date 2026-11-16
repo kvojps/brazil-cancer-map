@@ -159,18 +159,19 @@ test('wide at 1280 px with the panel open: no column is cut, the last ones in th
   } finally { await page.close(); }
 });
 
-test('phone: UF and count stay fixed on scrolling, as do Mapa/Lista and the notice, and the rest leaves', async () => {
+test('phone: rows scroll internally while UF, controls and notice remain reachable', async () => {
   const page = await open(PHONE, { uf: '' });
   try {
+    const bar = await box(page, '.list-bar');
     const switcher = await box(page, '.view-controls');
-    await page.evaluate(() => window.scrollTo(0, 3000));
-    await page.waitForFunction(() => scrollY > 0);
-    const notice = await box(page, '.construction-notice');
-    assert.equal(notice.top, 0);
-    assert.equal((await box(page, '.list-bar')).top, notice.bottom, 'the bar under the notice');
+    await page.locator('.indicator-table .scroll').hover();
+    await page.mouse.wheel(0, 3000);
+    await page.waitForFunction(() => document.querySelector('.indicator-table .scroll').scrollTop > 0);
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    assert.deepEqual(await box(page, '.list-bar'), bar);
     assert.deepEqual(await box(page, '.view-controls'), switcher);
-    assert.ok((await box(page, '.filters-toggle')).bottom <= 0, 'Filtros leave the view');
-    assert.ok((await box(page, '.site-header')).bottom <= 0, 'the header leaves the view');
+    assert.equal((await box(page, '.construction-notice')).top, 0);
+    assert.ok((await box(page, '.filters-toggle')).top > 0);
     assert.equal(await noHorizontalScroll(page), true);
   } finally { await page.close(); }
 });
@@ -212,16 +213,27 @@ for (const [form, viewport] of [['narrow', PHONE], ['wide', DESKTOP]]) {
   });
 }
 
-test('a phone sheet covers neither the last rows nor Mapa/Lista, also with a row open', async () => {
-  const page = await open(PHONE, { path: BALSAS });
+for (const viewport of [PHONE, { width: 320, height: 568 }]) test(`${viewport.width}: a phone sheet leaves last row fields and keyboard controls reachable`, async () => {
+  const page = await open(viewport, { path: BALSAS });
   try {
     const sheet = await box(page, '#municipality-preview');
     assert.ok((await box(page, '.view-controls')).bottom <= sheet.top, 'Mapa/Lista above the sheet');
     const last = page.locator('.indicator-table tbody tr').last();
-    await last.locator('[data-row-toggle]').evaluate(element => element.click());
-    await page.evaluate(() => window.scrollTo(0, document.querySelector('.indicator-table').getBoundingClientRect().bottom + scrollY - innerHeight));
-    await page.waitForFunction(() => scrollY > 0);
-    assert.ok((await last.boundingBox()).y + (await last.boundingBox()).height <= (await box(page, '#municipality-preview')).top + 1, 'the last row ends above the sheet');
+    const control = last.locator('[data-row-toggle]');
+    await control.focus();
+    await control.press('Enter');
+    await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTo(0, element.scrollHeight));
+    assert.equal(await control.getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    const fields = last.locator('[data-column=quality]');
+    await fields.scrollIntoViewIfNeeded();
+    assert.ok((await fields.boundingBox()).y + (await fields.boundingBox()).height <= (await box(page, '#municipality-preview')).top + 1, 'the final field is above the sheet');
+    await control.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    assert.equal(await control.evaluate(element => element === document.activeElement), true);
+    const focused = await control.boundingBox();
+    assert.ok(focused.y >= (await box(page, '.indicator-table .scroll')).top - 1);
+    assert.ok(focused.y + focused.height <= (await box(page, '#municipality-preview')).top + 1, 'the last keyboard control is above the sheet');
   } finally { await page.close(); }
 });
 
@@ -229,7 +241,9 @@ test('the rows of the keyboard stay clear of the fixed parts', async () => {
   const page = await open(PHONE, { path: BALSAS, uf: 'MA' });
   try {
     const control = toggle(page, 'Balsas');
-    await control.focus();
+    await control.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    assert.equal(await control.evaluate(element => element === document.activeElement), true);
     const focused = await control.boundingBox();
     assert.ok(focused.y >= (await box(page, '.list-bar')).bottom - 1, 'not under the bar');
     assert.ok(focused.y + focused.height <= (await box(page, '#municipality-preview')).top + 1, 'not under the sheet');
@@ -409,3 +423,38 @@ test('native 200% zoom at 1280 px, in both themes: the list fits and keeps the w
     } finally { await context.close(); }
   }
 });
+
+for (const [viewport, colorScheme] of [[PHONE, 'light'], [{ width: 320, height: 568 }, 'dark']]) {
+  test(`${viewport.width}: selecting names during loading preserves the current list exploration`, async () => {
+    const page = await open(viewport, { uf: 'PE', query: '&tipo=breast', colorScheme });
+    let release;
+    const pending = new Promise(resolve => { release = resolve; });
+    try {
+      await page.route('**/municipio/260960-olinda/', async route => { await pending; await route.continue(); });
+      const olinda = page.getByRole('link', { name: 'Olinda', exact: true });
+      await toggle(page, 'Olinda').click();
+      await olinda.click();
+      assert.equal(new URL(page.url()).pathname, '/municipio/260960-olinda/');
+      const recife = page.getByRole('link', { name: 'Recife', exact: true });
+      await recife.scrollIntoViewIfNeeded();
+      const position = await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTop);
+      await recife.click();
+      await page.locator('.profile[data-code="261160"]').waitFor({ state: 'attached' });
+      release();
+      await page.waitForLoadState('networkidle');
+      assert.match(await page.locator('#preview-heading').innerText(), /Recife/);
+      assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+      assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
+      assert.equal(await toggle(page, 'Olinda').getAttribute('aria-expanded'), 'true');
+      assert.equal(new URL(page.url()).searchParams.get('tipo'), 'breast');
+      assert.equal(new URL(page.url()).searchParams.get('visualizacao'), 'lista');
+      assert.equal(await page.evaluate(() => scrollY), 0);
+      assert.ok(Math.abs(await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTop) - position) < 3);
+      await page.locator('[data-view="mapa"]').click();
+      await page.locator('[data-view="lista"]').click();
+      await page.waitForFunction(position => Math.abs(document.querySelector('.indicator-table .scroll').scrollTop - position) < 3, position);
+      assert.equal(await toggle(page, 'Olinda').getAttribute('aria-expanded'), 'true');
+      assert.equal(new URL(page.url()).pathname, '/municipio/261160-recife/');
+    } finally { release(); await page.close(); }
+  });
+}

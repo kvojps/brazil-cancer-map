@@ -131,8 +131,8 @@ const period = manifest.indicators[indicator].all;
   @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
     @scope (:global(:root:not([data-mobile-flow]))) {
       .home { position: relative; flex: 1; gap: 0; min-height: 0; }
-      .map-and-profile { flex: 1 1 auto; gap: 0; }
-      .map-with-legend { position: relative; display: flex; flex-direction: column; border-radius: 0; overflow: visible; }
+      .map-and-profile { flex: 1 1 auto; gap: 0; min-height: 0; contain: size; }
+      .map-with-legend { position: relative; display: flex; flex-direction: column; min-height: 0; border-radius: 0; overflow: visible; }
       .map-with-legend > [data-map-view] { position: relative; display: flex; flex: 1; min-height: 60dvh; }
       .map-heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
       .data-feedback { position: absolute; top: 8rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
@@ -143,6 +143,7 @@ const period = manifest.indicators[indicator].all;
       #municipality-preview[data-enhanced] .panel-bar { position: sticky; top: 0; z-index: 2; }
       #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
       #municipality-preview[data-collapsed] { z-index: 4; padding-bottom: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 16rem); scroll-padding-block: 3rem .5rem; }
+      :global(.home:has(.indicator-table:not([hidden]))) #municipality-preview[data-collapsed] { max-height: calc(var(--dashboard-height, 100dvh) - max(calc(var(--notice-height, 6rem) + 16rem), calc(var(--list-reading-top, 0px) + 6rem))); }
       #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
       /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),
@@ -160,8 +161,7 @@ const period = manifest.indicators[indicator].all;
       .panel-legend-swatches { display: inline-flex; gap: 2px; }
       .panel-legend-swatches span { width: .625rem; height: .875rem; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--swatch-border); }
       .panel-legend[data-reading="trend"] [data-mode="status"], .panel-legend[data-reading="status"] [data-mode="trend"] { display: none; }
-      /* The list rows must end above the sheet. */
-      :global(.home:has(#municipality-preview[data-enhanced]:not([hidden])) .indicator-table) { padding-bottom: calc(var(--sheet-height, 0px) + 4rem); }
+
     }
 }
 </style>

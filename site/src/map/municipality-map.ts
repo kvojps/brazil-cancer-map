@@ -54,7 +54,7 @@ type MeshTopology = Topology<{
 }>;
 
 const meshes = new WeakMap<MapLibreMap, GeoJSON.FeatureCollection>();
-const selectionPoints = new WeakMap<MapLibreMap, LngLat>();
+const selectionPoints = new WeakMap<MapLibreMap, { code: string; point: LngLat }>();
 
 export const SOURCE_ID = "municipalities";
 const FILL_LAYER = "municipality-fill";
@@ -445,7 +445,7 @@ function fitClearOfOverlays(map: MapLibreMap, bounds: LngLatBounds, overlays: Ma
 }
 
 /** Reveal the selected point by the shortest pan out of the actual overlay rectangles. */
-function revealSelection(map: MapLibreMap, point: LngLat, overlays: MapOverlays): void {
+function revealSelection(map: MapLibreMap, point: LngLat, overlays: MapOverlays, revealOutside: boolean): void {
   const mapBox = map.getContainer().getBoundingClientRect();
   const projected = map.project(point);
   const { legend, note, controls, floor } = overlayBoxes(overlays);
@@ -454,9 +454,10 @@ function revealSelection(map: MapLibreMap, point: LngLat, overlays: MapOverlays)
     && box.left < mapBox.right && box.right > mapBox.left && box.top < mapBox.bottom && box.bottom > mapBox.top);
   const covered = (x: number, y: number) => boxes.some(box => x >= box.left - mapBox.left && x <= box.right - mapBox.left
     && y >= box.top - mapBox.top && y <= box.bottom - mapBox.top);
-  if (!covered(projected.x, projected.y)) return;
-  const xs = [projected.x, ...boxes.flatMap(box => [box.left - mapBox.left - 1, box.right - mapBox.left + 1])];
-  const ys = [projected.y, ...boxes.flatMap(box => [box.top - mapBox.top - 1, box.bottom - mapBox.top + 1])];
+  const outside = projected.x < 0 || projected.x >= mapBox.width || projected.y < 0 || projected.y >= mapBox.height;
+  if (!covered(projected.x, projected.y) && (!outside || !revealOutside)) return;
+  const xs = [1, mapBox.width - 1, projected.x, ...boxes.flatMap(box => [box.left - mapBox.left - 1, box.right - mapBox.left + 1])];
+  const ys = [1, mapBox.height - 1, projected.y, ...boxes.flatMap(box => [box.top - mapBox.top - 1, box.bottom - mapBox.top + 1])];
   let distance = Infinity;
   let offset: [number, number] = [0, 0];
   for (const x of xs) for (const y of ys) {
@@ -475,7 +476,7 @@ export function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
 }
 
 /** Frame a municipality on arrival; canvas exploration only reveals the selected point if covered. */
-export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays, preserveCamera = false): void {
+export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays, preserveCamera = false, revealOutside = false): void {
   const bounds = new LngLatBounds();
   for (const item of meshes.get(map)?.features ?? []) {
     if (String(item.properties?.CD_MUN) !== code) continue;
@@ -490,7 +491,8 @@ export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapO
   map.resize();
   if (!bounds.isEmpty() && map.getContainer().clientWidth) {
     if (preserveCamera) {
-      revealSelection(map, selectionPoints.get(map) ?? bounds.getCenter(), overlays);
+      const selection = selectionPoints.get(map);
+      revealSelection(map, selection?.code === code ? selection.point : bounds.getCenter(), overlays, revealOutside);
     } else fitClearOfOverlays(map, bounds, overlays);
   }
   for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter([code]));
@@ -505,7 +507,7 @@ export function onMunicipalityClick(map: MapLibreMap, select: (code: string) => 
   map.on('click', FILL_LAYER, event => {
     const code = event.features?.[0]?.id;
     if (code !== undefined) {
-      selectionPoints.set(map, event.lngLat);
+      selectionPoints.set(map, { code: String(code), point: event.lngLat });
       select(String(code));
     }
   });

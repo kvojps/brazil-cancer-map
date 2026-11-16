@@ -216,3 +216,16 @@ históricas. Lista, detalhes e composição extrema continuam sendo completados
 nas #47, #46 e #50; a conferência integrada está na #51 e a física na #52.
 A emulação de Chromium não comprova teclado virtual, barras móveis ou toque
 em aparelho real. Evidências desta etapa: [Mapa e resumo](../../docs/validation/mobile-map-summary.md).
+
+## Lista com rolagem interna (#47)
+
+Na composição flutuante, `list.test.mjs` observa roda do mouse na área interna,
+última linha expandida, foco, UF, filtros e seleção substituída durante carga
+municipal controlada, em 390 × 844 e 320 × 568. Mapa/Lista fica junto de Filtros
+para não interceptar as linhas. `mobile-details.test.mjs` observa a posição
+interna no retorno; `municipality-selection.test.mjs` também detecta substituição
+dos links, além de alterações nos destinos. `map-touch.test.mjs` compara a
+geografia visível depois de selecionar outro município pela Lista com zoom
+previamente alterado. As descrições anteriores de rolagem externa da Lista são
+históricas; a composição extrema continua na #50. Evidências e limites em
+[Lista e contexto](../../docs/validation/mobile-list-context.md).

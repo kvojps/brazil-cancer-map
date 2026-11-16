@@ -223,13 +223,12 @@ O "Saiba mais" do 60 dias traz os direitos e canais: Lei 12.732/2012 (60 dias), 
 
 A apresentação é a do **Console horizontal**, aprovado pelo responsável em 04/11/2026: a consulta municipal acontece no próprio dashboard e substitui a separação entre prévia e ficha. A aparência segue "sóbrio e preciso": menos bordas e caixas, tipografia e números fortes, cor reservada aos dados. No celular, "compatibilidade" significa layout e toque. As decisões de UI que os testes usam como contrato estão em `docs/ui-contract.md`.
 
-No celular com JavaScript, Mapa e resumo recolhido permanecem sobrepostos sem
+No celular com JavaScript, Mapa, Lista e resumo recolhido permanecem no dashboard sem
 rolagem externa na composição de pelo menos 300 px de largura e 520 px de altura
 útil. Resumos longos rolam internamente, com fontes preservadas e acesso integral
 a períodos, origem, ressalvas e ações. O resumo não provoca mudança para fluxo
 nem chegada por rolagem do documento. A composição extrema, incluindo teclado,
-texto ampliado e alturas menores, ainda será completada na #50; Lista segue
-na #47. Os detalhes usam barra própria e leitura interna, conforme a #46.
+texto ampliado e alturas menores, ainda será completada na #50. Os detalhes usam barra própria e leitura interna, conforme a #46.
 Os documentos de leitura e a consulta sem JavaScript continuam com rolagem normal.
 Rotação preserva seleção, filtros, Eixo, zoom e histórico, com correção mínima de
 posição apenas para revelar seleção encoberta. As séries adaptam os eixos à
@@ -255,8 +254,9 @@ A entrega da #45 e suas verificações estão em [Mapa e resumo](validation/mobi
   - Situação: "A cor mostra a distância até a referência. Não é um ranking entre municípios."
 - **Tooltip:** nome do lugar, indicador, período, classe e origem geográfica do dado. Quando usa a região: **"Seu município e vizinhos — região de X"**.
 - **Interação:** clicar num município, buscá-lo, escolhê-lo na Lista ou abrir seu link seleciona e destaca o município no dashboard, sem tela municipal separada. Painel lateral completo no desktop; no celular, resumo inferior recolhido com nome/UF, resultado do Indicador, período, origem regional e ressalvas aplicáveis, e a ação explícita “Ver detalhes”. Tocar no texto do resumo não o expande. As ressalvas ficam integrais também no resumo. Âncoras continuam dando acesso aos Eixos, e a leitura sem JavaScript mantém a consulta completa. Sem seleção, Brasil inteiro e nenhum painel vazio. Lista substitui o mapa na mesma área e preserva filtros e seleção; busca e lista independem do mapa. O índice por UF fica em `/municipios/`, com item na navegação principal.
+- **Exploração da Lista no celular:** na composição flutuante, a Lista ocupa o espaço restante do dashboard e suas linhas rolam internamente, sem rolagem externa, inclusive com resumo sobreposto. UF, período, Filtros e Mapa/Lista permanecem acessíveis; as notas longas têm área rolável própria. A última linha expandida e o foco do teclado podem subir acima do resumo. Alternar visualizações recupera posição, UF e expansões da Lista durante a visita. A câmera do Mapa conserva o zoom deliberado, com deslocamento mínimo para revelar a seleção ao retornar. A forma estreita/larga continua determinada pela largura da Lista. Busca e Lista independem de WebGL e da malha, com carregamento e nova tentativa dos dados próprios. Composição extrema pertence à #50.
 - **Toque e hover:** o toque no mapa apresenta somente o painel inferior recolhido no celular e remove qualquer tooltip anterior. Tooltip e contorno de hover respondem ao mouse, inclusive depois de alternar entre mouse e toque em dispositivo híbrido; a modalidade não é inferida pela largura da tela. O toque conserva o foco da exploração; não agenda foco no nome após a carga.
-- **Chegada ao resultado no celular:** canvas, busca e link municipal sem âncora apresentam o resumo recolhido sobreposto, sem rolar o documento. A busca fecha, dispensa o foco do campo e foca o nome com rolagem impedida; o canvas preserva o foco da exploração. Nova seleção ou limpeza invalida o resultado pendente. Interação deliberada durante a carga cancela o enquadramento tardio. Cache e nova tentativa seguem as mesmas regras. Composição extrema e Lista são completadas nas #50 e #47.
+- **Chegada ao resultado no celular:** canvas, busca e link municipal sem âncora apresentam o resumo recolhido sobreposto, sem rolar o documento. A busca fecha, dispensa o foco do campo e foca o nome com rolagem impedida; o canvas preserva o foco da exploração. Nova seleção ou limpeza invalida o resultado pendente. Interação deliberada durante a carga cancela o enquadramento tardio. Cache e nova tentativa seguem as mesmas regras. A seleção pela Lista mantém visualização, UF, linhas abertas, filtros e posição interna; o nome seleciona e o controle de expansão abre os campos da linha. A composição extrema é completada na #50.
 - **Enquadramento da seleção:** selecionar pelo mapa conserva posição e zoom; só admite deslocamento mínimo para deixar o ponto selecionado fora das sobreposições. Busca e link municipal direto enquadram o município consultado na área útil, descontando painel e controles, sem usar a UF inteira como alvo. O carregamento do resultado mantém a mesma regra de enquadramento da seleção.
 
 ### 11.2 Meu município (consulta integrada)

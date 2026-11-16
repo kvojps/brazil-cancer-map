@@ -187,8 +187,9 @@ if (container && status) {
         let frameWhenShown = false;
         const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
         selectOnMap = (code, preserve = false) => {
+          const returning = frameWhenShown;
           frameWhenShown = !!code && !container.clientWidth;
-          if (code) renderer.focusMunicipality(map, code, overlays, preserve);
+          if (code) renderer.focusMunicipality(map, code, overlays, preserve, returning);
           else renderer.clearMunicipality(map);
         };
         // The legend reserves its area only once a layer has filled it, and the list hides the map.

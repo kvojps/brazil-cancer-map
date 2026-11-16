@@ -51,7 +51,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   }
 
   // What the floating controls and the sheet are placed against. The open sheet keeps the collapsed height, so nothing moves behind it.
+  const list = document.querySelector<HTMLElement>('.indicator-table')!;
+  const listScroll = list.querySelector<HTMLElement>('.scroll')!;
   const syncSheetMetrics = () => {
+    if (!list.hidden) root.style.setProperty('--list-reading-top', `${listScroll.getBoundingClientRect().top}px`);
     root.style.setProperty('--notice-height', `${document.querySelector('.construction-notice')!.getBoundingClientRect().height}px`);
     if (panel.hidden) root.style.setProperty('--sheet-height', '0px');
     else if (isSheet() && panel.hasAttribute('data-collapsed')) root.style.setProperty('--sheet-height', `${panel.getBoundingClientRect().height}px`);
@@ -59,6 +62,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const metrics = new ResizeObserver(syncSheetMetrics);
   metrics.observe(panel);
   metrics.observe(document.querySelector('.construction-notice')!);
+  metrics.observe(listScroll);
+  metrics.observe(document.querySelector('.map-controls')!);
   const restoreFocus = () => {
     // On a phone the closed search leaves only its icon in place.
     const target = [returnFocus, input, document.querySelector<HTMLElement>('.search-toggle')].find(element => element?.getClientRects().length);
@@ -294,9 +299,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       }
     }
   });
-  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, fromMap = false) => {
+  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, preserveCamera = false) => {
     initialAnchor = '';
-    preserveCameraFor = fromMap ? place.code : undefined;
+    preserveCameraFor = preserveCamera ? place.code : undefined;
     const exploration = { left: scrollX, top: scrollY };
     if (isPhone()) expand(false);
     returnFocus = focusAfterwards;
@@ -352,7 +357,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const place = listing.municipalities.find(place => municipalityPath(place) === new URL(link.href).pathname);
     if (!place) return;
     event.preventDefault();
-    select(place, link);
+    select(place, link, true);
     if (isSheet()) panel.scrollTop = 0;
   });
   window.addEventListener('municipality-map-select', event => {

@@ -71,6 +71,15 @@ test('canvas touch clears hover and successive selections preserve the visible g
     await page.locator('.indicator-table tbody tr').first().waitFor();
     await page.locator('[data-view="mapa"]').click();
     for (const [index, [, point]] of points.entries()) assert.equal(await labelAt(page, point), beforeReturn[index], 'switching visualizations preserves the camera');
+    await page.locator('[data-view="lista"]').click();
+    const alternate = points[1][0];
+    await page.locator('.indicator-table select').selectOption('PE');
+    await page.getByRole('link', { name: alternate.replace(/ \([A-Z]{2}\)$/, ''), exact: true }).click();
+    await page.waitForFunction(name => document.querySelector('#preview-heading').textContent === name, alternate);
+    await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    await page.locator('[data-view="mapa"]').click();
+    for (const [index, [, point]] of points.entries()) assert.equal(await labelAt(page, point), beforeReturn[index], 'a list selection preserves deliberate zoom and visible geography');
+
   } finally { await page.close(); }
 });
 

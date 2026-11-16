@@ -130,7 +130,10 @@ const notes = cancerTypeNotes({ cancer_type: DEFAULT_CANCER_TYPE, has_status: tr
       :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) #indicator-caveat[data-in-panel] { display: none; }
       :global(.home:has(#municipality-preview[data-enhanced]:not([hidden]))) .map-notes:has(#indicator-caveat[data-in-panel]):has(#map-selection-notice[hidden]) { display: none; }
       /* In the list the column enters the flow, above the rows it would otherwise cover. */
-      :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
+      :global(.home:has(.indicator-table:not([hidden]))) .map-controls { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; top: auto; left: auto; right: auto; padding: 3.75rem .5rem 0; pointer-events: auto; }
+      :global(.home:has(.indicator-table:not([hidden]))) .view-controls { position: static; grid-area: 1 / 2; align-self: start; }
+      :global(.home:has(.indicator-table:not([hidden]))) .filters-toggle { grid-area: 1 / 1; }
+      :global(.home:has(.indicator-table:not([hidden]))) .map-notes { grid-column: 1 / -1; }
     }
 }
   @media (min-width: 768px) {

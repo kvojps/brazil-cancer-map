@@ -305,7 +305,7 @@ for (const [width, height, keyboard] of [[320, 568, 260], [360, 640, 280], [390,
   });
 }
 
-test('the list scrolls normally with the notice on top, Mapa/Lista fixed and the footer at the end', async () => {
+test('the list scrolls internally with the notice and Mapa/Lista fixed', async () => {
   const page = await open({ viewport: { width: 390, height: 664 } });
   try {
     await page.locator('[data-view="lista"]').click();
@@ -313,11 +313,12 @@ test('the list scrolls normally with the notice on top, Mapa/Lista fixed and the
     const heading = await box(page, '#list-heading');
     assert.ok(heading.top >= (await box(page, '.filters-toggle')).bottom, 'the floating controls leave the list heading free');
     const fixed = await box(page, '.view-controls');
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.waitForFunction(() => scrollY > 0);
+    await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTo(0, element.scrollHeight));
+    await page.waitForFunction(() => document.querySelector('.indicator-table .scroll').scrollTop > 0);
     assert.equal((await box(page, '.construction-notice')).top, 0);
     assert.deepEqual(await box(page, '.view-controls'), fixed);
-    assert.ok((await box(page, 'footer')).bottom <= 665, 'the footer is reached');
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    assert.equal(await page.locator('footer').isVisible(), false);
     assert.equal(await noHorizontalScroll(page), true);
     await page.locator('[data-view="mapa"]').click();
     assert.equal(await page.evaluate(() => scrollY), 0, 'the map screen is back without scroll');
