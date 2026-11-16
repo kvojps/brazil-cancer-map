@@ -187,8 +187,10 @@ test('an unobstructed touch near the canvas edge does not shift a visible munici
     await page.goto(`${base}/municipio/261160-recife/`);
     await page.locator('.map-status').waitFor({ state: 'hidden' });
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    await page.locator('.result-value').waitFor();
+    await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
     const box = await page.locator('.maplibregl-canvas').boundingBox();
-    await page.waitForTimeout(300);
+    await afterComposition(page);
     let edge;
     let name;
     for (let y = box.y + 140; y < box.y + 320; y += 20) {
@@ -211,6 +213,8 @@ test('an unobstructed touch near the canvas edge does not shift a visible munici
     await page.touchscreen.tap(edge.x, edge.y);
     await page.waitForFunction(name => document.querySelector('#preview-heading').textContent === name, name);
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+    await page.locator('.result-value').waitFor();
+    await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
     for (let i = 0; i < boundary.length; i++) assert.equal(await labelAt(page, boundary[i]), before[i], 'the rendered boundary stays at the same pixel');
   } finally { await page.close(); }
 });

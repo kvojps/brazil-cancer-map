@@ -53,8 +53,15 @@ A revisão efetiva é o commit que contém este relatório.
 - Rodada intermediária da Lista: 27/27 testes aprovados, em 111,21 s.
 - Última linha ampliada para 320 px, após a correção de altura do resumo e
   retorno real de foco por Tab: 2/2 aprovados, em 6,85 s.
-- Suíte Node e suíte completa de navegador da revisão final: em execução;
-  resultados serão registrados antes da conclusão do trabalho.
+- `npm test --prefix site`, revisão final: 88/88 aprovados, em 25,34 s; inclui
+  geração do build estático.
+- Cenários dirigidos após a correção sem JavaScript: 7/7 aprovados em 17,51 s
+  (última linha nas duas larguras, borda e aviso nos dois temas/com e sem JS).
+- Suíte completa de navegador final: **377/377 aprovados**, zero falhas,
+  cancelamentos ou testes ignorados, em 469,32 s. Inclui as duas auditorias
+  automatizadas de acessibilidade. Axe não encontrou violações, mas manteve
+  verificações inconclusivas para revisão humana.
+- `git diff --check`: sem problemas de espaços em branco.
 
 Comandos da rodada final, executados sequencialmente (o teste Node gera build):
 
@@ -64,8 +71,35 @@ npm run preview --prefix site -- --host 127.0.0.1 --port 44747
 SITE_URL=http://127.0.0.1:44747 CHROMIUM_PATH=/home/kvojps/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome node --test --test-concurrency=2 site/browser-tests/*.test.mjs
 ```
 
+A prévia final usou a porta solicitada, `http://127.0.0.1:44747`. O build
+contém o código final; depois da rodada, somente este relatório foi atualizado.
 A suíte completa inclui as duas auditorias automatizadas de acessibilidade.
 Não houve download de Fontes, atualização de dados, Release ou deploy.
+
+## Revisão independente
+
+Base confirmada pelo responsável: `0f3e8b4`. Dois revisores com contexto novo
+examinaram o diff da implementação (`6ef8123`), conforme a skill `code-review`.
+
+### Standards
+
+Zero achados. Não foram identificadas violações dos padrões documentados nem
+smells com justificativa suficiente. A medição da Lista permanece junto das
+medições do painel; o enquadramento permanece no módulo da câmera.
+
+### Spec
+
+Zero achados de divergência de implementação. Os revisores mantiveram a
+conclusão condicionada às verificações obrigatórias, sem tratar emulação como
+validação física nem fechar a especificação pai.
+
+A revisão suplementar examinou a correção posterior de `contain: size`,
+preservando o fluxo de documentos sem JavaScript, e a espera por dados públicos no cenário de borda.
+Não encontrou novos problemas de código ou de Spec. Apontou uma frase deste
+relatório que dizia não haver mudança posterior no código; ela foi corrigida
+para registrar o follow-up. Resultado: um ajuste documental de Standards,
+resolvido; zero achados de Spec. A revisão final suplementar também conferiu a
+exceção explícita no `noscript`: zero achados restantes nos dois eixos.
 
 ## Falhas encontradas e limites
 
@@ -76,11 +110,27 @@ a reserva final passou a ser conteúdo rolável, sem impor altura mínima à ár
 O teste geográfico detectou reenquadramento ao selecionar pela Lista; o percurso
 passou a preservar a câmera. Uma rodada intermediária detectou regressão na
 rotação e recuperação de altura: o ajuste de ponto fora da tela foi limitado ao
-retorno da Lista. Essas rodadas foram substituídas pela verificação final, sem
+retorno da Lista. Essas rodadas foram substituídas pelas verificações completas, sem
 apagar suas falhas. O teste ampliado da última linha também detectou campo
 encoberto a 320 px, corrigido pelo limite de altura do resumo. Seu retorno de
 foco usa tabulação real: focar novamente um botão já ativo após rolar outro
 campo não solicita nova rolagem ao navegador.
+
+A primeira rodada completa teve **374 aprovações e três falhas em 377 testes**,
+em 475,75 s. Duas falhas, nos temas claro/escuro sem JavaScript, revelaram que a
+contenção de tamanho também alcançava o documento estático e fazia o aviso
+perder a referência da rolagem. A exceção sem JavaScript passou a retirar explicitamente a contenção.
+A terceira falhou antes do toque, por não encontrar tooltip junto à borda: o
+teste aguardava malha e HTML municipal, mas podia explorar antes dos dados da
+camada. Seis execuções isoladas em contextos novos passaram sem mudar o teste;
+isso não apagou a falha concorrente. A preparação passou a esperar resultado e
+fim do carregamento públicos, retirando a pausa fixa de 300 ms, sem relaxar a
+comparação da fronteira. Uma rodada posterior foi interrompida após detectar rolagem externa por foco
+na Lista: o seletor condicional baseado em `html[data-js]` dentro de `@scope`
+não aplicava a contenção ao dashboard. A correção final manteve a regra da
+composição e acrescentou `contain: none` ao bloco `noscript` municipal já
+existente. Os cenários de fim da Lista, aviso sem JavaScript e borda do mapa
+são executados antes da nova suíte completa, sem esconder as falhas anteriores.
 
 Tentativas iniciais no sandbox não abriram Chromium/servidor local; uma prévia
 escolheu outra porta, e uma tentativa não alcançou o servidor pretendido. Os
