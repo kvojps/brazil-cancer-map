@@ -29,27 +29,21 @@ export function mountTemporarySurfaces(): void {
   const hide = (surface: HTMLElement | null) => {
     if (surface?.matches(':popover-open')) surface.hidePopover();
   };
-  const replace = (next: HTMLElement) => {
+  const replaceSurface = (next?: HTMLElement) => {
     switching = true;
     if (next !== search) closeSearch(false);
     for (const surface of [filters, legend, detailsMenu]) if (surface !== next) hide(surface);
     if (menu?.open) menu.open = false;
     switching = false;
   };
-  window.addEventListener('map-reset', () => {
-    switching = true;
-    closeSearch(false);
-    for (const surface of [filters, legend, detailsMenu]) hide(surface);
-    if (menu) menu.open = false;
-    switching = false;
-  });
+  window.addEventListener('map-reset', () => replaceSurface());
   searchToggle.setAttribute('aria-controls', 'municipality-search-surface');
   searchToggle.setAttribute('aria-expanded', 'false');
   search.id = 'municipality-search-surface';
   searchToggle.addEventListener('click', event => {
     event.preventDefault();
     searchOpener = searchToggle;
-    replace(search);
+    replaceSurface(search);
     header.dataset.searchOpen = '';
     searchToggle.setAttribute('aria-expanded', 'true');
     input.focus({ preventScroll: true });
@@ -65,7 +59,7 @@ export function mountTemporarySurfaces(): void {
   for (const surface of [filters, legend, detailsMenu]) surface?.addEventListener('beforetoggle', event => {
     const opening = (event as ToggleEvent).newState === 'open';
     if (opening) {
-      if (floating.matches || surface === detailsMenu) replace(surface);
+      if (floating.matches || surface === detailsMenu) replaceSurface(surface);
       // The toggle event below runs after native popover focus handling.
     } else if (!switching && (floating.matches || surface === detailsMenu || surface.contains(document.activeElement))) {
       queueMicrotask(() => focus(openerFor(surface)));
@@ -92,7 +86,7 @@ export function mountTemporarySurfaces(): void {
     if (!command) return;
     if (command === 'search') {
       searchOpener = detailsToggle!;
-      replace(search);
+      replaceSurface(search);
       header.dataset.searchOpen = '';
       searchToggle.setAttribute('aria-expanded', 'true');
       input.focus({ preventScroll: true });
@@ -101,7 +95,7 @@ export function mountTemporarySurfaces(): void {
       const surface = command === 'filters' ? filters : legend;
       if (command === 'filters') filtersOpener = detailsToggle!;
       else legendOpener = detailsToggle!;
-      if (surface) { replace(surface); surface.showPopover(); }
+      if (surface) { replaceSurface(surface); surface.showPopover(); }
     }
   });
   // Selecting a result also works through Enter in the search field.

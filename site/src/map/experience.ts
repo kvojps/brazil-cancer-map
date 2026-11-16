@@ -197,23 +197,32 @@ if (container && status) {
         showOnMap(mapLayer, mapState.mode);
         // The list view hides the map, which cannot be framed until it comes back.
         let frameWhenShown = false;
+        let countryFramed = false;
+        let countryResetPending = false;
         const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
         selectOnMap = (code, preserve = false) => {
+          if (code) {
+            countryFramed = true;
+            countryResetPending = false;
+          }
           const returning = frameWhenShown;
           frameWhenShown = !!code && !container.clientWidth;
           if (code) renderer.focusMunicipality(map, code, overlays, preserve, returning);
           else renderer.clearMunicipality(map);
         };
         // The legend reserves its area only once a layer has filled it, and the list hides the map.
-        let countryFramed = false;
         frameCountryOnce = () => {
           if (countryFramed || !mapLayer || selectedCode || !container.clientWidth) return;
           countryFramed = true;
-          renderer.frameCountry(map, overlays);
+          if (countryResetPending) renderer.resetCountry(map, overlays);
+          else renderer.frameCountry(map, overlays);
+          countryResetPending = false;
         };
         resetCamera = () => {
-          countryFramed = true;
+          countryFramed = false;
+          countryResetPending = true;
           renderer.resetCountry(map, overlays);
+          frameCountryOnce();
         };
         map.on('resize', () => {
           if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);

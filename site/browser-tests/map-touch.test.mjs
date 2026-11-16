@@ -18,11 +18,11 @@ async function labelAt(page, point) {
   return page.locator('.map-tooltip strong').first().evaluateAll(elements => elements[0]?.textContent ?? null);
 }
 
-async function visibleSamples(page) {
+async function visibleSamples(page, step = 45) {
   const box = await page.locator('.maplibregl-canvas').boundingBox();
   const samples = [];
-  for (let y = box.y + 100; y < box.y + box.height - 120; y += 45) {
-    for (let x = box.x + 45; x < box.x + box.width - 35; x += 45) {
+  for (let y = box.y + 100; y < box.y + box.height - 120; y += step) {
+    for (let x = box.x + 45; x < box.x + box.width - 35; x += step) {
       const point = { x, y };
       if (!await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.tagName === 'CANVAS', point)) continue;
       const name = await labelAt(page, point);
@@ -411,20 +411,72 @@ for (const width of [390, 1280]) {
       await page.goto(base + '/');
       await page.locator('.map-status').waitFor({ state: 'hidden' });
       await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
-      const country = await visibleSamples(page);
+      const country = await visibleSamples(page, width < 768 ? 45 : 90);
       assert.ok(country.length > 2, 'country geography is available through public hover labels');
       const input = page.locator('#municipality-search');
       if (!await input.isVisible()) await page.locator('.search-toggle').click();
       await input.fill('Recife PE');
       await page.locator('#municipality-results button').click();
       await page.locator('.profile[data-code="261160"]').waitFor({ state: 'attached' });
-      const local = await visibleSamples(page);
+      const local = await visibleSamples(page, width < 768 ? 45 : 90);
       assert.ok(local.length > 2);
+      const beforeClear = await page.locator('.maplibregl-canvas').boundingBox();
       await page.locator('[data-clear-profile]').click();
-      for (const { name, point } of local) assert.equal(await labelAt(page, point), name, 'clear preserves the local camera');
-      await page.locator('.identity').click();
       await afterComposition(page);
+      const afterClear = await page.locator('.maplibregl-canvas').boundingBox();
+      // Desktop gives the panel's width back to the canvas. Compare offsets from its center.
+      for (const { name, point } of local) {
+        const shifted = { x: point.x + afterClear.x - beforeClear.x + (afterClear.width - beforeClear.width) / 2,
+          y: point.y + afterClear.y - beforeClear.y + (afterClear.height - beforeClear.height) / 2 };
+        assert.equal(await labelAt(page, shifted), name, 'clear preserves the local camera');
+      }
+      await page.locator('.identity').click();
+      await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
+      await afterComposition(page);
+      await waitForLabelAt(page, country[0].point, country[0].name);
       for (const { name, point } of country) assert.equal(await labelAt(page, point), name, 'reset restores the initial country geography');
     } finally { await page.close(); }
   });
 }
+
+// A camera change may need another WebGL frame before the public hover resolves.
+async function waitForLabelAt(page, point, name) {
+  const deadline = Date.now() + 10000;
+  let actual;
+  do {
+    await page.mouse.move(point.x + 1, point.y + 1);
+    actual = await labelAt(page, point);
+    if (actual === name) return;
+  } while (Date.now() < deadline);
+  assert.equal(actual, name, 'the visible geography settles at the expected municipality');
+}
+
+test('a new selection cancels country framing still pending after the logo', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let requested;
+  const arrived = new Promise(resolve => { requested = resolve; });
+  await page.route('**/map/within_60_days/all.json', async route => { requested(); await gate; await route.continue(); });
+  try {
+    await page.goto(base + '/?indicador=mammography&tipo=breast');
+    await page.locator('.map-status').waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
+    await page.locator('.identity').click();
+    await arrived;
+    await page.locator('.search-toggle').click();
+    await page.locator('#municipality-search').fill('Recife PE');
+    await page.locator('#municipality-results button').click();
+    await page.locator('.profile[data-code="261160"]').waitFor({ state: 'attached' });
+    const response = page.waitForResponse('**/map/within_60_days/all.json');
+    release();
+    await (await response).finished();
+    await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
+    const local = await visibleSamples(page);
+    assert.ok(local.length > 2);
+    await page.locator('[data-clear-profile]').click();
+    await afterComposition(page);
+    await waitForLabelAt(page, local[0].point, local[0].name);
+    for (const { name, point } of local) assert.equal(await labelAt(page, point), name, 'late reset must not override the new local exploration');
+  } finally { release(); await page.close(); }
+});
