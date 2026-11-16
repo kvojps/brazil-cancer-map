@@ -38,13 +38,14 @@ no ticket de histórico, conforme o recorte da #48.
 | Logo após primeira seleção, carga fria/cache | `logo-reset`: dez contextos novos em 320×568; dez tentativas no mesmo contexto em 390×844, previamente aquecido com o documento de Recife e seus dados. Recarregar preserva cache HTTP do contexto, sem prometer cache de rede real ou memória JS entre documentos. |
 | Compatibilidades | Suítes existentes de desktop, leitura, município estático, zoom, temas e sem JavaScript; auditorias axe e estados do mapa. |
 
-## Revisão e execução
+## Revisão e execução em 16/11/2026
 
 Base: `115d8a8448074585703d333b4d01a78b83f7cdd7`, branch `hml`.
-Implementação inicial: `da52ec3`; a revisão efetiva final é o commit que contém
-este relatório e seus ajustes. Dados publicados preservados; SHA-256 do manifesto:
+Implementação inicial: `da52ec3`; runtime e testes finais: `e4d71d8`.
+O build final usa essa revisão; somente este relatório muda após a execução. Dados publicados preservados; SHA-256 do manifesto:
 `a6f0903b978833e46421793dc5ec38e192b6f0468fedf93c18fe39c682816082`.
-Ambiente: Linux, Node 24.20.0, Chromium headless, toque emulado.
+Ambiente final: Linux, Node 24.20.0, Google Chrome for Testing
+156.0.8078.4 (Chromium 1248 do Playwright), headless, toque emulado.
 
 A primeira regressão falhou contra o comportamento anterior: a logo preservava
 filtros e seleção. Uma rodada intermediária tentou acionar a marca oculta por
@@ -75,19 +76,52 @@ enquadramento quando a camada e a legenda padrão estiverem prontas.
 A revisão suplementar de Spec encontrou uma corrida entre reset pendente,
 nova seleção e limpeza posterior: o reset poderia enquadrar Brasil na limpeza.
 Selecionar um município agora cancela a intenção anterior de enquadramento.
-Um cenário HTTP controlado cobre essa sequência. Standards confirmou a remoção
+O cenário HTTP controlado reproduziu a falha no build anterior: as duas
+comparações de país passaram, mas a limpeza após nova seleção perdeu a
+geografia local (2/3 aprovados na rodada, em 67,94 s). Standards confirmou a remoção
 da duplicação; Spec considerou a corrida resolvida por leitura, condicionada
 à execução sobre o build atualizado.
 
-Resultados finais da saída estática serão registrados após a execução.
+A revisão final independente de `115d8a8...e4d71d8` confirmou zero achados
+pendentes nos dois eixos; a aprovação automatizada depende dos resultados abaixo.
+
+- `npm run check --prefix site`: 83 arquivos, zero diagnósticos.
+- Arquivo Node de navegação compartilhada: 11/11 aprovados.
+- `npm test --prefix site`: 88/88 aprovados, em 27,88 s, incluindo build estático.
+- Logo após seleção: 10/10 tentativas frias e 10/10 com cache aprovadas;
+  zero preservações indevidas de seleção ou filtros nas vinte tentativas.
+- Geografia: país restaurado a 390 e 1280 px; limpeza conserva exploração
+  local; nova seleção cancela enquadramento pendente. Os três passaram na
+  rodada final, em 20,68 s, 24,17 s e 9,94 s, respectivamente.
+- Suíte completa de navegador: **392/392 aprovados**, zero falhas,
+  cancelamentos ou ignorados, em 514,38 s. Inclui as duas auditorias
+  automatizadas de acessibilidade. Axe não encontrou violações, mas manteve
+  verificações inconclusivas para revisão humana.
+- `git diff --check`: sem problemas de espaços em branco.
+
+Comandos finais, sequenciais para build/prévia:
+
+```sh
+npm run check --prefix site
+node --test --test-isolation=none site/tests/shared-navigation.test.mjs
+npm run preview --prefix site -- stop
+npm test --prefix site
+npm run preview --prefix site -- --host 127.0.0.1 --port 4332
+SITE_URL=http://127.0.0.1:4332 CHROMIUM_PATH=/home/kvojps/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome node --test --test-concurrency=2 site/browser-tests/*.test.mjs
+```
+
+A suíte completa inclui as auditorias automatizadas de acessibilidade. A URL
+local da revisão testada é `http://127.0.0.1:4332`. Não houve build simultâneo.
+
 
 ## Limites e pendências
 
 Emulação não comprova Android/Google Chrome físico, teclado virtual real ou
-barras móveis. A conferência no aparelho exigida pela #44 continua **não
-executada** e deve registrar aparelho/versões, URL/revisão, viewport, orientação,
+barras móveis. A conferência no aparelho exigida pela #44 e atribuída à
+[#52](https://github.com/kvojps/brazil-cancer-map/issues/52) continua **não executada** e deve registrar aparelho/versões, URL/revisão, viewport, orientação,
 tema, ampliação e rede/cache. Não houve validação física nesta entrega.
-A implementação não encerra a especificação pai; o fechamento depende dos
-critérios e verificações obrigatórias. iOS/Safari, Firefox e leitor de tela
+A implementação não encerra a especificação pai #44. A integração de histórico
+e posições internas segue na #49, a verificação conjunta na #51 e a conferência
+física na #52; o fechamento da pai depende dos critérios e verificações conjuntos. iOS/Safari, Firefox e leitor de tela
 humano continuam sem validação. A repetição finita não garante ausência de
 intermitência. Não houve atualização de dados, Release ou deploy.
