@@ -93,6 +93,7 @@ if (container && status) {
       let mapState = initial;
       let selectOnMap = (_code: string | undefined, _preserveCamera = false) => {};
       let frameCountryOnce = () => {};
+      let resetCamera = () => {};
       let selectedCode: string | undefined;
       let preserveCamera = false;
       const mapSelection = { focus: (code: string | undefined, preserve = false) => {
@@ -178,6 +179,17 @@ if (container && status) {
       updatePreview = mountMunicipalityNavigation(mapSelection, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
       void selectState(initial, '', false);
       retry.onclick = () => { void selectState(current, '', false); };
+      document.querySelector<HTMLAnchorElement>('.identity')!.addEventListener('click', event => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        const link = event.currentTarget as HTMLAnchorElement;
+        // The brand has a native destination too; only a ready dashboard handles it in place.
+        if (link.href !== location.href) history.pushState(null, '', link.href);
+        window.dispatchEvent(new Event('map-reset'));
+        void selectState(readMapState(new URLSearchParams(location.search)), '', false);
+        resetCamera();
+        link.focus({ preventScroll: true });
+      });
       // Loading the optional renderer never gates the text alternatives.
       void import('../map/municipality-map').then(async renderer => {
         const map = await renderer.mountMunicipalityMap(container, meshUrl!);
@@ -198,6 +210,10 @@ if (container && status) {
           if (countryFramed || !mapLayer || selectedCode || !container.clientWidth) return;
           countryFramed = true;
           renderer.frameCountry(map, overlays);
+        };
+        resetCamera = () => {
+          countryFramed = true;
+          renderer.resetCountry(map, overlays);
         };
         map.on('resize', () => {
           if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);

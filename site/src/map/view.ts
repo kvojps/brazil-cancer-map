@@ -40,5 +40,6 @@ export function mountVisualization(): void {
   controls.hidden = false;
   for (const button of controls.querySelectorAll<HTMLButtonElement>('[data-view]')) button.onclick = () => choose(button.dataset.view!);
   window.addEventListener('popstate', sync);
+  window.addEventListener('map-reset', sync);
   sync();
 }

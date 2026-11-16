@@ -36,6 +36,13 @@ export function mountTemporarySurfaces(): void {
     if (menu?.open) menu.open = false;
     switching = false;
   };
+  window.addEventListener('map-reset', () => {
+    switching = true;
+    closeSearch(false);
+    for (const surface of [filters, legend, detailsMenu]) hide(surface);
+    if (menu) menu.open = false;
+    switching = false;
+  });
   searchToggle.setAttribute('aria-controls', 'municipality-search-surface');
   searchToggle.setAttribute('aria-expanded', 'false');
   search.id = 'municipality-search-surface';

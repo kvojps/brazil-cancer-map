@@ -403,3 +403,28 @@ test('cold keyboard search reaches the result after Enter initiates selection', 
     assert.equal(await page.evaluate(() => scrollY), 0);
   } finally { await page.close(); }
 });
+
+for (const width of [390, 1280]) {
+  test(`${width}px: logo restores country geography while clearing selection preserves exploration`, async () => {
+    const page = await browser.newPage({ viewport: { width, height: 844 }, isMobile: width < 768, hasTouch: true });
+    try {
+      await page.goto(base + '/');
+      await page.locator('.map-status').waitFor({ state: 'hidden' });
+      await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
+      const country = await visibleSamples(page);
+      assert.ok(country.length > 2, 'country geography is available through public hover labels');
+      const input = page.locator('#municipality-search');
+      if (!await input.isVisible()) await page.locator('.search-toggle').click();
+      await input.fill('Recife PE');
+      await page.locator('#municipality-results button').click();
+      await page.locator('.profile[data-code="261160"]').waitFor({ state: 'attached' });
+      const local = await visibleSamples(page);
+      assert.ok(local.length > 2);
+      await page.locator('[data-clear-profile]').click();
+      for (const { name, point } of local) assert.equal(await labelAt(page, point), name, 'clear preserves the local camera');
+      await page.locator('.identity').click();
+      await afterComposition(page);
+      for (const { name, point } of country) assert.equal(await labelAt(page, point), name, 'reset restores the initial country geography');
+    } finally { await page.close(); }
+  });
+}

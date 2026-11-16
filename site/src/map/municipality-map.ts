@@ -475,6 +475,13 @@ export function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
   if (isPhone()) fitClearOfOverlays(map, LngLatBounds.convert(PHONE_BRAZIL_BOUNDS), { ...overlays, floor: [] }, PHONE_COUNTRY_MARGIN);
 }
 
+/** Restart deliberate exploration on either layout, independently of selection clearing. */
+export function resetCountry(map: MapLibreMap, overlays: MapOverlays): void {
+  map.resize();
+  if (isPhone()) frameCountry(map, overlays);
+  else map.fitBounds(BRAZIL_BOUNDS, { padding: 16, duration: 0 });
+}
+
 /** Frame a municipality on arrival; canvas exploration only reveals the selected point if covered. */
 export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays, preserveCamera = false, revealOutside = false): void {
   const bounds = new LngLatBounds();

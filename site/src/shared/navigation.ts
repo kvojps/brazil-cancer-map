@@ -84,6 +84,11 @@ export function mountSharedNavigation(): void {
       target.searchParams.set('theme', link.dataset.themeChoice);
       link.href = target.href;
 
+    } else if (link.matches('.identity')) {
+      const target = new URL('/', current);
+      const theme = readTheme(current.searchParams);
+      if (theme) target.searchParams.set('theme', theme);
+      link.href = target.href;
     } else link.href = navigationUrl(destination(link), current).href;
   };
   const sync = () => {
