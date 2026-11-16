@@ -199,3 +199,20 @@ limites da emulação ficam em
 
 A [verificação de resumo, detalhes e retorno em fluxo](../../docs/validation/mobile-details-flow.md)
 registra a entrega da #36 e a conferência conjunta com a chegada da #34.
+
+## Exploração e resumo sem rolagem externa (#45)
+
+Na composição mobile com pelo menos 300 px de largura e 520 px de altura útil,
+o resumo agora permanece sobreposto mesmo quando longo. `municipal-panel`,
+`phone-first-screen`, `mobile-reading` e `map-touch` substituem as expectativas
+anteriores de fluxo por painel com rolagem interna e fontes preservadas.
+Canvas mantém foco na exploração; busca por toque ou Enter fecha e foca o nome
+sem rolar o documento. A primeira chegada observa geometria após dois frames,
+sem pausa fixa para aprovar o foco. Seleção substituída e limpeza durante carga
+não permitem resultado obsoleto. O aviso usa a redação curta aprovada na #44.
+
+As referências anteriores a fluxo por resumo longo descrevem as entregas
+históricas. Lista, detalhes e composição extrema continuam sendo completados
+nas #47, #46 e #50; a conferência integrada está na #51 e a física na #52.
+A emulação de Chromium não comprova teclado virtual, barras móveis ou toque
+em aparelho real. Evidências desta etapa: [Mapa e resumo](../../docs/validation/mobile-map-summary.md).

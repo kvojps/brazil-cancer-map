@@ -325,19 +325,19 @@ test('the list scrolls normally with the notice on top, Mapa/Lista fixed and the
   } finally { await page.close(); }
 });
 
-test('a long caveat moves filters into flow and stays clear of their controls', async () => {
+test('a long caveat keeps filters available without scrolling the document', async () => {
   const page = await open({ viewport: { width: 320, height: 568 } });
   try {
     await filtersReady(page);
     await page.locator('.filters-toggle').click();
     await page.locator('#cancer-type').selectOption('prostate');
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('.map-controls')).position === 'relative');
-    assert.equal(await page.locator('.filters-toggle').isVisible(), false);
+    assert.equal(await page.locator('.filters-toggle').isVisible(), true);
+    assert.equal(await page.evaluate(() => scrollY), 0);
     assert.match(await page.locator('#indicator-caveat').innerText(), /vigilância ativa/);
-    assert.ok((await box(page, '.map-notes')).top >= (await box(page, '#cancer-type')).bottom);
+    assert.equal(await page.evaluate(() => scrollY), 0);
     await page.locator('#map-indicator').selectOption('mortality');
     await page.waitForFunction(() => document.querySelector('#indicator-caveat').textContent.includes('só Tendência'));
-    assert.ok((await box(page, '.map-notes')).top >= (await box(page, '#cancer-type')).bottom);
+    assert.equal(await page.evaluate(() => scrollY), 0);
     assert.equal(await noHorizontalScroll(page), true);
   } finally { await page.close(); }
 });
@@ -355,13 +355,13 @@ test('the full legend is one button away above the sheet, and the notice is neve
   } finally { await page.close(); }
 });
 
-test('a short screen keeps filters readable in page flow after selecting a municipality', async () => {
+test('a short screen keeps the summary over the map and filters in their surface', async () => {
   const page = await open({ viewport: { width: 320, height: 568 } }, RECIFE);
   try {
     await page.locator('.result-value').waitFor();
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'static');
-    assert.equal(await page.locator('.filters-toggle').isVisible(), false);
-    await page.locator('#map-indicator').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'fixed');
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    await page.locator('.filters-toggle').click();
     assert.equal(await page.locator('#map-indicator').isVisible(), true);
     await page.locator('#cancer-type').selectOption('breast');
     assert.equal(new URL(page.url()).searchParams.get('tipo'), 'breast');

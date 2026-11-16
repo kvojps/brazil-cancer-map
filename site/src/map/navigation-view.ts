@@ -42,29 +42,11 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let anchorArrival = true;
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
-  // An explicit selection owns one arrival, until another action takes over.
-  let arrival: { code: string; scroll: number } | undefined;
-  const cancelArrival = () => { arrival = undefined; anchorArrival = false; };
+  let frameOnRender = false;
+  const cancelArrival = () => { anchorArrival = false; frameOnRender = false; };
   for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
     window.addEventListener(event, cancelArrival, { passive: true, capture: true });
   }
-  const beginArrival = () => {
-    arrival = selected ? { code: selected.code, scroll: scrollY } : undefined;
-  };
-  const finishArrival = () => {
-    const pending = arrival;
-    // The first frame lets mobile-layout measure the loaded summary and notify
-    // details; the next observes that composition rather than the loading shell.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (!pending || arrival !== pending || selected?.code !== pending.code) return;
-      arrival = undefined;
-      if (Math.abs(scrollY - pending.scroll) > 2) return;
-      if (!isSheet() && matchMedia('(max-width: 767px)').matches) {
-        heading.focus({ preventScroll: true });
-        panel.scrollIntoView({ block: 'start', behavior: 'instant' });
-      }
-    }));
-  };
 
   // What the floating controls and the sheet are placed against. The open sheet keeps the collapsed height, so nothing moves behind it.
   const syncSheetMetrics = () => {
@@ -142,7 +124,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       axis.addEventListener('toggle', () => { if (axis.open && touched) title.scrollIntoView({ block: 'nearest' }); touched = false; });
     }
   };
-  let frameOnRender = false;
   const render = ({ html, profile }: { html: string; profile: UfProfile }) => {
     if (!selected) return;
     const region = listing.immediate_regions[selected.immediate_region];
@@ -190,9 +171,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       }
       initialAnchor = '';
     }
-    finishArrival();
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
-    // Only now does the result have its final height; keep the selection clear using its arrival rule.
+    // Frame against the loaded summary and the controls resting above it.
+    syncSheetMetrics();
     if (frameOnRender) { frameOnRender = false; if (isSheet()) frame(selected.code); }
   };
   const navigation = createMunicipalityNavigation({
@@ -274,11 +255,13 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     retry.type = 'button';
     retry.textContent = 'Tentar novamente';
     retry.onclick = () => {
-      if (selected) { beginArrival(); void navigation.select(selected, false).catch(failed); }
+      if (selected) {
+        frameOnRender = true;
+        void navigation.select(selected, false).catch(failed);
+      }
     };
     resultBlock.dataset.kind = 'error';
     resultBlock.append(note, retry);
-    finishArrival();
   };
   clear.onclick = () => { navigation.close(); restoreFocus(); };
   panelTypeSelect.addEventListener('change', () => {
@@ -311,13 +294,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     returnFocus = focusAfterwards;
     const loading = navigation.select(place);
     history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
-    beginArrival();
     void loading.catch(failed);
   };
   const selectFromSearch = (place: MunicipalityListing['municipalities'][number]) => {
     results.replaceChildren();
     select(place);
-    heading.focus();
+    heading.focus({ preventScroll: true });
   };
   input.disabled = false;
   input.addEventListener('input', () => {

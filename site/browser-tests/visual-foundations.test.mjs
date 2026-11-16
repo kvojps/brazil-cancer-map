@@ -5,7 +5,7 @@ import { chromium } from 'playwright-core';
 // The contract of the visual foundations decision (docs/ui-contract.md, section Fundamentos visuais).
 const base = process.env.SITE_URL ?? 'http://127.0.0.1:4321';
 const PAGES = ['/', '/municipios/', '/metodologia/', '/municipio/261160-recife/'];
-const NOTICE = 'Em construção. Este site ainda está sendo desenvolvido e os números não passaram por uma validação completa: podem conter erros e mudar.';
+const NOTICE = 'Em construção. Dados ainda não validados; podem conter erros e mudar.';
 const COLORS = {
   light: { page: 'rgb(245, 245, 245)', noticeBg: 'rgb(23, 23, 23)', noticeText: 'rgb(250, 250, 250)', improving: 'rgb(15, 110, 107)', soft: 'rgb(239, 239, 239)', surface: 'rgb(255, 255, 255)', text: 'rgb(23, 23, 23)', chart: 'rgb(26, 86, 176)' },
   dark: { page: 'rgb(10, 10, 10)', noticeBg: 'rgb(245, 245, 245)', noticeText: 'rgb(23, 23, 23)', improving: 'rgb(53, 189, 182)', soft: 'rgb(42, 42, 42)', surface: 'rgb(26, 26, 26)', text: 'rgb(245, 245, 245)', chart: 'rgb(138, 180, 248)' },

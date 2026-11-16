@@ -57,11 +57,11 @@
   --status-reached: #b9a3f2; --status-near: #7a68b4; --status-far: #3d3760;
 }
 @media (max-width: 767px) {
-  :root { --control-height: 44px; --control-text: var(--text-16); --notice-clearance: 7rem; }
+  :root { --control-height: 44px; --control-text: var(--text-16); --notice-clearance: 4rem; }
 }
 /* A 320 px screen at 200% zoom: the whole notice wraps to many lines. */
 @media (max-width: 240px) {
-  :root { --notice-clearance: 14rem; }
+  :root { --notice-clearance: 10rem; }
 }
 
 * { box-sizing: border-box; }

@@ -87,7 +87,7 @@ As decisões de UI que os testes e o CSS usam como contrato. Comentários no có
 
 ## Primeira tela no celular
 
-Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(max-width: 767px) and (min-width: 300px) and (min-height: 520px)`. Essa condição se repete nos componentes. Com JavaScript, as regras flutuantes também exigem ausência de `data-mobile-flow` na raiz: a altura disponível da viewport visual e o espaço consumido pelo resumo podem exigir fluxo mesmo nessa faixa.
+Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(max-width: 767px) and (min-width: 300px) and (min-height: 520px)`. Essa condição se repete nos componentes. Com JavaScript, as regras flutuantes também exigem ausência de `data-mobile-flow` na raiz: a viewport visual governa a altura útil. O tamanho do resumo não transforma mais essa composição em fluxo.
 
 - **Tela:** o aviso no topo, e o mapa de ponta a ponta em toda a altura abaixo dele. O resto flutua sobre o mapa. Um dedo move o mapa, a tela do mapa não rola, e o rodapé não é alcançado ali: o menu leva a fontes, licenças e código.
 - **Aviso:** faixa invertida, sempre visível, inclusive na Lista e com a página rolada.
@@ -98,8 +98,10 @@ Vale abaixo de 768 px, com pelo menos 520 px de altura e 300 px de largura: `(ma
 - **Mapa/Lista:** canto inferior direito. Na Lista, fica fixo na tela.
 - **Enquadramento:** o país vai até Fernando de Noronha, e não até a Ilha da Trindade, reservando a altura de Filtros e da legenda (`site/src/map/framing.ts`).
 - **Busca:** "1 município encontrado." e "N municípios encontrados.". **A confirmar:** sem "Abrir consulta" nos resultados no modo flutuante.
-- **Adaptação ao espaço:** abaixo de 768 px, usa fluxo quando a viewport visual tem menos de 520 px de altura ou a largura é menor que 300 px. Com resumo recolhido ou sem seleção, desconta aviso, cabeçalho, altura natural do resumo, altura real dos controles e ressalvas, maior altura dos controles/legenda inferiores e 32 px de espaçamento; se restarem menos de 160 px para explorar o mapa, passa ao fluxo. São margens de composição, não um teto percentual do resumo. Os detalhes abertos não entram nessa medição. A decisão mede a composição flutuante candidata, com o resumo recolhido, mesmo quando a página está em fluxo ou com detalhes abertos; restaura o estado antes de pintar ou notificar a interface. Assim, o cabeçalho maior do fluxo e as medidas de outra seleção não impedem a recuperação do modo flutuante. Limpar a seleção ou recuperar espaço pode restabelecer o modo flutuante.
+- **Adaptação ao espaço:** com JavaScript, o resumo permanece inferior e sobreposto nessa faixa. A altura máxima desconta aviso e 16rem para exploração e comandos; todo o conteúdo continua alcançável por rolagem interna, sem compactação de fontes. A viewport visual atualiza a altura disponível. Não há medição temporária do painel nem mudança para fluxo pela extensão do resultado ou ressalva. A composição extrema abaixo de 300 px de largura ou 520 px de altura útil continua pendente na #50.
 - **Fora do modo flutuante**, como no zoom de 200%: cabeçalho, seletores, busca, legenda e Mapa/Lista ficam em fluxo, fora do mapa, e a página rola até o rodapé. O botão Filtros não existe nesse modo, porque os seletores ficam à vista.
+
+Evidências da #45 e limites desta etapa: [Mapa e resumo](validation/mobile-map-summary.md).
 
 ## Desktop em tela cheia
 
@@ -126,7 +128,7 @@ Vale a partir de 768 px.
 - **Resumo do Indicador:** número em 32 px, o que ele mede e o ano; a classe da leitura do mapa com a cor e a textura do mapa, mais o período da Tendência ou a Referência; no 60 dias, a % de todos os casos sem informação; a origem, quando regional; e o aviso da Faixa C.
 - **Dado insuficiente:** o texto ocupa o lugar do número, com a textura de pontos e a explicação. O aviso da Faixa C sai do bloco e fica no Eixo aberto, junto da Tendência do estado e da Ação.
 - **Mortalidade:** a taxa em destaque, ao lado da classe, sem contagem de óbitos e sem Situação (spec, seção 11.2).
-- **Celular, recolhido:** folha de ponta a ponta na base, com nome/UF, resultado e período; “Ver detalhes” é a ação para expandir. Tocar no texto não abre os detalhes. Acima ficam o botão Legenda, com as cores, e Mapa/Lista. O enquadramento desconta a folha e os controles. Até 600 px de altura, os textos auxiliares caem a 12 px, e o número continua em 32 px. Não há teto percentual de altura acordado; origem regional, Faixa C e ressalvas essenciais permanecem legíveis.
+- **Celular, recolhido:** folha de ponta a ponta na base, com nome/UF, resultado e período; “Ver detalhes” é a ação para expandir. Tocar no texto não abre os detalhes. Acima ficam o botão Legenda, com as cores, e Mapa/Lista. O enquadramento desconta a folha e os controles. As fontes mantêm os tamanhos de leitura, com o número em 32 px. Resumos longos rolam internamente; origem regional, Faixa C, ressalvas, Ver detalhes e Limpar seleção permanecem alcançáveis.
 - **Celular, aberto:** a folha sobe até o aviso, que nunca é coberto. Cabeçalho, Filtros, Legenda e Mapa/Lista saem de cena. Filtros, menu e busca, quando abertos, tomam o lugar da folha.
 - **Desktop:** coluna ao lado do mapa, com o nome fixo no topo.
 - **Ações:** “Ver detalhes” expande, só no celular; aberto, o controle diz “Voltar ao mapa” ou “Voltar à lista”, conforme a visualização. Recolher mantém seleção e contexto; ✕, com nome acessível “Limpar seleção”, é uma ação distinta. Os quatro Eixos e as Ações continuam acessíveis com Dado insuficiente.
@@ -135,7 +137,7 @@ Vale a partir de 768 px.
 - **Tipo de câncer:** seletor nativo no painel, ligado ao do mapa. Sem JavaScript, links nativos dos seis Tipos.
 - **Textos sobre a interface:** saem "Consulta pronta…" e "Meu município — dados sobre…". A nota sobre "Todos os cânceres" fica em "Por que 'Todos os cânceres' muda entre os Eixos?", e a nota de 2018 e 2024 em "O que é este número?".
 - **Status:** só para leitores de tela. Selecionar um município não muda a altura do cabeçalho nem dos controles.
-- **Foco:** a busca leva o foco ao nome do município. Expandir leva o foco ao nome nos detalhes; recolher devolve ao botão “Ver detalhes”. O conteúdo recolhido sai da ordem de foco. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa não move o foco na composição flutuante; ao conduzir ao resultado em fluxo, foca o nome sem rolagem adicional.
+- **Foco:** a busca leva o foco ao nome do município. Expandir leva o foco ao nome nos detalhes; recolher devolve ao botão “Ver detalhes”. O conteúdo recolhido sai da ordem de foco. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa conserva o foco da exploração; não existe chegada tardia ao nome. A busca foca o nome sem rolar o documento e fecha o campo, retirando dele o foco.
 - **Histórico e contexto:** abrir detalhes acrescenta uma entrada ao histórico; o primeiro Voltar recolhe, os seguintes percorrem municípios e filtros. Avançar restaura os detalhes quando pertinente. O retorno explícito reutiliza a entrada anterior, sem duplicar etapas. Links entre Eixos atualizam a âncora na mesma entrada de detalhes; a chegada por âncora abre diretamente o Eixo solicitado na própria entrada, sem criar etapa artificial; seu controle de retorno recolhe e retira a âncora com substituição da entrada. Mapa/Lista preservam seleção, filtros, posição e zoom do mapa, UF e linhas abertas da Lista e a posição de rolagem de cada visualização durante a visita.
 - **Falha:** mensagem e “Tentar novamente” no resumo, sem expansão automática. O mapa continua disponível; falha, Dado insuficiente e “Sem dado neste recorte” são estados distintos. Uma resposta atrasada nunca aparece como resultado da seleção atual.
 - **Contorno de seleção:** ganha uma borda externa na cor da superfície.
@@ -144,7 +146,7 @@ Vale a partir de 768 px.
 - **Câmera:** seleção pelo mapa preserva zoom e posição. Se o painel ou os controles encobrirem o ponto tocado, apenas o menor deslocamento que o revele é permitido, sem zoom. Busca e link direto enquadram os limites do município, usando a malha já carregada e a área útil fora das sobreposições. A chegada dos dados ao painel respeita a origem da seleção, sem reenquadrar a UF.
 - **Na próstata:** resumo recolhido e detalhes exibem a mesma ressalva integral, inclusive em composição flutuante. **A confirmar:** só a ressalva da próstata sai de cima do mapa com município selecionado.
 - **A confirmar:** C55 não calculável sem os pontos, e "Sem dado neste recorte" com amostra neutra, sem os pontos.
-- **Fora do modo flutuante:** o painel faz parte de uma página comum, sem folha, mas com resumo recolhido e controle explícito de detalhes quando há JavaScript. Uma seleção pelo canvas, busca ou Lista leva a página ao início do painel após a carga e a definição da composição, inclusive na primeira seleção que passa de flutuante para fluxo, com cache ou nova tentativa. Filtros permanece fechado. A chegada só vale para a seleção atual e é cancelada por interação deliberada durante a carga; respostas antigas não deslocam a página. Fluxo não expande os detalhes: “Ver detalhes” abre e “Voltar ao mapa/à lista” recolhe, restaurando a posição anterior à seleção, com UF e linhas abertas preservadas. A posição fica na entrada de seleção do histórico. Alterações de altura e rotação mantêm o estado deliberado, o Eixo e o histórico.
+- **Chegada ao resumo:** canvas, busca e link municipal sem âncora começam recolhidos, sem deslocamento externo após a carga, inclusive com cache ou nova tentativa. O conteúdo anterior sai durante a nova seleção. Nova seleção ou limpeza invalida respostas anteriores; interação deliberada cancela reenquadramento tardio. Lista, detalhes e composição extrema são completados pelas #47, #46 e #50. A composição extrema ainda conserva o fluxo anterior, porém sem chegada programada por rolagem.
 - **Sem JavaScript:** no celular, a página de município é uma página comum, sem mapa nem filtros, com os Eixos abertos. O bloco de resultado existe só com JavaScript, e o número fica no cartão. Com JavaScript, uma âncora municipal abre o painel e o Eixo de destino; não é necessário passar pelo botão para alcançar o destino do link.
 
 ### Campos do Contrato de dados
@@ -213,7 +215,7 @@ Substitui o mapa na mesma área, pelo alternador "Mapa | Lista", preservando fil
 Conhecidos e aceitos ao entregar cada parte:
 
 - **Texto de gráfico:** a limitação de 6,5 px a 320 px foi corrigida na #30; valem as regras de [séries históricas em telas estreitas](#séries-históricas-em-telas-estreitas), com texto de 16 px e alternativa em tabela.
-- **Aviso a 320 px com zoom de 200%:** ocupa 212 de 450 px, 47% da altura. A 320 px sem zoom, 94 de 900 px.
+- **Aviso a 320 px com zoom de 200%:** a medição anterior (212 de 450 px) usava o texto longo. A #45 entrega a redação curta aprovada na #44; a composição extrema e sua nova conferência pertencem à #50.
 - **Teclado com todas as UFs na Lista:** 5.571 links e 5.571 botões na ordem de tabulação. O filtro por UF é a saída.
 - **Distância de cor:** no tema claro, "Longe" contra "Dado insuficiente" fica em 7,2 a 7,5, abaixo da meta de 8. **Esse par não foi listado na decisão de tons**, e passa pelo piso de 6.
 - **Glifos:** `☾`, `☀`, `☷`, `ⓘ` e `Σ` não existem na Inter e vêm da fonte do sistema, então variam por aparelho.

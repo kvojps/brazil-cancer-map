@@ -41,12 +41,13 @@ for (const theme of ['light', 'dark']) {
   });
 }
 
-test('a long summary leaves the map useful by moving the consultation into page flow', async () => {
+test('a long summary scrolls inside the overlay while preserving the map', async () => {
   const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(base + '/municipio/210020-alcantara/');
     await page.locator('.result-warning').waitFor();
-    assert.equal(await page.locator('#municipality-preview').evaluate(node => getComputedStyle(node).position), 'static');
+    assert.equal(await page.locator('#municipality-preview').evaluate(node => getComputedStyle(node).position), 'fixed');
+    assert.equal(await page.evaluate(() => scrollY), 0);
     await page.locator('[data-clear-profile]').scrollIntoViewIfNeeded();
     assert.ok(await page.locator('[data-clear-profile]').evaluate(node => { const r = node.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }));
     assert.match(await page.locator('[data-profile-result]').innerText(), /vizinhos/);
@@ -100,21 +101,21 @@ test('reducing the search viewport keeps its results and keyboard focus reachabl
   } finally { await page.close(); }
 });
 
-test('a long caveat without municipal selection also moves the controls into page flow', async () => {
+test('a long caveat without municipal selection keeps the document stationary', async () => {
   const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(base + '/?tipo=prostate');
     await page.locator('#indicator-caveat').waitFor();
     assert.match(await page.locator('#indicator-caveat').innerText(), /vigilância ativa/);
-    assert.equal(await page.locator('.map-controls').evaluate(node => getComputedStyle(node).position), 'relative');
+    assert.equal(await page.locator('.map-controls').evaluate(node => getComputedStyle(node).position), 'absolute');
     await page.locator('#indicator-caveat').scrollIntoViewIfNeeded();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   } finally { await page.close(); }
 });
 
-for (const composition of ['floating details', 'page flow']) {
+for (const composition of ['floating details', 'short screen']) {
   test(`layout measurements preserve the reading position in ${composition}`, async () => {
-    const height = composition === 'page flow' ? 568 : 844;
+    const height = composition === 'short screen' ? 568 : 844;
     const page = await browser.newPage({ viewport: { width: 390, height }, isMobile: true, hasTouch: true });
     try {
       await page.goto(base + '/municipio/261160-recife/');
@@ -129,7 +130,7 @@ for (const composition of ['floating details', 'page flow']) {
       const after = await position();
       assert.ok(Math.abs(before.page - after.page) < 3, 'page reading position survives measurement');
       assert.ok(Math.abs(before.panel - after.panel) < 3, 'panel reading position survives measurement');
-      assert.equal(await page.locator('#municipality-preview').evaluate(node => getComputedStyle(node).position), composition === 'page flow' ? 'static' : 'fixed');
+      assert.equal(await page.locator('#municipality-preview').evaluate(node => getComputedStyle(node).position), 'fixed');
     } finally { await page.close(); }
   });
 }

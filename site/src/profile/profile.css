@@ -82,17 +82,3 @@
 
 /* With the select above, the type would be said twice where a card repeats it under its Eixo. */
 #municipality-preview[data-enhanced] :is(#acesso, #panorama) > [data-cancer-type] > h3 { display: none; }
-
-/* Compact form on a low screen: the same block in less height, with the warning whole. */
-@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) and (max-height: 600px) {
-  @scope (:root:not([data-mobile-flow])) {
-    #municipality-preview[data-collapsed] {
-      .panel-bar { min-height: 2.5rem; }
-      .panel-bar h2 { font-size: var(--text-16); }
-      .panel-result { gap: .25rem; padding-block: 0; }
-      .result-headline { font-size: var(--text-20); }
-      .result-measure, .result-note, .result-context, .result-warning, .result-caveat { font-size: var(--text-12); line-height: 1.25; }
-      .result-class { font-size: var(--text-14); }
-    }
-  }
-}

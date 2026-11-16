@@ -119,10 +119,10 @@ const period = manifest.indicators[indicator].all;
       .data-feedback p { margin: 0; }
       .data-feedback button { margin-top: .5rem; }
       /* The sheet: edge to edge at the bottom, opening up to the notice, which always paints above it. */
-      #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 0; z-index: 25; max-height: calc(100dvh - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
+      #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 0; z-index: 25; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
       #municipality-preview[data-enhanced] .panel-bar { position: sticky; top: 0; z-index: 2; }
       #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
-      #municipality-preview[data-collapsed] { z-index: 4; padding-bottom: .5rem; }
+      #municipality-preview[data-collapsed] { z-index: 4; padding-bottom: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 16rem); scroll-padding-block: 3rem .5rem; }
       #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
       /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),

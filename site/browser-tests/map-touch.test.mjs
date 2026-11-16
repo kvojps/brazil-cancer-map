@@ -9,6 +9,8 @@ before(async () => {
 });
 after(async () => { await browser?.close(); });
 
+const afterComposition = page => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+
 // Read the geography through the same hover labels available to a mouse user.
 async function labelAt(page, point) {
   await page.mouse.move(point.x, point.y);
@@ -72,21 +74,38 @@ test('canvas touch clears hover and successive selections preserve the visible g
   } finally { await page.close(); }
 });
 
-for (const arrival of ['direct link', 'search']) {
+for (const arrival of ['direct link', 'search', 'search retry']) {
   test(`${arrival} frames Recife itself in the useful map area`, async () => {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
     try {
+      if (arrival === 'search retry') await page.route('**/profiles/PE.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
       await page.goto(base + (arrival === 'direct link' ? '/municipio/261160-recife/?tipo=breast&theme=dark' : '/?tipo=breast&theme=dark'));
       await page.locator('.map-status').waitFor({ state: 'hidden' });
-      if (arrival === 'search') {
+      if (arrival.startsWith('search')) {
         await page.locator('.search-toggle').click();
         await page.locator('#municipality-search:enabled').fill('Recife PE');
         await page.locator('#municipality-results button').click();
+      }
+      if (arrival === 'search retry') {
+        await page.getByRole('button', { name: 'Tentar novamente', exact: true }).waitFor();
+        await page.unroute('**/profiles/PE.json');
+        await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
       }
       await page.locator('#municipality-content .profile[data-code="261160"]').waitFor({ state: 'attached' });
       const samples = await visibleSamples(page);
       const recife = samples.filter(sample => sample.name === 'Recife (PE)');
       assert.ok(recife.length >= 3, `Recife occupies multiple visible map cells, rather than the entire UF being fitted (${recife.length})`);
+      if (arrival === 'search retry') {
+        const reference = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+        try {
+          await reference.goto(`${base}/municipio/261160-recife/?tipo=breast&theme=dark`);
+          await reference.locator('.map-status').waitFor({ state: 'hidden' });
+          await reference.locator('#municipality-content .profile').waitFor({ state: 'attached' });
+          for (const { name, point } of await visibleSamples(reference)) {
+            assert.equal(await labelAt(page, point), name, 'retry frames against the loaded summary just like a successful arrival');
+          }
+        } finally { await reference.close(); }
+      }
       assert.match(new URL(page.url()).pathname, /261160-recife/);
       assert.equal(new URL(page.url()).searchParams.get('tipo'), 'breast');
       assert.equal(new URL(page.url()).searchParams.get('theme'), 'dark');
@@ -250,14 +269,14 @@ for (const height of [568, 664, 740, 844]) {
       await page.mouse.move(0, 0);
       await page.touchscreen.tap(point.x, point.y);
       await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-      await page.waitForTimeout(250);
+      await afterComposition(page);
       const arrival = await page.evaluate(() => {
         const heading = document.querySelector('#preview-heading');
         const result = document.querySelector('[data-profile-result]');
         return { top: heading.getBoundingClientRect().top, bottom: result.getBoundingClientRect().bottom,
           clearance: document.querySelector('.construction-notice').getBoundingClientRect().bottom,
-          height: innerHeight, scroll: scrollY, flow: document.documentElement.hasAttribute('data-mobile-flow'),
-          focus: document.activeElement === heading, canvasFocus: document.activeElement?.tagName === 'CANVAS' };
+          height: innerHeight, scroll: scrollY,
+          canvasFocus: document.activeElement?.tagName === 'CANVAS' };
       });
       assert.match(new URL(page.url()).pathname, /^\/municipio\/\d{6}-/);
       assert.equal(await page.locator('#municipality-content .profile').getAttribute('data-code'), new URL(page.url()).pathname.split('/')[2].slice(0, 6));
@@ -269,13 +288,13 @@ for (const height of [568, 664, 740, 844]) {
       await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).tap();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
-      if (arrival.flow) { assert.ok(arrival.scroll > 0); assert.equal(arrival.focus, true); }
-      else { assert.equal(arrival.scroll, 0); assert.equal(arrival.canvasFocus, true); }
+      assert.equal(arrival.scroll, 0);
+      assert.equal(arrival.canvasFocus, true);
     } finally { await page.close(); }
   });
 }
 
-for (const action of ['retry', 'deliberate scroll', 'new selection']) {
+for (const action of ['retry', 'deliberate scroll', 'new selection', 'clear selection']) {
   test(`a delayed first touch respects ${action}`, async () => {
     const page = await browser.newPage({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true });
     let release;
@@ -297,7 +316,17 @@ for (const action of ['retry', 'deliberate scroll', 'new selection']) {
       await page.mouse.move(0, 0);
       await page.touchscreen.tap(point.x, point.y);
       await started;
-      if (action === 'deliberate scroll') {
+      if (action === 'clear selection') {
+        await page.locator('[data-clear-profile]').click();
+        const clearedUrl = page.url();
+        release();
+        await page.waitForLoadState('networkidle');
+        assert.equal(await page.locator('#municipality-preview').isVisible(), false);
+        assert.equal(await page.locator('.result-value').count(), 0);
+        assert.equal(page.url(), clearedUrl);
+        assert.equal(await page.evaluate(() => scrollY), 0);
+        assert.equal(await page.locator('.search-toggle').evaluate(node => node === document.activeElement), true);
+      } else if (action === 'deliberate scroll') {
         await page.setViewportSize({ width: 390, height: 390 });
         await page.mouse.move(20, 150);
         await page.mouse.wheel(0, 150);
@@ -306,7 +335,7 @@ for (const action of ['retry', 'deliberate scroll', 'new selection']) {
         assert.ok(position > 0, 'the person has scrolled before the profile arrives');
         release();
         await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-        await page.waitForTimeout(250);
+        await afterComposition(page);
         assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'late data preserves deliberate reading');
         assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), false);
       } else if (action === 'new selection') {
@@ -315,7 +344,7 @@ for (const action of ['retry', 'deliberate scroll', 'new selection']) {
         await page.locator('#municipality-results button').click();
         release();
         await page.locator('#municipality-content .profile[data-code="261160"]').waitFor({ state: 'attached' });
-        await page.waitForTimeout(250);
+        await afterComposition(page);
         assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
         assert.match(new URL(page.url()).pathname, /261160-recife/);
         const box = await page.locator('#preview-heading').boundingBox();
@@ -326,7 +355,7 @@ for (const action of ['retry', 'deliberate scroll', 'new selection']) {
         await page.unroute('**/profiles/*.json');
         await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
         await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
-        await page.waitForTimeout(250);
+        await afterComposition(page);
         const box = await page.locator('#preview-heading').boundingBox();
         assert.ok(box.y >= 74 && box.y < 664, 'retry reaches the result after layout changes');
         // Selecting the same place through search reuses the loaded profile and document.
@@ -335,8 +364,8 @@ for (const action of ['retry', 'deliberate scroll', 'new selection']) {
         await page.evaluate(() => scrollTo(0, 0));
         if (await page.locator('.search-toggle').isVisible()) await page.locator('.search-toggle').click();
         await page.locator('#municipality-search').fill(name);
-        await page.locator('#municipality-results button').click();
-        await page.waitForTimeout(250);
+        await page.getByRole('button', { name, exact: true }).click();
+        await afterComposition(page);
         assert.equal(page.url(), url);
         assert.ok((await page.locator('#preview-heading').boundingBox()).y < 664, 'warm selection reaches the result');
       }
@@ -353,10 +382,11 @@ test('cold keyboard search reaches the result after Enter initiates selection', 
     await page.locator('#municipality-search:enabled').fill('Recife PE');
     await page.locator('#municipality-search').press('Enter');
     await page.locator('#municipality-content .profile[data-code="261160"]').waitFor({ state: 'attached' });
-    await page.waitForTimeout(250);
+    await afterComposition(page);
     const box = await page.locator('#preview-heading').boundingBox();
     assert.ok(box.y >= 74 && box.y < 664, 'Enter does not cancel its own arrival');
     assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), true);
     assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
+    assert.equal(await page.evaluate(() => scrollY), 0);
   } finally { await page.close(); }
 });

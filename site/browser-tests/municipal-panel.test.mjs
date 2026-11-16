@@ -63,8 +63,16 @@ test('Alcântara: the longest block keeps origin and warning at 320 × 568, with
     const text = await blockText(page);
     assert.match(text, /Seu município e vizinhos — região de São Luís/);
     assert.ok(text.includes(WARNING));
-    assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static');
-    assert.equal(await toggle(page).isVisible(), true, 'flow keeps deliberate details');
+    assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'fixed');
+    assert.equal(await page.evaluate(() => scrollY), 0);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollHeight), 568);
+    const panel = page.locator('#municipality-preview');
+    await toggle(page).scrollIntoViewIfNeeded();
+    assert.ok(await panel.evaluate(element => element.scrollTop) > 0, 'long summary scrolls internally');
+    await panel.evaluate(element => { element.scrollTop = 0; });
+    await result(page).tap();
+    assert.equal(await toggle(page).getAttribute('aria-expanded'), 'false', 'summary text does not open details');
+    assert.equal(await toggle(page).isVisible(), true, 'the summary keeps deliberate details');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     await toggle(page).click();
     await page.locator('#preview-heading').scrollIntoViewIfNeeded();
