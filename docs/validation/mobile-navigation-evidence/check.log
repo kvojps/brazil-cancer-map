@@ -1,0 +1,11 @@
+
+> site@0.1.0 check
+> astro check
+
+11:11:53 [types] Generated 40ms
+11:11:53 [check] Getting diagnostics for Astro files in /home/kvojps/Documentos/dev/brazil-cancer-map/site...
+Result (84 files): 
+- 0 errors
+- 0 warnings
+- 0 hints
+

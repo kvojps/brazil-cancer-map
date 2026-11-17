@@ -96,6 +96,13 @@ Esses testes não substituem a revisão humana com leitor de tela.
 Para a matriz completa, relatórios e execução de um arquivo por vez, veja
 [os testes de navegador](../site/browser-tests/README.md).
 
+Para reproduzir as séries de primeira seleção, Filtros e logo da #51, use os
+[comandos da verificação integrada mobile](validation/mobile-navigation-integrated.md#revisão-dados-e-reprodução).
+Conclua `npm test` antes de servir `site/dist/`, pois ele também faz build;
+não reconstrua a saída durante os testes do navegador. O relatório distingue
+cache da aplicação, simulação de recursos e o
+[roteiro físico obrigatório](validation/mobile-navigation-physical.md).
+
 Para medir a seleção municipal, depois do build, sem outra execução de navegador
 em paralelo:
 

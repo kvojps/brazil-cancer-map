@@ -1,5 +1,16 @@
 # Testes da inicial no navegador
 
+A [verificação integrada da navegação mobile](../../docs/validation/mobile-navigation-integrated.md)
+mapeia as transições das #38/#44, os comandos sobre build estático, resultados
+e limites. O roteiro `node site/scripts/verify-mobile-navigation.mjs`, executado
+da raiz com `SITE_URL` e `CHROMIUM_PATH`, registra dez tentativas frias e dez com
+cache da aplicação por viewport (320×568 e 390×844), para seleção pela busca,
+Filtros e logo. `MOBILE_ARRIVAL=canvas` repete com toque emulado no canvas;
+`MOBILE_REPORT_DIR` escolhe o diretório de `attempts.json` e capturas de falha.
+Execute depois de `npm test`, que também reconstrói a saída, sem builds durante
+a verificação. A [conferência física Android/Chrome](../../docs/validation/mobile-navigation-physical.md)
+continua obrigatória e separada da emulação.
+
 Instale as dependências com `npm ci --prefix site` e inicie o site com
 `npm run dev --prefix site`. Em outro terminal:
 

@@ -237,7 +237,7 @@ Conhecidos e aceitos ao entregar cada parte:
 - **Leitor de tela:** sem sessão registrada. O roteiro está na [auditoria](validation/accessibility-audit.md#roteiro-humano-pendente).
 - **Firefox e Safari:** sem registro. O grid do `body` e o foco na âncora só foram vistos no Chromium.
 - **Aparelho real:** declarado pelo responsável, sem registro de aparelho, sistema ou navegador. Teclado virtual só em emulação, descontando uma altura típica. Ficam sem conferência a altura verdadeira, o deslocamento no Safari e o `100dvh` com o teclado aberto.
-- **Enquadramento e contorno dentro do WebGL:** conferidos em capturas, não por teste automático.
+- **WebGL:** `map-touch.test.mjs` verifica toque emulado no canvas, contorno e preservação da câmera por geografia visível. Isso não comprova toque ou GPU de aparelho físico; a [verificação integrada](validation/mobile-navigation-integrated.md) registra os limites.
 - **Falha intermitente:** o teste do cabeçalho em `/municipios/` com JavaScript falhou duas vezes contra o servidor de desenvolvimento, logo após editar arquivos, sem causa confirmada. Rode a suíte contra a saída estática.
 - **Gesto de arrastar a folha:** não foi implementado.
 
