@@ -44,6 +44,15 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
     width: max-content;
     max-width: 90%;
   }
+  .map-status:has(button) {
+    top: 7rem;
+    transform: translateX(-50%);
+    width: min(90%, 24rem);
+    max-height: calc(100% - 8rem - var(--sheet-height, 0px));
+    overflow: auto;
+    background: var(--surface);
+    padding: .75rem;
+  }
   @media (min-width: 768px) {
     .map-frame { height: 100%; min-height: 0; }
   }

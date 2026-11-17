@@ -32,6 +32,55 @@ async function visibleSamples(page, step = 45) {
   return samples;
 }
 
+test('interaction while the mesh is pending cancels late municipal framing', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(10000);
+  let release;
+  let gate = new Promise(resolve => { release = resolve; });
+  let requested;
+  let started = new Promise(resolve => { requested = resolve; });
+  try {
+    await page.route('**/municipalities.topojson', async route => { requested(); await gate; await route.continue(); });
+    await page.goto(base + '/', { waitUntil: 'domcontentloaded' });
+    await started;
+    await page.locator('.filters-toggle').click();
+    await page.keyboard.press('Escape');
+    release();
+    await page.locator('.map-status').waitFor({ state: 'hidden' });
+    const samples = await visibleSamples(page, 90);
+    assert.ok(samples.length > 1, 'country geography provides public reference points');
+    gate = new Promise(resolve => { release = resolve; });
+    started = new Promise(resolve => { requested = resolve; });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await started;
+    await page.locator('.search-toggle').click();
+    await page.locator('#municipality-search:enabled').fill('Recife PE');
+    await page.locator('#municipality-results button').click();
+    await page.locator('.result-value').waitFor();
+    // A deliberate control interaction after selection cancels the deferred arrival.
+    await page.locator('.filters-toggle').click();
+    await page.keyboard.press('Escape');
+    const response = page.waitForResponse('**/municipalities.topojson');
+    release();
+    await (await response).finished();
+    await page.locator('.map-status').waitFor({ state: 'hidden' });
+    for (const { name, point } of samples.slice(0, 2)) {
+      let observed;
+      const deadline = Date.now() + 10000;
+      // A source can finish after the pointer has stopped: observe hover again after paint.
+      do {
+        await afterComposition(page);
+        await page.mouse.move(point.x + 1, point.y);
+        await page.mouse.move(point.x, point.y);
+        observed = await page.locator('.map-tooltip strong').first().evaluateAll(elements => elements[0]?.textContent ?? null);
+      } while (observed !== name && Date.now() < deadline);
+      assert.equal(observed, name, `geography at ${JSON.stringify(point)} is preserved`);
+    }
+    assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+  } finally { release(); await page.close(); }
+});
+
 test('canvas touch clears hover and successive selections preserve the visible geography on a hybrid device', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {

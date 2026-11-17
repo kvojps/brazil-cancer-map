@@ -94,10 +94,13 @@ if (container && status) {
       let mapState = initial;
       let selectOnMap = (_code: string | undefined, _preserveCamera = false) => {};
       let frameCountryOnce = () => {};
-      let resetCamera = () => {};
+      let resetCamera = () => { mapArrivalAllowed = true; };
       let selectedCode: string | undefined;
       let preserveCamera = false;
+      let mapArrivalAllowed = true;
+      window.addEventListener('municipality-arrival-cancelled', () => { mapArrivalAllowed = false; });
       const mapSelection = { focus: (code: string | undefined, preserve = false) => {
+        if (code && selectedCode !== code) mapArrivalAllowed = true;
         selectedCode = code;
         preserveCamera = preserve;
         selectOnMap(code, preserve);
@@ -193,6 +196,7 @@ if (container && status) {
       });
       // Loading the optional renderer never gates the text alternatives.
       const loadMap = () => {
+        mapArrivalAllowed = true;
         status.hidden = false;
         status.textContent = 'Carregando o mapa…';
         void import('../map/municipality-map').then(async renderer => {
@@ -247,8 +251,15 @@ if (container && status) {
           };
           window.addEventListener('resize', revealAfterResize);
           window.addEventListener('mobile-layout-change', revealAfterResize);
-          selectOnMap(selectedCode, preserveCamera);
-          frameCountryOnce();
+          if (mapArrivalAllowed) {
+            selectOnMap(selectedCode, preserveCamera);
+            frameCountryOnce();
+          } else {
+            countryFramed = true;
+            preserveCamera = true;
+            frameWhenShown = !!selectedCode && !container.clientWidth;
+            renderer.highlightMunicipality(map, selectedCode);
+          }
           renderer.onMunicipalityClick(map, code => {
             window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));
           });

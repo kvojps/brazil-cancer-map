@@ -96,12 +96,13 @@ test('Back during a new profile load restores details and rejects the obsolete a
   } finally { release(); await page.close(); }
 });
 
-test('mesh failure recovers independently without history or opening municipal details', async () => {
+for (const failure of ['transport', 'invalid topology']) {
+test(`${failure}: mesh failure recovers independently without history or opening municipal details`, async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   page.setDefaultTimeout(10000);
   let fail = true;
   try {
-    await page.route('**/municipalities.topojson', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.route('**/municipalities.topojson', route => fail ? route.fulfill(failure === 'transport' ? { status: 503, body: '' } : { json: { type: 'Topology', objects: {} } }) : route.continue());
     await page.goto(base + RECIFE + '?visualizacao=lista');
     await page.locator('.result-value').waitFor();
     await page.locator('.indicator-table select').selectOption('PE');
@@ -120,6 +121,7 @@ test('mesh failure recovers independently without history or opening municipal d
     assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
   } finally { await page.close(); }
 });
+}
 
 test('details are deliberate and Back/Forward traverse details before the municipal selection', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });

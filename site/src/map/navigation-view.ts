@@ -54,7 +54,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
   let frameOnRender = false;
-  const cancelArrival = () => { anchorArrival = false; frameOnRender = false; restoredReading = undefined; };
+  const cancelArrival = () => {
+    anchorArrival = false;
+    frameOnRender = false;
+    restoredReading = undefined;
+    window.dispatchEvent(new Event('municipality-arrival-cancelled'));
+  };
   for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
     window.addEventListener(event, cancelArrival, { passive: true, capture: true });
   }

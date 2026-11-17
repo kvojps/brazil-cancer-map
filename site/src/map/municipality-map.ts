@@ -142,71 +142,73 @@ export async function mountMunicipalityMap(
     dragRotate: false,
     pitchWithRotate: false,
   });
-  map.touchZoomRotate.disableRotation();
-  map.addControl(new NavigationControl({ showCompass: false }));
-  map.addControl(
-    new AttributionControl({ compact: true, customAttribution: "Malha: IBGE 2025" }),
-  );
+  try {
+    map.touchZoomRotate.disableRotation();
+    map.addControl(new NavigationControl({ showCompass: false }));
+    map.addControl(
+      new AttributionControl({ compact: true, customAttribution: "Malha: IBGE 2025" }),
+    );
 
-  const [topology] = await Promise.all([
-    fetch(meshUrl).then((response) => {
-      if (!response.ok) throw new Error(`mesh request failed (${response.status})`);
-      return response.json() as Promise<MeshTopology>;
-    }),
-    map.once("load"),
-  ]).catch(error => {
+    const [topology] = await Promise.all([
+      fetch(meshUrl).then((response) => {
+        if (!response.ok) throw new Error(`mesh request failed (${response.status})`);
+        return response.json() as Promise<MeshTopology>;
+      }),
+      map.once("load"),
+    ]);
+
+    const mesh = feature(topology, topology.objects.municipalities);
+    meshes.set(map, mesh);
+    map.addSource(SOURCE_ID, {
+      type: "geojson",
+      data: mesh,
+      promoteId: "CD_MUN",
+    });
+    map.addLayer({
+      id: FILL_LAYER,
+      type: "fill",
+      source: SOURCE_ID,
+      paint: { "fill-color": trendFill() },
+    });
+    map.addLayer({
+      id: BORDER_LAYER,
+      type: "line",
+      source: SOURCE_ID,
+      paint: {
+        "line-color": themeColor("var(--mesh-border)"),
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.2, 8, 1],
+      },
+    });
+
+    map.addLayer({
+      id: "municipality-hover",
+      type: "line",
+      source: SOURCE_ID,
+      paint: {
+        "line-color": themeColor("var(--selection)"),
+        "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 2, 0],
+      },
+    });
+
+    // An outer border in the color of the surface keeps the outline apart from any fill and from what floats over it.
+    map.addLayer({ id: SELECTED_CASING_LAYER, type: "line", source: SOURCE_ID,
+      filter: codeFilter([]), paint: { "line-color": themeColor("var(--surface)"), "line-width": 6 } });
+    map.addLayer({ id: SELECTED_LAYER, type: "line", source: SOURCE_ID,
+      filter: codeFilter([]), paint: { "line-color": themeColor("var(--selection)"), "line-width": 3 } });
+    const syncTheme = () => {
+      map.setPaintProperty('background', 'background-color', themeColor('var(--mesh)'));
+      map.setPaintProperty(BORDER_LAYER, 'line-color', themeColor('var(--mesh-border)'));
+      map.setPaintProperty(SELECTED_CASING_LAYER, 'line-color', themeColor('var(--surface)'));
+      for (const layer of ['municipality-hover', SELECTED_LAYER]) {
+        map.setPaintProperty(layer, 'line-color', themeColor('var(--selection)'));
+      }
+    };
+    onThemeChange(map, syncTheme);
+    return map;
+  } catch (error) {
     map.remove();
     throw error;
-  });
-
-  const mesh = feature(topology, topology.objects.municipalities);
-  meshes.set(map, mesh);
-  map.addSource(SOURCE_ID, {
-    type: "geojson",
-    data: mesh,
-    promoteId: "CD_MUN",
-  });
-  map.addLayer({
-    id: FILL_LAYER,
-    type: "fill",
-    source: SOURCE_ID,
-    paint: { "fill-color": trendFill() },
-  });
-  map.addLayer({
-    id: BORDER_LAYER,
-    type: "line",
-    source: SOURCE_ID,
-    paint: {
-      "line-color": themeColor("var(--mesh-border)"),
-      "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.2, 8, 1],
-    },
-  });
-
-  map.addLayer({
-    id: "municipality-hover",
-    type: "line",
-    source: SOURCE_ID,
-    paint: {
-      "line-color": themeColor("var(--selection)"),
-      "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 2, 0],
-    },
-  });
-
-  // An outer border in the color of the surface keeps the outline apart from any fill and from what floats over it.
-  map.addLayer({ id: SELECTED_CASING_LAYER, type: "line", source: SOURCE_ID,
-    filter: codeFilter([]), paint: { "line-color": themeColor("var(--surface)"), "line-width": 6 } });
-  map.addLayer({ id: SELECTED_LAYER, type: "line", source: SOURCE_ID,
-    filter: codeFilter([]), paint: { "line-color": themeColor("var(--selection)"), "line-width": 3 } });
-  const syncTheme = () => {
-    map.setPaintProperty('background', 'background-color', themeColor('var(--mesh)'));
-    map.setPaintProperty(BORDER_LAYER, 'line-color', themeColor('var(--mesh-border)'));
-    map.setPaintProperty(SELECTED_CASING_LAYER, 'line-color', themeColor('var(--surface)'));
-    for (const layer of ['municipality-hover', SELECTED_LAYER]) {
-      map.setPaintProperty(layer, 'line-color', themeColor('var(--selection)'));
-    }
-  };
-  onThemeChange(map, syncTheme);
-  return map;
+  }
 }
 
 /**
@@ -505,7 +507,12 @@ export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapO
       revealSelection(map, selection?.code === code ? selection.point : bounds.getCenter(), overlays, revealOutside);
     } else fitClearOfOverlays(map, bounds, overlays);
   }
-  for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter([code]));
+  highlightMunicipality(map, code);
+}
+
+/** Update the selected outline without moving a camera the user has already taken over. */
+export function highlightMunicipality(map: MapLibreMap, code: string | undefined): void {
+  for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter(code ? [code] : []));
 }
 
 export function clearMunicipality(map: MapLibreMap): void {
