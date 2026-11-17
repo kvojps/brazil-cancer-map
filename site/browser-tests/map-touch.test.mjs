@@ -456,10 +456,14 @@ test('cold keyboard search reaches the result after Enter initiates selection', 
 for (const width of [390, 1280]) {
   test(`${width}px: logo restores country geography while clearing selection preserves exploration`, async () => {
     const page = await browser.newPage({ viewport: { width, height: 844 }, isMobile: width < 768, hasTouch: true });
+    let release;
+    const mesh = new Promise(resolve => { release = resolve; });
     try {
-      await page.goto(base + '/');
-      await page.locator('.map-status').waitFor({ state: 'hidden' });
+      await page.route('**/municipalities.topojson', async route => { await mesh; await route.continue(); });
+      await page.goto(base + '/', { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => document.querySelector('#data-status').textContent === '');
+      release();
+      await page.locator('.map-status').waitFor({ state: 'hidden' });
       const country = await visibleSamples(page, width < 768 ? 45 : 90);
       assert.ok(country.length > 2, 'country geography is available through public hover labels');
       const input = page.locator('#municipality-search');
@@ -484,7 +488,7 @@ for (const width of [390, 1280]) {
       await afterComposition(page);
       await waitForLabelAt(page, country[0].point, country[0].name);
       for (const { name, point } of country) assert.equal(await labelAt(page, point), name, 'reset restores the initial country geography');
-    } finally { await page.close(); }
+    } finally { release(); await page.close(); }
   });
 }
 

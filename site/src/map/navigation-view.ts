@@ -263,7 +263,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     },
     show: render,
     clear: () => {
-      cancelArrival();
+      if (selected) cancelArrival();
       panel.hidden = true;
       panelLegend.hidden = true;
       selected = undefined;
