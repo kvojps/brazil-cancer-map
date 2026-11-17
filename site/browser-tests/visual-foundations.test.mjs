@@ -28,8 +28,8 @@ for (const javaScriptEnabled of [false, true]) {
         for (const path of PAGES) {
           await page.goto(base + path);
           const notice = page.locator('.construction-notice');
-          assert.equal(normalized(await notice.textContent()), NOTICE, path);
-          assert.equal(await notice.locator('button, a').count(), 0, `${path}: nothing closes the notice`);
+          assert.equal(normalized(await notice.innerText()), NOTICE, path);
+          assert.equal(await notice.locator('button:visible, a:visible').count(), 0, `${path}: nothing closes the notice`);
           assert.equal(await style(notice, 'backgroundColor'), COLORS[colorScheme].noticeBg, path);
           assert.equal(await style(notice, 'color'), COLORS[colorScheme].noticeText, path);
           for (const width of [320, 768, 1280]) {

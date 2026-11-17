@@ -7,6 +7,9 @@ export function mountTemporarySurfaces(): void {
   const search = document.querySelector<HTMLElement>('.municipality-search')!;
   const filters = document.querySelector<HTMLElement>('#map-filters');
   const legend = document.querySelector<HTMLElement>('#legend-full');
+  const notice = document.querySelector<HTMLElement>('#construction-reading');
+  const noticeOpener = document.querySelector<HTMLElement>('[popovertarget="construction-reading"]');
+  const surfaces = [filters, legend, notice];
   const menu = document.querySelector<HTMLDetailsElement>('.site-menu');
   const detailsMenu = document.querySelector<HTMLElement>('#details-menu');
   const detailsToggle = document.querySelector<HTMLElement>('[data-details-menu]');
@@ -19,7 +22,7 @@ export function mountTemporarySurfaces(): void {
     const target = element?.checkVisibility({ visibilityProperty: true }) ? element : detailsToggle;
     if (target?.checkVisibility({ visibilityProperty: true })) target.focus({ preventScroll: true });
   };
-  const openerFor = (surface: HTMLElement) => surface === filters ? filtersOpener : surface === detailsMenu ? detailsToggle : legendOpener;
+  const openerFor = (surface: HTMLElement) => surface === notice ? (noticeOpener?.checkVisibility({ visibilityProperty: true }) ? noticeOpener : document.querySelector<HTMLElement>('.notice-message')) : surface === filters ? filtersOpener : surface === detailsMenu ? detailsToggle : legendOpener;
   const closeSearch = (returnFocus = true) => {
     const wasOpen = 'searchOpen' in header.dataset;
     delete header.dataset.searchOpen;
@@ -32,7 +35,7 @@ export function mountTemporarySurfaces(): void {
   const replaceSurface = (next?: HTMLElement) => {
     switching = true;
     if (next !== search) closeSearch(false);
-    for (const surface of [filters, legend, detailsMenu]) if (surface !== next) hide(surface);
+    for (const surface of [...surfaces, detailsMenu]) if (surface !== next) hide(surface);
     if (menu?.open) menu.open = false;
     switching = false;
   };
@@ -56,7 +59,7 @@ export function mountTemporarySurfaces(): void {
     const filterButton = event.target instanceof Element ? event.target.closest<HTMLElement>('[popovertarget="map-filters"]') : null;
     if (filterButton && filterButton.getAttribute('popovertargetaction') !== 'hide') filtersOpener = filterButton;
   }, true);
-  for (const surface of [filters, legend, detailsMenu]) surface?.addEventListener('beforetoggle', event => {
+  for (const surface of [...surfaces, detailsMenu]) surface?.addEventListener('beforetoggle', event => {
     const opening = (event as ToggleEvent).newState === 'open';
     if (opening) {
       if (floating.matches || surface === detailsMenu) replaceSurface(surface);
@@ -65,7 +68,7 @@ export function mountTemporarySurfaces(): void {
       queueMicrotask(() => focus(openerFor(surface)));
     }
   });
-  for (const surface of [filters, legend, detailsMenu]) surface?.addEventListener('toggle', event => {
+  for (const surface of [...surfaces, detailsMenu]) surface?.addEventListener('toggle', event => {
     if ((event as ToggleEvent).newState === 'open' && surface.matches(':popover-open')) focus(surface.querySelector<HTMLElement>('select, button'));
   });
   document.addEventListener('keydown', event => {
@@ -74,7 +77,7 @@ export function mountTemporarySurfaces(): void {
       closeSearch(false);
       focus(searchOpener);
     }
-    for (const surface of [filters, legend, detailsMenu]) {
+    for (const surface of [...surfaces, detailsMenu]) {
       if (!surface?.matches(':popover-open')) continue;
       event.preventDefault();
       hide(surface);
@@ -110,6 +113,7 @@ export function mountTemporarySurfaces(): void {
     closeSearch(false);
     hide(filters);
     hide(legend);
+    hide(notice);
     hide(detailsMenu);
     switching = false;
   });

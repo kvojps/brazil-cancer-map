@@ -1,0 +1,17 @@
+[DEBUG-53-native] 390 × 844, light, JavaScript true { innerHeight: 422, scroll: 422, dashboard: '422px', tight: true }
+[DEBUG-53-native-settled] 390 × 844, light, JavaScript true { innerHeight: 422, scroll: 422, dashboard: '422px' }
+[DEBUG-53-native] 320 × 568, light, JavaScript true { innerHeight: 284, scroll: 284, dashboard: '284px', tight: true }
+[DEBUG-53-native-settled] 320 × 568, light, JavaScript true { innerHeight: 284, scroll: 284, dashboard: '284px' }
+[DEBUG-53-native] 390 × 844, dark, JavaScript true { innerHeight: 422, scroll: 422, dashboard: '422px', tight: true }
+[DEBUG-53-native-settled] 390 × 844, dark, JavaScript true { innerHeight: 422, scroll: 422, dashboard: '422px' }
+[DEBUG-53-native] 320 × 568, dark, JavaScript true { innerHeight: 284, scroll: 284, dashboard: '284px', tight: true }
+[DEBUG-53-native-settled] 320 × 568, dark, JavaScript true { innerHeight: 284, scroll: 284, dashboard: '284px' }
+✔ native 200% zoom keeps scripted controls reachable and preserves normal scrolling without JavaScript (10253.546776ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10747.930346

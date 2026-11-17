@@ -13,7 +13,7 @@ anteriores em Samsung Internet não preenchem este registro.
 | Modelo do aparelho e versão Android | Pendente |
 | Versão completa Google Chrome | Pendente |
 | URL acessível pelo aparelho | Pendente; localhost do computador não é acessível pelo telefone |
-| Revisão do site | Referência automatizada: `ad83c2b5894b5d3aa621cdec858cb5e028725b18`; confirmar a revisão efetivamente servida |
+| Revisão do site | Referência automatizada anterior: `ad83c2b5894b5d3aa621cdec858cb5e028725b18`; para o aviso corrigido, usar o commit da #53 e confirmar a revisão efetivamente servida |
 | Dados | SHA-256 do manifesto: `a6f0903b978833e46421793dc5ec38e192b6f0468fedf93c18fe39c682816082`; confirmar na URL testada |
 | Viewport CSS e orientação | Registrar antes/depois de teclado e rotação |
 | Tema | Claro e escuro |
@@ -61,7 +61,7 @@ Preservar falhas mesmo quando uma nova tentativa passar.
 5. **T11, T25–T26:** ler resumo/detalhes com teclado real aberto; Voltar físico pode
    primeiro dispensar só teclado — registrar a sequência observada. Mostrar e
    esconder barras do Chrome; girar retrato/paisagem; reduzir altura com teclado
-   e ampliar a 200%. Alcançar fim do aviso, nome, retorno, Menu, filtros, legenda,
+   e ampliar a 200%. Conferir o ciclo do aviso descrito abaixo; alcançar nome, retorno, Menu, filtros, legenda,
    busca e Ações por rolagens internas, sem reduzir fonte. Recuperar espaço e
    conferir Eixo, leitura, URL/histórico e consulta. Mapa não precisa permanecer
    simultaneamente visível no extremo.
@@ -89,3 +89,37 @@ evidências na revisão efetivamente testada; a #44 exige ainda sua conferência
 conjunta. iOS/Safari não executado por falta de aparelho; Firefox e leitor de
 tela não executados, sem sessão disponível. Não declarar compatibilidade ou
 acessibilidade humana com base no axe ou no Chromium emulado.
+
+## Reconferência do aviso corrigido — #53
+
+A falha histórica da abertura continua registrada separadamente: na revisão
+`da45e329f4687f5e48ebb297b128446e2e271c0c`, a emulação reproduziu faixa de
+16 px que cortava o texto. Isso não substitui nem reclassifica a observação física
+relatada pelo responsável. A [evidência da correção](construction-notice.md)
+identifica os arquivos e testes da nova revisão; usar o commit da entrega #53
+referenciado na issue, conferindo que a URL do aparelho realmente o serve.
+
+1. Abrir a revisão corrigida em retrato, teclado fechado, em claro e escuro.
+   Ler integralmente “Em construção. Dados ainda não validados; podem conter
+   erros e mudar.” logo na abertura, sem rolar a faixa. Registrar viewport real;
+   as referências emuladas são 320 × 568 e 390 × 844.
+2. Reduzir altura com teclado real e em paisagem; ampliar texto a 200%, registrando
+   o mecanismo. Quando faltar espaço, conferir “Em construção · Ler aviso” legível
+   e acionável. Não exigir compactação se ainda houver espaço para texto e interface.
+3. Acionar Ler aviso: alcançar todas as linhas por rolagem interna, com Fechar
+   acessível e foco visível. Fechar mantém a faixa compacta e retorna foco ao
+   acionador. Com teclado externo, conferir Esc. Registrar separadamente o que o
+   primeiro Voltar físico faz, sem pressupor que se comporte como Esc.
+4. Recuperar altura com leitura fechada e aberta. A faixa integral reaparece;
+   leitura aberta continua acessível e não perde foco. Ao fechá-la, foco vai à
+   mensagem integral se o acionador já desapareceu. Compactar novamente com
+   essa mensagem focada deve levar o foco a Ler aviso.
+5. Repetir sobre detalhes e Lista: abrir busca, Menu, filtros e legenda e então
+   Ler aviso. Conferir uma superfície por vez; ao fechar, manter município,
+   Tipo, Indicador, Eixo, visualização, leitura e posições dentro do novo máximo.
+   Abrir/fechar o aviso não cria entrada no histórico nem altera a URL.
+
+Registrar nova execução, tentativas, esperado/observado, capturas e limitações
+sem apagar a falha histórica. Android/Chrome físico, barras móveis e teclado
+real continuam **não executados pelo agente**. A #52 e a spec pai #44 permanecem
+abertas até suas próprias verificações.

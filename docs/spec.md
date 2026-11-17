@@ -29,7 +29,7 @@ Os caminhos em `docs/data-sources.md`, `docs/ui-contract.md`, `docs/data/` e `do
 - **Tipografia:** Inter em subconjunto próprio, hospedada no site, com a licença publicada em `site/public/fonts/OFL.txt`.
 - **Crédito do mantenedor:** o rodapé identifica quem mantém o site, com links para o GitHub e o LinkedIn. É um crédito, não um canal de atendimento: relatos de erro continuam nas GitHub Issues.
 - **Aviso de site em construção:** uma faixa fixa no topo de todas as páginas, sem botão de fechar, com o texto: **"Em construção. Dados ainda não validados; podem conter erros e mudar."**
-  - **Forma:** como o site não lembra nada entre visitas (seção 11.1), um botão de fechar faria a faixa voltar a cada visita. A redação curta permanece integral e pode ganhar destaque. Somente no dashboard mobile com JavaScript, quando faltar altura, o aviso admite rolagem interna própria no topo, sem dispensar a mensagem; fora dessa exceção, mantém sua apresentação normal. Ela é texto, não só cor, e não usa as cores da Tendência nem vermelho, para não ser lida como uma classe do mapa.
+  - **Forma:** como o site não lembra nada entre visitas (seção 11.1), um botão de fechar faria a faixa voltar a cada visita. A redação curta permanece integral e pode ganhar destaque. No dashboard mobile com JavaScript, a abertura normal em retrato mostra a mensagem integral, sem corte nem rolagem interna. Quando faltar altura para o texto e a interface nas dimensões e ampliação atuais, a faixa apresenta **“Em construção · Ler aviso”**, sem reduzir fontes. “Ler aviso” abre a mensagem completa sobre o dashboard, com rolagem interna quando necessária, Fechar alcançável, Esc, foco visível e retorno ao acionador. Fechar a leitura mantém a faixa compacta. Recuperar espaço restaura automaticamente a faixa integral; uma leitura já aberta permanece disponível e seu foco é preservado. Se o acionador desaparecer com foco, o destino é Fechar na leitura aberta ou a mensagem integral. Desktop, documentos de leitura e acesso sem JavaScript conservam a apresentação integral. Ela é texto, não só cor, e não usa as cores da Tendência nem vermelho, para não ser lida como uma classe do mapa.
   - **Texto:** é genérico para não mudar a cada item resolvido. Evita "provisório" e "preliminar", que aqui querem dizer os anos recentes do dado (seção 6.4), e não diz "não use estes dados", para não afastar o público.
   - **Saída:** por decisão do responsável pelo projeto, e não por um critério fixo. Os arquivos de dados abertos não levam o aviso.
 - **Acessibilidade** (requisito de lançamento, sem certificação formal de WCAG ou eMAG): toda informação do mapa tem alternativa em texto ou tabela, toda interação funciona pelo teclado e nenhuma informação depende só de cor (por isso as texturas da seção 11).
@@ -230,8 +230,10 @@ fontes preservadas e acesso integral a períodos, origem, ressalvas, Ver detalhe
 e saída. Em altura extrema, o resumo pode ocupar toda a área abaixo do aviso;
 não se exige mapa simultaneamente visível. Detalhes mantêm barra e leitura
 internas; a barra também rola quando necessário. Busca, filtros, Menu e legenda
-continuam alcançáveis sem rolagem externa. O aviso admite rolagem própria apenas
-quando sua apresentação integral consumiria o espaço de leitura. Recuperar
+continuam alcançáveis sem rolagem externa. O aviso integral não rola: quando falta espaço, oferece a apresentação compacta
+e a leitura completa descritas na seção 2. Essa leitura participa da coordenação
+de uma superfície por vez com busca, Menu, filtros e legenda, inclusive sobre
+detalhes, sem alterar URL ou histórico nem dispensar permanentemente a faixa. Recuperar
 altura restaura a apresentação normal e conserva consulta, filtros, visualização,
 Eixo, histórico e posições internas, limitadas somente ao novo máximo rolável.
 Evidências e limites da #50: [altura extrema](validation/mobile-extreme-height.md).

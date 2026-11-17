@@ -479,6 +479,7 @@ test('native 200% zoom keeps scripted controls reachable and preserves normal sc
           assert.equal(await noHorizontalScroll(page), true, where);
           if (javaScriptEnabled) {
             await filtersReady(page);
+            await page.waitForFunction(() => document.documentElement.scrollHeight <= innerHeight + 1);
             assert.equal(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), true, where);
             await page.locator('.filters-toggle').click();
             await page.locator('#cancer-type').selectOption('breast');

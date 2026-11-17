@@ -1,0 +1,547 @@
+▶ no serious accessibility violations: light, JavaScript false
+  ✔ / (973.535398ms)
+  ✔ /municipios/ (3795.253843ms)
+  ✔ /metodologia/ (1858.610953ms)
+  ✔ /municipio/261160-recife/ (4730.804034ms)
+  ✔ /municipio/210020-alcantara/ (4592.902184ms)
+  ✔ /municipio/210090-araioses/ (3808.152182ms)
+✔ no serious accessibility violations: light, JavaScript false (20148.962219ms)
+ℹ /: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipios/: axe 4.14.0; 0 violations, 1 checks need review
+ℹ /metodologia/: axe 4.14.0; 0 violations, 0 checks need review
+ℹ /municipio/261160-recife/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210020-alcantara/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210090-araioses/: axe 4.14.0; 0 violations, 2 checks need review
+▶ no serious accessibility violations: light, JavaScript true
+  ✔ / (18337.368203ms)
+  ✔ /municipios/ (4163.185272ms)
+  ✔ /metodologia/ (1628.683102ms)
+  ✔ /municipio/261160-recife/ (7981.730725ms)
+  ✔ /municipio/210020-alcantara/ (7194.766055ms)
+  ✔ /municipio/210090-araioses/ (7419.088526ms)
+✔ no serious accessibility violations: light, JavaScript true (46909.346607ms)
+ℹ /: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipios/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /metodologia/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/261160-recife/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210020-alcantara/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210090-araioses/: axe 4.14.0; 0 violations, 2 checks need review
+▶ no serious accessibility violations: dark, JavaScript false
+  ✔ / (995.436443ms)
+  ✔ /municipios/ (3116.265688ms)
+  ✔ /metodologia/ (946.586418ms)
+  ✔ /municipio/261160-recife/ (3447.72819ms)
+  ✔ /municipio/210020-alcantara/ (3645.820927ms)
+  ✔ /municipio/210090-araioses/ (3071.183968ms)
+✔ no serious accessibility violations: dark, JavaScript false (15454.669201ms)
+ℹ /: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipios/: axe 4.14.0; 0 violations, 1 checks need review
+ℹ /metodologia/: axe 4.14.0; 0 violations, 0 checks need review
+ℹ /municipio/261160-recife/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210020-alcantara/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210090-araioses/: axe 4.14.0; 0 violations, 2 checks need review
+▶ no serious accessibility violations: dark, JavaScript true
+  ✔ / (15886.53028ms)
+  ✔ /municipios/ (3281.095177ms)
+  ✔ /metodologia/ (1596.089999ms)
+  ✔ /municipio/261160-recife/ (7702.600984ms)
+  ✔ /municipio/210020-alcantara/ (7030.170671ms)
+  ✔ /municipio/210090-araioses/ (6065.913021ms)
+✔ no serious accessibility violations: dark, JavaScript true (41709.363628ms)
+ℹ /: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipios/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /metodologia/: axe 4.14.0; 0 violations, 1 checks need review
+ℹ /municipio/261160-recife/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210020-alcantara/: axe 4.14.0; 0 violations, 2 checks need review
+ℹ /municipio/210090-araioses/: axe 4.14.0; 0 violations, 2 checks need review
+✔ normal opening exposes the full notice at 320x568 (1611.198847ms)
+✔ normal opening exposes the full notice at 390x844 (1355.052764ms)
+✔ reduced height offers a readable notice, closing and automatic recovery with focus (3574.594573ms)
+✔ 200% CSS text at 568x160 keeps compact text, close and complete reading reachable (light) (2069.339602ms)
+✔ 200% CSS text at 568x160 keeps compact text, close and complete reading reachable (dark) (2200.209217ms)
+✖ notice reading replaces search, Menu, filters and legend over details without changing context (5404.22611ms)
+✔ transition boundary retains full text at 312px and compacts at 311px with a stable return (1908.051987ms)
+✔ full notice remains on / at 1280px, JavaScript true (773.799285ms)
+✔ full notice remains on / at 568px, JavaScript false (436.473023ms)
+✔ full notice remains on /metodologia/ at 320px, JavaScript true (570.430889ms)
+✔ the map is 653 px tall at 1280 × 800, with and without a municipality, JavaScript true (3245.810671ms)
+✔ the map is 753 px tall at 1440 × 900, with and without a municipality, JavaScript true (2928.631233ms)
+✔ the map is 653 px tall at 1280 × 800, with and without a municipality, JavaScript false (615.040432ms)
+✔ the map is 753 px tall at 1440 × 900, with and without a municipality, JavaScript false (499.871655ms)
+✔ at 1280 px the header is one 48 px row with brand, search, links and theme, and the filters one 56 px row (1443.311293ms)
+✔ the repeated list link and titles leave the screen and stay for screen readers (734.776829ms)
+✔ the legend sits in the map corner and ⓘ opens the full legend: light, JavaScript true (1585.80621ms)
+✔ the legend sits in the map corner and ⓘ opens the full legend: dark, JavaScript true (1495.028809ms)
+✔ the legend sits in the map corner and ⓘ opens the full legend: light, JavaScript false (295.534067ms)
+✔ the legend sits in the map corner and ⓘ opens the full legend: dark, JavaScript false (382.121579ms)
+✔ the corner legend follows the reading, and the caveat leaves when a municipality is selected (2177.708186ms)
+✔ a dynamic caveat keeps the map height and leaves the panel uncovered (2047.486095ms)
+✔ from 768 to 1023 px the header keeps one row, the links move to the menu and filters take two rows (3504.778269ms)
+✔ the menu opens without JavaScript (384.104447ms)
+✔ without JavaScript the map area points to the list by UF (354.742631ms)
+✔ above 1920 px the panel is 480 px, the selectors do not stretch and only the map grows (2170.245903ms)
+✔ the list takes the map area and scrolls inside by keyboard, with the bars and the panel in view (7135.156868ms)
+✔ the panel scrolls inside by keyboard, and the footer is reached past the first screen (2753.334925ms)
+✔ a window shorter than the minimum scrolls the page and keeps the composition (727.561896ms)
+✔ the home map has no horizontal scroll at every width and zoom: light, JavaScript true (6534.122845ms)
+✔ the home map has no horizontal scroll at every width and zoom: dark, JavaScript true (6011.277149ms)
+✔ the home map has no horizontal scroll at every width and zoom: light, JavaScript false (1071.603182ms)
+✔ the home map has no horizontal scroll at every width and zoom: dark, JavaScript false (1256.65677ms)
+✔ Tab walks header, bar, legend, panel and footer in reading order, with visible focus: light (2028.255073ms)
+✔ Tab walks header, bar, legend, panel and footer in reading order, with visible focus: dark (1975.642553ms)
+✔ a search with no match says so on screen (623.540774ms)
+✔ native 200% zoom keeps the first screen usable in both themes, with and without JavaScript (6558.638751ms)
+✔ selection loads four axes, filters all types and distinguishes returning from clearing (4054.932143ms)
+✔ a delayed previous municipality cannot overwrite the current selection (1801.300329ms)
+✔ profile failure clears old results and offers retry without claiming insufficient data (1846.708375ms)
+✔ published municipal, regional, insufficient and C results fit the integrated panel in light (16629.978952ms)
+✔ published municipal, regional, insufficient and C results fit the integrated panel in dark (18799.947981ms)
+✔ narrow: a closed row has name, class with swatch, Faixa C and value, and the chevron opens the rest in place (7724.398848ms)
+✔ narrow: labels are real text, and a row stays open when the reading changes (9666.666144ms)
+✔ the name opens Meu município from a row (6584.097101ms)
+✔ the form follows the width of the list, not of the window (28462.144174ms)
+✔ wide: a table scrolling inside the map area, with its header and municipality fixed, filters and panel in view (6506.029578ms)
+✔ wide at 1280 px with the panel open: no column is cut, the last ones in the inner scroll (6550.044655ms)
+✔ phone: rows scroll internally while UF, controls and notice remain reachable (5648.866764ms)
+✔ the period stays in view and the long paragraph is in Como ler esta lista, with the warning of band C (5694.835272ms)
+✔ narrow: the browser still exposes a table, with each cell of a closed row answering to its column (5443.892453ms)
+✔ wide: the browser still exposes a table, with each cell of a closed row answering to its column (6832.680985ms)
+✔ 390: a phone sheet leaves last row fields and keyboard controls reachable (5782.473618ms)
+✔ 320: a phone sheet leaves last row fields and keyboard controls reachable (4923.618599ms)
+✔ the rows of the keyboard stay clear of the fixed parts (4990.632462ms)
+✔ at 320 px the bar stays on one line with all the UFs, and focus moving up never lands under it (5736.648586ms)
+✔ rows are ordered by UF and name, never by value (4567.579779ms)
+✔ prostate has no Situação, and mortality reads only as Tendência (8069.274295ms)
+✔ HPV has no Tendência: its row reads as Situação, without inventing a trend class (4226.093162ms)
+✔ a layer that fails to load leaves no rows and offers a new try (9312.949421ms)
+✔ no horizontal scroll outside the table at 320 px in light, with a row open (10225.68648ms)
+✔ no horizontal scroll outside the table at 768 px in light, with a row open (11133.903217ms)
+✔ no horizontal scroll outside the table at 1280 px in light, with a row open (11745.950656ms)
+✔ no horizontal scroll outside the table at 320 px in dark, with a row open (12519.094549ms)
+✔ no horizontal scroll outside the table at 768 px in dark, with a row open (13123.273305ms)
+✔ no horizontal scroll outside the table at 1280 px in dark, with a row open (11664.207599ms)
+✔ without JavaScript the list is not offered and Municípios por UF is the way out (288.773748ms)
+✔ native 200% zoom at 1280 px, in both themes: the list fits and keeps the wide or narrow form of its width (12932.897016ms)
+✔ 390: selecting names during loading preserves the current list exploration (5749.172315ms)
+✔ 320: selecting names during loading preserves the current list exploration (5966.622717ms)
+✔ logo resets list and municipal details, keeps theme and keyboard focus, and supports history (17912.891152ms)
+✔ logo closes search without moving keyboard focus to a hidden opener (1644.251695ms)
+✔ logo closes filters without moving keyboard focus to a hidden opener (1433.512416ms)
+✔ logo closes legend without moving keyboard focus to a hidden opener (1421.102175ms)
+✔ logo closes menu without moving keyboard focus to a hidden opener (1850.406791ms)
+✔ a pending municipal response cannot undo a reset or take focus (1830.42363ms)
+✔ /metodologia/: Mapa returns with context while the logo carries only the explicit theme (4559.452369ms)
+✔ /municipios/: Mapa returns with context while the logo carries only the explicit theme (4416.727975ms)
+✔ the logo remains a native root link without JavaScript (378.306287ms)
+✔ logo after selection: ten cold attempts reset the public dashboard (16329.431443ms)
+✔ logo after selection: ten warm attempts reset the public dashboard (16689.103899ms)
+✔ modified activation opens the reset destination natively and leaves the current query intact (1527.187354ms)
+✔ search, direct links and table work when WebGL fails (5767.731773ms)
+✔ existing search results follow a later change of cancer type (708.340994ms)
+✔ a pending map never blocks loading text alternatives (756.162477ms)
+✔ layer failure clears old results, retries and respects the selected cancer type (16614.434153ms)
+✔ municipality listing failure explains recovery and retry enables search (660.25077ms)
+✔ an uncomputable C55 adjustment is distinct from insufficient data in the table (4368.555149ms)
+✔ alternatives fit at 320px in light, JavaScript false (787.596365ms)
+✔ alternatives fit at 768px in light, JavaScript false (678.990179ms)
+✔ alternatives fit at 1280px in light, JavaScript false (763.454584ms)
+✔ alternatives fit at 320px in dark, JavaScript false (677.427133ms)
+✔ alternatives fit at 768px in dark, JavaScript false (528.702674ms)
+✔ alternatives fit at 1280px in dark, JavaScript false (639.244879ms)
+✔ alternatives fit at 320px in light, JavaScript true (3956.533562ms)
+✔ alternatives fit at 768px in light, JavaScript true (5512.154487ms)
+✔ alternatives fit at 1280px in light, JavaScript true (4458.236693ms)
+✔ alternatives fit at 320px in dark, JavaScript true (5142.145545ms)
+✔ alternatives fit at 768px in dark, JavaScript true (4702.231105ms)
+✔ alternatives fit at 1280px in dark, JavaScript true (3895.201483ms)
+✔ native 200% browser zoom keeps alternatives readable in both themes (11709.248863ms)
+✔ list replaces the map and restores selection and filters through history (4550.81395ms)
+✔ invalid state is corrected field by field and legacy queries become static municipal links (869.411555ms)
+✔ the directory link from a selected document survives reload and keeps the theme (5183.279406ms)
+▶ every published map selection has text classes and origin without WebGL: light
+  ✔ within_60_days/all/trend (4216.082761ms)
+  ✔ within_60_days/all/status (4139.439367ms)
+  ✔ within_60_days/breast/trend (4377.329531ms)
+  ✔ within_60_days/breast/status (3839.481766ms)
+  ✔ within_60_days/cervix/trend (4581.543178ms)
+  ✔ within_60_days/cervix/status (3137.009241ms)
+  ✔ within_60_days/prostate/trend (3567.084681ms)
+  ✔ within_60_days/colorectal/trend (3463.558359ms)
+  ✔ within_60_days/colorectal/status (4662.60085ms)
+  ✔ within_60_days/lung/trend (3612.408551ms)
+  ✔ within_60_days/lung/status (4856.3382ms)
+  ✔ mammography/all/trend (3379.951467ms)
+  ✔ mammography/all/status (2954.348513ms)
+  ✔ mammography/breast/trend (2998.218ms)
+  ✔ mammography/breast/status (3199.360337ms)
+  ✔ cytopathology/all/trend (3323.038743ms)
+  ✔ cytopathology/all/status (3956.011492ms)
+  ✔ cytopathology/cervix/trend (3249.104961ms)
+  ✔ cytopathology/cervix/status (3429.71495ms)
+  ✔ hpv/all/status (3029.649021ms)
+  ✔ hpv/cervix/status (3506.187714ms)
+  ✔ mortality/all/trend (3435.212264ms)
+  ✔ mortality/breast/trend (4469.866233ms)
+  ✔ mortality/cervix/trend (4947.109756ms)
+  ✔ mortality/prostate/trend (4508.761511ms)
+  ✔ mortality/lung/trend (4196.636394ms)
+  ✔ mortality/colorectal/trend (3877.189509ms)
+✔ every published map selection has text classes and origin without WebGL: light (103986.376482ms)
+▶ every published map selection has text classes and origin without WebGL: dark
+  ✔ within_60_days/all/trend (4719.866862ms)
+  ✔ within_60_days/all/status (4195.645932ms)
+  ✔ within_60_days/breast/trend (3932.968466ms)
+  ✔ within_60_days/breast/status (5787.017048ms)
+  ✔ within_60_days/cervix/trend (3800.958626ms)
+  ✔ within_60_days/cervix/status (4371.49877ms)
+  ✔ within_60_days/prostate/trend (3688.298551ms)
+  ✔ within_60_days/colorectal/trend (5195.656581ms)
+  ✔ within_60_days/colorectal/status (4730.050933ms)
+  ✔ within_60_days/lung/trend (5029.100812ms)
+  ✔ within_60_days/lung/status (5379.664498ms)
+  ✔ mammography/all/trend (4627.906395ms)
+  ✔ mammography/all/status (3585.67339ms)
+  ✔ mammography/breast/trend (4861.240147ms)
+  ✔ mammography/breast/status (3708.859811ms)
+  ✔ cytopathology/all/trend (4127.754868ms)
+  ✔ cytopathology/all/status (3640.827055ms)
+  ✔ cytopathology/cervix/trend (3855.613683ms)
+  ✔ cytopathology/cervix/status (3858.237532ms)
+  ✔ hpv/all/status (4641.650005ms)
+  ✔ hpv/cervix/status (3629.536837ms)
+  ✔ mortality/all/trend (4643.807227ms)
+  ✔ mortality/breast/trend (3791.168057ms)
+  ✔ mortality/cervix/trend (4517.137258ms)
+  ✔ mortality/prostate/trend (4077.429884ms)
+  ✔ mortality/lung/trend (4292.206294ms)
+  ✔ mortality/colorectal/trend (4352.603459ms)
+✔ every published map selection has text classes and origin without WebGL: dark (117994.555589ms)
+✔ interaction while the mesh is pending cancels late municipal framing (7277.129825ms)
+✔ canvas touch clears hover and successive selections preserve the visible geography on a hybrid device (15147.481839ms)
+✔ direct link frames Recife itself in the useful map area (12251.952335ms)
+✔ search frames Recife itself in the useful map area (12542.779192ms)
+✔ search retry frames Recife itself in the useful map area (24717.05001ms)
+✔ the first canvas touch opens only the collapsed sheet and paints a selection outline (18394.224298ms)
+✔ an unobstructed touch near the canvas edge does not shift a visible municipal boundary (3737.053225ms)
+✔ rotation keeps the selected municipality and the explored zoom when returning to portrait (14601.164874ms)
+✔ recovering useful height restores canvas exploration without exposing permanent filters (14436.027182ms)
+✔ first cold canvas touch reaches the loaded result at 390 × 568 (6783.242188ms)
+✔ first cold canvas touch reaches the loaded result at 390 × 664 (8614.534276ms)
+✔ first cold canvas touch reaches the loaded result at 390 × 740 (10951.031651ms)
+✔ first cold canvas touch reaches the loaded result at 390 × 844 (12270.05028ms)
+✔ a delayed first touch respects retry (8553.211129ms)
+✖ a delayed first touch respects deliberate internal scroll (38510.779691ms)
+✔ a delayed first touch respects new selection (10931.288834ms)
+✔ a delayed first touch respects clear selection (10223.40543ms)
+✔ cold keyboard search reaches the result after Enter initiates selection (1987.234178ms)
+✔ 390px: logo restores country geography while clearing selection preserves exploration (25997.805414ms)
+✔ 1280px: logo restores country geography while clearing selection preserves exploration (28152.388416ms)
+✔ a new selection cancels country framing still pending after the logo (9472.256881ms)
+✔ methodology sections, keyboard and contained tables: light, JavaScript false (1038.016001ms)
+✔ methodology sections, keyboard and contained tables: dark, JavaScript false (830.729532ms)
+✔ methodology sections, keyboard and contained tables: light, JavaScript true (978.136762ms)
+✔ methodology sections, keyboard and contained tables: dark, JavaScript true (1331.226009ms)
+✔ the Mapa link of the methodology preserves the selected list and theme (398.749572ms)
+✔ methodology fits native 200% zoom with and without JavaScript in both themes (3113.245544ms)
+✔ history restores each details entry reading axis and internal position after logo reset (11846.18178ms)
+✔ history restores separate list positions, UF and expanded rows across map and logo (4745.178396ms)
+✔ Back during a new profile load restores details and rejects the obsolete arrival (1627.935231ms)
+✔ transport: mesh failure recovers independently without history or opening municipal details (5469.495882ms)
+✔ invalid topology: mesh failure recovers independently without history or opening municipal details (6884.20988ms)
+✔ retry after an anchored profile failure keeps the summary and history, while reload reveals the anchor (1949.695003ms)
+✔ details are deliberate and Back/Forward traverse details before the municipal selection (1417.043664ms)
+✔ returning from list details and switching views preserve the exploration position (4506.756682ms)
+✔ Back and Forward cross municipalities and filters without extra details entries (2007.029193ms)
+✔ municipal anchors at 568 reach their axis without a synthetic history step (1868.569718ms)
+✔ municipal anchors at 844 reach their axis without a synthetic history step (2424.379527ms)
+✔ links between axes keep mobile details open without adding a step before collapse (2081.888957ms)
+✔ an unavailable result is distinct from a load error and still offers the other axes (2128.25048ms)
+✔ reloading a details history entry keeps its control and Back coherent (3107.19426ms)
+✔ 390x568: summary and deliberate details survive composition changes (2180.289732ms)
+✔ 390x664: summary and deliberate details survive composition changes (1417.123562ms)
+✔ 390x740: summary and deliberate details survive composition changes (2149.831326ms)
+✔ 390x844: summary and deliberate details survive composition changes (1811.894764ms)
+✔ 664x390: summary and deliberate details survive composition changes (2185.535237ms)
+✔ list return at 568 restores the position before selection, UF and open rows (5148.081692ms)
+✔ list return at 844 restores the position before selection, UF and open rows (4786.443311ms)
+✔ deliberate scrolling during an anchored load cancels late positioning (616.075741ms)
+✔ a new search selection supersedes an anchor still loading (1777.607407ms)
+✔ reloading an axis inside a deliberate details entry preserves its return history (2840.506606ms)
+✔ details keep the reading axis for type changes and follow an actual indicator change (2723.603501ms)
+✔ extreme height with 200% CSS text keeps reading and commands reachable (light) (3473.664868ms)
+✔ extreme height with 200% CSS text keeps reading and commands reachable (dark) (2676.258259ms)
+✔ light: chart labels remain at least 12 px in a narrow screen (2429.390497ms)
+✔ dark: chart labels remain at least 12 px in a narrow screen (1684.156217ms)
+✔ a long summary scrolls inside the overlay while preserving the map (663.436553ms)
+✔ light 390x844: search, last list row and panel actions remain reachable (4403.240684ms)
+✔ light 320x568: search, last list row and panel actions remain reachable (5351.40445ms)
+✔ light 844x390: search, last list row and panel actions remain reachable (7313.832875ms)
+✔ light 568x320: search, last list row and panel actions remain reachable (6007.786533ms)
+✔ light 390x360: search, last list row and panel actions remain reachable (5954.84867ms)
+✔ dark 390x844: search, last list row and panel actions remain reachable (6166.687755ms)
+✔ dark 320x568: search, last list row and panel actions remain reachable (5877.472045ms)
+✔ dark 844x390: search, last list row and panel actions remain reachable (6934.580586ms)
+✔ dark 568x320: search, last list row and panel actions remain reachable (4740.363371ms)
+✔ dark 390x360: search, last list row and panel actions remain reachable (5825.164564ms)
+✔ reducing the search viewport keeps its results and keyboard focus reachable (2032.306444ms)
+✔ a long caveat without municipal selection keeps the document stationary (660.916896ms)
+✔ layout measurements preserve the reading position in floating details (1831.791558ms)
+✔ layout measurements preserve the reading position in short screen (1412.211918ms)
+✔ mapa: temporary surfaces are exclusive and preserve selection, filters and focus (3837.763405ms)
+✔ lista: temporary surfaces are exclusive and preserve selection, filters and focus (8724.32797ms)
+✔ Escape returns to the invoker after Tab leaves a nonmodal surface (2378.554743ms)
+✔ details commands preserve reading and expose one surface with a visible return focus (3903.594246ms)
+✔ Balsas, band C: the same block collapsed and open, with its number and the warning, in light (3715.066595ms)
+✔ Balsas, band C: the same block collapsed and open, with its number and the warning, in dark (2209.747266ms)
+✔ Alcântara: the longest block keeps origin and warning at 320 × 568, with the name clear of the buttons (2256.192285ms)
+✔ Araioses: Dado insuficiente takes the place of the number, and the warning waits in the Eixo with the state and the Action (1095.677661ms)
+✔ prostate: the whole caveat is visible collapsed and open (1753.017074ms)
+✔ on a phone only the caveat the panel carries leaves the map: mortality keeps its own (731.128165ms)
+✔ a C55 adjustment keeps its number and origin in the block, without the dots (2428.211284ms)
+✔ the period of the data stays in evidence in the open card, and the record quality beside the result (760.538011ms)
+✔ the number keeps its 32 px on an ordinary phone and on the low screen of the compact form (1640.590996ms)
+✔ the sheet runs edge to edge, opens up to the notice and takes the floating controls off the scene (2236.458714ms)
+✔ Filtros, menu and search take the place of the sheet while open (1592.655826ms)
+✔ in the list the sheet stays, Mapa/Lista rest on it and the last rows end above it (4316.939221ms)
+✔ on a desktop the column has the name fixed on top, scrolls inside and has no control to collapse (1182.788308ms)
+✔ closed Eixos carry their results, one opens at a time, and the Eixo of the indicator opens first (2924.892787ms)
+✔ every card follows the order of the decision: result, Action, series, then source and method (388.584686ms)
+✔ the notes about the interface and the panel actions that left stay out (1900.454317ms)
+✔ selecting keeps the bars still, speaks only to screen readers and takes focus to the name (1728.606084ms)
+✔ the sheet works by keyboard, with visible focus (1576.069539ms)
+✔ at 195 × 422, as under 200% zoom, the panel keeps internal reading (1346.009445ms)
+✔ at 320 × 450, as under 200% zoom, the panel keeps internal reading (1433.458532ms)
+✔ at 640 × 400, as under 200% zoom, the panel keeps internal reading (1858.269271ms)
+✔ native 200% zoom on a phone keeps internal reading and the warning in both themes (5332.691447ms)
+✔ without JavaScript a phone reads the municipality as a plain page, with the links of the types: light (748.860042ms)
+✔ without JavaScript a phone reads the municipality as a plain page, with the links of the types: dark (738.858182ms)
+✔ the hard cases have no horizontal scroll at 320, 768 and 1280 px: light, JavaScript true (6585.042517ms)
+✔ the hard cases have no horizontal scroll at 320, 768 and 1280 px: dark, JavaScript true (6813.480044ms)
+✔ the hard cases have no horizontal scroll at 320, 768 and 1280 px: light, JavaScript false (2789.45973ms)
+✔ the hard cases have no horizontal scroll at 320, 768 and 1280 px: dark, JavaScript false (3438.477798ms)
+✔ extreme summary preserves complete result and reachable exits: /municipio/210020-alcantara/ (2675.64062ms)
+✔ extreme summary preserves complete result and reachable exits: /municipio/210140-balsas/ (3031.784092ms)
+✔ extreme summary preserves complete result and reachable exits: /municipio/210090-araioses/ (2915.300808ms)
+✔ extreme summary preserves complete result and reachable exits: /municipio/261160-recife/?tipo=prostate (2442.805586ms)
+✔ extreme summary preserves complete result and reachable exits: /municipio/261160-recife/?indicador=mortality (2874.70589ms)
+✔ municipal selections preserve list links without rewriting thousands of unchanged destinations (13090.616861ms)
+✔ static cancer links reach readable cards without JavaScript (1775.219516ms)
+✔ direct types override a conflicting query and preserve theme and map context (1909.100326ms)
+✔ municipality fits all widths and zoom in light, JavaScript false (1297.847915ms)
+✔ municipality fits all widths and zoom in dark, JavaScript false (1118.114789ms)
+✔ municipality fits all widths and zoom in light, JavaScript true (3183.616339ms)
+✔ municipality fits all widths and zoom in dark, JavaScript true (3056.532319ms)
+✔ native 200% browser zoom keeps the municipal profile readable in both themes (9355.167289ms)
+✔ the map fills everything under the notice at 390 × 844, JavaScript true (3544.244631ms)
+✔ the map fills everything under the notice at 390 × 664, JavaScript true (1105.501771ms)
+✔ the map fills everything under the notice at 320 × 568, JavaScript true (790.416169ms)
+✔ the map fills everything under the notice at 390 × 844, JavaScript false (515.233146ms)
+✔ the map fills everything under the notice at 390 × 664, JavaScript false (548.752294ms)
+✔ the map fills everything under the notice at 320 × 568, JavaScript false (628.533661ms)
+✔ header, filters, legend and Mapa/Lista float over the map, in their corners (1617.189343ms)
+✔ one finger moves the map and the screen stays put (6301.164995ms)
+✔ the menu gathers pages, sources and code: JavaScript true (1280.303566ms)
+✔ the menu gathers pages, sources and code: JavaScript false (606.448577ms)
+✔ the theme in the menu says what it does and switches (2260.705388ms)
+✔ Filtros always names the current selection and its sheet changes the map live without being modal (1935.335418ms)
+✔ the sheet gives way to the menu and the search, which it would otherwise cover (1934.093288ms)
+✔ Escape closes the sheet and returns to Filtros (969.822957ms)
+✔ the sheet keeps Ver mapa in reach at 320 × 568 (1846.826109ms)
+✔ without JavaScript the sheet opens with disabled selectors, a notice and the list by UF: light (619.927616ms)
+✔ without JavaScript the sheet opens with disabled selectors, a notice and the list by UF: dark (605.183344ms)
+✔ without JavaScript a municipality page scrolls to its profile and the footer (572.170377ms)
+✔ the search expands over the header and closes when a municipality is chosen (1833.048946ms)
+✔ the search closes by its button and by Escape, and says when there is nothing (1557.739369ms)
+✔ with a virtual keyboard open at 320 × 568 the field and results stay above it (851.395717ms)
+✔ with a virtual keyboard open at 360 × 640 the field and results stay above it (919.804423ms)
+✔ with a virtual keyboard open at 390 × 844 the field and results stay above it (724.615203ms)
+✔ the list scrolls internally with the notice and Mapa/Lista fixed (5703.592576ms)
+✔ a long caveat keeps filters available without scrolling the document (1690.501268ms)
+✔ the full legend is one button away above the sheet, and the notice is never covered (1160.344367ms)
+✔ a short screen keeps the summary over the map and filters in their surface (1057.029834ms)
+✔ at 195 × 422, as under 200% zoom, the controls leave the map: JavaScript false (481.875677ms)
+✔ at 160 × 450, as under 200% zoom, the controls leave the map: JavaScript false (452.05618ms)
+✔ at 320 × 450, as under 200% zoom, the controls leave the map: JavaScript false (470.35957ms)
+✔ at 640 × 400, as under 200% zoom, the controls leave the map: JavaScript false (525.981605ms)
+✔ Tab walks the floating controls in order, with visible focus and no scroll: light (771.706863ms)
+✔ Tab walks the floating controls in order, with visible focus and no scroll: dark (687.44798ms)
+✔ no horizontal scroll at the phone sizes with the menu and sheet open: light, JavaScript true (1493.522318ms)
+✔ no horizontal scroll at the phone sizes with the menu and sheet open: dark, JavaScript true (1361.813197ms)
+✔ no horizontal scroll at the phone sizes with the menu and sheet open: light, JavaScript false (588.20066ms)
+✔ no horizontal scroll at the phone sizes with the menu and sheet open: dark, JavaScript false (599.90101ms)
+✔ from 768 px there is no sheet: the selectors stay in the bar and the extra menu links leave (907.453503ms)
+✔ native 200% zoom keeps scripted controls reachable and preserves normal scrolling without JavaScript (10643.379293ms)
+✔ /municipios/ has a flat header in the flow, with a menu below 1024 px: JavaScript true (2088.051958ms)
+✔ /municipios/ has a flat header in the flow, with a menu below 1024 px: JavaScript false (1387.464674ms)
+✔ /municipios/ no longer has the back link or the label above the title (1087.874829ms)
+✔ /metodologia/ has a flat header in the flow, with a menu below 1024 px: JavaScript true (1242.263209ms)
+✔ /metodologia/ has a flat header in the flow, with a menu below 1024 px: JavaScript false (1124.363841ms)
+✔ /metodologia/ no longer has the back link or the label above the title (385.22131ms)
+✔ the Mapa link returns from the directory to the theme, the filters and the selection (7000.921004ms)
+✔ /municipios/ loads the municipality list only when the search is used (951.668033ms)
+✔ /municipios/: choosing a municipality opens the dashboard with the selection and the theme (1475.118581ms)
+✔ /municipios/: on a phone the search opens from its icon and each result is a 44 px link (1242.298505ms)
+✔ /municipios/: a failed list says so and can be retried (1038.878295ms)
+✔ /municipios/ without JavaScript leads the search to Municípios por UF at 320 px (734.280247ms)
+✔ /municipios/ without JavaScript leads the search to Municípios por UF at 1280 px (654.685638ms)
+✔ /metodologia/ loads the municipality list only when the search is used (867.669995ms)
+✔ /metodologia/: choosing a municipality opens the dashboard with the selection and the theme (810.841765ms)
+✔ /metodologia/: on a phone the search opens from its icon and each result is a 44 px link (531.844499ms)
+✔ /metodologia/: a failed list says so and can be retried (493.347583ms)
+✔ /metodologia/ without JavaScript leads the search to Municípios por UF at 320 px (517.372955ms)
+✔ /metodologia/ without JavaScript leads the search to Municípios por UF at 1280 px (553.119646ms)
+✔ the UFs are rows with a rule that open natively, with 44 px targets: JavaScript true (1363.209293ms)
+✔ the UFs are rows with a rule that open natively, with 44 px targets: JavaScript false (1070.596285ms)
+✔ on the desktop the index stays beside a 44 rem column and marks the current section (400.562592ms)
+✔ at 320 px the index is one fixed line that shows the current section (366.209443ms)
+✔ at 390 px the index is one fixed line that shows the current section (376.430442ms)
+✔ at 880 px the index is one fixed line that shows the current section (360.284834ms)
+✔ the open index covers the text, and closes on a choice, with Esc and on leaving it (602.956693ms)
+✔ without JavaScript the index stays in the flow, whole and without a current section (420.263041ms)
+✔ the 11 anchors land below the notice and the index at 320 px: JavaScript true (2502.674269ms)
+✔ the 11 anchors land below the notice and the index at 390 px: JavaScript true (2524.324454ms)
+✔ the 11 anchors land below the notice and the index at 768 px: JavaScript true (2711.044744ms)
+✔ the 11 anchors land below the notice and the index at 1280 px: JavaScript true (2498.95404ms)
+✔ the 11 anchors land below the notice and the index at 320 px: JavaScript false (2064.677948ms)
+✔ the 11 anchors land below the notice and the index at 390 px: JavaScript false (2861.853687ms)
+✔ the 11 anchors land below the notice and the index at 768 px: JavaScript false (2347.555601ms)
+✔ the 11 anchors land below the notice and the index at 1280 px: JavaScript false (2807.842999ms)
+✔ a window too short for the notice and the line lets the line scroll away (506.279394ms)
+✔ the reading page has no boxes around its sections: light (301.074406ms)
+✔ the reading page has no boxes around its sections: dark (406.418203ms)
+✔ the keyboard never leaves focus under the fixed line (589.993614ms)
+✔ at 844 × 390 px the line stays fixed (293.043709ms)
+✔ at 640 × 400 px the line stays fixed (353.431429ms)
+✔ the anchors of the dashboard keep their own clearance (1056.156309ms)
+✔ the open index fits every width and 200% zoom: light (856.560032ms)
+✔ the open index fits every width and 200% zoom: dark (677.35573ms)
+✖ the notice stays whole, inverted and visible when scrolled: light, JavaScript false (679.68988ms)
+✔ the theme follows the system preference: light, JavaScript false (694.823706ms)
+✖ the notice stays whole, inverted and visible when scrolled: dark, JavaScript false (390.940037ms)
+✔ the theme follows the system preference: dark, JavaScript false (664.69841ms)
+✖ the notice stays whole, inverted and visible when scrolled: light, JavaScript true (421.069061ms)
+✔ the theme follows the system preference: light, JavaScript true (2553.537504ms)
+✖ the notice stays whole, inverted and visible when scrolled: dark, JavaScript true (596.217459ms)
+✔ the theme follows the system preference: dark, JavaScript true (1434.460816ms)
+✔ an explicit theme overrides the system preference (1914.278196ms)
+✔ the theme control is left out when it could not work without JavaScript (447.455303ms)
+✔ an anchor lands clear of the sticky notice (1649.06775ms)
+✔ controls are filled, borderless and 40 px tall at 1280 px: light (1743.264456ms)
+✔ controls are filled, borderless and 40 px tall at 1280 px: dark (1591.078472ms)
+✔ controls are filled, borderless and 44 px tall at 390 px: light (1718.421744ms)
+✔ controls are filled, borderless and 44 px tall at 390 px: dark (1970.793323ms)
+✔ Inter comes from this site, with the ≥ and tabular figures (432.538942ms)
+✔ the silhouette of Brazil is the mark, in the color of the text (1642.533056ms)
+✔ the keyboard reaches controls with a visible focus: light, JavaScript false (459.82623ms)
+✔ the keyboard reaches controls with a visible focus: light, JavaScript true (662.235409ms)
+✔ the keyboard reaches controls with a visible focus: dark, JavaScript false (558.913762ms)
+✔ the keyboard reaches controls with a visible focus: dark, JavaScript true (834.768675ms)
+✔ the directory fits all widths and zoom: light, JavaScript false (554.759116ms)
+✔ the directory fits all widths and zoom: light, JavaScript true (952.532791ms)
+✔ the directory fits all widths and zoom: dark, JavaScript false (538.607608ms)
+✔ the directory fits all widths and zoom: dark, JavaScript true (1073.879971ms)
+ℹ tests 412
+ℹ suites 0
+ℹ pass 406
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 421138.976407
+
+✖ failing tests:
+
+test at site/browser-tests/construction-notice.test.mjs:142:1
+✖ notice reading replaces search, Menu, filters and legend over details without changing context (5404.22611ms)
+  locator.click: Timeout 5000ms exceeded.
+  Call log:
+    - waiting for getByRole('button', { name: 'Ver detalhes', exact: true })
+
+      at TestContext.<anonymous> (/home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/construction-notice.test.mjs:147:75) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Ver detalhes', exact: true })" ]
+  }
+
+test at site/browser-tests/map-touch.test.mjs:365:3
+✖ a delayed first touch respects deliberate internal scroll (38510.779691ms)
+  page.waitForFunction: Timeout 30000ms exceeded.
+      at TestContext.<anonymous> (/home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/map-touch.test.mjs:402:20) {
+    name: 'TimeoutError',
+    log: []
+  }
+
+test at site/browser-tests/visual-foundations.test.mjs:25:5
+✖ the notice stays whole, inverted and visible when scrolled: light, JavaScript false (679.68988ms)
+  AssertionError [ERR_ASSERTION]: /
+  + actual - expected
+
+  + 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso'
+  - 'Em construção. Dados ainda não validados; podem conter erros e mudar.'
+
+      at TestContext.<anonymous> (file:///home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/visual-foundations.test.mjs:31:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso',
+    expected: 'Em construção. Dados ainda não validados; podem conter erros e mudar.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at site/browser-tests/visual-foundations.test.mjs:25:5
+✖ the notice stays whole, inverted and visible when scrolled: dark, JavaScript false (390.940037ms)
+  AssertionError [ERR_ASSERTION]: /
+  + actual - expected
+
+  + 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso'
+  - 'Em construção. Dados ainda não validados; podem conter erros e mudar.'
+
+      at TestContext.<anonymous> (file:///home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/visual-foundations.test.mjs:31:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso',
+    expected: 'Em construção. Dados ainda não validados; podem conter erros e mudar.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at site/browser-tests/visual-foundations.test.mjs:25:5
+✖ the notice stays whole, inverted and visible when scrolled: light, JavaScript true (421.069061ms)
+  AssertionError [ERR_ASSERTION]: /
+  + actual - expected
+
+  + 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso'
+  - 'Em construção. Dados ainda não validados; podem conter erros e mudar.'
+
+      at TestContext.<anonymous> (file:///home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/visual-foundations.test.mjs:31:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso',
+    expected: 'Em construção. Dados ainda não validados; podem conter erros e mudar.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at site/browser-tests/visual-foundations.test.mjs:25:5
+✖ the notice stays whole, inverted and visible when scrolled: dark, JavaScript true (596.217459ms)
+  AssertionError [ERR_ASSERTION]: /
+  + actual - expected
+
+  + 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso'
+  - 'Em construção. Dados ainda não validados; podem conter erros e mudar.'
+
+      at TestContext.<anonymous> (file:///home/kvojps/Documentos/dev/brazil-cancer-map/site/browser-tests/visual-foundations.test.mjs:31:18)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Em construção. Dados ainda não validados; podem conter erros e mudar.Em construção · Ler aviso',
+    expected: 'Em construção. Dados ainda não validados; podem conter erros e mudar.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

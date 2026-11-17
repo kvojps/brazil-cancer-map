@@ -454,19 +454,13 @@ for (const theme of ['light', 'dark']) test(`extreme height with 200% CSS text k
     const historyLength = await page.evaluate(() => history.length);
     await page.setViewportSize({ width: 568, height: 160 });
     await page.waitForFunction(() => document.documentElement.scrollHeight <= innerHeight + 1);
-    const notice = page.locator('.construction-notice');
-    await notice.evaluate(el => { el.scrollTop = el.scrollHeight; });
-    assert.match(await notice.innerText(), /podem conter erros e mudar/);
-    assert.equal(await notice.evaluate(el => {
-      const text = el.querySelector('p').lastChild;
-      const range = document.createRange();
-      const endOffset = text.textContent.trimEnd().length;
-      range.setStart(text, endOffset - 6);
-      range.setEnd(text, endOffset);
-      const end = range.getBoundingClientRect();
-      const area = el.getBoundingClientRect();
-      return end.top >= area.top && end.bottom <= area.bottom;
-    }), true, 'the end of the notice can be read inside its own area');
+    const noticeOpener = page.getByRole('button', { name: 'Ler aviso', exact: true });
+    await reachable(noticeOpener);
+    await noticeOpener.click();
+    const noticeReading = page.getByRole('dialog', { name: 'Aviso de construção' });
+    assert.match(await noticeReading.innerText(), /podem conter erros e mudar/);
+    await reachable(noticeReading.getByRole('button', { name: 'Fechar', exact: true }));
+    await page.keyboard.press('Escape');
     await reachable(page.getByRole('button', { name: 'Ver detalhes', exact: true }));
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     await reachable(page.locator('[data-details-menu]'));

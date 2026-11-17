@@ -269,8 +269,8 @@ footer p { margin: 0; flex-basis: 100%; }
 /* Reserve reading space only when the notice would consume the dashboard. */
 @media (max-width: 767px) {
   html[data-js]:has(.home) { --dashboard-bottom: max(0px, calc(100dvh - var(--dashboard-height, 100dvh) - var(--dashboard-top, 0px))); }
-  html[data-js]:has(.home) body { position: relative; top: var(--dashboard-top, 0px); height: var(--dashboard-height, 100dvh); overflow: hidden; }
-  html[data-js]:has(.home) .construction-notice { max-height: max(1lh, calc(var(--dashboard-height, 100dvh) / 4)); padding-block: clamp(0px, calc((var(--dashboard-height, 100dvh) / 4 - 1lh) / 2), .5rem); overflow: auto; overscroll-behavior: contain; }
+  html[data-js]:has(.home) body { position: relative; top: var(--dashboard-top, 0px); height: var(--dashboard-height, 100dvh); overflow: hidden; grid-template-rows: max-content minmax(0, 1fr) auto; }
+  html[data-js]:has(.home) .construction-notice { min-height: max-content; padding-block: 0; overflow: visible; }
   html[data-mobile-tight]:has(.home) .site-header[data-search-open] { position: fixed; top: calc(var(--dashboard-top, 0px) + var(--notice-height)); inset-inline: 0; margin: 0; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height)); overflow: auto; }
   html[data-mobile-tight]:has(.home) .site-header[data-search-open] .municipality-search { position: relative; overflow: auto; }
   html[data-mobile-tight]:has(.home) .site-header[data-search-open] #municipality-results { position: static; max-height: none; overflow: visible; }
@@ -279,7 +279,7 @@ footer p { margin: 0; flex-basis: 100%; }
 }
 
 @media (max-width: 767px) {
-  html[data-mobile-tight]:has(.home) body { grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr); }
+  html[data-mobile-tight]:has(.home) body { grid-template-rows: max-content minmax(0, 1fr) minmax(0, 1fr); }
   html[data-mobile-tight]:has(.home) body::before { grid-area: 1 / 1 / 4 / 2; }
   html[data-mobile-tight]:has(.home) body > .site-header { grid-area: 2 / 1; max-height: 100%; overflow: auto; margin: 0; }
   html[data-mobile-tight]:has(.home) body > main { grid-area: 3 / 1; }
@@ -291,4 +291,21 @@ footer p { margin: 0; flex-basis: 100%; }
   html[data-mobile-tight] .home .view-controls { position: static; align-self: start; }
   html[data-mobile-tight] .map-and-profile { flex: none; height: max(12rem, calc(var(--dashboard-height) - var(--notice-height))); }
   html[data-mobile-tight] .site-menu > nav { position: fixed; top: calc(var(--dashboard-top, 0px) + var(--notice-height)); max-height: calc(var(--dashboard-height) - var(--notice-height)); overflow: auto; }
+}
+
+.notice-compact { display: none; }
+#construction-reading:popover-open { display: flex; flex-direction: column; gap: .5rem; width: min(32rem, calc(100vw - 1rem)); max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 0px)); inset-block: calc(var(--dashboard-top, 0px) + var(--notice-height, 0px)) var(--dashboard-bottom, 0px); margin-block: auto; padding: .5rem; border: 0; border-radius: var(--card-radius); background: var(--surface); color: var(--text); box-shadow: var(--card-shadow); }
+#construction-reading > button { flex: none; align-self: end; }
+.notice-reading-scroll { overflow: auto; min-height: 0; overscroll-behavior: contain; }
+.notice-reading-scroll p { margin: 0; }
+@media (max-width: 767px) {
+  html[data-notice-compact]:has(.home) .notice-message { position: absolute; inset: 0 1rem auto; visibility: hidden; }
+  html[data-notice-compact]:has(.home) .notice-compact { display: block; }
+  .notice-compact button:hover:not(:disabled) { background-color: transparent; }
+  .notice-compact button { padding: 0; min-height: var(--control-height); color: inherit; background: transparent; font: inherit; text-decoration: underline; }
+}
+@media (max-width: 767px) {
+  html[data-js]:has(.home) .notice-message { padding-block: .5rem; }
+  html[data-mobile-tight] #construction-reading > button { padding-block: .125rem; }
+  html[data-mobile-tight] #construction-reading:popover-open { padding: .125rem; gap: .125rem; }
 }

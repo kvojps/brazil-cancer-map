@@ -396,10 +396,11 @@ for (const action of ['retry', 'deliberate internal scroll', 'new selection', 'c
       } else if (action === 'deliberate internal scroll') {
         await page.setViewportSize({ width: 568, height: 160 });
         await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-        const notice = page.locator('.construction-notice');
+        await page.getByRole('button', { name: 'Ler aviso', exact: true }).click();
+        const notice = page.locator('.notice-reading-scroll');
         await notice.hover();
         await page.mouse.wheel(0, 150);
-        await page.waitForFunction(() => document.querySelector('.construction-notice').scrollTop > 0);
+        await page.waitForFunction(() => document.querySelector('.notice-reading-scroll').scrollTop > 0);
         const position = await notice.evaluate(element => element.scrollTop);
         release();
         await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });

@@ -33,10 +33,15 @@ const MAINTAINER_LINKEDIN_URL = "https://www.linkedin.com/in/jos%C3%A9-ferreira-
     <!-- Under-construction notice, not dismissible (spec, section 2).
          Inverted neutrals keep it apart from the trend palette and from red. -->
     <aside class="construction-notice" aria-label="Aviso">
-      <p>
+      <p class="notice-message" tabindex="-1">
         <strong>Em construção.</strong> Dados ainda não validados; podem conter erros e mudar.
       </p>
+      <div class="notice-compact"><strong>Em construção</strong> · <button type="button" popovertarget="construction-reading">Ler aviso</button></div>
     </aside>
+    <section id="construction-reading" popover role="dialog" aria-label="Aviso de construção">
+      <button type="button" popovertarget="construction-reading" popovertargetaction="hide">Fechar</button>
+      <div class="notice-reading-scroll"><p>Em construção. Dados ainda não validados; podem conter erros e mudar.</p></div>
+    </section>
     <header class="site-header">
       <details class="site-menu">
         <summary aria-label="Menu"><span aria-hidden="true">☰</span></summary>
