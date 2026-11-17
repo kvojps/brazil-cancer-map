@@ -1,11 +1,11 @@
 # Histórico, links e recuperação da consulta
 
-Implementação em andamento da [#49](https://github.com/kvojps/brazil-cancer-map/issues/49), parte da
+Implementação concluída da [#49](https://github.com/kvojps/brazil-cancer-map/issues/49), parte da
 [#44](https://github.com/kvojps/brazil-cancer-map/issues/44). Base da implementação:
 `74c011f1748603e595523c136f64f1fdc17a1f1f`, branch `hml`.
-Último build verificado: `144437b`, após `97a6f92` e `a9cc0ec`. A correção
-posterior de enquadramento inicial está no commit que contém este relatório
-e ainda precisa de build e validação de navegador. Regras permanentes na spec,
+Revisão final verificada: `a1f5aaa`, incluindo a correção de enquadramento
+inicial posterior a `144437b`. Build, testes Node e suíte completa serial de
+navegador aprovados em 17/11/2026. Regras permanentes na spec,
 seções 11.1–11.2, e no contrato de interface.
 
 ## Comportamento
@@ -64,7 +64,7 @@ da malha não atualiza o tooltip sozinho; passou a repetir a observação públi
 após recomposição, com limite de falha e sem pausa fixa. O retry também deixou
 de ficar encoberto pelo resumo.
 
-## Resultados e limites
+## Resultados anteriores e limites
 
 Verificação local em Linux, Node 24.20.0 e Chrome for Testing
 156.0.8078.4 (Chromium emulado), em 16–17/11/2026 (America/Recife).
@@ -110,9 +110,10 @@ conservava a câmera do construtor, enquanto a logo aplicava o enquadramento nor
 A última correção limita esse cancelamento à limpeza de uma seleção existente;
 a restauração de histórico continua tendo seu cancelamento próprio. O teste da
 logo agora retém a malha até a camada terminar para controlar essa ordem.
-A revisão estática confirmou essa correção; **o navegador ainda não a validou**.
+A revisão estática confirmou essa correção; naquele ponto o navegador ainda
+não a havia validado. A verificação final abaixo a validou.
 
-### O que falta para concluir a #49
+### Pendências registradas antes da verificação final
 
 - Gerar novo build e repetir `npm test --prefix site` após a última correção.
 - Executar `map-touch.test.mjs` isoladamente, incluindo a ordem controlada
@@ -145,4 +146,48 @@ foi reproduzida e corrigida em `144437b`, consumindo somente a chegada pendente;
 a URL conserva a âncora para uma recarga explícita. O novo teste também passou.
 As execuções intermediárias interrompidas durante as revisões não são contadas
 como aprovação completa. As duas falhas da execução completa e a correção
-posterior ainda não validada estão registradas acima.
+posterior, então ainda não validada, estão registradas acima.
+
+## Verificação final em 17/11/2026
+
+Revisão de código e build: `a1f5aaa839fbc04fbeb776e38bd2f67bf595e724`,
+na branch `hml`. Mesmo ambiente Linux, Node 24.20.0 e Chromium
+156.0.8078.4 descrito acima. A prévia estática serviu o build atualizado em
+`http://127.0.0.1:4339`; nenhum build concorreu com os testes de navegador.
+O manifesto manteve o SHA-256 registrado neste relatório, sem alteração dos dados.
+
+| Verificação | Resultado |
+| --- | --- |
+| `npm run check --prefix site` | 84 arquivos, zero erros, avisos ou sugestões. |
+| `npm test --prefix site` | 88/88 testes, sem falhas ou pulos, em 43,09 s; inclui novo build dos 5.574 documentos estáticos. |
+| `node --test site/browser-tests/map-touch.test.mjs` | 21/21, sem falhas ou pulos, em 240,62 s. |
+| `node --test --test-concurrency=1 site/browser-tests/*.test.mjs` | 399/399, sem falhas, cancelamentos ou pulos, em 898,30 s. Inclui as duas suítes de acessibilidade. |
+
+Os dois comandos de navegador usaram
+`SITE_URL=http://127.0.0.1:4339` e
+`CHROMIUM_PATH=/home/kvojps/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`.
+Tipos passaram no sandbox; testes Node/build e navegador exigiram execução fora
+dele para subprocessos e servidores locais. A primeira tentativa restrita de
+`npm test` terminou sem resultado completo; não é contada como aprovação.
+
+Os testes de borda e de geografia após logo passaram tanto isoladamente quanto
+na suíte serial. O cenário da logo controla a ordem camada → malha e passou em
+390 e 1280 px. Isso valida a correção de `a1f5aaa` nessas execuções, preservando
+o registro das falhas anteriores; não comprova ausência de intermitência.
+As regressões combinadas de histórico, Lista, detalhes, âncoras, foco, posições,
+concorrência e recuperação também passaram na suíte completa.
+O axe 4.14.0 registrou zero violações confirmadas e verificações inconclusivas
+para revisão humana, sem substituir avaliação com leitor de tela.
+
+Nova revisão independente da entrega desde `74c011f`, pela skill `code-review`:
+**Standards: zero achados acionáveis; Spec: zero achados de implementação
+acionáveis.** A pendência de evidência do build final foi resolvida pelos
+resultados acima. A hipótese sobre histórico de âncoras desktop foi descartada
+após conferir o escopo mobile e o modelo de entrada de detalhes da #49.
+
+Todos os critérios da #49 estão atendidos. As listas de pendências e o estado
+aberto registrados nas seções anteriores representam o ponto de parada anterior,
+agora superado. A conferência física Android/Chrome permanece na #52;
+a issue pai #44 permanece aberta para a verificação conjunta. Continuam os
+limites de emulação, aparelhos e acessibilidade humana descritos acima.
+Sem push ou deploy nesta execução.
