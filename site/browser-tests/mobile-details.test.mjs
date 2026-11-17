@@ -85,6 +85,7 @@ test('Back during a new profile load restores details and rejects the obsolete a
     await page.goBack();
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
     await page.waitForFunction(position => document.querySelector('#prevencao').open && Math.abs(document.querySelector('.panel-reading').scrollTop - position) < 3, reading);
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
     const response = page.waitForResponse('**/dados/profiles/RN.json');
     release();
     await (await response).finished();
@@ -93,6 +94,7 @@ test('Back during a new profile load restores details and rejects the obsolete a
     assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
     assert.equal(await page.locator('.profile').getAttribute('data-code'), '261160');
     assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), reading);
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true, 'obsolete response cannot move focus');
   } finally { release(); await page.close(); }
 });
 
@@ -122,6 +124,29 @@ test(`${failure}: mesh failure recovers independently without history or opening
   } finally { await page.close(); }
 });
 }
+
+test('retry after an anchored profile failure keeps the summary and history, while reload reveals the anchor', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(10000);
+  let fail = true;
+  try {
+    await page.route('**/dados/profiles/PE.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.goto(base + RECIFE + '#prevencao');
+    await page.getByRole('button', { name: 'Tentar novamente', exact: true }).waitFor();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    const length = await page.evaluate(() => history.length);
+    const url = page.url();
+    fail = false;
+    await page.getByRole('button', { name: 'Tentar novamente', exact: true }).click();
+    await page.locator('.result-value').waitFor();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(await page.evaluate(() => history.length), length);
+    assert.equal(page.url(), url);
+    await page.reload();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+  } finally { await page.close(); }
+});
 
 test('details are deliberate and Back/Forward traverse details before the municipal selection', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });

@@ -277,6 +277,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   const failed = (error: unknown) => {
     console.error(error);
+    initialAnchor = '';
     content.replaceChildren();
     resultBlock.replaceChildren();
     panelType.hidden = true;
