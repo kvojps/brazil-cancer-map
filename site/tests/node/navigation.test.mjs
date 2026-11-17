@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { searchMunicipalities, searchStatusText } from '../src/map/navigation.ts';
+import { searchMunicipalities, searchStatusText } from '../../src/map/navigation.ts';
 const places = [
   { code: '1', name: 'São João', uf: 'PE', immediate_region: '1' },
   { code: '2', name: 'São João', uf: 'PR', immediate_region: '2' },
@@ -13,7 +13,7 @@ test('search accepts accents, punctuation and a UF to distinguish names', () => 
 });
 
 test('selection focuses the state before loading its profile and closing retains filters', async () => {
-  const { createMunicipalityNavigation } = await import('../src/map/navigation.ts');
+  const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
   const events = [];
   let url = new URL('https://example.org/?tipo=breast&modo=hoje');
   const navigation = createMunicipalityNavigation({
@@ -37,7 +37,7 @@ test('selection focuses the state before loading its profile and closing retains
 });
 
 test('preview selection stays on the map and ignores late results and failures', async () => {
-  const { createMunicipalityNavigation } = await import('../src/map/navigation.ts');
+  const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
   let url = new URL('https://example.org/?tipo=breast&theme=dark');
   const pending = [];
   const shown = [];
@@ -58,7 +58,7 @@ test('preview selection stays on the map and ignores late results and failures',
 });
 
 test('municipal documents restore selection without query strings', async () => {
-  const { createMunicipalityNavigation } = await import('../src/map/navigation.ts');
+  const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
   const focused = [];
   let url = new URL('https://example.org/municipio/1-sao-joao/?visualizacao=lista');
   const navigation = createMunicipalityNavigation({ places, getUrl: () => url, setUrl: next => { url = next; },

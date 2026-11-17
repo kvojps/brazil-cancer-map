@@ -10,19 +10,19 @@ As decisões de UI que os testes e o CSS usam como contrato. Comentários no có
 
 | Seção | Testes e código que a usam |
 |---|---|
-| [Fundamentos visuais](#fundamentos-visuais) | `site/src/shared/theme.css`, `site/scripts/map-tones.mjs`, `site/tests/map-tones.test.mjs`, `site/browser-tests/visual-foundations.test.mjs` |
-| [Primeira tela no celular](#primeira-tela-no-celular) | `site/src/shared/theme.css`, `site/browser-tests/phone-first-screen.test.mjs` |
-| [Desktop em tela cheia](#desktop-em-tela-cheia) | `site/src/layouts/Base.astro`, `site/browser-tests/desktop-first-screen.test.mjs` |
-| [Painel Meu município](#painel-meu-município) | `site/src/profile/panel-result.ts`, `site/browser-tests/municipal-panel.test.mjs` |
-| [Lista](#lista) | `site/browser-tests/list.test.mjs` |
-| [Municípios por UF](#municípios-por-uf) | `site/browser-tests/reading-pages.test.mjs` |
-| [Como calculamos](#como-calculamos) | `site/src/pages/metodologia.astro`, `site/browser-tests/reading-pages.test.mjs` |
+| [Fundamentos visuais](#fundamentos-visuais) | `site/src/shared/theme.css`, `site/scripts/map-tones.mjs`, `site/tests/node/map-tones.test.mjs`, `site/tests/browser/visual-foundations.test.mjs` |
+| [Primeira tela no celular](#primeira-tela-no-celular) | `site/src/shared/theme.css`, `site/tests/browser/phone-first-screen.test.mjs` |
+| [Desktop em tela cheia](#desktop-em-tela-cheia) | `site/src/layouts/Base.astro`, `site/tests/browser/desktop-first-screen.test.mjs` |
+| [Painel Meu município](#painel-meu-município) | `site/src/profile/panel-result.ts`, `site/tests/browser/municipal-panel.test.mjs` |
+| [Lista](#lista) | `site/tests/browser/list.test.mjs` |
+| [Municípios por UF](#municípios-por-uf) | `site/tests/browser/reading-pages.test.mjs` |
+| [Como calculamos](#como-calculamos) | `site/src/pages/metodologia.astro`, `site/tests/browser/reading-pages.test.mjs` |
 
 ## Páginas e navegação
 
 - O Mapa inicial é um dashboard com o Brasil inteiro, o mapa dominante e o cabeçalho compacto. Abre em até 60 dias × Todos os cânceres × Tendência, sem município selecionado e sem painel vazio.
 - Navegação principal: "Mapa", "Municípios por UF" e "Como calculamos". O índice só existe em `/municipios/`, nunca na inicial nem abaixo do mapa.
-- **Logo e item Mapa:** a logo reinicia a exploração em Mapa, Brasil inteiro, até 60 dias × Todos os cânceres × Tendência, sem seleção, painel, detalhes, âncora ou superfície temporária; preserva somente tema válido explícito, ou o acompanhamento do sistema. Com JavaScript no dashboard, mantém o foco na marca quando acionada por teclado e invalida respostas e chegadas municipais pendentes. Cria uma entrada quando muda o estado; repetir no estado inicial não duplica entradas. Voltar recupera a consulta anterior e Avançar retorna ao reset. O item Mapa conserva município, recorte, visualização e tema, inclusive desde páginas de leitura. Limpar seleção conserva filtros, visualização e câmera; recolher detalhes conserva a consulta. Links modificados e navegação sem JavaScript mantêm o comportamento nativo. Evidências e limites da #48: [Reset pela logo](validation/logo-reset.md).
+- **Logo e item Mapa:** a logo reinicia a exploração em Mapa, Brasil inteiro, até 60 dias × Todos os cânceres × Tendência, sem seleção, painel, detalhes, âncora ou superfície temporária; preserva somente tema válido explícito, ou o acompanhamento do sistema. Com JavaScript no dashboard, mantém o foco na marca quando acionada por teclado e invalida respostas e chegadas municipais pendentes. Cria uma entrada quando muda o estado; repetir no estado inicial não duplica entradas. Voltar recupera a consulta anterior e Avançar retorna ao reset. O item Mapa conserva município, recorte, visualização e tema, inclusive desde páginas de leitura. Limpar seleção conserva filtros, visualização e câmera; recolher detalhes conserva a consulta. Links modificados e navegação sem JavaScript mantêm o comportamento nativo.
 - A busca de município fica no cabeçalho de todas as páginas.
 - O tema é um único controle com nome acessível: lua no claro, para ativar o escuro, e sol no escuro, para ativar o claro.
 - Selecionar um município no mapa, na busca, na Lista ou por link apresenta Meu município no próprio dashboard: resumo recolhido no celular e consulta completa no desktop, sem ficha separada.
@@ -107,7 +107,6 @@ a consulta municipal mantém a leitura completa e a rolagem normal do documento.
 - **Recuperação:** altura e largura podem mudar sem nova entrada no histórico, preservando consulta, filtros, visualização e Eixo. A leitura interna conserva sua posição, limitada somente ao novo máximo. Não há compactação de fontes ou remoção de ressalvas para caber.
 - **Sem JavaScript e páginas de leitura:** mantêm a rolagem normal. Desktop preserva sua composição existente.
 
-Evidências da #45 e limites desta etapa: [Mapa e resumo](validation/mobile-map-summary.md).
 
 ## Desktop em tela cheia
 
@@ -145,7 +144,7 @@ Vale a partir de 768 px.
 - **Status:** só para leitores de tela. Selecionar um município não muda a altura do cabeçalho nem dos controles.
 - **Foco:** a busca leva o foco ao nome do município. Expandir leva o foco ao nome nos detalhes; recolher devolve ao botão “Ver detalhes”. O conteúdo recolhido sai da ordem de foco. Limpar devolve o foco à busca ou ao seu botão. O toque no mapa conserva o foco da exploração; não existe chegada tardia ao nome. A busca foca o nome sem rolar o documento e fecha o campo, retirando dele o foco.
 - **Histórico e contexto:** abrir detalhes acrescenta uma entrada ao histórico; o primeiro Voltar recolhe, os seguintes percorrem municípios e filtros. Voltar/Avançar restauram os detalhes quando pertinente, o Eixo em leitura e as posições internas dos detalhes e da Lista por entrada, incluindo UF e expansões, durante a visita; restaurar não cria entradas. A câmera não exige snapshot por entrada. O retorno explícito reutiliza a entrada anterior, sem duplicar etapas. Links entre Eixos atualizam a âncora na mesma entrada de detalhes; a chegada por âncora abre diretamente o Eixo solicitado na própria entrada, sem criar etapa artificial; seu controle de retorno recolhe e retira a âncora com substituição da entrada. Mapa/Lista preservam seleção, filtros, posição e zoom do mapa, UF e linhas abertas da Lista e a posição de rolagem de cada visualização durante a visita.
-- **Falha:** mensagem e “Tentar novamente” no resumo, sem expansão automática. O mapa continua disponível; falha, Dado insuficiente e “Sem dado neste recorte” são estados distintos. Uma resposta atrasada nunca aparece como resultado da seleção atual. Lista municipal, camada, mapa/malha e perfil têm falhas e saídas separadas; nova tentativa não cria entrada nem abre detalhes. O mapa oferece “Tentar mapa novamente” e descarta a instância incompleta após falha da malha. Busca, Lista e consulta independem do WebGL. Evidências e limites da #49: [Histórico, links e recuperação](validation/navigation-history-recovery.md).
+- **Falha:** mensagem e “Tentar novamente” no resumo, sem expansão automática. O mapa continua disponível; falha, Dado insuficiente e “Sem dado neste recorte” são estados distintos. Uma resposta atrasada nunca aparece como resultado da seleção atual. Lista municipal, camada, mapa/malha e perfil têm falhas e saídas separadas; nova tentativa não cria entrada nem abre detalhes. O mapa oferece “Tentar mapa novamente” e descarta a instância incompleta após falha da malha. Busca, Lista e consulta independem do WebGL.
 - **Contorno de seleção:** ganha uma borda externa na cor da superfície.
 - **Toque no canvas:** seleciona e destaca o município e, no modo de folha, apresenta somente o painel recolhido, sem tooltip concorrente. Remove o hover anterior. Tooltip e contorno de hover voltam com movimento real de mouse, inclusive em dispositivo híbrido e independentemente da largura. O tooltip não intercepta o ponteiro nem o toque.
 - **Rotação e viewport visual:** preservam seleção, filtros, Eixo e histórico; não reenquadram o município nem a UF. Depois da mudança de tamanho ou composição, a câmera só recebe o deslocamento mínimo para revelar seleção encoberta, sem alterar o zoom. A busca tem rolagem interna quando a altura útil cai; resultados e controles permanecem alcançáveis.
@@ -222,7 +221,7 @@ Substitui o mapa na mesma área, pelo alternador "Mapa | Lista", preservando fil
 Conhecidos e aceitos ao entregar cada parte:
 
 - **Texto de gráfico:** a limitação de 6,5 px a 320 px foi corrigida na #30; valem as regras de [séries históricas em telas estreitas](#séries-históricas-em-telas-estreitas), com texto de 16 px e alternativa em tabela.
-- **Aviso a 320 px com zoom de 200%:** a medição anterior (212 de 450 px) usava o texto longo. A #45 entrega a redação curta aprovada na #44; a conferência extrema está em [Altura extrema](validation/mobile-extreme-height.md), com seus limites.
+- **Aviso a 320 px com zoom de 200%:** a medição anterior (212 de 450 px) usava o texto longo. A #45 entrega a redação curta aprovada na #44; a conferência extrema e seus limites estão descritos no [roteiro mobile](mobile-validation.md).
 - **Teclado com todas as UFs na Lista:** 5.571 links e 5.571 botões na ordem de tabulação. O filtro por UF é a saída.
 - **Distância de cor:** no tema claro, "Longe" contra "Dado insuficiente" fica em 7,2 a 7,5, abaixo da meta de 8. **Esse par não foi listado na decisão de tons**, e passa pelo piso de 6.
 - **Glifos:** `☾`, `☀`, `☷`, `ⓘ` e `Σ` não existem na Inter e vêm da fonte do sistema, então variam por aparelho.
@@ -237,7 +236,7 @@ Conhecidos e aceitos ao entregar cada parte:
 - **Leitor de tela:** sem sessão registrada. O roteiro está na [auditoria](validation/accessibility-audit.md#roteiro-humano-pendente).
 - **Firefox e Safari:** sem registro. O grid do `body` e o foco na âncora só foram vistos no Chromium.
 - **Aparelho real:** declarado pelo responsável, sem registro de aparelho, sistema ou navegador. Teclado virtual só em emulação, descontando uma altura típica. Ficam sem conferência a altura verdadeira, o deslocamento no Safari e o `100dvh` com o teclado aberto.
-- **WebGL:** `map-touch.test.mjs` verifica toque emulado no canvas, contorno e preservação da câmera por geografia visível. Isso não comprova toque ou GPU de aparelho físico; a [verificação integrada](validation/mobile-navigation-integrated.md) registra os limites.
+- **WebGL:** `map-touch.test.mjs` verifica toque emulado no canvas, contorno e preservação da câmera por geografia visível. Isso não comprova toque ou GPU de aparelho físico; a [verificação integrada](mobile-validation.md) registra os limites.
 - **Falha intermitente:** o teste do cabeçalho em `/municipios/` com JavaScript falhou duas vezes contra o servidor de desenvolvimento, logo após editar arquivos, sem causa confirmada. Rode a suíte contra a saída estática.
 - **Gesto de arrastar a folha:** não foi implementado.
 
@@ -252,6 +251,5 @@ gráfico, com foco por teclado, mantendo o piso de 12 px. Sem JavaScript, o SVG
 original de 570 px permanece legível em uma área com rolagem. A série em tabela
 continua disponível em todos os casos.
 
-Cenários, comandos, resultados e limites desta adaptação ficam em
-[Leitura mobile](validation/mobile-reading.md). Teclado virtual é aproximado por
+Os comandos e limites de verificação estão no [roteiro mobile](mobile-validation.md). Teclado virtual é aproximado por
 redução de área útil; não existe evidência de verificação física nesta entrega.

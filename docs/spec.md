@@ -2,7 +2,7 @@
 
 Esta é a spec viva do projeto: as regras que valem hoje, com a numeração de seções que o código cita como "spec, section N". As decisões difíceis de reverter têm contexto e alternativas em [`adr/`](adr/); em divergência, vale o ADR mais recente. Os termos em maiúscula (Eixo, Indicador, Tendência, Situação, Referência, Ação, Região imediata, Dado insuficiente, Mapa inicial, Meu município, Tipo de câncer, Fonte, Contrato de dados, Versão de dados) seguem o [`GLOSSARY.md`](../GLOSSARY.md). **Fonte** é o provedor oficial; `source`, em código, é a unidade do pipeline.
 
-Os caminhos em `docs/data-sources.md`, `docs/ui-contract.md`, `docs/data/` e `docs/validation/` indicam onde ficam os detalhes operacionais, as evidências e o contrato de interface.
+Os caminhos em `docs/data-sources.md`, `docs/ui-contract.md`, `docs/data/`, `docs/mobile-validation.md` e `docs/validation/accessibility-audit.md` indicam onde ficam os detalhes operacionais, as evidências e o contrato de interface.
 
 ---
 
@@ -236,23 +236,21 @@ de uma superfície por vez com busca, Menu, filtros e legenda, inclusive sobre
 detalhes, sem alterar URL ou histórico nem dispensar permanentemente a faixa. Recuperar
 altura restaura a apresentação normal e conserva consulta, filtros, visualização,
 Eixo, histórico e posições internas, limitadas somente ao novo máximo rolável.
-Evidências e limites da #50: [altura extrema](validation/mobile-extreme-height.md).
 Os documentos de leitura e a consulta sem JavaScript continuam com rolagem normal.
 Rotação preserva seleção, filtros, Eixo, zoom e histórico, com correção mínima de
 posição apenas para revelar seleção encoberta. As séries adaptam os eixos à
 largura do cartão e mantêm texto de 16 px; abaixo de 240 px de largura útil,
 rolam localmente. Sem JavaScript, conservam a série original com rolagem local.
-A tabela permanece disponível. Evidência e limites: [leitura mobile](validation/mobile-reading.md).
-A entrega da #45 e suas verificações estão em [Mapa e resumo](validation/mobile-map-summary.md).
+A tabela permanece disponível.
 
 
 ### 11.1 Mapa inicial
 
 - A página inicial é o mapa do Brasil por município, com a busca de município, o seletor de Tipo de câncer e o seletor do que o mapa mostra (indicador e modo).
 - **Estado inicial:** até 60 dias × Todos os cânceres × Tendência, sem município selecionado, com a hachura da faixa C já na primeira impressão, aceita como a ressalva honesta. O indicador é o carro-chefe e o que corresponde ao posicionamento.
-- **Logo e item Mapa:** a logo reinicia a exploração em Mapa, Brasil inteiro, até 60 dias × Todos os cânceres × Tendência, sem seleção, painel, detalhes, âncora ou superfície temporária; preserva somente tema válido explícito, ou o acompanhamento do sistema. Com JavaScript no dashboard, mantém o foco na marca quando acionada por teclado e invalida respostas e chegadas municipais pendentes. Cria uma entrada quando muda o estado; repetir no estado inicial não duplica entradas. Voltar recupera a consulta anterior e Avançar retorna ao reset. O item Mapa conserva município, recorte, visualização e tema, inclusive desde páginas de leitura. Limpar seleção conserva filtros, visualização e câmera; recolher detalhes conserva a consulta. Links modificados e navegação sem JavaScript mantêm o comportamento nativo. Evidências e limites da #48: [Reset pela logo](validation/logo-reset.md).
+- **Logo e item Mapa:** a logo reinicia a exploração em Mapa, Brasil inteiro, até 60 dias × Todos os cânceres × Tendência, sem seleção, painel, detalhes, âncora ou superfície temporária; preserva somente tema válido explícito, ou o acompanhamento do sistema. Com JavaScript no dashboard, mantém o foco na marca quando acionada por teclado e invalida respostas e chegadas municipais pendentes. Cria uma entrada quando muda o estado; repetir no estado inicial não duplica entradas. Voltar recupera a consulta anterior e Avançar retorna ao reset. O item Mapa conserva município, recorte, visualização e tema, inclusive desde páginas de leitura. Limpar seleção conserva filtros, visualização e câmera; recolher detalhes conserva a consulta. Links modificados e navegação sem JavaScript mantêm o comportamento nativo.
 - **Estado na URL:** a seleção municipal fica no caminho `/municipio/<código>-<nome>/` ([ADR 10](adr/0010-static-municipal-links.md)), e os demais parâmetros usam os identificadores do contrato: `indicador`, `tipo` (por exemplo `tipo=breast`), `modo=hoje`, `visualizacao=lista` e `theme`. Valores iguais ao padrão são omitidos. `?municipio=` é só compatibilidade com links antigos, e `/municipios/?municipio=<código>` carrega a seleção para o retorno. Nada é lembrado entre visitas: sem seleção ou parâmetros, o site abre no estado inicial.
-- **Histórico durante a visita:** Voltar/Avançar recuperam, por entrada, a seleção, os filtros, Mapa/Lista, o estado dos detalhes, o Eixo em leitura e as posições internas dos detalhes e da Lista, incluindo UF e linhas abertas. Restaurar não acrescenta entradas. O contexto é guardado antes de substituir a consulta; uma resposta antiga não altera conteúdo, foco ou chegada após seleção, limpeza, logo ou restauração. Interação deliberada durante a carga cancela o direcionamento pendente, mantendo a conclusão do conteúdo atual. Câmera e posições internas não viram parâmetros públicos; recarga preserva o estado da URL e revela âncora explícita, sem promessa de persistir posições ou câmera. Evidências da #49: [Histórico, links e recuperação](validation/navigation-history-recovery.md).
+- **Histórico durante a visita:** Voltar/Avançar recuperam, por entrada, a seleção, os filtros, Mapa/Lista, o estado dos detalhes, o Eixo em leitura e as posições internas dos detalhes e da Lista, incluindo UF e linhas abertas. Restaurar não acrescenta entradas. O contexto é guardado antes de substituir a consulta; uma resposta antiga não altera conteúdo, foco ou chegada após seleção, limpeza, logo ou restauração. Interação deliberada durante a carga cancela o direcionamento pendente, mantendo a conclusão do conteúdo atual. Câmera e posições internas não viram parâmetros públicos; recarga preserva o estado da URL e revela âncora explícita, sem promessa de persistir posições ou câmera.
 - **Combinações que não existem:** ao trocar para um tipo sem aquele indicador, o mapa volta para o até 60 dias com um aviso de uma linha, e o seletor mostra os indicadores que não se aplicam desabilitados, com o motivo. Um link inválido é corrigido em silêncio, campo a campo (valor desconhecido → padrão; modo impossível → o modo que o indicador tem), e a URL é reescrita para o estado mostrado.
 - Indicadores que pintam o mapa: até 60 dias, mamografia, citopatológico, HPV e tendência da mortalidade, filtrados pelo tipo. Tabagismo, Onde se tratar e Casos estimados ficam só no Meu município: o tabagismo é dado da capital e não pinta municípios.
 - **Modo padrão: Tendência.** "Como está hoje" é opcional. Com a Referência de 100% da lei, o 60 dias pintaria o Brasil inteiro de "longe": é honesto, mas não diferencia nenhum município. A Tendência diferencia e sustenta a esperança sem esconder quem piora. A mortalidade só tem Tendência. O HPV abre em "como está hoje", com uma nota no seletor explicando por quê.
@@ -286,12 +284,6 @@ A entrega da #45 e suas verificações estão em [Mapa e resumo](validation/mobi
 - **Nota de "Todos os cânceres"** junto ao seletor: "Cada eixo usa os registros adequados ao seu indicador. No tratamento, excluímos alguns tipos com informação incompleta. Por isso, 'Todos os cânceres' não reúne exatamente os mesmos tipos em todos os eixos."
 - A página de cada município funciona sem JavaScript para a leitura básica.
 
-A entrega de comandos nos detalhes (#46) está registrada em
-[Detalhes e Menu](validation/mobile-details-menu.md), com verificações e limites.
-
-A [verificação de resumo, detalhes e retorno em fluxo](validation/mobile-details-flow.md)
-registra a entrega da #36 e os percursos conjuntos com a chegada da #34,
-com limites de emulação e conferência física separada.
 
 ## 12. Metodologia pública ("Como calculamos")
 

@@ -26,7 +26,7 @@ test('dev serves municipal selections within the default 2 GiB heap', () => {
       await server.stop();
     }
   `], {
-    cwd: new URL('..', import.meta.url),
+    cwd: new URL('../..', import.meta.url),
     env: { ...process.env, NODE_OPTIONS: '' },
     timeout: 60_000,
     stdio: 'pipe',

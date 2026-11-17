@@ -9,15 +9,17 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "test": "npm run test:unit && npm run test:integration",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
     "check:tones": "node scripts/map-tones.mjs",
-    "test:browser": "node --test browser-tests/*.test.mjs",
-    "test:a11y": "node --test --test-concurrency=1 browser-tests/accessibility.test.mjs browser-tests/map-state-accessibility.test.mjs",
+    "test:browser": "node --test tests/browser/*.test.mjs",
+    "test:a11y": "node --test --test-concurrency=1 tests/browser/accessibility.test.mjs tests/browser/map-state-accessibility.test.mjs",
     "measure:output": "node scripts/measure-output.mjs",
-    "measure:visit": "node scripts/measure-visit.mjs"
+    "measure:visit": "node scripts/measure-visit.mjs",
+    "test:unit": "node --test --test-isolation=none tests/node/*.test.mjs",
+    "test:integration": "node --test --test-isolation=none tests/integration/*.test.mjs"
   },
   "dependencies": {
     "astro": "^7.4.5",

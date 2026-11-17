@@ -63,7 +63,11 @@ npm test --prefix site
 ```
 
 - `npm run check`: tipos e diagnósticos dos arquivos Astro e TypeScript.
-- `npm test`: testes Node de contratos, dados publicados e lógica do site,
+- `npm run test:unit`: testes em `site/tests/node/` de lógica, estado,
+  renderização e tons, sem build ou servidor.
+- `npm run test:integration`: testes em `site/tests/integration/` de dados
+  publicados, build e servidor de desenvolvimento.
+- `npm test`: executa os dois grupos acima em sequência; cobre contratos e lógica do site,
   incluindo enquadramento e tons do mapa. Também inicia um servidor local
   temporário e consulta páginas municipais com heap limitado a 2 GiB para
   detectar regressões de memória no desenvolvimento. Não abre navegador.
@@ -94,14 +98,14 @@ acessibilidade. `test:a11y` seleciona os dois arquivos de auditoria automatizada
 axe nos documentos e consistência dos estados do mapa com os JSON.
 Esses testes não substituem a revisão humana com leitor de tela.
 Para a matriz completa, relatórios e execução de um arquivo por vez, veja
-[os testes de navegador](../site/browser-tests/README.md).
+[o guia de testes do site](../site/tests/README.md).
 
 Para reproduzir as séries de primeira seleção, Filtros e logo da #51, use os
-[comandos da verificação integrada mobile](validation/mobile-navigation-integrated.md#revisão-dados-e-reprodução).
+[comandos da verificação integrada mobile](mobile-validation.md#reprodução-automatizada).
 Conclua `npm test` antes de servir `site/dist/`, pois ele também faz build;
-não reconstrua a saída durante os testes do navegador. O relatório distingue
+não reconstrua a saída durante os testes do navegador. O guia distingue
 cache da aplicação, simulação de recursos e o
-[roteiro físico obrigatório](validation/mobile-navigation-physical.md).
+[roteiro físico obrigatório](mobile-validation.md#conferência-em-aparelho-físico).
 
 Para medir a seleção municipal, depois do build, sem outra execução de navegador
 em paralelo:

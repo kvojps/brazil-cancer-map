@@ -1,6 +1,37 @@
-# Testes da inicial no navegador
+# Testes do site
 
-A [verificação integrada da navegação mobile](../../docs/validation/mobile-navigation-integrated.md)
+Os testes são organizados pelo ambiente necessário para executá-los:
+
+| Diretório | Escopo | Comando a partir da raiz |
+| --- | --- | --- |
+| `node/` | Lógica, estado, renderização e tons, sem build ou servidor | `npm run test:unit --prefix site` |
+| `integration/` | Dados publicados, HTML gerado e servidor de desenvolvimento | `npm run test:integration --prefix site` |
+| `browser/` | Interações, responsividade, zoom e acessibilidade com Chromium | `npm run test:browser --prefix site` |
+
+`npm test --prefix site` executa Node e depois integração, interrompendo se uma
+etapa falhar. Nenhum desses dois grupos exige Chromium. Os testes de tons leem
+o CSS local; a integração lê os JSON publicados, gera o build e inicia um
+servidor temporário com heap limitado a 2 GiB. Não requer o pipeline nem `data/`.
+
+Para executar um arquivo, use o caminho do grupo correspondente, a partir de `site/`:
+
+```sh
+node --test tests/node/navigation.test.mjs
+node --test tests/integration/dev-municipality.test.mjs
+node --test tests/browser/municipality.test.mjs
+```
+
+A integração inclui um build. Encerre a prévia antes de executá-la e não execute
+builds simultâneos. Inicie a prévia para os testes de navegador somente depois
+de `npm test` ou `npm run test:integration` terminar. Pré-requisitos e setup
+estão no [guia de desenvolvimento](../../docs/development.md).
+
+`npm run test:a11y --prefix site` seleciona as duas auditorias automatizadas do
+grupo `browser/`; elas também fazem parte de `test:browser`.
+
+## Testes da inicial no navegador
+
+A [verificação integrada da navegação mobile](../../docs/mobile-validation.md)
 mapeia as transições das #38/#44, os comandos sobre build estático, resultados
 e limites. O roteiro `node site/scripts/verify-mobile-navigation.mjs`, executado
 da raiz com `SITE_URL` e `CHROMIUM_PATH`, registra dez tentativas frias e dez com
@@ -8,7 +39,7 @@ cache da aplicação por viewport (320×568 e 390×844), para seleção pela bus
 Filtros e logo. `MOBILE_ARRIVAL=canvas` repete com toque emulado no canvas;
 `MOBILE_REPORT_DIR` escolhe o diretório de `attempts.json` e capturas de falha.
 Execute depois de `npm test`, que também reconstrói a saída, sem builds durante
-a verificação. A [conferência física Android/Chrome](../../docs/validation/mobile-navigation-physical.md)
+a verificação. A [conferência física Android/Chrome](../../docs/mobile-validation.md#conferência-em-aparelho-físico)
 continua obrigatória e separada da emulação.
 
 Instale as dependências com `npm ci --prefix site` e inicie o site com
@@ -28,7 +59,7 @@ câncer, acesso direto à ficha, filtro por UF, ausência de Situação e ajuste
 não calculável. Percorre a busca por teclado e verifica a matriz de larguras
 320/768/1280 px, temas claro/escuro e JavaScript ativo/desativado.
 
-Além da simulação por CSS, a extensão local de teste `zoom-extension` usa
+Além da simulação por CSS, a extensão local de teste `browser/zoom-extension` usa
 `chrome.tabs.setZoom` para aplicar zoom **nativo de 200%**. A suíte confirma a
 redução da largura da viewport CSS e o aumento da densidade de pixels; verifica
 que a rolagem horizontal fica contida na tabela. A extensão só é carregada pelo
@@ -70,7 +101,7 @@ e 56 px; legenda no canto, com a legenda completa no ⓘ; ressalva sem mudar a a
 do mapa; menu e duas linhas de filtros até 1023 px; painel de 480 px acima de 1920 px;
 rolagem da Lista, do painel e até o rodapé pelo teclado; altura mínima; e sem rolagem
 horizontal. O enquadramento dentro do WebGL é conferido em capturas; a conta da área
-reservada à legenda está em `tests/framing.test.mjs`.
+reservada à legenda está em `tests/node/framing.test.mjs`.
 
 `visual-foundations.test.mjs` verifica o contrato dos fundamentos visuais: aviso
 integral, invertido e sempre visível nas quatro páginas, tema pela preferência do
@@ -88,7 +119,7 @@ rola internamente; em janelas baixas ou muito estreitas e no zoom nativo de 200%
 os comandos continuam alcançáveis internamente com JavaScript. Sem JavaScript,
 as telas pequenas mantêm a apresentação em fluxo. O teclado virtual é uma altura típica descontada da
 tela, pois a emulação do Chromium não o abre. O enquadramento dentro do WebGL é
-conferido em capturas; a conta da área reservada está em `tests/framing.test.mjs`.
+conferido em capturas; a conta da área reservada está em `tests/node/framing.test.mjs`.
 
 `municipal-panel.test.mjs` verifica o painel Meu município com os casos difíceis: Balsas
 (faixa C), Alcântara (Região imediata e faixa C, o bloco mais longo, a 320 × 568), Araioses
@@ -99,7 +130,7 @@ por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensage
 para leitores de tela e a página comum em janelas baixas, no zoom nativo de 200% e sem
 JavaScript. O contorno e o enquadramento dentro
 do WebGL são conferidos em capturas; a conta da área reservada à folha está em
-`tests/framing.test.mjs`.
+`tests/node/framing.test.mjs`.
 
 `reading-pages.test.mjs` verifica Municípios por UF e Como calculamos: cabeçalho em faixa no
 fluxo, com menu abaixo de 1024 px; a busca, que só carrega a lista de municípios ao ser usada,
@@ -119,7 +150,7 @@ carga com nova tentativa. A semântica de tabela é conferida na árvore de aces
 Chromium, o que não substitui uma sessão com leitor de tela. Com os arquivos em paralelo, o
 servidor de desenvolvimento pode estourar os tempos de espera: use a saída estática.
 Em uma máquina carregada, mesmo a saída estática pode estourar. Nesse caso, rode um arquivo por
-vez: `node --test --test-concurrency=1 browser-tests/*.test.mjs`. O servidor de desenvolvimento
+vez: `node --test --test-concurrency=1 tests/browser/*.test.mjs`. O servidor de desenvolvimento
 também pode estourar o limite de memória do Node; se cair, aumente-o com
 `NODE_OPTIONS=--max-old-space-size=5120`.
 
@@ -143,8 +174,7 @@ a origem, as notas e o ano de Recife com os JSONs publicados. Os demais testes
 continuam cobrindo interação, recuperação, responsividade, zoom e teclado.
 
 O repositório não tem CI: esses dois arquivos rodam localmente, com `npm run test:a11y`.
-Os resultados e limites da auditoria, incluindo revisão humana e a dívida de
-orçamento aceita para a V1, estão na [auditoria](../../docs/validation/accessibility-audit.md).
+Os resultados históricos e limites da auditoria, incluindo revisão humana, estão na [auditoria](../../docs/validation/accessibility-audit.md).
 
 Medições locais reproduzíveis, após o build:
 
@@ -192,12 +222,11 @@ eixos sem cortes e tabela), resumo longo em fluxo e acesso à última linha da
 Lista após seleção pela busca em 320 × 568, 390 × 844, 568 × 320, 844 × 390 e
 390 × 360. A janela de altura reduzida é uma aproximação de teclado aberto.
 `map-touch.test.mjs` também compara a geografia visível após girar a janela e
-voltar, depois de alterar o zoom. Resultados e limites em
-[Leitura mobile](../../docs/validation/mobile-reading.md).
+voltar, depois de alterar o zoom. Roteiro e limites em
+[Leitura mobile](../../docs/mobile-validation.md).
 
-A [validação integrada mobile](../../docs/validation/mobile-integrated.md) cruza
-os critérios da #26 com os percursos dessas suítes, registra a execução conjunta
-e mantém a conferência em aparelho real separada. Os cenários de primeiro toque,
+O [roteiro integrado mobile](../../docs/mobile-validation.md) cruza
+os percursos dessas suítes e mantém a conferência em aparelho real separada. Os cenários de primeiro toque,
 busca e link direto de `map-touch.test.mjs` também percorrem resumo, quatro Eixos
 e retorno à exploração com seleção e geografia preservadas.
 
@@ -205,19 +234,19 @@ A regressão da #32 em `map-touch.test.mjs` verifica a recuperação do resumo
 flutuante após reduzir e restaurar a altura útil, com toque no canvas,
 Filtros fechados, foco e rolagem observados, detalhes deliberados e câmera
 preservada. `mobile-reading.test.mjs` confere a conservação da posição de
-leitura nos detalhes e no fluxo durante a medição. Diagnóstico, comandos e
+leitura nos detalhes e no fluxo durante a medição. Comandos e
 limites da emulação ficam em
-[Recuperação da seleção mobile](../../docs/validation/mobile-selection-recovery.md).
+[Recuperação da seleção mobile](../../docs/mobile-validation.md).
 
-A [verificação de resumo, detalhes e retorno em fluxo](../../docs/validation/mobile-details-flow.md)
-registra a entrega da #36 e a conferência conjunta com a chegada da #34.
+O [roteiro de resumo, detalhes e retorno em fluxo](../../docs/mobile-validation.md)
+orienta a conferência conjunta e mantém explícitas as pendências físicas.
 
 `mobile-details.test.mjs` também cobre a #49: posições por entrada de detalhes e
 Lista, Eixo, UF e expansões após logo e Voltar/Avançar; Voltar com perfil de RN
 retido na fronteira HTTP; e falha da malha seguida de recuperação independente,
 sem histórico adicional ou expansão da consulta. Os testes observam URL,
 conteúdo e rolagem após conclusão do recurso e recomposição, sem pausa fixa.
-Evidências e limites: [Histórico, links e recuperação](../../docs/validation/navigation-history-recovery.md).
+Roteiro de verificação: [guia mobile](../../docs/mobile-validation.md).
 
 ## Exploração e resumo sem rolagem externa (#45)
 
@@ -234,7 +263,7 @@ As referências anteriores a fluxo por resumo longo descrevem as entregas
 históricas. Lista, detalhes e composição extrema têm suas coberturas
 nas #47, #46 e #50; a conferência integrada está na #51 e a física na #52.
 A emulação de Chromium não comprova teclado virtual, barras móveis ou toque
-em aparelho real. Evidências desta etapa: [Mapa e resumo](../../docs/validation/mobile-map-summary.md).
+em aparelho real. Roteiro físico: [guia mobile](../../docs/mobile-validation.md#conferência-em-aparelho-físico).
 
 ## Lista com rolagem interna (#47)
 
@@ -247,7 +276,7 @@ dos links, além de alterações nos destinos. `map-touch.test.mjs` compara a
 geografia visível depois de selecionar outro município pela Lista com zoom
 previamente alterado. As descrições anteriores de rolagem externa da Lista são
 históricas; a composição extrema tem sua cobertura na #50. Evidências e limites em
-[Lista e contexto](../../docs/validation/mobile-list-context.md).
+[Lista e contexto](../../docs/mobile-validation.md).
 
 ## Altura extrema (#50)
 
@@ -258,4 +287,4 @@ O teste de recuperação compara consulta, URL, histórico e posição de leitur
 Os casos incluem origem regional, Faixa C, Dado insuficiente, próstata e
 mortalidade. `phone-first-screen.test.mjs` cobre separadamente zoom nativo;
 redução da janela aproxima perda de altura com teclado, sem comprovar teclado
-físico. Evidências e pendências: [altura extrema](../../docs/validation/mobile-extreme-height.md).
+físico. Roteiro e pendências: [altura extrema](../../docs/mobile-validation.md).

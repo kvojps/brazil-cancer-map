@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { navigationUrl, readTheme } from '../src/shared/navigation.ts';
+import { navigationUrl, readTheme } from '../../src/shared/navigation.ts';
 
 const current = new URL('https://example.org/?indicador=mammography&tipo=breast&modo=hoje&theme=dark');
 test('municipality links carry map context for return without filtering the profile axes', () => {

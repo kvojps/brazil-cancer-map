@@ -97,6 +97,10 @@ O excesso principal é o HTML municipal com seis Tipos, cartões, fontes, série
 
 **Seleção de Recife:** mais 295.403 bytes gzip: documento municipal (22.748) e perfil de PE (272.655).
 
+Os caminhos dos comandos abaixo são históricos; os testes de navegador ficam
+agora em `site/tests/browser/`. Para executar a suíte atual, siga o
+[guia de desenvolvimento](../development.md#testes-e-verificações).
+
 ## Verificação executada
 
 - `npm run check --prefix site`: zero erros, avisos ou hints.

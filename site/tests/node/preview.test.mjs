@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { renderMunicipalityPreview } from '../src/map/municipality-preview.ts';
+import { renderMunicipalityPreview } from '../../src/map/municipality-preview.ts';
 const place = { code: '261160', name: 'Recife', uf: 'PE', immediate_region: '1' };
 const entry = { value: 72, trend: 'improving', status: 'near', origin: 'immediate_region', quality_band: 'C', without_treatment_info: 40, status_note: null };
 const layer = { indicator: 'within_60_days', cancer_type: 'all', has_status: true, reference: { value: 100, label: 'meta' }, period: { latest: 2024, first_year: 2014, last_year: 2025, trend: [2015, 2024], provisional: [2025], quality_years: [2022, 2023] }, source: { name: 'Painel', url: 'https://example.org', conditions: 'Dados abertos' }, quality: { '26': { band: 'C', without_treatment_info: 42 } }, municipalities: { '261160': entry } };

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { filterSummary, normalizeMapState, readMapState, writeMapState } from '../src/map/map-state.ts';
-import { formatIndicatorValue, mapOption, cancerTypeNotes } from '../src/map/indicator-layer.ts';
+import { filterSummary, normalizeMapState, readMapState, writeMapState } from '../../src/map/map-state.ts';
+import { formatIndicatorValue, mapOption, cancerTypeNotes } from '../../src/map/indicator-layer.ts';
 
 test('mammography is available for breast and all in both modes, formatted as a ratio', () => {
   for (const cancerType of ['all', 'breast']) {

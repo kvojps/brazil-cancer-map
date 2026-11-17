@@ -2,18 +2,18 @@ import assert from 'node:assert/strict';
 import { test, before } from 'node:test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { municipalityPath } from '../src/profile/profile.ts';
+import { municipalityPath } from '../../src/profile/profile.ts';
 
-const listing = JSON.parse(readFileSync(new URL('../public/dados/municipalities.json', import.meta.url)));
-const page = (m) => readFileSync(new URL(`../dist${municipalityPath(m)}index.html`, import.meta.url), 'utf8');
-before(() => execFileSync('npm', ['run', 'build'], { cwd: new URL('..', import.meta.url), stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 }));
+const listing = JSON.parse(readFileSync(new URL('../../public/dados/municipalities.json', import.meta.url)));
+const page = (m) => readFileSync(new URL(`../../dist${municipalityPath(m)}index.html`, import.meta.url), 'utf8');
+before(() => execFileSync('npm', ['run', 'build'], { cwd: new URL('../..', import.meta.url), stdio: 'pipe', maxBuffer: 10 * 1024 * 1024 }));
 
-const manifest = JSON.parse(readFileSync(new URL('../public/dados/manifest.json', import.meta.url)));
+const manifest = JSON.parse(readFileSync(new URL('../../public/dados/manifest.json', import.meta.url)));
 test('mammography is rendered from the published profile with its ratio, reference and approved action', {
   skip: !manifest.indicators.mammography && 'Initial SISCAN data load is pending; see docs/spec.md, section 4.',
 }, () => {
   const municipality = listing.municipalities.find(m => m.code === '261160');
-  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const profile = JSON.parse(readFileSync(new URL('../../public/dados/profiles/PE.json', import.meta.url)));
   const mammography = profile.indicators.mammography.all;
   const entry = mammography.municipalities[municipality.code];
   const html = page(municipality).split('aria-label="Mamografias de rastreamento — 50–69 anos"')[1].split('</article>')[0];
@@ -28,16 +28,16 @@ test('mammography is rendered from the published profile with its ratio, referen
   assert.match(html, /\/metodologia\/#mamografia/);
   assert.doesNotMatch(html, /A orientação atual do SUS é o rastreamento de mulheres/);
   for (const point of mammography.series[entry.series_id]) assert.ok(html.includes(`<th scope="row">${point.year}</th>`));
-  const all = JSON.parse(readFileSync(new URL('../public/dados/map/mammography/all.json', import.meta.url)));
-  const breast = JSON.parse(readFileSync(new URL('../public/dados/map/mammography/breast.json', import.meta.url)));
+  const all = JSON.parse(readFileSync(new URL('../../public/dados/map/mammography/all.json', import.meta.url)));
+  const breast = JSON.parse(readFileSync(new URL('../../public/dados/map/mammography/breast.json', import.meta.url)));
   assert.equal(Object.keys(all.municipalities).length, listing.municipalities.length);
   assert.deepEqual(all.municipalities, breast.municipalities);
   assert.equal(all.municipalities[municipality.code].value, entry.value);
 });
 
 test('every municipality has a static page with four axes and the treatment action', () => {
-  assert.equal(readdirSync(new URL('../dist/municipio/', import.meta.url)).length, listing.municipalities.length);
-  const html = readFileSync(new URL('../dist/municipio/110020-porto-velho/index.html', import.meta.url), 'utf8');
+  assert.equal(readdirSync(new URL('../../dist/municipio/', import.meta.url)).length, listing.municipalities.length);
+  const html = readFileSync(new URL('../../dist/municipio/110020-porto-velho/index.html', import.meta.url), 'utf8');
   assert.match(html, /Casos tratados com quimioterapia ou radioterapia: % que começou em até 60 dias/);
   const axes = ['Acesso ao tratamento', 'Detecção precoce', 'Prevenção', 'Panorama'].map(label => html.indexOf(`>${label}</summary>`));
   assert.ok(axes.every((position, i) => position >= 0 && (i === 0 || position > axes[i - 1])));
@@ -49,8 +49,8 @@ test('every municipality has a static page with four axes and the treatment acti
 });
 
 function example(origin, cancerType = 'all', band) {
-  for (const file of readdirSync(new URL('../public/dados/profiles/', import.meta.url))) {
-    const profile = JSON.parse(readFileSync(new URL(`../public/dados/profiles/${file}`, import.meta.url)));
+  for (const file of readdirSync(new URL('../../public/dados/profiles/', import.meta.url))) {
+    const profile = JSON.parse(readFileSync(new URL(`../../public/dados/profiles/${file}`, import.meta.url)));
     const treatment = profile.indicators.within_60_days[cancerType];
     for (const [code, entry] of Object.entries(treatment.municipalities)) {
       if (entry.origin === origin && (!band || entry.quality_band === band)) {
@@ -67,7 +67,7 @@ const percent = (value) => `${value.toLocaleString('pt-BR', { minimumFractionDig
 
 test('where to treat shows published facilities and explains regulated access without JavaScript', () => {
   const municipality = listing.municipalities.find(m => m.code === '261160');
-  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const profile = JSON.parse(readFileSync(new URL('../../public/dados/profiles/PE.json', import.meta.url)));
   const html = page(municipality);
   assert.match(html, /Saiba como chegar ao atendimento especializado/);
   assert.match(html, /A regulação.*define o hospital/);
@@ -112,13 +112,13 @@ test('quality C warns before the result and prostate has no status bar', () => {
 });
 
 test('methodology documents all nine steps and links from the cards resolve', () => {
-  const html = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../../dist/metodologia/index.html', import.meta.url), 'utf8');
   assert.match(html, /id="60-dias"/);
   const treatment = html.split('id="60-dias"')[1].split('</section>')[0];
   assert.equal((treatment.match(/<h3/g) ?? []).length, 9);
   assert.match(html, /id="onde-se-tratar"/);
   for (const term of ['CMPT_INI', 'CMPT_FIM', 'haversine', 'CADGERBR', '27 UFs', 'SP 40–300']) assert.ok(html.includes(term));
-  const manifest = JSON.parse(readFileSync(new URL('../public/dados/manifest.json', import.meta.url)));
+  const manifest = JSON.parse(readFileSync(new URL('../../public/dados/manifest.json', import.meta.url)));
   for (const term of ['quasi-Poisson', 'TRATAMENTO', 'Região imediata', 'TabNet', manifest.pipeline_version]) assert.ok(html.includes(term));
 });
 
@@ -134,13 +134,13 @@ test('cervical screening card always explains the frozen series and retains the 
   assert.match(html, /Informação geral\. A equipe de saúde orienta o cuidado indicado para você/);
   assert.match(html, /\/metodologia\/#citopatologico/);
   assert.doesNotMatch(html, /após dois exames normais anuais consecutivos/);
-  const methodology = readFileSync(new URL('../dist/metodologia/index.html', import.meta.url), 'utf8');
+  const methodology = readFileSync(new URL('../../dist/metodologia/index.html', import.meta.url), 'utf8');
   assert.match(methodology, /id="citopatologico"/);
 });
 
 test('published cytopathology covers the mesh in both cancer selections and renders the frozen ratio series', () => {
   const municipality = listing.municipalities.find(m => m.code === '261160');
-  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const profile = JSON.parse(readFileSync(new URL('../../public/dados/profiles/PE.json', import.meta.url)));
   const data = profile.indicators.cytopathology.all;
   const entry = data.municipalities[municipality.code];
   const html = page(municipality).split('aria-label="Citopatológicos — 25–64 anos"')[1].split('</article>')[0];
@@ -155,8 +155,8 @@ test('published cytopathology covers the mesh in both cancer selections and rend
     assert.ok(point.year >= 2016 && point.year <= 2025);
     assert.ok(html.includes(`<th scope="row">${point.year}</th>`));
   }
-  const all = JSON.parse(readFileSync(new URL('../public/dados/map/cytopathology/all.json', import.meta.url)));
-  const cervix = JSON.parse(readFileSync(new URL('../public/dados/map/cytopathology/cervix.json', import.meta.url)));
+  const all = JSON.parse(readFileSync(new URL('../../public/dados/map/cytopathology/all.json', import.meta.url)));
+  const cervix = JSON.parse(readFileSync(new URL('../../public/dados/map/cytopathology/cervix.json', import.meta.url)));
   assert.equal(Object.keys(all.municipalities).length, listing.municipalities.length);
   assert.deepEqual(all.municipalities, cervix.municipalities);
   assert.equal(all.municipalities[municipality.code].value, entry.value);
@@ -183,7 +183,7 @@ test('published mortality cards render national context and the standardized ser
   skip: !manifest.indicators.mortality && 'Initial SIM publication is pending Atlas validation.',
 }, () => {
   const municipality = listing.municipalities.find(m => m.code === '261160');
-  const profile = JSON.parse(readFileSync(new URL('../public/dados/profiles/PE.json', import.meta.url)));
+  const profile = JSON.parse(readFileSync(new URL('../../public/dados/profiles/PE.json', import.meta.url)));
   const cards = [...page(municipality).matchAll(/<article[^>]*aria-label="Tendência da mortalidade"[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
   for (const [index, cancerType] of ['all', 'breast', 'cervix', 'prostate', 'colorectal', 'lung'].entries()) {
     const data = profile.indicators.mortality[cancerType];
@@ -199,7 +199,7 @@ test('published mortality cards render national context and the standardized ser
       const value = point.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       assert.ok(cards[index].includes(`${value} por 100 mil`));
     }
-    const layer = JSON.parse(readFileSync(new URL(`../public/dados/map/mortality/${cancerType}.json`, import.meta.url)));
+    const layer = JSON.parse(readFileSync(new URL(`../../public/dados/map/mortality/${cancerType}.json`, import.meta.url)));
     assert.equal(layer.has_status, false);
     assert.equal(layer.reference, null);
     assert.deepEqual(layer.municipalities[municipality.code].trend, entry.trend);
@@ -232,7 +232,7 @@ test('estimated cases show annual state and capital context for every cancer typ
 test('smoking shows the state capital for capital and inland municipalities, only for all and lung', () => {
   for (const code of ['261160', '260410', '530010']) {
     const municipality = listing.municipalities.find(m => m.code === code);
-    const profile = JSON.parse(readFileSync(new URL(`../public/dados/profiles/${municipality.uf}.json`, import.meta.url)));
+    const profile = JSON.parse(readFileSync(new URL(`../../public/dados/profiles/${municipality.uf}.json`, import.meta.url)));
     const html = page(municipality);
     const cards = [...html.matchAll(/<section data-cancer-type="([^"]+)"[^>]*>\s*<article[^>]*aria-label="Tabagismo na capital"[^>]*>([\s\S]*?)<\/article>/g)];
     assert.deepEqual(cards.map(match => match[1]), ['all', 'lung']);
@@ -250,6 +250,6 @@ test('smoking shows the state capital for capital and inland municipalities, onl
       for (const point of data.series) assert.ok(card.includes(`<th scope="row">${point.year}</th>`));
     }
   }
-  const index = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+  const index = readFileSync(new URL('../../dist/index.html', import.meta.url), 'utf8');
   assert.doesNotMatch(index, /<option value="smoking"/);
 });

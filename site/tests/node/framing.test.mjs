@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { framingPaddings } from '../src/map/framing.ts';
+import { framingPaddings } from '../../src/map/framing.ts';
 
 const MAP = { left: 0, top: 104, right: 880, bottom: 757 };
 const LEGEND = { left: 0, top: 557, right: 216, bottom: 757 };

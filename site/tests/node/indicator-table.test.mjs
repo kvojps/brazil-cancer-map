@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { listLede, listReading } from '../src/map/indicator-table.ts';
+import { listLede, listReading } from '../../src/map/indicator-table.ts';
 
 const PERIOD = { first_year: 2014, last_year: 2025, provisional: [2025], latest: 2024, trend: [2015, 2024] };
 const layer = (indicator, overrides = {}) => ({

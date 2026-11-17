@@ -1,7 +1,7 @@
 /* Visual foundations: docs/ui-contract.md, section Fundamentos visuais.
    Sizes come from the type scale, spacing from multiples of 4 px, and color from the tokens below.
    The dark values appear twice because CSS cannot share a rule between a media query and a selector;
-   tests/map-tones.test.mjs keeps the two copies equal. */
+   tests/node/map-tones.test.mjs keeps the two copies equal. */
 @font-face {
   font-family: "Inter Variable";
   src: url("/fonts/InterVariable-subset.woff2") format("woff2");

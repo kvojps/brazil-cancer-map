@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { checkMapTones, contrastRatio, parseThemeTokens, resolveToken, toneDistance } from '../scripts/map-tones.mjs';
-import { HATCH, INSUFFICIENT_DOTS, STATUS_COLORS, TREND_COLORS } from '../src/map/indicator-layer.ts';
+import { checkMapTones, contrastRatio, parseThemeTokens, resolveToken, toneDistance } from '../../scripts/map-tones.mjs';
+import { HATCH, INSUFFICIENT_DOTS, STATUS_COLORS, TREND_COLORS } from '../../src/map/indicator-layer.ts';
 
-const themes = parseThemeTokens(readFileSync(new URL('../src/shared/theme.css', import.meta.url), 'utf8'));
+const themes = parseThemeTokens(readFileSync(new URL('../../src/shared/theme.css', import.meta.url), 'utf8'));
 
 // The tables of the visual foundations decision (docs/ui-contract.md, section Fundamentos visuais).
 const DECISION = {

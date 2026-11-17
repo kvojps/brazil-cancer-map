@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { axisResults, panelResult } from '../src/profile/panel-result.ts';
+import { axisResults, panelResult } from '../../src/profile/panel-result.ts';
 
 const PERIOD = { first_year: 2014, last_year: 2025, provisional: [2025], latest: 2024, trend: [2015, 2024] };
 const treatment = (entries, overrides = {}) => ({
