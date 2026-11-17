@@ -10,6 +10,117 @@ before(async () => {
 });
 after(async () => { await browser?.close(); });
 
+test('history restores each details entry reading axis and internal position after logo reset', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE + '?visualizacao=lista');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.locator('#prevencao > summary').click();
+    await page.locator('#prevencao [data-cancer-type="all"] .card-action').last().scrollIntoViewIfNeeded();
+    const reading = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    assert.ok(reading > 100);
+    const previous = page.url();
+    const length = await page.evaluate(() => history.length);
+    await page.locator('[data-details-menu]').click();
+    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.locator('.identity').focus();
+    await page.keyboard.press('Enter');
+    await page.waitForURL(base + '/');
+    await page.goBack();
+    await page.waitForURL(previous);
+    await page.getByRole('button', { name: 'Voltar à lista', exact: true }).waitFor();
+    await page.locator('.result-value').waitFor();
+    await page.waitForFunction(position => document.querySelector('#prevencao').open && Math.abs(document.querySelector('.panel-reading').scrollTop - position) < 3, reading);
+    assert.equal(await page.evaluate(() => history.length), length + 1);
+  } finally { await page.close(); }
+});
+
+test('history restores separate list positions, UF and expanded rows across map and logo', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(10000);
+  try {
+    await page.goto(base + '/?visualizacao=lista');
+    await page.locator('.indicator-table select').selectOption('PE');
+    const row = page.locator('tr[data-code="260960"]');
+    await row.locator('button').click();
+    await row.locator('a').scrollIntoViewIfNeeded();
+    const top = await page.locator('.indicator-table .scroll').evaluate(el => el.scrollTop);
+    await page.getByRole('button', { name: 'Mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Lista', exact: true }).click();
+    await page.locator('.indicator-table select').selectOption('RN');
+    await page.locator('.identity').click();
+    await page.waitForURL(base + '/');
+    const length = await page.evaluate(() => history.length);
+    await page.goBack();
+    await page.waitForFunction(() => document.querySelector('.indicator-table select').value === 'RN');
+    await page.goBack();
+    await page.waitForFunction(() => document.querySelector('[data-map-view]').hidden === false);
+    await page.goBack();
+    await page.waitForFunction(position => document.querySelector('.indicator-table select').value === 'PE' && Math.abs(document.querySelector('.indicator-table .scroll').scrollTop - position) < 3, top);
+    assert.equal(await row.locator('button').getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.evaluate(() => history.length), length);
+  } finally { await page.close(); }
+});
+
+test('Back during a new profile load restores details and rejects the obsolete arrival', async () => {
+  const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(10000);
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let requested;
+  const started = new Promise(resolve => { requested = resolve; });
+  try {
+    await page.goto(base + RECIFE);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await page.locator('#prevencao > summary').click();
+    await page.locator('#prevencao [data-cancer-type="all"] .card-action').last().scrollIntoViewIfNeeded();
+    const reading = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    await page.route('**/dados/profiles/RN.json', async route => { requested(); await gate; await route.continue(); });
+    await page.locator('[data-details-menu]').click();
+    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.locator('#municipality-search').fill('Natal RN');
+    await page.locator('#municipality-results button').click();
+    await started;
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    await page.goBack();
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.waitForFunction(position => document.querySelector('#prevencao').open && Math.abs(document.querySelector('.panel-reading').scrollTop - position) < 3, reading);
+    const response = page.waitForResponse('**/dados/profiles/RN.json');
+    release();
+    await (await response).finished();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.equal(new URL(page.url()).pathname, RECIFE);
+    assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
+    assert.equal(await page.locator('.profile').getAttribute('data-code'), '261160');
+    assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), reading);
+  } finally { release(); await page.close(); }
+});
+
+test('mesh failure recovers independently without history or opening municipal details', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(10000);
+  let fail = true;
+  try {
+    await page.route('**/municipalities.topojson', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.goto(base + RECIFE + '?visualizacao=lista');
+    await page.locator('.result-value').waitFor();
+    await page.locator('.indicator-table select').selectOption('PE');
+    const length = await page.evaluate(() => history.length);
+    const url = page.url();
+    await page.getByRole('button', { name: 'Mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Tentar mapa novamente', exact: true }).waitFor();
+    fail = false;
+    await page.getByRole('button', { name: 'Tentar mapa novamente', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.map-status').hidden);
+    assert.equal(await page.evaluate(() => history.length), length + 1);
+    assert.equal(new URL(page.url()).pathname, new URL(url).pathname);
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(await page.locator('.map canvas').count(), 1);
+    await page.getByRole('button', { name: 'Lista', exact: true }).click();
+    assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
+  } finally { await page.close(); }
+});
+
 test('details are deliberate and Back/Forward traverse details before the municipal selection', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {

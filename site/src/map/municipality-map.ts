@@ -154,7 +154,10 @@ export async function mountMunicipalityMap(
       return response.json() as Promise<MeshTopology>;
     }),
     map.once("load"),
-  ]);
+  ]).catch(error => {
+    map.remove();
+    throw error;
+  });
 
   const mesh = feature(topology, topology.objects.municipalities);
   meshes.set(map, mesh);

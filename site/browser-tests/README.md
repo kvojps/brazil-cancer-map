@@ -200,6 +200,13 @@ limites da emulação ficam em
 A [verificação de resumo, detalhes e retorno em fluxo](../../docs/validation/mobile-details-flow.md)
 registra a entrega da #36 e a conferência conjunta com a chegada da #34.
 
+`mobile-details.test.mjs` também cobre a #49: posições por entrada de detalhes e
+Lista, Eixo, UF e expansões após logo e Voltar/Avançar; Voltar com perfil de RN
+retido na fronteira HTTP; e falha da malha seguida de recuperação independente,
+sem histórico adicional ou expansão da consulta. Os testes observam URL,
+conteúdo e rolagem após conclusão do recurso e recomposição, sem pausa fixa.
+Evidências e limites: [Histórico, links e recuperação](../../docs/validation/navigation-history-recovery.md).
+
 ## Exploração e resumo sem rolagem externa (#45)
 
 Na composição mobile com pelo menos 300 px de largura e 520 px de altura útil,

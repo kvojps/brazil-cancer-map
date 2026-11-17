@@ -35,7 +35,6 @@ export function createMunicipalityNavigation<T>(options: {
   return {
     async select(place: Municipality, push = true) {
       const pending = ++request;
-      options.focus(place);
       if (push) {
         const url = options.getUrl();
         url.pathname = municipalityPath(place);
@@ -43,6 +42,7 @@ export function createMunicipalityNavigation<T>(options: {
         url.hash = '';
         options.setUrl(url);
       }
+      options.focus(place);
       try {
         const content = await options.load(place);
         if (pending === request) options.show(content);
@@ -56,6 +56,7 @@ export function createMunicipalityNavigation<T>(options: {
         const url = options.getUrl();
         url.pathname = '/';
         url.searchParams.delete('municipio');
+        url.hash = '';
         options.setUrl(url);
       }
       options.clear();

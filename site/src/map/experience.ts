@@ -1,3 +1,4 @@
+import { pushVisit } from './visit-history';
 import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization } from './view';
@@ -143,7 +144,7 @@ if (container && status) {
         const url = new URL(location.href);
         if (url.hash.startsWith('#tipo-')) url.hash = '';
         url.search = writeMapState(state, url.searchParams).toString();
-        if (push) history.pushState(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, "", url);
+        if (push) pushVisit(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
         else history.replaceState(history.state, "", url);
         window.dispatchEvent(new Event('navigation-state-change'));
         showInTable(shown, state.mode);
@@ -184,76 +185,86 @@ if (container && status) {
         event.preventDefault();
         const link = event.currentTarget as HTMLAnchorElement;
         // The brand has a native destination too; only a ready dashboard handles it in place.
-        if (link.href !== location.href) history.pushState(null, '', link.href);
+        if (link.href !== location.href) pushVisit(null, link.href);
         window.dispatchEvent(new Event('map-reset'));
         void selectState(readMapState(new URLSearchParams(location.search)), '', false);
         resetCamera();
         link.focus({ preventScroll: true });
       });
       // Loading the optional renderer never gates the text alternatives.
-      void import('../map/municipality-map').then(async renderer => {
-        const map = await renderer.mountMunicipalityMap(container, meshUrl!);
-        showOnMap = renderer.mountIndicatorPaint(map, listing);
-        showOnMap(mapLayer, mapState.mode);
-        // The list view hides the map, which cannot be framed until it comes back.
-        let frameWhenShown = false;
-        let countryFramed = false;
-        let countryResetPending = false;
-        const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
-        selectOnMap = (code, preserve = false) => {
-          if (code) {
-            countryFramed = true;
-            countryResetPending = false;
-          }
-          const returning = frameWhenShown;
-          frameWhenShown = !!code && !container.clientWidth;
-          if (code) renderer.focusMunicipality(map, code, overlays, preserve, returning);
-          else renderer.clearMunicipality(map);
-        };
-        // The legend reserves its area only once a layer has filled it, and the list hides the map.
-        frameCountryOnce = () => {
-          if (countryFramed || !mapLayer || selectedCode || !container.clientWidth) return;
-          countryFramed = true;
-          if (countryResetPending) renderer.resetCountry(map, overlays);
-          else renderer.frameCountry(map, overlays);
-          countryResetPending = false;
-        };
-        resetCamera = () => {
-          countryFramed = false;
-          countryResetPending = true;
-          renderer.resetCountry(map, overlays);
-          frameCountryOnce();
-        };
-        map.on('resize', () => {
-          if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);
-          frameCountryOnce();
-        });
-        let resizing = false;
-        const revealAfterResize = () => {
-          if (resizing) return;
-          resizing = true;
-          requestAnimationFrame(() => {
-            resizing = false;
-            const panel = document.querySelector('#municipality-preview');
-            const inFlow = document.documentElement.hasAttribute('data-mobile-flow') || !matchMedia('(max-width: 767px) and (min-height: 520px)').matches;
-            if (selectedCode && container.clientWidth && (inFlow || panel?.hasAttribute('data-collapsed'))) {
-              renderer.focusMunicipality(map, selectedCode, overlays, true);
-            }
-          });
-        };
-        window.addEventListener('resize', revealAfterResize);
-        window.addEventListener('mobile-layout-change', revealAfterResize);
-        selectOnMap(selectedCode, preserveCamera);
-        frameCountryOnce();
-        renderer.onMunicipalityClick(map, code => {
-          window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));
-        });
-        status.hidden = true;
-      }).catch(error => {
-        console.error(error);
+      const loadMap = () => {
         status.hidden = false;
-        status.textContent = 'Não foi possível carregar o mapa. A busca, a lista e o índice por UF continuam disponíveis.';
-      });
+        status.textContent = 'Carregando o mapa…';
+        void import('../map/municipality-map').then(async renderer => {
+          const map = await renderer.mountMunicipalityMap(container, meshUrl!);
+          showOnMap = renderer.mountIndicatorPaint(map, listing);
+          showOnMap(mapLayer, mapState.mode);
+          // The list view hides the map, which cannot be framed until it comes back.
+          let frameWhenShown = false;
+          let countryFramed = false;
+          let countryResetPending = false;
+          const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
+          selectOnMap = (code, preserve = false) => {
+            if (code) {
+              countryFramed = true;
+              countryResetPending = false;
+            }
+            const returning = frameWhenShown;
+            frameWhenShown = !!code && !container.clientWidth;
+            if (code) renderer.focusMunicipality(map, code, overlays, preserve, returning);
+            else renderer.clearMunicipality(map);
+          };
+          // The legend reserves its area only once a layer has filled it, and the list hides the map.
+          frameCountryOnce = () => {
+            if (countryFramed || !mapLayer || selectedCode || !container.clientWidth) return;
+            countryFramed = true;
+            if (countryResetPending) renderer.resetCountry(map, overlays);
+            else renderer.frameCountry(map, overlays);
+            countryResetPending = false;
+          };
+          resetCamera = () => {
+            countryFramed = false;
+            countryResetPending = true;
+            renderer.resetCountry(map, overlays);
+            frameCountryOnce();
+          };
+          map.on('resize', () => {
+            if (frameWhenShown && container.clientWidth) selectOnMap(selectedCode, preserveCamera);
+            frameCountryOnce();
+          });
+          let resizing = false;
+          const revealAfterResize = () => {
+            if (resizing) return;
+            resizing = true;
+            requestAnimationFrame(() => {
+              resizing = false;
+              const panel = document.querySelector('#municipality-preview');
+              const inFlow = document.documentElement.hasAttribute('data-mobile-flow') || !matchMedia('(max-width: 767px) and (min-height: 520px)').matches;
+              if (selectedCode && container.clientWidth && (inFlow || panel?.hasAttribute('data-collapsed'))) {
+                renderer.focusMunicipality(map, selectedCode, overlays, true);
+              }
+            });
+          };
+          window.addEventListener('resize', revealAfterResize);
+          window.addEventListener('mobile-layout-change', revealAfterResize);
+          selectOnMap(selectedCode, preserveCamera);
+          frameCountryOnce();
+          renderer.onMunicipalityClick(map, code => {
+            window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code }));
+          });
+          status.hidden = true;
+        }).catch(error => {
+          console.error(error);
+          status.hidden = false;
+          status.textContent = 'Não foi possível carregar o mapa. A busca, a lista e o índice por UF continuam disponíveis.';
+          const retryMap = document.createElement('button');
+          retryMap.type = 'button';
+          retryMap.textContent = 'Tentar mapa novamente';
+          retryMap.onclick = loadMap;
+          status.append(' ', retryMap);
+        });
+      };
+      loadMap();
       for (const control of [indicatorSelector, readingSelector]) {
         if (!control) continue;
         control.disabled = false;

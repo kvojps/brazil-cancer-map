@@ -1,4 +1,5 @@
 import { navigationUrl } from "../shared/navigation.ts";
+import { keepVisitContext } from './visit-history.ts';
 import { municipalityPath } from "../profile/profile.ts";
 import { classOf, readingMode, showsBandC } from "../profile/panel-result.ts";
 import {
@@ -81,6 +82,19 @@ export function mountIndicatorTable(
 
   // By code, so a row stays open when the filters rebuild the rows.
   const open = new Set<string>();
+  const scroll = root.querySelector<HTMLElement>('.scroll')!;
+  let lastTop = scroll.scrollTop;
+  scroll.addEventListener('scroll', () => { if (!root.hidden) lastTop = scroll.scrollTop; }, { passive: true });
+  let restoredTop: number | undefined;
+  keepVisitContext(() => ({ uf: filter.value, open: [...open], top: root.hidden ? lastTop : scroll.scrollTop }), context => {
+    if (!context) return;
+    filter.value = context.uf;
+    open.clear();
+    for (const code of context.open) open.add(code);
+    lastTop = restoredTop = context.top;
+    // Let URL restoration choose the layer and visualization before rebuilding rows.
+    queueMicrotask(render);
+  });
   body.addEventListener("click", (event) => {
     const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-row-toggle]") : null;
     if (!button) return;
@@ -153,6 +167,10 @@ export function mountIndicatorTable(
       }),
     );
     count.textContent = `${shown.length.toLocaleString("pt-BR")} municípios`;
+    if (restoredTop !== undefined) {
+      scroll.scrollTop = restoredTop;
+      restoredTop = undefined;
+    }
   };
   filter.addEventListener("change", render);
   new MutationObserver(render).observe(root, { attributes: true, attributeFilter: ['hidden'] });

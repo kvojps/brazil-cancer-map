@@ -1,3 +1,4 @@
+import { keepVisitContext, pushVisit } from './visit-history';
 import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
 import { readMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
@@ -24,6 +25,14 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const status = document.querySelector<HTMLElement>('#search-status')!;
   const profiles = new Map<string, Promise<UfProfile>>();
   const content = panel.querySelector<HTMLElement>('[data-profile-slot]')!;
+  const reading = panel.querySelector<HTMLElement>('.panel-reading')!;
+  let restoredReading: { code: string; axis: string; top: number; panelTop: number } | undefined;
+  keepVisitContext(() => ({ code: shownCode, axis: content.querySelector<HTMLDetailsElement>('[data-profile-axis][open]')?.id ?? '', top: reading.scrollTop, panelTop: panel.scrollTop }), context => {
+    cancelArrival();
+    restoredReading = context;
+    initialAnchor = context ? '' : location.hash.slice(1);
+    anchorArrival = true;
+  });
   const resultBlock = panel.querySelector<HTMLElement>('[data-profile-result]')!;
   const heading = panel.querySelector<HTMLElement>('#preview-heading')!;
   const toggle = panel.querySelector<HTMLButtonElement>('[data-toggle-profile]')!;
@@ -45,7 +54,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
   let frameOnRender = false;
-  const cancelArrival = () => { anchorArrival = false; frameOnRender = false; };
+  const cancelArrival = () => { anchorArrival = false; frameOnRender = false; restoredReading = undefined; };
   for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
     window.addEventListener(event, cancelArrival, { passive: true, capture: true });
   }
@@ -105,7 +114,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     if (!detailsOpen()) {
       const exploration = history.state?.municipalExploration ?? { left: 0, top: 0 };
       history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
-      history.pushState({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, '', location.href);
+      pushVisit({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, location.href);
     }
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(state.indicator);
     expand(true);
@@ -184,6 +193,13 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       }
       initialAnchor = '';
     }
+    if (restoredReading?.code === selected.code) {
+      const position = restoredReading;
+      restoredReading = undefined;
+      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === position.axis;
+      reading.scrollTop = position.top;
+      panel.scrollTop = position.panelTop;
+    }
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
     // Frame against the loaded summary and the controls resting above it.
     syncSheetMetrics();
@@ -192,7 +208,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
     getUrl: () => new URL(location.href),
-    setUrl: url => { history.pushState(null, '', url); window.dispatchEvent(new Event('navigation-state-change')); },
+    setUrl: url => { pushVisit(null, url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
       const changed = selected?.code !== place.code;
       if (changed && preserveCameraFor !== place.code) preserveCameraFor = undefined;
@@ -303,7 +319,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     initialAnchor = '';
     preserveCameraFor = preserveCamera ? place.code : undefined;
     const exploration = { left: scrollX, top: scrollY };
-    if (isPhone()) expand(false);
     returnFocus = focusAfterwards;
     const loading = navigation.select(place);
     history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);

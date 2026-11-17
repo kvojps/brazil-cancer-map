@@ -1,3 +1,4 @@
+import { keepVisitContext, pushVisit } from './visit-history';
 /** Swap the text alternative and renderer without remounting either or losing selection. */
 export function mountVisualization(): void {
   const controls = document.querySelector<HTMLElement>('.view-controls')!;
@@ -6,6 +7,13 @@ export function mountVisualization(): void {
   const listScroll = list.querySelector<HTMLElement>('.scroll')!;
   let activeList: boolean | undefined;
   const positions = new Map<boolean, { page: number; table: number }>();
+  let restoring = false;
+  keepVisitContext(() => ({ page: window.scrollY, positions: [...positions] }), context => {
+    restoring = true;
+    positions.clear();
+    for (const [view, position] of context?.positions ?? []) positions.set(view, position);
+    requestAnimationFrame(() => window.scrollTo({ top: context?.page ?? 0, behavior: 'instant' }));
+  });
   const sync = () => {
     const url = new URL(location.href);
     const isList = url.searchParams.get('visualizacao') === 'lista';
@@ -14,7 +22,7 @@ export function mountVisualization(): void {
       history.replaceState(history.state, '', url);
     }
     const changed = activeList !== undefined && activeList !== isList;
-    if (changed) positions.set(activeList!, { page: window.scrollY, table: listScroll.scrollTop });
+    if (changed && !restoring) positions.set(activeList!, { page: window.scrollY, table: listScroll.scrollTop });
     activeList = isList;
     map.hidden = isList;
     list.hidden = !isList;
@@ -22,18 +30,19 @@ export function mountVisualization(): void {
       button.setAttribute('aria-pressed', String((button.dataset.view === 'lista') === isList));
     }
     window.dispatchEvent(new Event('resize'));
-    if (changed) requestAnimationFrame(() => {
+    if (changed && !restoring) requestAnimationFrame(() => {
       if (activeList !== isList) return;
       const position = positions.get(isList);
       window.scrollTo({ top: position?.page ?? 0, behavior: 'instant' });
       listScroll.scrollTop = position?.table ?? 0;
     });
+    restoring = false;
   };
   const choose = (view: string) => {
     const url = new URL(location.href);
     if (view === 'lista') url.searchParams.set('visualizacao', 'lista');
     else url.searchParams.delete('visualizacao');
-    if (url.href !== location.href) history.pushState(null, '', url);
+    if (url.href !== location.href) pushVisit(history.state, url);
     sync();
     window.dispatchEvent(new Event('navigation-state-change'));
   };
