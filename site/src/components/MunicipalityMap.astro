@@ -56,8 +56,8 @@ const base = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/dados`;
   @media (min-width: 768px) {
     .map-frame { height: 100%; min-height: 0; }
   }
-  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    @scope (:global(:root:not([data-mobile-flow]))) {
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+    @scope (:global(:root)) {
       .map-frame { min-height: 0; }
       .map-no-script { top: 45%; }
     }

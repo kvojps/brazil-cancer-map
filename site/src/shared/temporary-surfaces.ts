@@ -12,7 +12,7 @@ export function mountTemporarySurfaces(): void {
   const detailsToggle = document.querySelector<HTMLElement>('[data-details-menu]');
   let searchOpener: HTMLElement = searchToggle;
   let filtersOpener: HTMLElement | null = document.querySelector('.filters-toggle');
-  const floating = matchMedia('(max-width: 767px) and (min-width: 300px) and (min-height: 520px)');
+  const floating = matchMedia('(max-width: 767px)');
   let switching = false;
   let legendOpener: HTMLElement | undefined;
   const focus = (element: HTMLElement | undefined | null) => {
@@ -118,5 +118,4 @@ export function mountTemporarySurfaces(): void {
     if (document.activeElement === searchToggle && input.checkVisibility({ visibilityProperty: true })) input.focus({ preventScroll: true });
   };
   floating.addEventListener('change', adapt);
-  window.addEventListener('mobile-layout-change', adapt);
 }

@@ -73,8 +73,9 @@ mapa são conferidas fora do navegador, por `npm run check:tones`, que também r
 a ponta sob o aviso a 390 × 844, 390 × 664 e 320 × 568, sem rolagem; um dedo move o mapa
 com toque emulado; cabeçalho, menu, busca, folha de Filtros não modal e legenda
 flutuantes; sem JavaScript, menu e folha abrem com os seletores desativados; a Lista
-rola até o rodapé; e, em janelas baixas ou muito estreitas e no zoom nativo de 200%, os
-controles saem de cima do mapa. O teclado virtual é uma altura típica descontada da
+rola internamente; em janelas baixas ou muito estreitas e no zoom nativo de 200%,
+os comandos continuam alcançáveis internamente com JavaScript. Sem JavaScript,
+as telas pequenas mantêm a apresentação em fluxo. O teclado virtual é uma altura típica descontada da
 tela, pois a emulação do Chromium não o abre. O enquadramento dentro do WebGL é
 conferido em capturas; a conta da área reservada está em `tests/framing.test.mjs`.
 
@@ -219,7 +220,7 @@ sem pausa fixa para aprovar o foco. Seleção substituída e limpeza durante car
 não permitem resultado obsoleto. O aviso usa a redação curta aprovada na #44.
 
 As referências anteriores a fluxo por resumo longo descrevem as entregas
-históricas. Lista, detalhes e composição extrema continuam sendo completados
+históricas. Lista, detalhes e composição extrema têm suas coberturas
 nas #47, #46 e #50; a conferência integrada está na #51 e a física na #52.
 A emulação de Chromium não comprova teclado virtual, barras móveis ou toque
 em aparelho real. Evidências desta etapa: [Mapa e resumo](../../docs/validation/mobile-map-summary.md).
@@ -234,5 +235,16 @@ interna no retorno; `municipality-selection.test.mjs` também detecta substitui�
 dos links, além de alterações nos destinos. `map-touch.test.mjs` compara a
 geografia visível depois de selecionar outro município pela Lista com zoom
 previamente alterado. As descrições anteriores de rolagem externa da Lista são
-históricas; a composição extrema continua na #50. Evidências e limites em
+históricas; a composição extrema tem sua cobertura na #50. Evidências e limites em
 [Lista e contexto](../../docs/validation/mobile-list-context.md).
+
+## Altura extrema (#50)
+
+A #50 amplia `mobile-details.test.mjs` e `municipal-panel.test.mjs` com
+568 × 160 e fonte CSS de 200%: fim do aviso, resumo, barra, conteúdo, Menu,
+busca, filtros, legenda, retorno e recuperação de altura, sem cliques forçados.
+O teste de recuperação compara consulta, URL, histórico e posição de leitura.
+Os casos incluem origem regional, Faixa C, Dado insuficiente, próstata e
+mortalidade. `phone-first-screen.test.mjs` cobre separadamente zoom nativo;
+redução da janela aproxima perda de altura com teclado, sem comprovar teclado
+físico. Evidências e pendências: [altura extrema](../../docs/validation/mobile-extreme-height.md).

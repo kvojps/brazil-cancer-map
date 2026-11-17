@@ -300,10 +300,15 @@ test('recovering useful height restores canvas exploration without exposing perm
     assert.ok(recife, 'Recife is reachable on the canvas');
     const url = page.url();
     await page.setViewportSize({ width: 390, height: 390 });
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'static');
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'fixed' && document.documentElement.scrollHeight <= innerHeight + 1);
     await page.setViewportSize({ width: 390, height: 740 });
     await page.waitForFunction(() => getComputedStyle(document.querySelector('#municipality-preview')).position === 'fixed', null, { timeout: 3000 });
-    await page.touchscreen.tap(recife.point.x, recife.point.y);
+    const recovered = await visibleSamples(page);
+    const recoveredRecife = recovered.find(sample => sample.name === recife.name);
+    assert.ok(recoveredRecife, 'height recovery reveals the selection');
+    const localNames = new Set(samples.map(sample => sample.name));
+    assert.ok(new Set(recovered.filter(sample => localNames.has(sample.name)).map(sample => sample.name)).size >= 2, 'height recovery keeps local geography rather than refitting the country or UF');
+    await page.touchscreen.tap(recoveredRecife.point.x, recoveredRecife.point.y);
     await page.waitForFunction(() => document.querySelector('[data-toggle-profile]').getAttribute('aria-expanded') === 'false');
     assert.equal(await page.locator('#preview-heading').innerText(), recife.name);
     assert.equal(page.url(), url);
@@ -315,7 +320,7 @@ test('recovering useful height restores canvas exploration without exposing perm
     await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(page.url(), url);
-    for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'height recovery and details preserve the camera');
+    for (const { name, point } of recovered) assert.equal(await labelAt(page, point), name, 'details preserve the recovered camera after the minimum reveal');
   } finally { await page.close(); }
 });
 
@@ -356,7 +361,7 @@ for (const height of [568, 664, 740, 844]) {
   });
 }
 
-for (const action of ['retry', 'deliberate scroll', 'new selection', 'clear selection']) {
+for (const action of ['retry', 'deliberate internal scroll', 'new selection', 'clear selection']) {
   test(`a delayed first touch respects ${action}`, async () => {
     const page = await browser.newPage({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true });
     let release;
@@ -388,17 +393,19 @@ for (const action of ['retry', 'deliberate scroll', 'new selection', 'clear sele
         assert.equal(page.url(), clearedUrl);
         assert.equal(await page.evaluate(() => scrollY), 0);
         assert.equal(await page.locator('.search-toggle').evaluate(node => node === document.activeElement), true);
-      } else if (action === 'deliberate scroll') {
-        await page.setViewportSize({ width: 390, height: 390 });
-        await page.mouse.move(20, 150);
+      } else if (action === 'deliberate internal scroll') {
+        await page.setViewportSize({ width: 568, height: 160 });
+        await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+        const notice = page.locator('.construction-notice');
+        await notice.hover();
         await page.mouse.wheel(0, 150);
-        await page.waitForTimeout(200);
-        const position = await page.evaluate(() => scrollY);
-        assert.ok(position > 0, 'the person has scrolled before the profile arrives');
+        await page.waitForFunction(() => document.querySelector('.construction-notice').scrollTop > 0);
+        const position = await notice.evaluate(element => element.scrollTop);
         release();
         await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
         await afterComposition(page);
-        assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'late data preserves deliberate reading');
+        assert.ok(Math.abs(await notice.evaluate(element => element.scrollTop) - position) < 3, 'late data preserves deliberate internal reading');
+        assert.equal(await page.evaluate(() => scrollY), 0);
         assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), false);
       } else if (action === 'new selection') {
         await page.locator('.search-toggle').click();

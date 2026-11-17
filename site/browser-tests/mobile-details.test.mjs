@@ -437,3 +437,62 @@ test('details keep the reading axis for type changes and follow an actual indica
     assert.equal(new URL(page.url()).pathname, RECIFE);
   } finally { await page.close(); }
 });
+
+for (const theme of ['light', 'dark']) test(`extreme height with 200% CSS text keeps reading and commands reachable (${theme})`, async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(5000);
+  const reachable = async locator => {
+    await locator.scrollIntoViewIfNeeded();
+    const box = await locator.boundingBox();
+    assert.ok(box && box.y >= 0 && box.y < 160 && box.y + Math.min(box.height, 20) <= 160);
+  };
+  try {
+    await page.goto(base + RECIFE + `?theme=${theme}&tipo=prostate`);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+    const url = page.url();
+    const historyLength = await page.evaluate(() => history.length);
+    await page.setViewportSize({ width: 568, height: 160 });
+    await page.waitForFunction(() => document.documentElement.scrollHeight <= innerHeight + 1);
+    const notice = page.locator('.construction-notice');
+    await notice.evaluate(el => { el.scrollTop = el.scrollHeight; });
+    assert.match(await notice.innerText(), /podem conter erros e mudar/);
+    assert.equal(await notice.evaluate(el => {
+      const text = el.querySelector('p').lastChild;
+      const range = document.createRange();
+      const endOffset = text.textContent.trimEnd().length;
+      range.setStart(text, endOffset - 6);
+      range.setEnd(text, endOffset);
+      const end = range.getBoundingClientRect();
+      const area = el.getBoundingClientRect();
+      return end.top >= area.top && end.bottom <= area.bottom;
+    }), true, 'the end of the notice can be read inside its own area');
+    await reachable(page.getByRole('button', { name: 'Ver detalhes', exact: true }));
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+    await reachable(page.locator('[data-details-menu]'));
+    await page.locator('[data-details-menu]').click();
+    await page.getByRole('button', { name: 'Filtros', exact: true }).click();
+    assert.equal(await page.locator('#cancer-type').inputValue(), 'prostate');
+    await page.keyboard.press('Escape');
+    await page.locator('[data-details-menu]').click();
+    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.locator('#municipality-search').fill('Olinda PE');
+    await reachable(page.locator('#municipality-results button').first());
+    await page.keyboard.press('Escape');
+    await page.locator('[data-details-menu]').click();
+    await page.locator('#details-menu').getByRole('button', { name: 'Legenda', exact: true }).click();
+    await page.locator('#legend-full button').last().scrollIntoViewIfNeeded();
+    await page.keyboard.press('Escape');
+    const reading = page.locator('.panel-reading');
+    await page.locator('#acesso [data-cancer-type="prostate"] .card-action').last().scrollIntoViewIfNeeded();
+    const position = await reading.evaluate(el => el.scrollTop);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => document.documentElement.scrollHeight <= innerHeight + 1);
+    assert.equal(page.url(), url);
+    assert.equal(await page.evaluate(() => history.length), historyLength + 1);
+    const restored = await reading.evaluate(el => ({ top: el.scrollTop, max: el.scrollHeight - el.clientHeight }));
+    assert.ok(Math.abs(restored.top - Math.min(position, restored.max)) < 3, JSON.stringify({ position, restored }));
+    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+  } finally { await page.close(); }
+});

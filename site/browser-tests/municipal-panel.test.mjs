@@ -348,25 +348,26 @@ test('the sheet works by keyboard, with visible focus', async () => {
 });
 
 for (const [width, height] of [[195, 422], [320, 450], [640, 400]]) {
-  test(`at ${width} × ${height}, as under 200% zoom, the panel is part of a plain page`, async () => {
+  test(`at ${width} × ${height}, as under 200% zoom, the panel keeps internal reading`, async () => {
     const page = await openPanel(ALCANTARA, { width, height });
     try {
-      assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static');
+      assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'fixed');
       assert.equal(await toggle(page).isVisible(), true);
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       await toggle(page).click();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
       assert.ok((await blockText(page)).includes(WARNING));
       assert.equal(await noHorizontalScroll(page), true);
-      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-      await page.waitForFunction(() => scrollY > 0);
-      assert.equal((await box(page, '.construction-notice')).top, 0, 'the notice stays');
-      assert.equal(await page.locator('footer').isVisible(), true);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), true);
+      await page.locator('[data-details-menu]').click();
+      await page.locator('#details-menu').getByRole('button', { name: 'Legenda', exact: true }).click();
+      await page.keyboard.press('Escape');
+      await toggle(page).click();
     } finally { await page.close(); }
   });
 }
 
-test('native 200% zoom on a phone keeps the plain page and the warning in both themes', async () => {
+test('native 200% zoom on a phone keeps internal reading and the warning in both themes', async () => {
   const extension = fileURLToPath(new URL('./zoom-extension', import.meta.url));
   for (const colorScheme of ['light', 'dark']) {
     const context = await chromium.launchPersistentContext('', {
@@ -385,7 +386,7 @@ test('native 200% zoom on a phone keeps the plain page and the warning in both t
       }, base);
       await page.setViewportSize({ width: 390, height: 844 });
       assert.equal(await page.evaluate(() => innerWidth), 195);
-      assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'static', colorScheme);
+      assert.equal(await page.locator('#municipality-preview').evaluate(element => getComputedStyle(element).position), 'fixed', colorScheme);
       assert.ok((await blockText(page)).includes(WARNING), colorScheme);
       assert.equal(await noHorizontalScroll(page), true, colorScheme);
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
@@ -440,3 +441,32 @@ for (const javaScriptEnabled of [true, false]) {
     });
   }
 }
+
+for (const [path, expected] of [
+  [ALCANTARA, /Seu município e vizinhos — região de São Luís/],
+  [BALSAS, /Faixa C/],
+  [ARAIOSES, /Dado insuficiente/],
+  [`${RECIFE}?tipo=prostate`, /vigilância ativa/],
+  [`${RECIFE}?indicador=mortality`, /Tendência/],
+]) test(`extreme summary preserves complete result and reachable exits: ${path}`, async () => {
+  const page = await openPanel(path, { width: 568, height: 160 });
+  page.setDefaultTimeout(5000);
+  try {
+    await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+    assert.match(await blockText(page), expected);
+    if (path === ALCANTARA || path === BALSAS) assert.ok((await blockText(page)).includes(WARNING));
+    await toggle(page).click();
+    await page.locator('details[open] [data-cancer-type="' + (path.includes('prostate') ? 'prostate' : 'all') + '"] .card-action').last().scrollIntoViewIfNeeded();
+    await toggle(page).click();
+    await page.locator('[data-clear-profile]').click();
+    await page.locator('.filters-toggle').click();
+    await page.locator('#cancer-type').selectOption('breast');
+    await page.keyboard.press('Escape');
+    await page.locator('.search-toggle').click();
+    await page.locator('#municipality-search').fill('Recife PE');
+    await page.locator('#municipality-search').press('Enter');
+    await toggle(page).waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), true);
+    assert.equal(await noHorizontalScroll(page), true);
+  } finally { await page.close(); }
+});

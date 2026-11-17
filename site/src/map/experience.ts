@@ -243,7 +243,7 @@ if (container && status) {
             requestAnimationFrame(() => {
               resizing = false;
               const panel = document.querySelector('#municipality-preview');
-              const inFlow = document.documentElement.hasAttribute('data-mobile-flow') || !matchMedia('(max-width: 767px) and (min-height: 520px)').matches;
+              const inFlow = !matchMedia('(max-width: 767px)').matches;
               if (selectedCode && container.clientWidth && (inFlow || panel?.hasAttribute('data-collapsed'))) {
                 renderer.focusMunicipality(map, selectedCode, overlays, true);
               }

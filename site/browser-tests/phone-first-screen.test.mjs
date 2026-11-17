@@ -370,7 +370,7 @@ test('a short screen keeps the summary over the map and filters in their surface
   } finally { await page.close(); }
 });
 
-for (const javaScriptEnabled of [true, false]) {
+for (const javaScriptEnabled of [false]) {
   for (const [width, height] of [[195, 422], [160, 450], [320, 450], [640, 400]]) {
     test(`at ${width} × ${height}, as under 200% zoom, the controls leave the map: JavaScript ${javaScriptEnabled}`, async () => {
       const page = await open({ javaScriptEnabled, viewport: { width, height } });
@@ -454,7 +454,7 @@ test('from 768 px there is no sheet: the selectors stay in the bar and the extra
 });
 
 // Native zoom changes the media queries too, which a smaller viewport alone only stands in for.
-test('native 200% zoom on a phone takes the controls off the map in both themes, with and without JavaScript', async () => {
+test('native 200% zoom keeps scripted controls reachable and preserves normal scrolling without JavaScript', async () => {
   const extension = fileURLToPath(new URL('./zoom-extension', import.meta.url));
   for (const javaScriptEnabled of [false, true]) {
     for (const colorScheme of ['light', 'dark']) {
@@ -477,9 +477,23 @@ test('native 200% zoom on a phone takes the controls off the map in both themes,
           assert.equal(await page.evaluate(() => innerWidth), width / 2);
           const where = `${width} × ${height}, ${colorScheme}, JavaScript ${javaScriptEnabled}`;
           assert.equal(await noHorizontalScroll(page), true, where);
-          assert.equal(await page.locator('.filters-toggle').isVisible(), false, where);
-          const map = await box(page, '.map-frame');
-          for (const selector of ['.site-header', '#map-indicator', '.legend-corner']) assert.equal(overlaps(await box(page, selector), map), false, `${selector}: ${where}`);
+          if (javaScriptEnabled) {
+            await filtersReady(page);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), true, where);
+            await page.locator('.filters-toggle').click();
+            await page.locator('#cancer-type').selectOption('breast');
+            await page.getByRole('button', { name: 'Ver mapa', exact: true }).click();
+            await page.locator('.search-toggle').click();
+            await page.locator('#municipality-search').fill('Recife PE');
+            await page.locator('#municipality-search').press('Enter');
+            await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
+            await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+            await page.locator('[data-clear-profile]').click();
+          } else {
+            assert.equal(await page.locator('.filters-toggle').isVisible(), false, where);
+            const map = await box(page, '.map-frame');
+            for (const selector of ['.site-header', '#map-indicator', '.legend-corner']) assert.equal(overlaps(await box(page, selector), map), false, `${selector}: ${where}`);
+          }
         }
       } finally { await context.close(); }
     }

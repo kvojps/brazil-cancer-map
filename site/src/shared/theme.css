@@ -236,17 +236,13 @@ footer p { margin: 0; flex-basis: 100%; }
   body:not(:has(.home)) > .site-header { border-bottom: 1px solid var(--border); }
 }
 
-/* The map's first screen on a phone: docs/ui-contract.md, section Primeira tela no celular.
-   Two compositions share the rules of this block. Floating: the map fills what the notice leaves and the
-   controls float over it, in the media query repeated across the components that take part in it. In flow:
-   a short or very narrow viewport, as under 200% zoom, has no room to float, so the controls stack around
-   the map and the page scrolls. */
+/* Scripted mobile dashboards retain internal scrolling at every available height. */
 @media (max-width: 767px) {
   body:has(.home) > main { padding: 0; }
 }
-@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-  html:not([data-mobile-flow]):has(.home):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
-  @scope (:root:not([data-mobile-flow])) {
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+  html:has(.home):not(:has(#municipality-preview:not([hidden]):not([data-enhanced]))) { overflow: hidden; overscroll-behavior: none; }
+  @scope (:root) {
     body:has(.home) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
     body:has(.home)::before { content: ""; grid-area: 1 / 1 / 3 / 2; height: var(--dashboard-height, 100dvh); visibility: hidden; pointer-events: none; }
     body:has(.home) > .construction-notice { grid-area: 1 / 1; }
@@ -261,17 +257,38 @@ footer p { margin: 0; flex-basis: 100%; }
   }
 }
 
-@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-  html:not([data-mobile-flow]):has(.indicator-table:not([hidden])) { scroll-padding-block: calc(var(--notice-height, 6rem) + 3.5rem) calc(var(--sheet-height, 0px) + 5rem); }
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+  html:has(.indicator-table:not([hidden])) { scroll-padding-block: calc(var(--notice-height, 6rem) + 3.5rem) calc(var(--sheet-height, 0px) + 5rem); }
 }
 
-/* The same in-flow composition is used when overlays or a visual keyboard leave too little map. */
-html[data-mobile-flow] { overflow: auto; overscroll-behavior: auto; scroll-padding-top: var(--notice-height, 6rem); }
-html[data-mobile-flow] .filters-sheet:not(:popover-open) { display: contents; }
-html[data-mobile-flow] .map-and-profile { grid-template-columns: minmax(0, 1fr); }
-html[data-mobile-flow] .panel-bar { scroll-margin-top: var(--notice-height, 6rem); }
-
 /* Details keep their own reading area even when the exploration is a scrolling List. */
-@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-  html[data-js]:not([data-mobile-flow]):has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) { overflow: hidden; overscroll-behavior: none; }
+@media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+  html[data-js]:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) { overflow: hidden; overscroll-behavior: none; }
+}
+
+/* Reserve reading space only when the notice would consume the dashboard. */
+@media (max-width: 767px) {
+  html[data-js]:has(.home) { --dashboard-bottom: max(0px, calc(100dvh - var(--dashboard-height, 100dvh) - var(--dashboard-top, 0px))); }
+  html[data-js]:has(.home) body { position: relative; top: var(--dashboard-top, 0px); height: var(--dashboard-height, 100dvh); overflow: hidden; }
+  html[data-js]:has(.home) .construction-notice { max-height: max(1lh, calc(var(--dashboard-height, 100dvh) / 4)); padding-block: clamp(0px, calc((var(--dashboard-height, 100dvh) / 4 - 1lh) / 2), .5rem); overflow: auto; overscroll-behavior: contain; }
+  html[data-mobile-tight]:has(.home) .site-header[data-search-open] { position: fixed; top: calc(var(--dashboard-top, 0px) + var(--notice-height)); inset-inline: 0; margin: 0; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height)); overflow: auto; }
+  html[data-mobile-tight]:has(.home) .site-header[data-search-open] .municipality-search { position: relative; overflow: auto; }
+  html[data-mobile-tight]:has(.home) .site-header[data-search-open] #municipality-results { position: static; max-height: none; overflow: visible; }
+  html[data-js]:has(.home) #legend-full:popover-open { inset-block: calc(var(--dashboard-top, 0px) + var(--notice-height)) var(--dashboard-bottom, 0px); margin-block: auto; max-height: min(80dvh, calc(var(--dashboard-height, 100dvh) - var(--notice-height))); overflow: auto; }
+  html[data-js]:has(.home) #map-filters:popover-open { bottom: var(--dashboard-bottom, 0px); max-height: min(50dvh, calc(var(--dashboard-height, 100dvh) - var(--notice-height))); }
+}
+
+@media (max-width: 767px) {
+  html[data-mobile-tight]:has(.home) body { grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr); }
+  html[data-mobile-tight]:has(.home) body::before { grid-area: 1 / 1 / 4 / 2; }
+  html[data-mobile-tight]:has(.home) body > .site-header { grid-area: 2 / 1; max-height: 100%; overflow: auto; margin: 0; }
+  html[data-mobile-tight]:has(.home) body > main { grid-area: 3 / 1; }
+  html[data-mobile-tight]:has(.home .indicator-table:not([hidden])) { --list-summary-height: min(calc(var(--dashboard-height) - var(--notice-height)), max(4rem, calc((var(--dashboard-height) - var(--notice-height)) / 4))); }
+  html[data-mobile-tight] .home { overflow: auto; overscroll-behavior: contain; }
+  html[data-mobile-tight] .home:has(.indicator-table:not([hidden])) { scroll-padding-bottom: calc(var(--sheet-height, 0px) + 1rem); }
+  html[data-mobile-tight] .home:has(.indicator-table:not([hidden]))::after { content: ""; flex: none; height: calc(var(--sheet-height, 0px) + 1rem); }
+  html[data-mobile-tight] .home .map-controls { position: relative; inset: auto; padding: .5rem; flex: none; }
+  html[data-mobile-tight] .home .view-controls { position: static; align-self: start; }
+  html[data-mobile-tight] .map-and-profile { flex: none; height: max(12rem, calc(var(--dashboard-height) - var(--notice-height))); }
+  html[data-mobile-tight] .site-menu > nav { position: fixed; top: calc(var(--dashboard-top, 0px) + var(--notice-height)); max-height: calc(var(--dashboard-height) - var(--notice-height)); overflow: auto; }
 }

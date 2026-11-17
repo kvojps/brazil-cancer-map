@@ -218,8 +218,8 @@
     .scroll { overflow: auto; min-height: 16rem; max-height: calc(100dvh - var(--notice-height, 6rem) - 4rem); }
   }
   /* Keep rows and keyboard focus inside the dashboard, clear of the summary and view switcher. */
-  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    @scope (:global(:root:not([data-mobile-flow]))) {
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+    @scope (:global(:root)) {
       .indicator-table { flex: 1; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr); overflow: hidden; }
       .list-notes { max-height: 25vh; overflow: auto; overscroll-behavior: contain; }
       .scroll { min-height: 0; max-height: none; overflow: auto; overscroll-behavior: contain; scroll-padding-bottom: calc(var(--sheet-height, 0px) + 1rem); }

@@ -82,7 +82,7 @@ const period = manifest.indicators[indicator].all;
   .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
   #municipality-preview { min-width: 0; padding: 0 1rem 1rem; background: var(--surface); }
   .details-menu-toggle, .details-legend { display: none; }
-  .details-menu:popover-open { position: fixed; inset: var(--notice-height, 6rem) .5rem auto auto; margin: .5rem; padding: .5rem; max-height: calc(100dvh - var(--notice-height, 6rem) - 1rem); overflow: auto; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
+  .details-menu:popover-open { position: fixed; inset: calc(var(--dashboard-top, 0px) + var(--notice-height, 6rem)) .5rem auto auto; margin: .5rem; padding: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 1rem); overflow: auto; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
   .details-menu button { display: block; width: 100%; text-align: left; }
   .panel-navigation { display: none; margin-block: .25rem .5rem; }
   .panel-bar { display: flex; align-items: center; gap: .25rem; min-height: 3rem; background: var(--surface); }
@@ -115,7 +115,7 @@ const period = manifest.indicators[indicator].all;
   @media (min-width: 1920px) {
     .home { --panel-width: 30rem; }
   }
-  /* In flow, the panel and everything else are a plain page, also under 200% zoom. */
+  /* Scripted phones keep the consultation inside the available viewport. */
   @media (max-width: 767px) {
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
     #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
@@ -123,13 +123,13 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex-wrap: wrap; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar h2 { flex-basis: 100%; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: none; position: sticky; top: 0; z-index: 2; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: 0 1 auto; max-height: 50%; min-height: 0; overflow: auto; overscroll-behavior: contain; position: sticky; top: 0; z-index: 2; }
 
     #municipality-preview[data-enhanced][data-collapsed] [data-preview-content] { display: none; }
   }
-  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    @scope (:global(:root:not([data-mobile-flow]))) {
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+    @scope (:global(:root)) {
       .home { position: relative; flex: 1; gap: 0; min-height: 0; }
       .map-and-profile { flex: 1 1 auto; gap: 0; min-height: 0; contain: size; }
       .map-with-legend { position: relative; display: flex; flex-direction: column; min-height: 0; border-radius: 0; overflow: visible; }
@@ -139,11 +139,12 @@ const period = manifest.indicators[indicator].all;
       .data-feedback p { margin: 0; }
       .data-feedback button { margin-top: .5rem; }
       /* The sheet: edge to edge at the bottom, opening up to the notice, which always paints above it. */
-      #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 0; z-index: 25; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
-      #municipality-preview[data-enhanced] .panel-bar { position: sticky; top: 0; z-index: 2; }
+      #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 var(--dashboard-bottom, 0px); z-index: 25; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
+      #municipality-preview[data-enhanced][data-collapsed] .panel-bar { position: static; top: 0; z-index: 2; }
       #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
-      #municipality-preview[data-collapsed] { z-index: 4; padding-bottom: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 16rem); scroll-padding-block: 3rem .5rem; }
-      :global(.home:has(.indicator-table:not([hidden]))) #municipality-preview[data-collapsed] { max-height: calc(var(--dashboard-height, 100dvh) - max(calc(var(--notice-height, 6rem) + 16rem), calc(var(--list-reading-top, 0px) + 6rem))); }
+      #municipality-preview[data-collapsed] { z-index: 25; padding-bottom: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - clamp(0px, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 20rem), 16rem)); scroll-padding-block: 3rem .5rem; }
+      :global(.home:has(.indicator-table:not([hidden]))) #municipality-preview[data-collapsed] { max-height: var(--list-summary-height, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - clamp(0px, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 10rem), max(16rem, calc(var(--list-reading-top, 0px) - var(--notice-height, 6rem) + 6rem))))); }
+
       #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
       /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),
@@ -155,7 +156,7 @@ const period = manifest.indicators[indicator].all;
       :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) #municipality-preview[data-enhanced]),
       :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) .panel-legend) { visibility: hidden; }
       /* Level with Mapa/Lista, which leave the map's attribution uncovered under them. */
-      .panel-legend:not([hidden]) { position: fixed; left: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem); z-index: 7; display: inline-flex; align-items: center; gap: .5rem; padding-inline: .75rem; background-color: var(--surface); box-shadow: var(--card-shadow); }
+      .panel-legend:not([hidden]) { position: fixed; left: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem + var(--dashboard-bottom, 0px)); z-index: 7; display: inline-flex; align-items: center; gap: .5rem; padding-inline: .75rem; background-color: var(--surface); box-shadow: var(--card-shadow); }
       .panel-legend:hover:not(:disabled) { background-color: var(--surface); }
       :global(.home:has(.indicator-table:not([hidden]))) .panel-legend { display: none; }
       .panel-legend-swatches { display: inline-flex; gap: 2px; }

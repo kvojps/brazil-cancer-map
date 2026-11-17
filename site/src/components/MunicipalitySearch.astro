@@ -30,8 +30,8 @@
     #municipality-results :global(li:not(:has(button))) { padding: .5rem .75rem; }
     #municipality-results :global(button) { width: 100%; text-align: left; background-color: transparent; }
   }
-  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px) {
-    @scope (:global(:root:not([data-mobile-flow]))) {
+  @media (max-width: 767px) and (min-width: 300px) and (min-height: 520px), (max-width: 767px) and (scripting: enabled) {
+    @scope (:global(:root)) {
       .search-toggle { display: grid; place-items: center; flex: none; width: var(--control-height); height: var(--control-height); color: var(--text); border-radius: var(--control-radius); }
       .municipality-search { display: none; position: absolute; inset: 0 0 auto; z-index: 1; padding: 0; background: var(--surface); border-radius: var(--control-radius); }
       :global(.site-header[data-search-open]) .municipality-search { display: block; }

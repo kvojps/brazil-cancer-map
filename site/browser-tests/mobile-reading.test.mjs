@@ -91,7 +91,10 @@ test('reducing the search viewport keeps its results and keyboard focus reachabl
     await input.fill('Recife');
     await page.locator('#municipality-results button').first().waitFor();
     await page.setViewportSize({ width: 390, height: 360 });
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('.municipality-search')).position === 'relative');
+    await page.waitForFunction(() => {
+      const result = document.querySelector('#municipality-results button')?.getBoundingClientRect();
+      return result && result.top >= 0 && result.bottom <= innerHeight;
+    });
     assert.equal(await input.evaluate(node => node === document.activeElement), true);
     await input.press('Enter');
     await page.locator('.result-value').waitFor();
