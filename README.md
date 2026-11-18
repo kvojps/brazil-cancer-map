@@ -10,11 +10,16 @@ Dados sobre o câncer no seu município, para entender e agir.
 
 Um mapa dos 5.571 municípios brasileiros que reúne quatro Eixos: **Prevenção, Detecção precoce, Acesso ao tratamento e Panorama**. Liga cada Indicador a uma Ação concreta e permite entender a Situação e a Tendência no seu município, com as limitações dos dados à vista. É informação e orientação geral; **não é orientação médica individual**.
 
-```text
-Fontes → pipeline → Contrato de dados → site
+```mermaid
+flowchart LR
+    fontes["Fontes oficiais"] --> pipeline["Pipeline · pipeline/"]
+    pipeline --> contrato["Contrato de dados · JSON"]
+    contrato --> site["Site estático · site/"]
 ```
 
-O pipeline calcula e valida; o site estático exibe os JSON prontos em `site/public/dados/`.
+O pipeline calcula e valida os Indicadores. O site estático lê os JSON prontos em
+`site/public/dados/`. Siga o Indicador de 60 dias da Fonte até esses arquivos na
+[arquitetura da pipeline](docs/architecture.md).
 
 ## Por onde começar
 

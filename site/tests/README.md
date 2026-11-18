@@ -189,8 +189,16 @@ visita e seleção de Recife na mesma sessão. Não comprova compressão no prov
 
 Para diagnosticar o tempo da seleção municipal, rode
 `node scripts/measure-selection.mjs` a partir de `site/`, depois do build e sem
-outros testes de navegador em paralelo. O cenário móvel, a guarda de tempo e os
-limites da simulação estão no [guia de desenvolvimento](../../docs/development.md).
+outros testes de navegador em paralelo. O script inicia um servidor local e
+alterna Recife e Olinda em Chromium, a 390 × 844 e com CPU reduzida em 4 vezes.
+Registra o callback síncrono, a inserção do perfil e dois frames seguintes.
+As últimas quatro consultas reaproveitam os dados. A guarda local falha
+se o maior callback dessas consultas atingir 200 ms. A medição usa o evento
+de seleção do mapa e deixa o reconhecimento do toque, a rede pública e a
+GPU para a conferência no aparelho físico. Os frames medidos também não
+garantem o instante em que o resultado apareceu na tela.
+`CHROMIUM_PATH` escolhe o navegador, `CPU_RATE` e `SELECTION_SYNC_BUDGET_MS`
+ajustam o cenário e `PROFILE_PATH` grava um perfil de CPU.
 `municipality-selection.test.mjs` verifica que trocar de município não reescreve
 os milhares de links municipais com os mesmos filtros e que os links de retorno
 e os links novos do painel continuam recebendo o contexto correto. Também

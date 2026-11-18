@@ -605,8 +605,8 @@ verificação. Para o código atual, use `pipeline/calculation/{trend,cascade,st
 e `pipeline/operations/{update,update_plan,release}.py`. A aquisição do HPV está
 em `pipeline/sources/hpv/historical_inputs.py` (antes `pipeline/hpv_inputs.py`)
 e `pipeline/sources/hpv/vaccination_data.py` (antes `pipeline/hpv_official.py`).
-O [guia de desenvolvimento](../development.md#navegação-do-pipeline) descreve
-as responsabilidades atuais.
+A [arquitetura da pipeline](../architecture.md) descreve as responsabilidades
+atuais.
 
 ### Verificação da #19 em 13/11/2026
 
