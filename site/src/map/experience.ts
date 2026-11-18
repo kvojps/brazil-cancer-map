@@ -207,7 +207,7 @@ if (container && status) {
           let frameWhenShown = false;
           let countryFramed = false;
           let countryResetPending = false;
-          const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('[data-panel-legend]'), document.querySelector<HTMLElement>('.view-controls')] };
+          const overlays = { legend: legendCorner, note: mapNotes, controls: filtersToggle, floor: [document.querySelector<HTMLElement>('#municipality-preview'), document.querySelector<HTMLElement>('.view-controls')] };
           selectOnMap = (code, preserve = false) => {
             if (code) {
               countryFramed = true;

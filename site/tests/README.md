@@ -197,14 +197,17 @@ e os links novos do painel continuam recebendo o contexto correto. Também
 confirma que o Mapa deixa as linhas da Lista fora do documento e que reabrir a
 Lista preserva o filtro de UF e as linhas expandidas.
 
-`mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno por
-Mapa/Lista, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
+`mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno ao
+Mapa ou à Lista pelo × “Fechar detalhes”, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
 da posição de exploração da Lista ao alternar visualizações. Cobre resumo recolhido e retorno em fluxo e composição flutuante a 390 ×
 568/664/740/844 e em horizontal, com UF e linhas abertas preservadas. Âncoras
 revelam o Eixo após a composição final, sem entrada artificial no histórico;
 interação deliberada durante carga cancela o deslocamento, e nova seleção
 substitui a âncora pendente. Cobre também links entre Eixos e indisponibilidade
-no recorte.
+no recorte. O × “Limpar seleção” e os alvos móveis são verificados com nome
+municipal longo, 320 px, paisagem e texto ampliado.
+`mobile-surfaces.test.mjs` cobre Busca e Filtros após recolher, além do retorno
+de foco de Legenda pelo controle de fechar e por Escape.
 `map-touch.test.mjs` confere também a preservação da câmera ao retornar dos detalhes
 e ao alternar Mapa/Lista, por rótulos geográficos em pontos da tela. Falha com nova tentativa
 no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos

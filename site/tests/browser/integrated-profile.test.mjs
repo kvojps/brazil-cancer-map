@@ -20,7 +20,8 @@ test('selection loads four axes, filters all types and distinguishes returning f
     await toggle.click();
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     assert.equal(await page.locator('[data-profile-axis][open]').getAttribute('id'), 'acesso');
-    await toggle.click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
+    await toggle.waitFor();
     await page.locator('.filters-toggle').click();
     for (const type of ['breast', 'cervix', 'prostate', 'colorectal', 'lung', 'all']) {
       await page.selectOption('#cancer-type', type);

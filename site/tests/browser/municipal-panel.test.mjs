@@ -167,14 +167,16 @@ test('the sheet runs edge to edge, opens up to the notice and takes the floating
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     assert.equal(await page.locator('.site-header').isVisible(), true);
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    assert.equal(await toggle(page).getAttribute('aria-expanded'), 'true', 'the explicit action opens details');
+    const close = page.getByRole('button', { name: 'Fechar detalhes', exact: true });
+    await close.waitFor();
     const open = await box(page, '#municipality-preview');
     const notice = await box(page, '.construction-notice');
     assert.ok(open.top >= notice.bottom, 'the notice is never covered');
     assert.equal(notice.top, 0);
     assert.equal(open.bottom, 844);
-    for (const selector of ['.site-header', '.filters-toggle', '[data-panel-legend]', '.view-controls']) assert.equal(await page.locator(selector).isVisible(), false, selector);
-    await toggle(page).click();
+    for (const selector of ['.site-header', '.filters-toggle', '.view-controls']) assert.equal(await page.locator(selector).isVisible(), false, selector);
+    await close.click();
+    await toggle(page).waitFor();
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     assert.equal(await page.locator('.view-controls').isVisible(), true);
     assert.equal(new URL(page.url()).pathname, BALSAS, 'collapsing keeps the selection');
@@ -211,7 +213,7 @@ test('in the list the sheet stays, Mapa/Lista rest on it and the last rows end a
   try {
     await page.locator('[data-view="lista"]').click();
     await page.waitForFunction(() => document.querySelector('.indicator-table tbody')?.children.length > 0);
-    assert.equal(await page.locator('[data-panel-legend]').isVisible(), false, 'no map to explain');
+    assert.equal(await page.getByRole('button', { name: 'Legenda', exact: true }).isVisible(), true);
     const sheet = await box(page, '#municipality-preview');
     assert.ok((await box(page, '.view-controls')).bottom <= sheet.top);
     await page.locator('.indicator-table tbody tr').last().scrollIntoViewIfNeeded();
@@ -336,10 +338,9 @@ test('the sheet works by keyboard, with visible focus', async () => {
     await toggle(page).focus();
     assert.equal(await toggle(page).innerText(), 'Ver detalhes');
     await page.keyboard.press('Enter');
-    assert.equal(await toggle(page).innerText(), 'Voltar ao mapa');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
     assert.equal(await page.locator('#preview-heading').evaluate(element => element === document.activeElement), true, 'focus enters the details heading');
-    for (const selector of ['[data-toggle-profile]', '[data-details-menu]', '[data-clear-profile]', '.details-legend', '[data-panel-cancer-type]']) {
+    for (const selector of ['[data-close-details]', '[data-panel-legend]', '[data-panel-cancer-type]']) {
       await page.keyboard.press('Tab');
       assert.equal(await page.locator(selector).evaluate(element => element === document.activeElement), true, selector);
     }
@@ -359,10 +360,10 @@ for (const [width, height] of [[195, 422], [320, 450], [640, 400]]) {
       assert.ok((await blockText(page)).includes(WARNING));
       assert.equal(await noHorizontalScroll(page), true);
       assert.equal(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), true);
-      await page.locator('[data-details-menu]').click();
-      await page.locator('#details-menu').getByRole('button', { name: 'Legenda', exact: true }).click();
+      await page.getByRole('button', { name: 'Legenda', exact: true }).click();
       await page.keyboard.press('Escape');
-      await toggle(page).click();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
+      await toggle(page).waitFor();
     } finally { await page.close(); }
   });
 }
@@ -393,7 +394,7 @@ test('native 200% zoom on a phone keeps internal reading and the warning in both
       await toggle(page).click();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
       await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
-      await toggle(page).click();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     } finally { await context.close(); }
   }
@@ -457,8 +458,8 @@ for (const [path, expected] of [
     if (path === ALCANTARA || path === BALSAS) assert.ok((await blockText(page)).includes(WARNING));
     await toggle(page).click();
     await page.locator('details[open] [data-cancer-type="' + (path.includes('prostate') ? 'prostate' : 'all') + '"] .card-action').last().scrollIntoViewIfNeeded();
-    await toggle(page).click();
-    await page.locator('[data-clear-profile]').click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
+    await page.getByRole('button', { name: 'Limpar seleção', exact: true }).click();
     await page.locator('.filters-toggle').click();
     await page.locator('#cancer-type').selectOption('breast');
     await page.keyboard.press('Escape');

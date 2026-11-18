@@ -5,7 +5,7 @@ import MapControls from './MapControls.astro';
 import MapLegend from './MapLegend.astro';
 import MunicipalityMap from './MunicipalityMap.astro';
 import manifest from '../../public/dados/manifest.json';
-import { CANCER_TYPES, STATUS_STATES, statusSwatch, TREND_STATES, trendSwatch } from '../map/indicator-layer';
+import { CANCER_TYPES } from '../map/indicator-layer';
 interface Props { selected?: boolean; heading?: string }
 const { selected = false, heading = 'Meu município' } = Astro.props;
 const indicator = 'within_60_days';
@@ -30,14 +30,16 @@ const period = manifest.indicators[indicator].all;
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading" tabindex="0">
       <div class="panel-bar">
         <h2 id="preview-heading" tabindex="-1">{heading}</h2>
-        <button type="button" class="details-menu-toggle" data-details-menu popovertarget="details-menu">Menu</button>
         <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
+        <button type="button" class="panel-icon panel-close" data-close-details aria-label="Fechar detalhes"><span aria-hidden="true">✕</span></button>
       </div>
       <div class="panel-reading">
         <div class="panel-result" data-profile-result></div>
-        <button type="button" class="panel-navigation" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Ver detalhes</button>
+        <div class="panel-actions">
+          <button type="button" class="panel-navigation" data-toggle-profile aria-expanded="false" aria-controls="municipality-content" hidden>Ver detalhes</button>
+          <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>Legenda</button>
+        </div>
         <div id="municipality-content" data-preview-content>
-          <button type="button" class="details-legend" popovertarget="legend-full">Legenda</button>
           <label class="panel-type" hidden>Tipo de câncer
             <span class="panel-type-control">
               <select data-panel-cancer-type>
@@ -50,18 +52,6 @@ const period = manifest.indicators[indicator].all;
         </div>
       </div>
     </aside>
-    <div id="details-menu" class="details-menu" popover role="dialog" aria-label="Comandos da consulta">
-      <button type="button" data-details-command="search">Buscar município</button>
-      <button type="button" data-details-command="filters">Filtros</button>
-      <button type="button" data-details-command="legend">Legenda</button>
-      <button type="button" popovertarget="details-menu" popovertargetaction="hide">Fechar menu</button>
-    </div>
-    <!-- Over the map, above the sheet: the card it replaces would not fit there on a phone. -->
-    <button type="button" class="panel-legend" data-panel-legend popovertarget="legend-full" hidden>
-      <span class="panel-legend-swatches" data-mode="trend" aria-hidden="true">{TREND_STATES.map(state => <span style={`background: ${trendSwatch(state)}`} />)}</span>
-      <span class="panel-legend-swatches" data-mode="status" aria-hidden="true">{STATUS_STATES.map(state => <span style={`background: ${statusSwatch(state)}`} />)}</span>
-      Legenda
-    </button>
   </div>
 </div>
 {selected && <noscript><style is:inline>
@@ -84,16 +74,12 @@ const period = manifest.indicators[indicator].all;
   .map-heading h2 { margin: .25rem 0; }
   .eyebrow { font-size: var(--text-14); font-weight: 500; color: var(--muted); }
   #municipality-preview { min-width: 0; padding: 0 1rem 1rem; background: var(--surface); }
-  .details-menu-toggle, .details-legend { display: none; }
-  .details-menu:popover-open { position: fixed; inset: calc(var(--dashboard-top, 0px) + var(--notice-height, 6rem)) .5rem auto auto; margin: .5rem; padding: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 1rem); overflow: auto; color: var(--text); background: var(--surface); border: 0; border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
-  .details-menu button { display: block; width: 100%; text-align: left; }
-  .panel-navigation { display: none; margin-block: .25rem .5rem; }
   .panel-bar { display: flex; align-items: center; gap: .25rem; min-height: 3rem; background: var(--surface); }
   .panel-bar h2 { flex: 1; min-width: 0; margin: 0; }
   .panel-icon, .panel-icon:hover:not(:disabled) { flex: none; display: grid; place-items: center; width: 44px; min-height: 44px; padding: 0; font-size: var(--text-16); color: var(--text); background: transparent; }
   .panel-icon:hover:not(:disabled) { background: var(--soft); }
   /* Desktop keeps the complete consultation; scripting adds deliberate details on phones. */
-  [data-toggle-profile], .panel-legend { display: none; }
+  .panel-actions, .panel-bar .panel-close { display: none; }
   .panel-type { display: flex; align-items: center; gap: .75rem; margin-block: 0 .75rem; font-size: var(--text-14); font-weight: 500; }
   .panel-type select { flex: 1; min-width: 0; }
   .panel-type-control { display: flex; flex: 1; min-width: 0; }
@@ -123,10 +109,14 @@ const period = manifest.indicators[indicator].all;
   /* Scripted phones keep the consultation inside the available viewport. */
   @media (max-width: 767px) {
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
-    .panel-bar { gap: max(8px, .5rem); }
-    .panel-navigation { margin: 0 0 max(8px, .5rem); }
-    .panel-bar .panel-navigation { margin: 0; }
-    .details-legend { margin-bottom: max(8px, .5rem); }
+    #municipality-preview[data-enhanced] { padding-inline: 16px; }
+    .panel-bar { align-items: flex-start; gap: max(8px, .5rem); padding-block: 4px 8px; }
+    .panel-bar h2 { padding-block: .25rem; }
+    .panel-actions { display: flex; align-items: flex-start; flex-wrap: wrap; gap: max(8px, .5rem); margin-block: 4px max(8px, .5rem); }
+    .panel-actions:not(:has(button:not([hidden]))) { display: none; }
+    .panel-navigation, .panel-navigation:hover:not(:disabled) { color: var(--surface); background: var(--text); }
+    .panel-legend, .panel-legend:hover:not(:disabled) { color: var(--link); background: transparent; }
+    .panel-legend:hover:not(:disabled) { text-decoration: underline; }
     .panel-type { flex-wrap: wrap; }
     .panel-type-control { flex-basis: 12rem; }
     /* Native selects cannot wrap their selected text. Keep the native control and
@@ -135,14 +125,12 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview[data-enhanced] .panel-type select { grid-area: 1 / 1; width: 100%; height: 100%; color: transparent; background-image: linear-gradient(45deg, transparent 50%, var(--text) 50%), linear-gradient(135deg, var(--text) 50%, transparent 50%); }
     #municipality-preview[data-enhanced] .panel-type option { color: var(--text); }
     #municipality-preview[data-enhanced] .panel-type-value { grid-area: 1 / 1; display: block; min-width: 0; padding: .5rem 2rem .5rem .75rem; font: 500 var(--control-text)/1.25 var(--font); overflow-wrap: anywhere; pointer-events: none; align-self: center; }
-    .panel-navigation, .details-menu-toggle, .details-legend, .panel-type select, .panel-legend { min-width: 44px; min-height: 44px; }
-    #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) :is(.details-menu-toggle, .details-legend) { display: block; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex-wrap: wrap; align-items: flex-start; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar h2 { flex-basis: 100%; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: 0 1 auto; max-height: 50%; min-height: 0; overflow: auto; overscroll-behavior: contain; position: sticky; top: 0; z-index: 2; }
+    .panel-navigation, .panel-legend, .panel-type select { min-width: 44px; min-height: 44px; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-close { display: grid; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) :is([data-clear-profile], [data-toggle-profile]) { display: none; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; gap: 8px; padding-bottom: 0; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; padding-bottom: 8px; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: 0 1 auto; max-height: max(48px, 50%); min-height: 0; overflow: auto; overscroll-behavior: contain; position: sticky; top: 0; z-index: 2; }
 
     #municipality-preview[data-enhanced][data-collapsed] [data-preview-content] { display: none; }
   }
@@ -159,27 +147,15 @@ const period = manifest.indicators[indicator].all;
       /* The sheet: edge to edge at the bottom, opening up to the notice, which always paints above it. */
       #municipality-preview[data-enhanced] { position: fixed; inset: auto 0 var(--dashboard-bottom, 0px); z-index: 25; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); overflow: auto; overscroll-behavior: contain; border-radius: var(--card-radius) var(--card-radius) 0 0; box-shadow: var(--card-shadow); }
       #municipality-preview[data-enhanced][data-collapsed] .panel-bar { position: static; top: 0; z-index: 2; }
-      #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
       #municipality-preview[data-collapsed] { z-index: 25; padding-bottom: .5rem; max-height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - clamp(0px, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 20rem), 16rem)); scroll-padding-block: 3rem .5rem; }
       :global(.home:has(.indicator-table:not([hidden]))) #municipality-preview[data-collapsed] { max-height: var(--list-summary-height, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - clamp(0px, calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem) - 10rem), max(16rem, calc(var(--list-reading-top, 0px) - var(--notice-height, 6rem) + 6rem))))); }
 
       #municipality-preview[data-collapsed] [data-preview-content] { display: none; }
       /* Open, the sheet is the screen: what floats on the map leaves the scene and the tab order. */
       :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header),
-      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .map-controls),
-      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .panel-legend) { visibility: hidden; }
-      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) > .site-header[data-search-open]) { visibility: visible; }
-      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) #map-filters:popover-open) { visibility: visible; }
-      /* Filters, menu and search take the place of the sheet while open. It keeps its box for the framing. */
-      :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) #municipality-preview[data-enhanced]),
-      :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) .panel-legend) { visibility: hidden; }
-      /* Level with Mapa/Lista, which leave the map's attribution uncovered under them. */
-      .panel-legend:not([hidden]) { position: fixed; left: .5rem; bottom: calc(var(--sheet-height, 0px) + 2rem + var(--dashboard-bottom, 0px)); z-index: 7; display: inline-flex; align-items: center; gap: .5rem; padding-inline: .75rem; background-color: var(--surface); box-shadow: var(--card-shadow); }
-      .panel-legend:hover:not(:disabled) { background-color: var(--surface); }
-      :global(.home:has(.indicator-table:not([hidden]))) .panel-legend { display: none; }
-      .panel-legend-swatches { display: inline-flex; gap: 2px; }
-      .panel-legend-swatches span { width: .625rem; height: .875rem; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--swatch-border); }
-      .panel-legend[data-reading="trend"] [data-mode="status"], .panel-legend[data-reading="status"] [data-mode="trend"] { display: none; }
+      :global(body:has(#municipality-preview[data-enhanced]:not([hidden]):not([data-collapsed])) .map-controls) { visibility: hidden; }
+      /* Temporary exploration controls cover the summary without changing its framing. */
+      :global(body:has(#map-filters:popover-open, .site-menu[open], .site-header[data-search-open]) #municipality-preview[data-enhanced]) { visibility: hidden; }
 
     }
 }

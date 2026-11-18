@@ -11,7 +11,7 @@ before(async () => {
 after(async () => { await browser?.close(); });
 
 for (const [width, height, textScale, view] of [[320, 568, 1, 'mapa'], [568, 320, 1, 'lista'], [320, 568, 2, 'lista'], [568, 160, 2, 'mapa']]) {
-test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consultation controls have comfortable targets, spacing and aligned detail rows`, async () => {
+test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consultation controls have comfortable targets, spacing and a single close control`, async () => {
   const page = await browser.newPage({ viewport: { width, height }, isMobile: true, hasTouch: true });
   const button = name => page.getByRole('button', { name, exact: true });
   const assertControlLayout = async controls => {
@@ -23,7 +23,10 @@ test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consulta
       assert.ok(box.x >= 0 && box.x + box.width <= width, 'control fits the viewport');
       assert.equal(await control.evaluate(el => el.scrollWidth <= el.clientWidth), true, 'complete label fits');
     }
-    // Measure in one frame: scrolling each target must not change relative distances.
+    // Compare the resting layout before the independently scrolling regions move.
+    await page.locator('#municipality-preview, .panel-bar, .panel-reading').evaluateAll(regions => {
+      for (const region of regions) region.scrollTop = 0;
+    });
     for (const control of controls) boxes.push(await control.boundingBox());
     for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
       const a = boxes[i], b = boxes[j];
@@ -37,14 +40,20 @@ test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consulta
     await page.goto(base + '/municipio/510550-vila-bela-da-santissima-trindade/' + (view === 'lista' ? '?visualizacao=lista' : ''));
     await button('Ver detalhes').waitFor();
     if (textScale === 2) await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-    await assertControlLayout([button('Ver detalhes'), button('Limpar seleção')]);
+    await assertControlLayout([button('Ver detalhes'), button('Legenda'), button('Limpar seleção')]);
+    const fill = control => control.evaluate(el => getComputedStyle(el).backgroundColor);
+    assert.notEqual(await fill(button('Ver detalhes')), 'rgba(0, 0, 0, 0)');
+    assert.equal(await fill(button('Legenda')), 'rgba(0, 0, 0, 0)');
+    assert.equal(await fill(button('Limpar seleção')), 'rgba(0, 0, 0, 0)');
     await button('Ver detalhes').click();
-    const returnName = view === 'lista' ? 'Voltar à lista' : 'Voltar ao mapa';
-    await assertControlLayout([button(returnName), button('Menu'), button('Limpar seleção')]);
+    const close = button('Fechar detalhes');
+    assert.equal(await button('Limpar seleção').count(), 0);
+    assert.equal(await button('Voltar ao mapa').count() + await button('Voltar à lista').count(), 0);
+    assert.equal(await button('Menu').count(), 0);
+    await assertControlLayout([close, button('Legenda'), page.getByRole('combobox', { name: 'Tipo de câncer', exact: true })]);
     const heading = await page.getByRole('heading', { name: 'Vila Bela da Santíssima Trindade (MT)', exact: true }).boundingBox();
-    const back = await button(returnName).boundingBox();
-    assert.ok(heading.y + heading.height <= back.y, 'name has its own line above the buttons');
-    await assertControlLayout([page.locator('.details-legend'), page.getByRole('combobox', { name: 'Tipo de câncer', exact: true })]);
+    const cross = await close.boundingBox();
+    assert.ok(heading.x + heading.width <= cross.x && Math.abs(heading.y - cross.y) < 10, 'the close control sits to the right of the name');
     if (textScale === 2) {
       const type = page.getByRole('combobox', { name: 'Tipo de câncer', exact: true });
       for (const [value, label] of [['all', 'Todos os cânceres'], ['cervix', 'Colo do útero']]) {
@@ -61,7 +70,7 @@ test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consulta
         for (const line of text) assert.ok(line.left >= target.x && line.right <= target.x + target.width && line.top >= target.y && line.bottom <= target.y + target.height, 'selected label is fully visible inside its target');
       }
     }
-    await button(returnName).click();
+    await close.click();
     assert.equal(await button('Ver detalhes').evaluate(el => el === document.activeElement), true);
     assert.match(new URL(page.url()).pathname, /510550-vila-bela-da-santissima-trindade/);
     await button('Limpar seleção').click();
@@ -71,7 +80,7 @@ test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consulta
 });
 }
 
-test('history restores each details entry reading axis and internal position after logo reset', async () => {
+test('Forward restores the details reading axis and internal position after closing', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(base + RECIFE + '?visualizacao=lista');
@@ -82,17 +91,14 @@ test('history restores each details entry reading axis and internal position aft
     assert.ok(reading > 100);
     const previous = page.url();
     const length = await page.evaluate(() => history.length);
-    await page.locator('[data-details-menu]').click();
-    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
-    await page.locator('.identity').focus();
-    await page.keyboard.press('Enter');
-    await page.waitForURL(base + '/');
-    await page.goBack();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    await page.goForward();
     await page.waitForURL(previous);
-    await page.getByRole('button', { name: 'Voltar à lista', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     await page.locator('.result-value').waitFor();
     await page.waitForFunction(position => document.querySelector('#prevencao').open && Math.abs(document.querySelector('.panel-reading').scrollTop - position) < 3, reading);
-    assert.equal(await page.evaluate(() => history.length), length + 1);
+    assert.equal(await page.evaluate(() => history.length), length);
   } finally { await page.close(); }
 });
 
@@ -123,7 +129,7 @@ test('history restores separate list positions, UF and expanded rows across map 
   } finally { await page.close(); }
 });
 
-test('Back during a new profile load restores details and rejects the obsolete arrival', async () => {
+test('Back during a new profile load restores the summary and rejects the obsolete arrival', async () => {
   const page = await browser.newPage({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true });
   page.setDefaultTimeout(10000);
   let release;
@@ -132,21 +138,15 @@ test('Back during a new profile load restores details and rejects the obsolete a
   const started = new Promise(resolve => { requested = resolve; });
   try {
     await page.goto(base + RECIFE);
-    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    await page.locator('#prevencao > summary').click();
-    await page.locator('#prevencao [data-cancer-type="all"] .card-action').last().scrollIntoViewIfNeeded();
-    const reading = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     await page.route('**/dados/profiles/RN.json', async route => { requested(); await gate; await route.continue(); });
-    await page.locator('[data-details-menu]').click();
-    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.getByRole('link', { name: 'Buscar município', exact: true }).click();
     await page.locator('#municipality-search').fill('Natal RN');
     await page.locator('#municipality-results button').click();
     await started;
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     await page.goBack();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
-    await page.waitForFunction(position => document.querySelector('#prevencao').open && Math.abs(document.querySelector('.panel-reading').scrollTop - position) < 3, reading);
-    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     const response = page.waitForResponse('**/dados/profiles/RN.json');
     release();
     await (await response).finished();
@@ -154,8 +154,7 @@ test('Back during a new profile load restores details and rejects the obsolete a
     assert.equal(new URL(page.url()).pathname, RECIFE);
     assert.equal(await page.locator('#preview-heading').innerText(), 'Recife (PE)');
     assert.equal(await page.locator('.profile').getAttribute('data-code'), '261160');
-    assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), reading);
-    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true, 'obsolete response cannot move focus');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
   } finally { release(); await page.close(); }
 });
 
@@ -194,6 +193,9 @@ test('retry after an anchored profile failure keeps the summary and history, whi
     await page.route('**/dados/profiles/PE.json', route => fail ? route.fulfill({ status: 503, body: '' }) : route.continue());
     await page.goto(base + RECIFE + '#prevencao');
     await page.getByRole('button', { name: 'Tentar novamente', exact: true }).waitFor();
+    const legend = page.getByRole('button', { name: 'Legenda', exact: true });
+    await legend.click();
+    await page.getByRole('button', { name: 'Fechar legenda', exact: true }).click();
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     const length = await page.evaluate(() => history.length);
     const url = page.url();
@@ -204,7 +206,7 @@ test('retry after an anchored profile failure keeps the summary and history, whi
     assert.equal(await page.evaluate(() => history.length), length);
     assert.equal(page.url(), url);
     await page.reload();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
   } finally { await page.close(); }
 });
@@ -223,8 +225,8 @@ test('details are deliberate and Back/Forward traverse details before the munici
     await page.waitForFunction(() => document.querySelector('#municipality-preview').hasAttribute('data-collapsed'));
     assert.equal(new URL(page.url()).pathname, RECIFE);
     await page.goForward();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(await page.evaluate(() => document.activeElement.textContent), 'Ver detalhes');
     assert.equal(new URL(page.url()).pathname, RECIFE);
@@ -243,7 +245,7 @@ test('returning from list details and switching views preserve the exploration p
     const position = await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTop);
     assert.ok(position > 100);
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    await page.getByRole('button', { name: 'Voltar à lista', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.ok(Math.abs(await page.locator('.indicator-table .scroll').evaluate(element => element.scrollTop) - position) < 3, 'details keep the list position');
     await page.locator('[data-view="mapa"]').click();
@@ -274,7 +276,7 @@ test('Back and Forward cross municipalities and filters without extra details en
     }
     for (const [path, type, expanded] of [[RECIFE, 'breast', false], ['/municipio/260960-olinda/', 'breast', false], ['/municipio/260960-olinda/', 'breast', true]]) {
       await page.goForward();
-      await page.waitForFunction(({ path, type, expanded }) => location.pathname === path && new URLSearchParams(location.search).get('tipo') === type && document.querySelector('[data-toggle-profile]').getAttribute('aria-expanded') === String(expanded), { path, type, expanded });
+      await page.waitForFunction(({ path, type, expanded }) => location.pathname === path && new URLSearchParams(location.search).get('tipo') === type && document.querySelector('[data-close-details]').checkVisibility() === expanded, { path, type, expanded });
     }
   } finally { await page.close(); }
 });
@@ -284,16 +286,17 @@ for (const height of [568, 844]) test(`municipal anchors at ${height} reach thei
   try {
     await page.goto(base + '/municipios/');
     await page.goto(base + RECIFE + '#prevencao');
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
     await page.waitForFunction(() => {
       const r = document.querySelector('#prevencao > summary').getBoundingClientRect();
       return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
     });
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.equal(new URL(page.url()).hash, '');
     await page.goBack();
     assert.equal(new URL(page.url()).pathname, '/municipios/');
   } finally { await page.close(); }
@@ -311,13 +314,13 @@ test('links between axes keep mobile details open without adding a step before c
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
     await page.goForward();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
     await page.waitForFunction(() => {
       const r = document.querySelector('#prevencao > summary').getBoundingClientRect();
       return r.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && r.bottom <= innerHeight;
     });
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
   } finally { await page.close(); }
 });
@@ -341,13 +344,33 @@ test('an unavailable result is distinct from a load error and still offers the o
   } finally { await page.close(); }
 });
 
+test('closing reloaded anchored details during loading keeps the summary and restores its focus', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  page.setDefaultTimeout(8000);
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  try {
+    await page.goto(base + RECIFE + '#prevencao');
+    const close = page.getByRole('button', { name: 'Fechar detalhes', exact: true });
+    await close.waitFor();
+    await page.route('**/dados/profiles/PE.json', async route => { await gate; await route.continue(); });
+    await page.reload();
+    await close.click();
+    assert.equal(new URL(page.url()).hash, '');
+    release();
+    const details = page.getByRole('button', { name: 'Ver detalhes', exact: true });
+    await details.waitFor();
+    assert.equal(await details.evaluate(el => el === document.activeElement), true);
+  } finally { release(); await page.close(); }
+});
+
 test('reloading a details history entry keeps its control and Back coherent', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(base + RECIFE);
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     await page.reload();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor({ timeout: 5000 });
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor({ timeout: 5000 });
     await page.goBack();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(new URL(page.url()).pathname, RECIFE);
@@ -367,14 +390,14 @@ for (const [width, height] of [[390, 568], [390, 664], [390, 740], [390, 844], [
       await toggle.press('Enter');
       await page.locator('#acesso [data-cancer-type="all"] .card-action').scrollIntoViewIfNeeded();
       await page.setViewportSize({ width: 390, height: 360 });
-      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
       await page.setViewportSize({ width, height });
-      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
       await toggle.waitFor();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       await page.goForward();
-      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     } finally { await page.close(); }
   });
 }
@@ -395,7 +418,7 @@ for (const height of [568, 844]) {
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
       await page.locator('#acesso [data-cancer-type="breast"] .card-action').scrollIntoViewIfNeeded();
-      await page.getByRole('button', { name: 'Voltar à lista', exact: true }).click();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
       await page.waitForFunction(position => document.querySelector('#municipality-preview').hasAttribute('data-collapsed') && Math.abs(document.querySelector('.indicator-table .scroll').scrollTop - position) < 3, position);
       assert.equal(await page.locator('.indicator-table select').inputValue(), 'PE');
       assert.equal(await row.locator('button').getAttribute('aria-expanded'), 'true');
@@ -418,7 +441,7 @@ test('deliberate scrolling during an anchored load cancels late positioning', as
     const position = await page.evaluate(() => scrollY);
     assert.equal(position, 0, 'the user has returned to the start during loading');
     release();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
     assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'loading respects the deliberate reading position');
   } finally { release(); await page.close(); }
@@ -457,7 +480,7 @@ test('reloading an axis inside a deliberate details entry preserves its return h
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     await page.locator('#panorama [data-cancer-type="all"] a[href$="#prevencao"]').last().click();
     await page.reload();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     await page.goBack();
     assert.equal(new URL(page.url()).pathname, '/municipios/', 'return consumes the existing details entry');
@@ -476,23 +499,20 @@ test('details keep the reading axis for type changes and follow an actual indica
     await page.waitForFunction(() => document.querySelector('#cancer-type').value === 'prostate');
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-    await page.locator('[data-details-menu]').click();
-    await page.locator('#details-menu').getByRole('button', { name: 'Filtros', exact: true }).click();
-    await page.locator('#map-indicator').selectOption('mortality');
-    await page.keyboard.press('Escape');
-    await page.waitForFunction(() => document.querySelector('#panorama').open);
-    assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-    await page.locator('[data-details-menu]').click();
-    await page.locator('#details-menu').getByRole('button', { name: 'Filtros', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
+    assert.equal(new URL(page.url()).searchParams.get('tipo'), 'prostate', 'closing preserves the changed type');
+    await page.getByRole('button', { name: /^Filtros/ }).click();
     await page.locator('#cancer-type').selectOption('breast');
     await page.locator('#map-indicator').selectOption('mammography');
     await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('#deteccao').open);
     await page.locator('#prevencao > summary').click();
     await page.locator('[data-panel-cancer-type]').selectOption('prostate');
     await page.waitForFunction(() => document.querySelector('#acesso').open && document.querySelector('#map-indicator').value === 'within_60_days');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     assert.equal(new URL(page.url()).pathname, RECIFE);
@@ -524,18 +544,10 @@ for (const theme of ['light', 'dark']) test(`extreme height with 200% CSS text k
     await page.keyboard.press('Escape');
     await reachable(page.getByRole('button', { name: 'Ver detalhes', exact: true }));
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    await reachable(page.locator('[data-details-menu]'));
-    await page.locator('[data-details-menu]').click();
-    await page.getByRole('button', { name: 'Filtros', exact: true }).click();
-    assert.equal(await page.locator('#cancer-type').inputValue(), 'prostate');
-    await page.keyboard.press('Escape');
-    await page.locator('[data-details-menu]').click();
-    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
-    await page.locator('#municipality-search').fill('Olinda PE');
-    await reachable(page.locator('#municipality-results button').first());
-    await page.keyboard.press('Escape');
-    await page.locator('[data-details-menu]').click();
-    await page.locator('#details-menu').getByRole('button', { name: 'Legenda', exact: true }).click();
+    await reachable(page.getByRole('button', { name: 'Fechar detalhes', exact: true }));
+    const legend = page.getByRole('button', { name: 'Legenda', exact: true });
+    await reachable(legend);
+    await legend.click();
     await page.locator('#legend-full button').last().scrollIntoViewIfNeeded();
     await page.keyboard.press('Escape');
     const reading = page.locator('.panel-reading');
@@ -547,7 +559,7 @@ for (const theme of ['light', 'dark']) test(`extreme height with 200% CSS text k
     assert.equal(await page.evaluate(() => history.length), historyLength + 1);
     const restored = await reading.evaluate(el => ({ top: el.scrollTop, max: el.scrollHeight - el.clientHeight }));
     assert.ok(Math.abs(restored.top - Math.min(position, restored.max)) < 3, JSON.stringify({ position, restored }));
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
   } finally { await page.close(); }
 });

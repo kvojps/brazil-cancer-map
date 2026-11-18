@@ -16,8 +16,7 @@ test('logo resets list and municipal details, keeps theme and keyboard focus, an
     await page.locator('.result-value').waitFor();
     const previous = page.url();
     const length = await page.evaluate(() => history.length);
-    await page.locator('[data-details-menu]').click();
-    await page.getByRole('button', { name: 'Buscar município', exact: true }).click();
+    await page.setViewportSize({ width: 1280, height: 844 });
     const logo = page.locator('.identity');
     await logo.focus();
     await logo.press('Enter');
@@ -30,6 +29,8 @@ test('logo resets list and municipal details, keeps theme and keyboard focus, an
     assert.equal(await page.evaluate(() => history.length), length + 1);
     await page.goBack();
     await page.waitForURL(previous);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     await page.locator('.result-value').waitFor();
     assert.equal(await page.locator('.indicator-table').isVisible(), true);
     await page.goForward();

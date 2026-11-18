@@ -11,23 +11,19 @@ export function mountTemporarySurfaces(): void {
   const noticeOpener = document.querySelector<HTMLElement>('[popovertarget="construction-reading"]');
   const surfaces = [filters, legend, notice];
   const menu = document.querySelector<HTMLDetailsElement>('.site-menu');
-  const detailsMenu = document.querySelector<HTMLElement>('#details-menu');
-  const detailsToggle = document.querySelector<HTMLElement>('[data-details-menu]');
-  let searchOpener: HTMLElement = searchToggle;
   let filtersOpener: HTMLElement | null = document.querySelector('.filters-toggle');
   const floating = matchMedia('(max-width: 767px)');
   let switching = false;
   let legendOpener: HTMLElement | undefined;
   const focus = (element: HTMLElement | undefined | null) => {
-    const target = element?.checkVisibility({ visibilityProperty: true }) ? element : detailsToggle;
-    if (target?.checkVisibility({ visibilityProperty: true })) target.focus({ preventScroll: true });
+    if (element?.checkVisibility({ visibilityProperty: true })) element.focus({ preventScroll: true });
   };
-  const openerFor = (surface: HTMLElement) => surface === notice ? (noticeOpener?.checkVisibility({ visibilityProperty: true }) ? noticeOpener : document.querySelector<HTMLElement>('.notice-message')) : surface === filters ? filtersOpener : surface === detailsMenu ? detailsToggle : legendOpener;
+  const openerFor = (surface: HTMLElement) => surface === notice ? (noticeOpener?.checkVisibility({ visibilityProperty: true }) ? noticeOpener : document.querySelector<HTMLElement>('.notice-message')) : surface === filters ? filtersOpener : legendOpener;
   const closeSearch = (returnFocus = true) => {
     const wasOpen = 'searchOpen' in header.dataset;
     delete header.dataset.searchOpen;
     searchToggle.setAttribute('aria-expanded', 'false');
-    if (returnFocus && wasOpen) focus(searchOpener);
+    if (returnFocus && wasOpen) focus(searchToggle);
   };
   const hide = (surface: HTMLElement | null) => {
     if (surface?.matches(':popover-open')) surface.hidePopover();
@@ -35,7 +31,7 @@ export function mountTemporarySurfaces(): void {
   const replaceSurface = (next?: HTMLElement) => {
     switching = true;
     if (next !== search) closeSearch(false);
-    for (const surface of [...surfaces, detailsMenu]) if (surface !== next) hide(surface);
+    for (const surface of surfaces) if (surface !== next) hide(surface);
     if (menu?.open) menu.open = false;
     switching = false;
   };
@@ -45,7 +41,6 @@ export function mountTemporarySurfaces(): void {
   search.id = 'municipality-search-surface';
   searchToggle.addEventListener('click', event => {
     event.preventDefault();
-    searchOpener = searchToggle;
     replaceSurface(search);
     header.dataset.searchOpen = '';
     searchToggle.setAttribute('aria-expanded', 'true');
@@ -59,46 +54,29 @@ export function mountTemporarySurfaces(): void {
     const filterButton = event.target instanceof Element ? event.target.closest<HTMLElement>('[popovertarget="map-filters"]') : null;
     if (filterButton && filterButton.getAttribute('popovertargetaction') !== 'hide') filtersOpener = filterButton;
   }, true);
-  for (const surface of [...surfaces, detailsMenu]) surface?.addEventListener('beforetoggle', event => {
+  for (const surface of surfaces) surface?.addEventListener('beforetoggle', event => {
     const opening = (event as ToggleEvent).newState === 'open';
     if (opening) {
-      if (floating.matches || surface === detailsMenu) replaceSurface(surface);
+      if (floating.matches) replaceSurface(surface);
       // The toggle event below runs after native popover focus handling.
-    } else if (!switching && (floating.matches || surface === detailsMenu || surface.contains(document.activeElement))) {
+    } else if (!switching && (floating.matches || surface.contains(document.activeElement))) {
       queueMicrotask(() => focus(openerFor(surface)));
     }
   });
-  for (const surface of [...surfaces, detailsMenu]) surface?.addEventListener('toggle', event => {
+  for (const surface of surfaces) surface?.addEventListener('toggle', event => {
     if ((event as ToggleEvent).newState === 'open' && surface.matches(':popover-open')) focus(surface.querySelector<HTMLElement>('select, button'));
   });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     if ('searchOpen' in header.dataset) {
       closeSearch(false);
-      focus(searchOpener);
+      focus(searchToggle);
     }
-    for (const surface of [...surfaces, detailsMenu]) {
+    for (const surface of surfaces) {
       if (!surface?.matches(':popover-open')) continue;
       event.preventDefault();
       hide(surface);
       focus(openerFor(surface));
-    }
-  });
-  detailsMenu?.addEventListener('click', event => {
-    const command = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-details-command]')?.dataset.detailsCommand : undefined;
-    if (!command) return;
-    if (command === 'search') {
-      searchOpener = detailsToggle!;
-      replaceSurface(search);
-      header.dataset.searchOpen = '';
-      searchToggle.setAttribute('aria-expanded', 'true');
-      input.focus({ preventScroll: true });
-      queueMicrotask(() => input.focus({ preventScroll: true }));
-    } else {
-      const surface = command === 'filters' ? filters : legend;
-      if (command === 'filters') filtersOpener = detailsToggle!;
-      else legendOpener = detailsToggle!;
-      if (surface) { replaceSurface(surface); surface.showPopover(); }
     }
   });
   // Selecting a result also works through Enter in the search field.
@@ -114,11 +92,10 @@ export function mountTemporarySurfaces(): void {
     hide(filters);
     hide(legend);
     hide(notice);
-    hide(detailsMenu);
     switching = false;
   });
   const adapt = () => {
-    closeSearch(); hide(filters); hide(legend); hide(detailsMenu);
+    closeSearch(); hide(filters); hide(legend);
     if (document.activeElement === searchToggle && input.checkVisibility({ visibilityProperty: true })) input.focus({ preventScroll: true });
   };
   floating.addEventListener('change', adapt);

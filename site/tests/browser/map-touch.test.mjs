@@ -113,7 +113,7 @@ test('canvas touch clears hover and successive selections preserve the visible g
     const beforeReturn = [];
     for (const [, point] of points) beforeReturn.push(await labelAt(page, point));
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     for (const [index, [, point]] of points.entries()) assert.equal(await labelAt(page, point), beforeReturn[index], 'returning from details preserves the camera');
     await page.locator('[data-view="lista"]').click();
@@ -173,7 +173,7 @@ for (const arrival of ['direct link', 'search', 'search retry']) {
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
       assert.equal(await page.locator('[data-profile-axis]').count(), 4);
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
       assert.equal(page.url(), selectedUrl, 'returning keeps the selected municipality and filters');
       for (const { name, point } of samples) assert.equal(await labelAt(page, point), name, 'returning keeps the arrival framing');
@@ -223,7 +223,7 @@ test('the first canvas touch opens only the collapsed sheet and paints a selecti
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
     assert.equal(await page.locator('[data-profile-axis]').count(), 4);
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(page.url(), selectedUrl);
     assert.equal(await labelAt(page, point), name, 'returning preserves the touched territory at the same point');
@@ -317,7 +317,7 @@ test('recovering useful height restores canvas exploration without exposing perm
     assert.equal(await page.locator('#map-indicator').isVisible(), false);
     assert.equal(await page.locator('#preview-heading').evaluate(node => node === document.activeElement), false, 'canvas selection does not focus the heading');
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-    await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
     assert.equal(page.url(), url);
     for (const { name, point } of recovered) assert.equal(await labelAt(page, point), name, 'details preserve the recovered camera after the minimum reveal');
@@ -352,7 +352,7 @@ for (const height of [568, 664, 740, 844]) {
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false, 'first touch keeps deliberate details in every composition');
       await page.getByRole('button', { name: 'Ver detalhes', exact: true }).tap();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
-      await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).tap();
+      await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).tap();
       assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
       assert.equal(await page.locator('#map-filters').evaluate(node => node.matches(':popover-open')), false);
       assert.equal(arrival.scroll, 0);

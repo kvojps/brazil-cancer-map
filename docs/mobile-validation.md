@@ -121,10 +121,11 @@ Preservar falhas mesmo quando uma nova tentativa passar.
    expandir Olinda e selecionar pelo nome; alcançar a última linha acima do
    resumo. Alternar Mapa/Lista e conferir UF, expansão, posição e câmera.
 2. **T06–T10, T12–T14:** tocar texto do resumo (não expande), Ver detalhes,
-   quatro Eixos e Ações. No Menu dos detalhes, abrir busca, filtros e legenda,
-   um por vez. Cancelar/fechar e conferir leitura e retorno do foco. Trocar
-   Indicador, depois somente Tipo; conferir Eixo e explicação quando não há
-   Indicador. Recolher conserva consulta; limpar conserva filtros e exploração.
+   quatro Eixos e Ações. Abrir e fechar Legenda junto ao resultado, pelo controle
+   e por Escape, e conferir o retorno do foco. Trocar Tipo de câncer nos detalhes
+   e conferir o Eixo em leitura. Usar o × “Fechar detalhes” e conferir o mesmo
+   Mapa ou Lista, com foco em “Ver detalhes”. Na exploração, abrir Busca e
+   Filtros. Usar o × “Limpar seleção” no resumo e conferir filtros e exploração.
 3. **T15–T20:** logo reinicia Brasil/Mapa/padrões sem município e mantém tema;
    repetição no estado inicial não cria etapa. Voltar recupera consulta e
    Avançar recupera reset. Ir a Como calculamos e retornar pelo item Mapa com
@@ -140,8 +141,9 @@ Preservar falhas mesmo quando uma nova tentativa passar.
 5. **T11, T25–T26:** ler resumo/detalhes com teclado real aberto; Voltar físico pode
    primeiro dispensar só teclado — registrar a sequência observada. Mostrar e
    esconder barras do Chrome; girar retrato/paisagem; reduzir altura com teclado
-   e ampliar a 200%. Conferir o ciclo do aviso descrito abaixo; alcançar nome, retorno, Menu, filtros, legenda,
-   busca e Ações por rolagens internas, sem reduzir fonte. Recuperar espaço e
+   e ampliar a 200%. Conferir o ciclo do aviso descrito abaixo. Alcançar nome,
+   Fechar detalhes, Legenda, Tipo de câncer e Ações por rolagens internas.
+   Na exploração, conferir Busca e Filtros. Recuperar espaço e
    conferir Eixo, leitura, URL/histórico e consulta. Mapa não precisa permanecer
    simultaneamente visível no extremo.
 6. **Estados de conteúdo:** repetir leitura e saídas com Alcântara (regional e
@@ -193,8 +195,8 @@ referenciado na issue, conferindo que a URL do aparelho realmente o serve.
    leitura aberta continua acessível e não perde foco. Ao fechá-la, foco vai à
    mensagem integral se o acionador já desapareceu. Compactar novamente com
    essa mensagem focada deve levar o foco a Ler aviso.
-5. Repetir sobre detalhes e Lista: abrir busca, Menu, filtros e legenda e então
-   Ler aviso. Conferir uma superfície por vez; ao fechar, manter município,
+5. Abrir Legenda nos detalhes ou Busca, menu do cabeçalho e Filtros na Lista,
+   depois acionar Ler aviso. Conferir uma superfície por vez. Ao fechar, manter município,
    Tipo, Indicador, Eixo, visualização, leitura e posições dentro do novo máximo.
    Abrir/fechar o aviso não cria entrada no histórico nem altera a URL.
 

@@ -148,7 +148,7 @@ for (const theme of ['light', 'dark']) {
   });
 }
 
-test('notice reading replaces search, Menu, filters and legend over details without changing context', async () => {
+test('notice reading replaces the details legend and exploration menu without changing context', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   page.setDefaultTimeout(15000);
   try {
@@ -161,24 +161,18 @@ test('notice reading replaces search, Menu, filters and legend over details with
     const url = page.url();
     const entries = await page.evaluate(() => history.length);
     const reading = page.getByRole('dialog', { name: 'Aviso de construção' });
-    const position = await page.locator('.panel-reading').evaluate(el => { el.scrollTop = 80; return el.scrollTop; });
-    for (const command of ['Buscar município', 'Filtros', 'Legenda']) {
-      await page.locator('[data-details-menu]').click();
-      await page.locator('#details-menu').getByRole('button', { name: command, exact: true }).click();
-      await opener.click();
-      await reading.waitFor();
-      assert.equal(await page.locator('.site-header').getAttribute('data-search-open'), null);
-      assert.equal(await page.locator('#map-filters').isVisible(), false);
-      assert.equal(await page.locator('#legend-full').isVisible(), false);
-      assert.equal(await page.locator('#details-menu').isVisible(), false);
-      assert.equal(await page.locator('.site-menu').getAttribute('open'), null);
-      await page.keyboard.press('Escape');
-      assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), position);
-      assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
-      assert.equal(page.url(), url);
-      assert.equal(await page.evaluate(() => history.length), entries);
-    }
-    await page.getByRole('button', { name: 'Voltar à lista', exact: true }).click();
+    const legend = page.getByRole('button', { name: 'Legenda', exact: true });
+    await legend.click();
+    const position = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    await opener.click();
+    await reading.waitFor();
+    assert.equal(await page.locator('#legend-full').isVisible(), false);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), position);
+    assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    assert.equal(page.url(), url);
+    assert.equal(await page.evaluate(() => history.length), entries);
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
     await page.locator('.site-menu > summary').click();
     await opener.click();
     await reading.waitFor();

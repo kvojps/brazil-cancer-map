@@ -36,12 +36,11 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   const resultBlock = panel.querySelector<HTMLElement>('[data-profile-result]')!;
   const heading = panel.querySelector<HTMLElement>('#preview-heading')!;
   const toggle = panel.querySelector<HTMLButtonElement>('[data-toggle-profile]')!;
-  const panelBar = panel.querySelector<HTMLElement>('.panel-bar')!;
-  const detailsMenu = panel.querySelector<HTMLElement>('[data-details-menu]')!;
+  const closeDetails = panel.querySelector<HTMLButtonElement>('[data-close-details]')!;
   const clear = panel.querySelector<HTMLButtonElement>('[data-clear-profile]')!;
   const panelType = panel.querySelector<HTMLLabelElement>('.panel-type')!;
   const panelTypeSelect = panelType.querySelector<HTMLSelectElement>('select')!;
-  const panelLegend = document.querySelector<HTMLElement>('[data-panel-legend]')!;
+  const panelLegend = panel.querySelector<HTMLElement>('[data-panel-legend]')!;
   const documents = new Map<string, Promise<string>>();
   const initialProfile = content.querySelector<HTMLElement>('.profile');
   if (initialProfile) documents.set(initialProfile.dataset.code!, Promise.resolve(initialProfile.outerHTML));
@@ -54,6 +53,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
   let frameOnRender = false;
+  let focusSummaryOnLoad = false;
   const cancelArrival = () => {
     anchorArrival = false;
     frameOnRender = false;
@@ -92,14 +92,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     if (!frameOnCollapse) map.focus(code, preserveCameraFor === code);
   };
   const detailsOpen = () => history.state?.municipalDetails === location.pathname;
-  const returnLabel = () => new URLSearchParams(location.search).get('visualizacao') === 'lista' ? 'Voltar à lista' : 'Voltar ao mapa';
   const expand = (expanded: boolean) => {
     panel.toggleAttribute('data-collapsed', !expanded);
     toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.textContent = expanded ? returnLabel() : 'Ver detalhes';
-    // Keep the same action in the summary and in the details bar.
-    if (expanded && toggle.parentElement !== panelBar) panelBar.insertBefore(toggle, detailsMenu);
-    else if (!expanded && toggle.parentElement === panelBar) resultBlock.after(toggle);
     if (!expanded) panel.scrollTop = 0;
     syncSheetMetrics();
     if (!expanded && frameOnCollapse && selected) frame(selected.code);
@@ -109,7 +104,11 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     const wasExpanded = !panel.hasAttribute('data-collapsed');
     expand(!isPhone() || detailsOpen());
     if (isPhone() && wasExpanded && !detailsOpen()) {
-      if (hadFocus && !toggle.hidden) toggle.focus({ preventScroll: true });
+      if (hadFocus) {
+        focusSummaryOnLoad = toggle.hasAttribute('hidden');
+        if (focusSummaryOnLoad) panel.focus({ preventScroll: true });
+        else toggle.focus();
+      }
       const position = history.state?.municipalExploration;
       if (position) requestAnimationFrame(() => window.scrollTo({ ...position, behavior: 'instant' }));
     }
@@ -125,10 +124,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     expand(true);
     heading.focus({ preventScroll: true });
   };
-  toggle.onclick = () => {
-    if (!detailsOpen()) openDetails();
-    else if (history.state?.detailsEntry) history.back();
+  toggle.onclick = openDetails;
+  closeDetails.onclick = () => {
+    closeDetails.focus({ preventScroll: true });
+    if (history.state?.detailsEntry) history.back();
     else {
+      initialAnchor = '';
       const url = new URL(location.href);
       url.hash = '';
       history.replaceState({ ...history.state, municipalDetails: undefined }, '', url);
@@ -157,7 +158,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     panelType.hidden = false;
     panelTypeSelect.value = state.cancerType;
     panelType.querySelector<HTMLElement>('[data-panel-cancer-label]')!.textContent = panelTypeSelect.selectedOptions[0].textContent;
-    panelLegend.dataset.reading = state.mode;
     if (shownCode !== selected.code || !content.querySelector('.profile')) {
       const document = new DOMParser().parseFromString(html, 'text/html');
       const profile = document.querySelector<HTMLElement>('.profile');
@@ -205,6 +205,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       reading.scrollTop = position.top;
       panel.scrollTop = position.panelTop;
     }
+    if (focusSummaryOnLoad) {
+      focusSummaryOnLoad = false;
+      if (document.activeElement === panel && isPhone() && panel.hasAttribute('data-collapsed')) toggle.focus();
+    }
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
     // Frame against the loaded summary and the controls resting above it.
     syncSheetMetrics();
@@ -219,10 +223,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       if (changed && preserveCameraFor !== place.code) preserveCameraFor = undefined;
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
-      for (const button of [clear, panelLegend]) button.hidden = false;
+      clear.hidden = false;
+      panelLegend.hidden = false;
       if (changed) {
         panel.hidden = false;
         toggle.hidden = true;
+        focusSummaryOnLoad = false;
         resultBlock.removeAttribute('data-kind');
         resultBlock.textContent = 'Carregando o resultado…';
         panelType.hidden = true;
@@ -390,7 +396,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   return (nextLayer: IndicatorLayer | undefined, nextState: MapState) => {
     void nextLayer;
     state = nextState;
-    panelLegend.dataset.reading = state.mode;
     void Promise.resolve(navigation.restore()).catch(failed);
   };
 }

@@ -344,13 +344,13 @@ test('a long caveat keeps filters available without scrolling the document', asy
   } finally { await page.close(); }
 });
 
-test('the full legend is one button away above the sheet, and the notice is never covered', async () => {
+test('the full legend is one button away in the summary, and the notice is never covered', async () => {
   const page = await open({ viewport: { width: 390, height: 844 } }, RECIFE);
   try {
     await page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
     const panel = await box(page, '#municipality-preview');
     assert.ok((await box(page, '.view-controls')).bottom <= panel.top, 'Mapa/Lista above the sheet');
-    assert.ok((await box(page, '[data-panel-legend]')).bottom <= panel.top, 'Legenda above the sheet');
+    assert.ok((await box(page, '[data-panel-legend]')).top >= panel.top, 'Legenda inside the summary');
     assert.ok(panel.top >= (await box(page, '.construction-notice')).bottom, 'the notice is never covered');
     await page.locator('[data-panel-legend]').click();
     assert.match(await page.locator('#legend-full').innerText(), /Origem e período dos dados/);
@@ -488,7 +488,7 @@ test('native 200% zoom keeps scripted controls reachable and preserves normal sc
             await page.locator('#municipality-search').fill('Recife PE');
             await page.locator('#municipality-search').press('Enter');
             await page.getByRole('button', { name: 'Ver detalhes', exact: true }).click();
-            await page.getByRole('button', { name: 'Voltar ao mapa', exact: true }).click();
+            await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).click();
             await page.locator('[data-clear-profile]').click();
           } else {
             assert.equal(await page.locator('.filters-toggle').isVisible(), false, where);
