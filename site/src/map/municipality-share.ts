@@ -6,8 +6,10 @@ export function mountMunicipalityShare(
   const status = control.querySelector<HTMLElement>('[role="status"]')!;
   const field = control.querySelector('input')!;
   let request = 0;
+  let confirmationTimer: number | undefined;
   const reset = () => {
     request++;
+    window.clearTimeout(confirmationTimer);
     status.textContent = '';
     field.hidden = true;
     field.value = '';
@@ -30,7 +32,10 @@ export function mountMunicipalityShare(
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(data.url);
-        if (pending === request) status.textContent = 'Link copiado';
+        if (pending === request) {
+          status.textContent = 'Link copiado';
+          confirmationTimer = window.setTimeout(() => { status.textContent = ''; }, 3000);
+        }
         return;
       } catch {
         // Offer the address for manual copying if the clipboard is unavailable.

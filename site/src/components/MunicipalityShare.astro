@@ -16,7 +16,7 @@ const { class: className, ...attributes } = Astro.props;
 </div>
 
 <style>
-  .municipality-share { min-width: 0; }
+  .municipality-share { display: flex; flex-wrap: wrap; align-items: center; column-gap: .25rem; min-width: 0; }
   button, button:hover:not(:disabled) {
     display: inline-flex;
     align-items: center;
@@ -27,6 +27,7 @@ const { class: className, ...attributes } = Astro.props;
   }
   button:hover:not(:disabled) { text-decoration: underline; }
   svg { flex: none; }
-  p { margin: 0; font-size: var(--text-14); }
+  p { flex: 1 1 min-content; margin: 0; color: var(--muted); font-size: var(--text-14); }
+  p:empty { position: absolute; }
   input { display: block; width: 100%; margin-block: 8px; }
 </style>

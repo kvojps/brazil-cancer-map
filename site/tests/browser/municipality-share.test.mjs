@@ -114,6 +114,30 @@ test('cancelling native sharing returns to the same consultation without copying
   assert.equal(await page.getByRole('textbox', { name: 'Link da consulta municipal' }).count(), 0);
 });
 
+test('the copy confirmation aligns with Share and expires three seconds after the latest copy', async t => {
+  const page = await openConsultation(t, { viewport: { width: 1280, height: 800 } },
+    { share: null, clipboard: 'success' });
+  await page.clock.install();
+  const share = shareButton(page);
+  const confirmation = page.getByRole('status').filter({ hasText: /^Link copiado$/ });
+  await share.press('Enter');
+  await confirmation.waitFor();
+  const button = await share.boundingBox();
+  const message = await confirmation.boundingBox();
+  const aligned = message.x >= button.x + button.width
+    && Math.abs(message.y + message.height / 2 - button.y - button.height / 2) <= 1;
+  await page.clock.fastForward(2000);
+  await share.press('Enter');
+  await confirmation.waitFor();
+  await page.clock.fastForward(1100);
+  const visibleAfterCopyingAgain = await confirmation.isVisible();
+  await page.clock.fastForward(1900);
+  assert.deepEqual(
+    { aligned, visibleAfterCopyingAgain, expired: !(await confirmation.isVisible()) },
+    { aligned: true, visibleAfterCopyingAgain: true, expired: true },
+  );
+});
+
 test('when native sharing and clipboard fail, desktop exposes a focused, selected, read-only link', async t => {
   const page = await openConsultation(t, { viewport: { width: 1280, height: 800 } },
     { share: 'fail', clipboard: 'fail' }, recife + '?indicador=mammography&tipo=breast&theme=dark');
