@@ -25,24 +25,27 @@ Instale também **Python 3.14 ou superior** e **uv**. Execute da raiz:
 ```sh
 uv sync --locked
 npm ci --prefix pipeline
-uv run python -m pipeline run --list
 ```
 
 O Node executa o mapshaper fixado no lockfile de `pipeline/`. A aquisição
 dos agregados oficiais do HPV requer Chromium. Instale com
 `uv run playwright install chromium` ou configure `CHROMIUM_PATH`.
 
-Use `run --source` e `--step` para selecionar uma `source` e uma etapa.
-Este comando pressupõe que os insumos de `painel` já estão preparados.
+Para rodar a pipeline completa, prepare os [insumos e pré-requisitos por Fonte](data-sources.md)
+e execute na raiz:
 
 ```sh
-uv run python -m pipeline run --source painel --step compute
+uv run python -m pipeline run
 ```
 
-`run` sem filtros executa as cinco etapas de cada `source` registrada,
-incluindo aquisição e exportação. Consulte os
-[pré-requisitos por Fonte](data-sources.md) antes de rodar a aquisição. Use
-[`update` para preparar uma proposta isolada](data-update.md).
+Esse comando executa todas as etapas de cada `source` registrada, da aquisição
+à exportação dos JSON em `site/public/dados/`. Para preparar uma proposta
+isolada, use [`update`](data-update.md).
+
+| Comando | Quando usar |
+| --- | --- |
+| `uv run python -m pipeline run --list` | Consultar as etapas e as `source`s disponíveis sem executá-las. |
+| `uv run python -m pipeline run --source painel --step compute` | Executar só o cálculo de `painel`, com os insumos já preparados. |
 
 ## Testes e verificações
 

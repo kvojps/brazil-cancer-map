@@ -4,8 +4,12 @@ Uma **Fonte** é o provedor oficial citado no site. Uma `source` é a unidade
 de processamento registrada no pipeline. A Fonte Painel-Oncologia alimenta
 a `source` `painel`.
 
-O comando `uv run python -m pipeline run --list` mostra as etapas e as
-`source`s disponíveis. A entrada [`python -m pipeline`](../pipeline/__main__.py)
+Na raiz do repositório, execute a pipeline completa com
+`uv run python -m pipeline run`. O comando executa todas as etapas de cada
+`source` registrada. O [guia de desenvolvimento](development.md#trabalhar-no-pipeline)
+mostra os pré-requisitos e como listar ou selecionar `source`s e etapas.
+
+A entrada [`python -m pipeline`](../pipeline/__main__.py)
 passa o [registro de `source`s](../pipeline/sources/__init__.py) ao
 [CLI](../pipeline/cli.py), que executa as etapas do
 [protocolo `Source`](../pipeline/source.py).
