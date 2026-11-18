@@ -130,6 +130,7 @@ Vale a partir de 768 px.
 
 ## Painel Meu município
 
+- **Controles no celular:** no resumo e nos detalhes, “Ver detalhes”, “Voltar ao mapa/lista” (com o rótulo correspondente à visualização), Menu, Limpar seleção, Legenda e o seletor de Tipo de câncer têm área de toque mínima de 44 × 44 px e distância mínima de 8 px entre controles adjacentes, inclusive entre Legenda e o seletor. Nos detalhes, o nome ocupa uma linha própria e os botões ficam alinhados abaixo, sem margens individuais que desloquem um botão em relação aos demais da mesma linha. Quando faltar largura ou houver ampliação do texto, os controles podem ocupar novas linhas, sem cortar rótulos, sobrepor conteúdo ou sair da área alcançável. A mudança preserva textos, ações, foco, seleção e histórico, além das regras de rolagem interna em altura reduzida. A validação usa os testes de navegador existentes e conferência visual em tela estreita, paisagem e texto ampliado.
 - **Resumo do Indicador:** número em 32 px, o que ele mede e o ano; a classe da leitura do mapa com a cor e a textura do mapa, mais o período da Tendência ou a Referência; no 60 dias, a % de todos os casos sem informação; a origem, quando regional; e o aviso da Faixa C.
 - **Dado insuficiente:** o texto ocupa o lugar do número, com a textura de pontos e a explicação. O aviso da Faixa C sai do bloco e fica no Eixo aberto, junto da Tendência do estado e da Ação.
 - **Mortalidade:** a taxa em destaque, ao lado da classe, sem contagem de óbitos e sem Situação (spec, seção 11.2).
