@@ -6,6 +6,10 @@ export interface MapState {
   mode: MapMode;
 }
 
+export function sameMapState(first: MapState, second: MapState): boolean {
+  return first.indicator === second.indicator && first.cancerType === second.cancerType && first.mode === second.mode;
+}
+
 export const DEFAULT_INDICATOR = "within_60_days";
 export type IndicatorCatalog = Record<string, { modes: Record<string, readonly MapMode[]> }>;
 

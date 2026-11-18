@@ -15,7 +15,7 @@ import {
   type MunicipalityListing,
 } from "../map/indicator-layer";
 
-import { filterSummary, normalizeMapState, readMapState, writeMapState, type MapState } from "../map/map-state";
+import { filterSummary, normalizeMapState, readMapState, sameMapState, writeMapState, type MapState } from "../map/map-state";
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -304,7 +304,7 @@ if (container && status) {
         const anchorType = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
         if (Object.hasOwn(CANCER_TYPES, anchorType)) params.set('tipo', anchorType);
         const restored = readMapState(params);
-        if (restored.indicator === current.indicator && restored.cancerType === current.cancerType && restored.mode === current.mode) {
+        if (sameMapState(restored, current)) {
           updatePreview(mapLayer, current);
         } else void selectState(restored, "", false);
       });

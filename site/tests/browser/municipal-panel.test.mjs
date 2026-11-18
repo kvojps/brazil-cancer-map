@@ -324,7 +324,9 @@ test('selecting keeps the bars still, speaks only to screen readers and takes fo
     assert.ok(status.width <= 1 && status.height <= 1, 'status is for screen readers only');
     assert.match(await search.locator('#search-status').textContent(), /Balsas \(MA\): 69,1%.*Sem direção clara.*Faixa C/);
     await search.keyboard.press('Tab');
-    assert.equal(await search.locator('[data-clear-profile]').evaluate(element => element === document.activeElement), true, 'then to the only action on a desktop');
+    assert.equal(await search.getByRole('button', { name: 'Compartilhar', exact: true }).evaluate(element => element === document.activeElement), true);
+    await search.keyboard.press('Tab');
+    assert.equal(await search.locator('[data-clear-profile]').evaluate(element => element === document.activeElement), true);
     assert.notEqual(await search.locator('[data-clear-profile]').evaluate(element => getComputedStyle(element).outlineStyle), 'none');
     await search.keyboard.press('Enter');
     assert.equal(await search.locator('#municipality-preview').isVisible(), false);
@@ -340,7 +342,7 @@ test('the sheet works by keyboard, with visible focus', async () => {
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), true);
     assert.equal(await page.locator('#preview-heading').evaluate(element => element === document.activeElement), true, 'focus enters the details heading');
-    for (const selector of ['[data-close-details]', '[data-panel-legend]', '[data-panel-cancer-type]']) {
+    for (const selector of ['[data-close-details]', '[data-municipality-share] button', '[data-panel-legend]', '[data-panel-cancer-type]']) {
       await page.keyboard.press('Tab');
       assert.equal(await page.locator(selector).evaluate(element => element === document.activeElement), true, selector);
     }

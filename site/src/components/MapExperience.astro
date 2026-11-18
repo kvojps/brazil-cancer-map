@@ -4,6 +4,7 @@ import IndicatorTable from './IndicatorTable.astro';
 import MapControls from './MapControls.astro';
 import MapLegend from './MapLegend.astro';
 import MunicipalityMap from './MunicipalityMap.astro';
+import MunicipalityShare from './MunicipalityShare.astro';
 import manifest from '../../public/dados/manifest.json';
 import { CANCER_TYPES } from '../map/indicator-layer';
 interface Props { selected?: boolean; heading?: string }
@@ -30,8 +31,9 @@ const period = manifest.indicators[indicator].all;
     <aside hidden={!selected} id="municipality-preview" aria-labelledby="preview-heading" tabindex="0">
       <div class="panel-bar">
         <h2 id="preview-heading" tabindex="-1">{heading}</h2>
-        <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
         <button type="button" class="panel-icon panel-close" data-close-details aria-label="Fechar detalhes"><span aria-hidden="true">✕</span></button>
+        <MunicipalityShare class="panel-share" />
+        <button type="button" class="panel-icon" data-clear-profile aria-label="Limpar seleção" hidden><span aria-hidden="true">✕</span></button>
       </div>
       <div class="panel-reading">
         <div class="panel-result" data-profile-result></div>
@@ -97,6 +99,8 @@ const period = manifest.indicators[indicator].all;
     .map-heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
     #municipality-preview { contain: size; min-height: 0; overflow: auto; border-left: 1px solid var(--border); }
     .panel-bar { position: sticky; top: 0; z-index: 2; }
+    .panel-bar h2 { flex: 0 1 auto; }
+    .panel-bar [data-clear-profile] { margin-inline-start: auto; }
     .data-feedback { position: absolute; top: 1rem; left: 50%; z-index: 4; width: max-content; max-width: 80%; padding: .5rem .75rem; font-size: var(--text-14); transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: var(--control-radius); }
     .data-feedback p { margin: 0; }
     .data-feedback button { margin-top: .5rem; }
@@ -112,8 +116,9 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview[data-enhanced] { padding-inline: 16px; }
     .panel-bar { align-items: flex-start; gap: max(8px, .5rem); padding-block: 4px 8px; }
     .panel-bar h2 { padding-block: .25rem; }
+    .panel-bar .panel-share { grid-column: 1 / -1; }
     .panel-actions { display: flex; align-items: flex-start; flex-wrap: wrap; gap: max(8px, .5rem); margin-block: 4px max(8px, .5rem); }
-    .panel-actions:not(:has(button:not([hidden]))) { display: none; }
+    .panel-actions:not(:has(> :not([hidden]))) { display: none; }
     .panel-navigation, .panel-navigation:hover:not(:disabled) { color: var(--surface); background: var(--text); }
     .panel-legend, .panel-legend:hover:not(:disabled) { color: var(--link); background: transparent; }
     .panel-legend:hover:not(:disabled) { text-decoration: underline; }
@@ -130,7 +135,7 @@ const period = manifest.indicators[indicator].all;
     #municipality-preview[data-enhanced]:not([data-collapsed]) :is([data-clear-profile], [data-toggle-profile]) { display: none; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; gap: 8px; padding-bottom: 0; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
     #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; padding-bottom: 8px; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex: 0 1 auto; max-height: max(48px, 50%); min-height: 0; overflow: auto; overscroll-behavior: contain; position: sticky; top: 0; z-index: 2; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; flex: 0 1 auto; max-height: max(48px, 50%); min-height: 0; overflow: auto; overscroll-behavior: contain; position: sticky; top: 0; z-index: 2; }
 
     #municipality-preview[data-enhanced][data-collapsed] [data-preview-content] { display: none; }
   }

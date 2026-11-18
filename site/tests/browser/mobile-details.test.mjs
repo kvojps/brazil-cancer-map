@@ -40,19 +40,29 @@ test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consulta
     await page.goto(base + '/municipio/510550-vila-bela-da-santissima-trindade/' + (view === 'lista' ? '?visualizacao=lista' : ''));
     await button('Ver detalhes').waitFor();
     if (textScale === 2) await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-    await assertControlLayout([button('Ver detalhes'), button('Legenda'), button('Limpar seleção')]);
+    await assertControlLayout([button('Ver detalhes'), button('Compartilhar'), button('Legenda'), button('Limpar seleção')]);
+    const detailsButton = await button('Ver detalhes').boundingBox();
+    const shareButton = await button('Compartilhar').boundingBox();
+    if (width === 320 && textScale === 2) {
+      assert.ok(shareButton.y >= detailsButton.y + detailsButton.height, 'Share wraps on a narrow screen with enlarged text');
+    } else {
+      assert.equal(shareButton.y, detailsButton.y, 'Share sits alongside View details when there is room');
+    }
     const fill = control => control.evaluate(el => getComputedStyle(el).backgroundColor);
     assert.notEqual(await fill(button('Ver detalhes')), 'rgba(0, 0, 0, 0)');
     assert.equal(await fill(button('Legenda')), 'rgba(0, 0, 0, 0)');
+    assert.equal(await fill(button('Compartilhar')), 'rgba(0, 0, 0, 0)');
     assert.equal(await fill(button('Limpar seleção')), 'rgba(0, 0, 0, 0)');
     await button('Ver detalhes').click();
     const close = button('Fechar detalhes');
     assert.equal(await button('Limpar seleção').count(), 0);
     assert.equal(await button('Voltar ao mapa').count() + await button('Voltar à lista').count(), 0);
     assert.equal(await button('Menu').count(), 0);
-    await assertControlLayout([close, button('Legenda'), page.getByRole('combobox', { name: 'Tipo de câncer', exact: true })]);
+    await assertControlLayout([close, button('Compartilhar'), button('Legenda'), page.getByRole('combobox', { name: 'Tipo de câncer', exact: true })]);
     const heading = await page.getByRole('heading', { name: 'Vila Bela da Santíssima Trindade (MT)', exact: true }).boundingBox();
     const cross = await close.boundingBox();
+    const share = await button('Compartilhar').boundingBox();
+    assert.ok(share.y >= heading.y + heading.height, 'Share sits below the municipality name');
     assert.ok(heading.x + heading.width <= cross.x && Math.abs(heading.y - cross.y) < 10, 'the close control sits to the right of the name');
     if (textScale === 2) {
       const type = page.getByRole('combobox', { name: 'Tipo de câncer', exact: true });

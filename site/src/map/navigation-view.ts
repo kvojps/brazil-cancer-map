@@ -1,11 +1,12 @@
 import { keepVisitContext, pushVisit } from './visit-history';
 import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
-import { readMapState, type MapState } from './map-state';
+import { readMapState, sameMapState, writeMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
 import { axisResults, panelResult } from '../profile/panel-result';
 import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
+import { mountMunicipalityShare } from './municipality-share';
 
 /** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
 const SHEET = '(max-width: 767px)';
@@ -46,6 +47,13 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   if (initialProfile) documents.set(initialProfile.dataset.code!, Promise.resolve(initialProfile.outerHTML));
   let selected: MunicipalityListing['municipalities'][number] | undefined;
   let state: MapState = readMapState(new URLSearchParams(location.search));
+  const share = panel.querySelector<HTMLElement>('[data-municipality-share]')!;
+  const resetShare = mountMunicipalityShare(share, () => {
+    if (!selected) return;
+    const url = new URL(municipalityPath(selected), location.origin);
+    url.search = writeMapState(state).toString();
+    return { title: heading.textContent, url: url.href };
+  });
   let shownCode = '';
   let shownIndicator = '';
   let initialAnchor = location.hash.slice(1);
@@ -92,19 +100,34 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     if (!frameOnCollapse) map.focus(code, preserveCameraFor === code);
   };
   const detailsOpen = () => history.state?.municipalDetails === location.pathname;
-  const expand = (expanded: boolean) => {
+  const expand = (expanded: boolean, preserveShareFocus = false) => {
+    const focused = document.activeElement;
+    const shareFocused = focused instanceof HTMLElement && share.contains(focused);
     panel.toggleAttribute('data-collapsed', !expanded);
+    const nextToShare = expanded ? clear : panelLegend;
+    const movingShare = share.nextElementSibling !== nextToShare;
+    if (!expanded && (movingShare || !shareFocused)) panel.scrollTop = 0;
+    if (movingShare) {
+      // Keep pending sharing and its feedback with the control in either layout.
+      nextToShare.before(share);
+      if (preserveShareFocus && shareFocused) {
+        focused.focus({ preventScroll: true });
+        requestAnimationFrame(() => {
+          if (document.activeElement === focused) focused.scrollIntoView({ block: 'nearest' });
+        });
+      }
+    }
     toggle.setAttribute('aria-expanded', String(expanded));
-    if (!expanded) panel.scrollTop = 0;
     syncSheetMetrics();
     if (!expanded && frameOnCollapse && selected) frame(selected.code);
   };
-  const syncDetails = () => {
+  const syncDetails = (event?: Event) => {
+    const resizing = event?.type === 'change';
     const hadFocus = panel.contains(document.activeElement);
     const wasExpanded = !panel.hasAttribute('data-collapsed');
-    expand(!isPhone() || detailsOpen());
+    expand(!isPhone() || detailsOpen(), resizing);
     if (isPhone() && wasExpanded && !detailsOpen()) {
-      if (hadFocus) {
+      if (hadFocus && !(resizing && share.contains(document.activeElement))) {
         focusSummaryOnLoad = toggle.hasAttribute('hidden');
         if (focusSummaryOnLoad) panel.focus({ preventScroll: true });
         else toggle.focus();
@@ -226,6 +249,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       clear.hidden = false;
       panelLegend.hidden = false;
       if (changed) {
+        resetShare();
         panel.hidden = false;
         toggle.hidden = true;
         focusSummaryOnLoad = false;
@@ -270,6 +294,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     show: render,
     clear: () => {
       if (selected) cancelArrival();
+      resetShare();
       panel.hidden = true;
       panelLegend.hidden = true;
       selected = undefined;
@@ -395,6 +420,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   return (nextLayer: IndicatorLayer | undefined, nextState: MapState) => {
     void nextLayer;
+    if (!sameMapState(state, nextState)) resetShare();
     state = nextState;
     void Promise.resolve(navigation.restore()).catch(failed);
   };
