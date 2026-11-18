@@ -1,210 +1,88 @@
 # Atualizar e publicar os dados
 
-Este guia é para quem mantém o Observatório. Execute os comandos na raiz do repositório. Consulte [Fontes de dados](data-sources.md) para insumos, endereços, referências oficiais e limiares de validação; os conceitos estão no [Glossário](../GLOSSARY.md) e o método em [Como calculamos](https://brazil-cancer-map.kvojps.workers.dev/metodologia/).
+Execute os comandos na raiz do repositório. A atualização é manual. Consulte o calendário, os insumos e os limiares de cada `source` em [Fontes de dados](data-sources.md). Uma nova extração segue os períodos configurados no código. Revise o pipeline antes de acrescentar um ano de mamografia, POPSVS ou uma edição INCA e preserve o encerramento da série de citopatológico em 2025.
 
-## Agenda de conferência
-
-| `source` | Quando conferir | O que observar |
-|---|---|---|
-| `painel` | Mensal | Regravação dos anos e períodos provisórios |
-| `cnes` | Mensal | Competência M costuma sair perto do dia 15 de M+1 |
-| `hpv` | Mensal | Agregados oficiais; ano corrente provisório |
-| `popsvs` | Anual, outubro/novembro | Nova população e revisões dos anos anteriores |
-| `siscan` | Anual, janeiro de X+1 | Mamografia e eventuais regravações |
-| `siscan_cytopathology` | Anual, junto do SISCAN | Só correções da série encerrada em 2025; nunca acrescentar anos |
-| `sim` | Anual, dezembro de X+1 | Publicação final do ano X e revisões |
-| `vigitel` | Anual | Microdados costumam atrasar cerca de 20 meses |
-| `inca` | A cada edição | Transcrição e validação manuais; edição atual 2026–2028 |
-| `mesh` | Quando houver município novo | Nova malha e compatibilidade territorial |
-
-Conferir uma Fonte não implica publicar período novo. As janelas são explícitas no código. Receber POPSVS 2026, uma nova edição INCA ou um ano novo de mamografia exige alteração revisada do pipeline; a mamografia ainda compartilha a constante de anos com o citopatológico. Não amplie a série encerrada. O calendário é uma expectativa baseada nas listagens registradas em [Fontes de dados](data-sources.md), não uma garantia do provedor.
-
-## Preparar a máquina
-
-- Python 3.14+, `uv` e `uv sync`.
-- Node 24 (mínimo declarado pelo site: `>=22.23.4`), `npm ci --prefix site` e, para a malha, `npm ci --prefix pipeline`.
-- GitHub CLI, com `gh auth login` e permissão para criar Releases no repositório.
-- Para HPV: `uv run playwright install chromium`, ou `CHROMIUM_PATH` apontando para um Chromium instalado.
-- Para Vigitel: obter o arquivo com `./download-vigitel.sh`, ou definir `VIGITEL_INPUT_PATH`. Conferir a edição e as colunas descritas em [Fontes de dados](data-sources.md#vigitel).
-- Contrato de dados completo em `site/public/dados/` e estado limpo correspondente em `data/clean/`. Para outra máquina, veja a seção de retomada abaixo. Reserve disco para os insumos e cópias do estado e do contrato: `update` faz cópias por grupo.
-
-Antes de gerar uma versão publicável, termine e commite mudanças de código, referências e documentação. Confira `git status --porcelain`: a árvore deve estar limpa. O manifesto registra o commit gerador em `pipeline_version`; o sufixo `-dirty` detecta mudanças em `pipeline/`, `pyproject.toml` e `uv.lock`, mas não substitui a conferência da árvore inteira.
+```mermaid
+flowchart TD
+    base["Contrato de dados e estado locais"] --> update["update cria uma proposta isolada"]
+    update --> group["Executar o grupo em uma cópia da proposta"]
+    group --> success{"O grupo passou?"}
+    success -->|Sim| accept["Incorporar o grupo à proposta"]
+    success -->|Não| discard["Descartar o grupo e registrar a falha"]
+    accept --> next{"Restam grupos independentes?"}
+    discard --> next
+    next -->|Sim| group
+    next -->|Não| review["Revisar dados, estado e update.json"]
+    review -->|Corrigir falhas| update
+    review -->|Aprovar| export["Exportar e conferir os assets"]
+    export --> release["Publicar a Versão de dados como Release"]
+    release --> site["Restaurar os JSON, verificar e commitar"]
+    site --> deploy["Integrar e publicar o site"]
+```
 
 ## Preparar uma atualização
 
-Use um destino novo, fora dos diretórios de entrada. Os caminhos abaixo são exemplos locais; escolha um nome novo a cada tentativa.
+Instale Python 3.14+, `uv` e rode `uv sync --locked`. Use a árvore limpa (`git status --porcelain`), o Contrato de dados em `site/public/dados/` e o estado correspondente em `data/clean/`. Reserve disco para os insumos e as cópias por grupo. Para retomar em outra máquina, use `restore-release` e `restore-state` do [nível 2 do guia do pesquisador](reproducibility.md#nível-2--recalcular-com-o-estado). Restaure em destinos novos fora da árvore e ajuste `DATA_DIR` e `CLEAN_DIR` no exemplo.
+
+- **HPV** exige Chromium para a coleta oficial (`uv run playwright install chromium` ou `CHROMIUM_PATH`). A consulta cobre de 2020 até o ano corrente.
+- **Vigitel** exige obter o arquivo com `./download-vigitel.sh` ou indicá-lo com `VIGITEL_INPUT_PATH`.
+- **INCA** usa a edição transcrita e versionada. Revise a referência e o pipeline para trocar de edição.
+- **`mesh` e `cnes`** usam mapshaper. Instale Node e rode `npm ci --prefix pipeline`.
 
 ```bash
-uv run python -m pipeline update --source painel --source cnes --source hpv --data-dir site/public/dados --clean-dir data/clean --output /tmp/cancer-update
+WORK=$(mktemp -d)
+DATA_DIR=site/public/dados
+CLEAN_DIR=data/clean
+uv run python -m pipeline update --source painel --source cnes --source hpv \
+  --data-dir "$DATA_DIR" --clean-dir "$CLEAN_DIR" --output "$WORK/proposal"
 ```
 
-`update` executa download, limpeza, cálculo, validação e exportação. A etapa `download` é sempre chamada, com estes comportamentos (conferidos no código):
+`update` passa por `download`, `clean`, `compute`, `validate` e `export`. A proposta contém `dados/`, `clean/` e `update.json`. O contrato e o estado de entrada permanecem intactos.
 
-- `mesh`, `popsvs`, `painel`, `cnes`, `siscan`, `siscan_cytopathology`, `sim` e `hpv` baixam os insumos automaticamente, respeitando os períodos configurados e o cache. O HPV exige Chromium instalado e consulta novamente todos os anos desde 2020 até o ano corrente; o período do estado anterior não congela uma nova coleta.
-- `vigitel` apenas verifica se o arquivo local existe. O pipeline não chama `download-vigitel.sh`: execute o script antes de `update --source vigitel`, ou indique um arquivo já baixado por `VIGITEL_INPUT_PATH`.
-- `inca` valida o JSON de referência já versionado no repositório. Não há download; uma nova edição exige transcrição manual e alteração revisada do pipeline.
+Repita `--source` para selecionar mais de uma. `popsvs` agrupa `siscan`, `siscan_cytopathology` e `sim` por dependerem da mesma população. Escolher só `sim` usa a população do snapshot. `mesh` inclui todas as `source`s no mesmo grupo. Uma falha descarta toda a cópia do grupo, mantém seus dados e estado anteriores e deixa os grupos independentes seguirem. O comando retorna código 1 se algum grupo falhar. Veja a [verificação de isolamento e continuidade](data/pipeline-reorganization-verification.md).
 
-`update` não é o caminho para recalcular sem consultar a origem. A proposta fica em `/tmp/cancer-update/dados`, o estado em `/tmp/cancer-update/clean` e o relatório em `/tmp/cancer-update/update.json`. Os dados do site não são alterados.
+## Revisar a proposta
 
-Para outra `source`, substitua ou repita `--source`. Escolher `popsvs` inclui `siscan` (mamografia), `siscan_cytopathology` e `sim` no mesmo grupo: todos dependem daquela população. Escolher `mesh` inclui **todas** as `source` no mesmo grupo. As relações estão no registro `SOURCE_DEFINITIONS` em `pipeline/sources/__init__.py`: consumo de insumo (`inputs`), inclusão na atualização (`update_with`) e aceitação conjunta (`accept_with`) são declarações distintas. A política `includes_all` da malha inclui também futuras entradas. Atualizar somente `sim` usa a população já disponível no snapshot, sem executar POPSVS. Uma falha descarta as mudanças do grupo inteiro. Grupos independentes bem-sucedidos permanecem na proposta mesmo quando o comando retorna erro.
+1. Confira `attempted_at`, `selected`, `successful` e `failures` em `"$WORK/proposal/update.json"`. Se houver falha, preserve o log, corrija a causa e prepare outra proposta em um destino novo. O cache de download pode ser reaproveitado.
+2. Rode `git diff --no-index "$DATA_DIR" "$WORK/proposal/dados"`. Código 1 nesse comando indica diferenças. No `manifest.json`, confira o commit em `pipeline_version` sem `-dirty`, a proveniência e os períodos por Indicador e Tipo de câncer.
+3. Confira mapas e perfis, com atenção a períodos provisórios, valores ausentes, alertas e mudanças em séries, Tendência, Situação, cascata e faixa A/B/C. Investigue divergências com as [referências e os limiares por Fonte](data-sources.md).
 
-## Revisar antes de publicar
+## Publicar a Release e incorporar os JSON
 
-A [verificação conjunta da reorganização](data/pipeline-reorganization-verification.md)
-confere registro, planejador e executor com fixtures, incluindo descarte,
-continuidade e isolamento. Ela não substitui a revisão de uma nova proposta.
-
-1. Leia `update.json`: confira `selected`, `successful`, `failures` e a data da tentativa. Não publique uma tentativa com falhas sem investigar e preparar uma nova proposta coerente.
-2. Compare os contratos: `git diff --no-index --stat site/public/dados /tmp/cancer-update/dados` e depois `git diff --no-index site/public/dados /tmp/cancer-update/dados`. Código de saída 1 significa diferença; os JSON compactos podem produzir diffs extensos.
-3. Confira `/tmp/cancer-update/dados/manifest.json`: commit em `pipeline_version` sem `-dirty`, extrações e proveniência em `sources`, períodos por Indicador e Tipo de câncer em `indicators`. `mesh` e `popsvs` não têm entrada própria no manifesto.
-4. Confira os períodos nos mapas e perfis, datas, notas provisórias, alertas, valores ausentes e mudanças nas séries, Tendência, Situação, cascata e faixa A/B/C. Investigue saltos inesperados e compare com as referências e limiares de [Fontes de dados](data-sources.md). Não contorne uma validação para publicar.
-5. Confira o estado e os assets a distribuir. Extratos de pacientes, `data/raw/` e a auditoria HPV nunca entram na Release. O empacotador restringe o estado HPV a `official.json` e `census.parquet`. Ele copia os diretórios das outras `source`: mantenha-os livres de arquivos estranhos. O estado Vigitel inclui entrevistas individuais sem identificadores diretos; o responsável deve conferir e autorizar esse conteúdo a cada publicação (foi incluído em `data-2026-11-06`).
-
-## Exportar, publicar e incorporar
-
-A Release `data-2026-11-06` foi publicada pelo responsável com `--state-dir` e seus 27 assets foram baixados e conferidos. O recálculo passou no commit gerador, com os limites da seção de retomada abaixo. Para uma nova versão, gere e publique a partir da mesma árvore limpa e da proposta revisada, sempre com `--state-dir`:
+Use `dados/` e `clean/` da mesma proposta. Gere os assets em um destino novo e confira o conteúdo. Cada asset deve ter menos de 2 GiB. Mantenha `data/raw/`, extratos de pacientes e a auditoria HPV fora da Release. O empacotador limita o estado HPV a `official.json` e `census.parquet` e copia os diretórios das demais `source`s. Confira e autorize o estado Vigitel a cada publicação, pois contém entrevistas sem identificadores diretos. As limitações do estado por Versão de dados estão no [guia do pesquisador](reproducibility.md#nível-2--recalcular-com-o-estado).
 
 ```bash
-uv run python -m pipeline export-release --data-dir /tmp/cancer-update/dados --state-dir /tmp/cancer-update/clean --output /tmp/cancer-assets
+uv run python -m pipeline export-release --data-dir "$WORK/proposal/dados" \
+  --state-dir "$WORK/proposal/clean" --output "$WORK/assets"
 ```
 
-Confira CSV, Parquet e `state-*.tar.gz` no destino. Use uma pasta nova para evitar assets antigos. A exportação tabular conserva o contrato, sem refazer estatística; os arquivos de estado permitem retomar o processamento dentro dos limites abaixo. Só depois da revisão, o responsável publica com uma Versão de dados inédita:
+Para publicar, use o GitHub CLI autenticado (`gh auth login`), com permissão no repositório, e substitua `data-AAAA-MM-DD` por uma versão inédita. `release` reexporta os assets e chama `gh release create`. Para outro repositório, use `--repository owner/repo`.
 
 ```bash
-uv run python -m pipeline release data-AAAA-MM-DD --data-dir /tmp/cancer-update/dados --state-dir /tmp/cancer-update/clean --output /tmp/cancer-assets
-uv run python -m pipeline restore-release --assets /tmp/cancer-assets --output site/public/dados
+uv run python -m pipeline release data-AAAA-MM-DD --data-dir "$WORK/proposal/dados" \
+  --state-dir "$WORK/proposal/clean" --output "$WORK/assets"
+```
+
+Se a publicação falhar, confira `gh release view data-AAAA-MM-DD` e os assets antes de tentar de novo. A tag publicada é imutável e a CLI não faz rollback.
+
+A Release disponibiliza os dados abertos. O site passa a usar a nova versão após incorporar os JSON e fazer o deploy. Para a incorporação, abra uma branch de trabalho a partir de `hml`, use Node 24 (mínimo do site: 22.23.4) e `npm ci --prefix site`:
+
+```bash
+uv run python -m pipeline restore-release --assets "$WORK/assets" --output site/public/dados
 npm run check --prefix site
 npm run build --prefix site
-git diff --stat
-git add site/public/dados
-git commit -m "data: publish data-AAAA-MM-DD"
-git push
+git diff -- site/public/dados
 ```
 
-Substitua `data-AAAA-MM-DD` pela versão real. Para publicar em outro repositório, acrescente `--repository owner/repo` ao comando `release`. Cada asset precisa ter menos de 2 GiB; se algum atingir esse limite, nada é enviado. `release` reexporta os arquivos e chama `gh release create`; é uma ação externa. `restore-release` usa Parquet por padrão e reconstrói os JSON sem recalcular. Confira o diff completo antes do commit. O commit gerador no manifesto é anterior ao commit dos JSON: guarde ambos para rastreabilidade. Push e deploy cabem ao responsável; a publicação da Release não atualiza o site por si só.
-
-## Falhas e retomada em outra máquina
-
-Se download, limpeza ou validação falhar, preserve o log e `update.json`, confira os pré-requisitos e a seção da `source` em [Fontes de dados](data-sources.md). Corrija a causa e rode `update` com um **novo** `--output`; ele rejeita destinos existentes. O cache de download pode ajudar, mas a proposta não é uma fila de etapas retomável. Não copie resultados de um grupo que falhou para a publicação.
-
-Se a exportação falhar, corrija a causa e reexporte em destino novo. Se a publicação falhar, confira `gh release view data-AAAA-MM-DD` e os assets antes de tentar novamente: o comando não oferece rollback nem substituição de uma tag já publicada. Se `check` ou `build` falhar depois da Release, interrompa commit e push, investigue a causa e compare com a proposta preservada; não trate a publicação dos assets como aprovação do site.
-
-Para levar uma proposta ainda não publicada a outra máquina, transfira `dados/`, `clean/`, `update.json` e o commit gerador, sem extratos de pacientes nem auditoria HPV. Para partir de uma Release que inclua estado, em um clone no commit gerador:
+Se as verificações passarem e o diff corresponder à proposta, faça o commit na branch de trabalho:
 
 ```bash
-gh release download data-AAAA-MM-DD --repo kvojps/brazil-cancer-map --dir /tmp/cancer-downloaded
-uv run python -m pipeline restore-release --assets /tmp/cancer-downloaded --output site/public/dados
-uv run python -m pipeline restore-state --assets /tmp/cancer-downloaded --output data/clean
+git add site/public/dados
+git commit -m "data: publish data-AAAA-MM-DD"
 ```
 
-O destino de `restore-state` precisa ser novo. Para preparar uma atualização, volte a `update`; para recalcular sem baixar de novo, o caminho lido no código é `run --source NOME --step compute`, depois `validate` e `export`, usando o estado em `data/clean` e os caminhos padrão. Isso altera os JSON locais e exige nova revisão.
-
-**Limites das versões existentes:** `data-2026-11-06` contém 18 tabelas CSV/Parquet e nove
-arquivos de estado; seu manifesto registra `0.1.0+a98b5fd`, sem `-dirty`.
-A prova pública confirmou 48 arquivos iguais após restauração e recálculo.
-`mesh` ainda exige `data/raw/mesh/ibge_municipalities.json`, `painel` exige
-`data/raw/painel/tabnet/`, e o código gerador dessa Release exige, no HPV, todos os anos até o ano
-corrente; nele, o estado de 2026 não basta em 2027. Os arquivos externos
-foram fornecidos localmente na prova, sem acrescentá-los à Release. Não se
-promete retomada completa apenas por usar `--state-dir`.
-A Release anterior, `data-2026-11-05`, não contém estado e seu manifesto
-registra `0.1.0+df740cd-dirty`.
-
-As decisões, os checksums e a conferência da publicação estão em
-[Versão de dados rastreável](data/traceable-version.md). O estado Vigitel com
-entrevistas sem identificadores diretos foi publicado pelo responsável.
-
-No código atual, o recálculo HPV usa `years` e `extracted_at` de
-`official.json`: preserva a história desde 2020, o ano provisório e o último
-consolidado da extração. Não exige Chromium ou novos downloads para
-`compute`, `validate` e `export`. A data deve ser válida e todos os recortes
-obrigatórios devem estar presentes; falhas impedem o cálculo. O empacotamento
-já preserva esse contexto no próprio agregado, junto de `census.parquet`,
-sem incluir extratos de pacientes. Isso foi verificado com fixtures e datas
-simuladas, sem nova carga real nem publicação; veja a
-[evidência](data/hpv-temporal-recalculation.md). Não se promete que o código
-de Releases antigas passe a funcionar retroativamente.
-
-## Referência da malha no estado
-
-No código atual, `mesh.clean` copia a lista municipal baixada do IBGE para
-`clean/mesh/ibge_municipalities.json` no snapshot em preparação. A validação
-lê essa cópia, e o empacotamento existente a preserva em `state-mesh.tar.gz`,
-junto dos atributos e do TopoJSON. Não se empacota `data/raw/`, o ZIP original,
-extratos de pacientes ou a auditoria HPV. Continua valendo o limite de menos
-de 2 GiB por asset.
-
-`update --source mesh` continua incluindo todas as `source`s no mesmo grupo:
-uma falha descarta o grupo e preserva os dados e o estado anteriores.
-Atualizações independentes copiam a referência existente junto do snapshot,
-sem buscar outra no cache bruto durante a exportação dos assets.
-
-Para novas publicações, use o snapshot revisado como `--state-dir`, com o
-contrato de `dados/` da mesma proposta. O estado precisa ter sido preparado
-por `mesh.clean` com o código corrigido; apenas reempacotar um estado antigo
-não acrescenta a referência. Ausência ou incompatibilidade da referência
-impede `validate` e `export`. A preparação exige mapshaper e Node, conforme
-o guia de desenvolvimento; as três etapas de recálculo da malha restaurada
-não executam mapshaper, não baixam Fontes e não exigem o diretório bruto.
-
-Os comandos de restauração e recálculo estão no [guia do pesquisador](reproducibility.md#recálculo-da-malha-com-o-código-atual).
-A [evidência com fixture](data/mesh-state-recalculation.md) registra comparação
-independente, isolamento, falhas e limites. Releases antigas mantêm as
-limitações já documentadas; não houve nova carga, publicação ou deploy.
+Envie a branch e abra o PR para `hml`. A publicação do site segue a promoção de `hml` para `main`, descrita no [guia de contribuição](development.md#contribuir). Registre o commit gerador do manifesto e o commit de incorporação. A [prova da Versão de dados rastreável](data/traceable-version.md) registra os checksums, a restauração e o recálculo da Release `data-2026-11-06`.
 
 ## Auditoria HPV opcional
 
-`update --source hpv` usa agregados oficiais, coordenados por
-`pipeline/sources/hpv/source.py`. `hpv-audit` usa a entrada independente
-`pipeline.sources.hpv.audit.HpvAudit`. A auditoria com microdados é separada e local, nunca requisito de publicação:
-
-```bash
-uv run python -m pipeline hpv-audit --step download --year 2020
-uv run python -m pipeline hpv-audit --step clean --year 2020
-uv run python -m pipeline hpv-audit --step compute
-```
-
-Download e limpeza podem ser feitos por ano. `compute` exige o histórico completo e não aceita `--year`; os dois primeiros comandos sozinhos não o preparam. Consulte [os insumos e a auditoria HPV](data/hpv-official-inputs.md). Nunca envie os microdados ou resultados dessa auditoria como assets da Release.
-
-## Histórico de validação
-
-Em 06/11/2026 foram executados `update --source inca` e `export-release`, em pasta temporária, com o contrato atual como entrada e um caminho de estado inicialmente ausente. O INCA usa a referência versionada e não exige estado limpo nem download de rede. Essa execução verifica preparação e exportação tabular; não comprova estado completo, atualização das demais `source`, autenticação GitHub, publicação, restauração ou deploy. `site/public/dados/` permaneceu sem alterações. Os demais comandos, dependências e tratamentos de falha acima vieram da leitura de `pipeline/cli.py`, `pipeline/update.py`, `pipeline/release.py`, `pipeline/publish.py` e das `source`, apoiada nos registros de [Fontes de dados](data-sources.md).
-
-Os caminhos desse registro são históricos; a navegação atual está em
-[Onde localizar planejamento e execução](#onde-localizar-planejamento-e-execução).
-
-Depois dessa preparação, a Release `data-2026-11-06` foi publicada pelo
-responsável e os assets públicos foram restaurados e recalculados. A prova
-completa e os limites estão em [Versão de dados rastreável](data/traceable-version.md).
-
-## Referências do tratamento no estado
-
-No código corrigido, `painel.clean` preserva em `clean/painel/tabnet/` apenas
-as páginas oficiais necessárias aos anos observados: todos os casos e o
-recorte de quimio e radio. Use `clean/` e `dados/` da mesma proposta revisada
-em `export-release --state-dir`. O asset `state-painel.tar.gz` preserva essas
-páginas, sem incluir o cache bruto, DBC ou extratos de pacientes. A exclusão
-da auditoria HPV e o limite de menos de 2 GiB por asset continuam vigentes.
-
-A preparação inicial exige os DBC e as páginas TabNet correspondentes.
-Depois de restaurar estado e contrato no código gerador, `run --source painel
---step compute`, `validate` e `export` dispensam rede e arquivos brutos.
-A validação continua comparando contagens e percentuais nas duas tabelas;
-páginas ausentes, inválidas ou divergentes impedem a publicação.
-
-A [prova com fixture](data/painel-state-recalculation.md) verifica o fluxo
-público, isolamento de snapshots e preservação da versão anterior em falha.
-Não basta reempacotar um estado antigo: as páginas não podem ser recuperadas
-do contrato nem substituídas por consultas atuais. Os limites das Releases
-existentes descritos acima continuam válidos; nenhuma foi alterada.
-
-### Onde localizar planejamento e execução
-
-O registro `pipeline/sources/__init__.py` declara insumos, inclusão na atualização
-e aceitação conjunta. `pipeline/operations/update_plan.py` valida a seleção e retorna
-somente grupos ordenados de nomes, sem acessar arquivos ou construir `source`s.
-`pipeline/operations/update.py` executa cada grupo numa cópia do último estado aceito;
-falha descarta o grupo inteiro e permite continuar os grupos independentes.
-Os comandos, o relatório e a publicação posterior permanecem os mesmos.
-A [comparação controlada da #17](data/pipeline-characterization.md#depois-da-extração-do-planejador-17)
-registra a verificação com insumos congelados.
+A auditoria com microdados é local e separada da atualização oficial. Use `hpv-audit --step download` e `hpv-audit --step clean` com `--year` para preparar cada ano. `hpv-audit --step compute` exige o histórico completo e é executado sem `--year`. Veja os [comandos e insumos da auditoria](data/hpv-official-inputs.md).

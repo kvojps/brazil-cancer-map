@@ -305,61 +305,49 @@ Inclui ainda: as duas definições de "Todos os cânceres"; a explicação de qu
 
 ## 13. Stack e arquitetura
 
-Decisão e alternativas: [ADR 1](adr/0001-static-site-with-committed-json.md).
+O monorepo reúne `pipeline/` e `site/`. O site usa Astro estático, sem backend, com Mapa inicial, índice por UF, metodologia e um documento por município em `/municipio/<código>-<nome>/` (5.571 HTMLs). Taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C chegam calculadas pelo pipeline. Veja o [ADR do site estático](adr/0001-static-site-with-committed-json.md) e o [ADR dos links municipais](adr/0010-static-municipal-links.md).
 
-- **Monorepo** com `pipeline/` e `site/`.
-- **Site:** Astro com saída estática. Tem uma página por município (`/municipio/<código>-<nome>/`, 5.571 HTMLs) mais a página do mapa, o índice por UF e a metodologia.
-- **Mapa:** uma ilha em TypeScript + MapLibre GL JS (BSD-3), com TopoJSON da malha IBGE 2025 simplificado a 1–2% com mapshaper (hoje 1,5%, 0,71 MB gzip), sem as 2 lagoas, **sem mapa base**, com `promoteId: "CD_MUN"` e `feature-state` para trocar indicador e ano.
-- **O front não faz conta estatística.** Taxa, razão, classe da Tendência, Situação, cascata e faixa A/B/C chegam prontas do pipeline.
-- **Hospedagem:** Cloudflare Workers com assets estáticos, no plano gratuito, em `workers.dev`. O painel da Cloudflare deixou de oferecer a criação de projetos Pages, previstos no início. Os limites são os mesmos: 20.000 arquivos de até 25 MiB. O GitHub Pages segue como alternativa prevista, com limite de 1 GB de site. Não usa DuckDB-WASM nem PMTiles.
-- **Orçamento:** os valores de ~1,3 MB na primeira visita e menos de 30 MB no site inteiro vieram das estimativas iniciais, anteriores às páginas municipais completas (ADR 1). Não são critérios de aceite atuais. Em 14/11/2026, o responsável considerou satisfatório o carregamento do site e retirou a redução de tamanho e a verificação da hospedagem das pendências atuais. Essa avaliação de uso não constitui medição de compressão. As medições históricas permanecem em `docs/validation/accessibility-audit.md`. Acessibilidade e validação dos dados continuam exigidas.
+O mapa é uma ilha TypeScript com MapLibre GL JS (BSD-3), sem mapa base. Usa `promoteId: "CD_MUN"` e `feature-state` para trocar Indicador e ano. A malha IBGE 2025 é um TopoJSON simplificado a 1–2% com mapshaper (1,5% na versão atual), com exclusão das duas lagoas.
+
+A hospedagem usa Cloudflare Workers gratuito com assets estáticos em `workers.dev` (20.000 arquivos de até 25 MiB). GitHub Pages é a alternativa prevista (1 GB por site). O ADR do site estático registra o histórico da hospedagem, as alternativas DuckDB-WASM e PMTiles e as medições de tamanho. As estimativas iniciais (~1,3 MB na primeira visita e menos de 30 MB no site) são históricas. Em 14/11/2026, o responsável considerou satisfatório o carregamento e encerrou as pendências de tamanho e verificação da hospedagem. A avaliação de uso foi qualitativa. Acessibilidade e validação dos dados seguem obrigatórias. Veja as [medições históricas](validation/accessibility-audit.md).
 
 ## 14. Pipeline
 
-Python + DuckDB (pandas onde já existe código). O comando é `python -m pipeline run`, que também roda uma `source` ou etapa por vez, na máquina do mantenedor. A atualização para revisão usa `python -m pipeline update` (seção 16).
+Python e DuckDB, com pandas onde já usado. Cada `source` passa por `download` → `clean` → `compute` → `validate` → `export`. O dado bruto fica em `data/raw/`, fora do Git, com cache incremental e novas tentativas de FTP. SISCAN e a auditoria SI-PNI processam um arquivo por vez e apagam o bruto.
 
-1. **Baixar:** um baixador por `source`, com cache incremental em `data/raw/` (compara tamanho e data) e novas tentativas contra falhas do FTP. O dado bruto nunca entra no git. A auditoria do SI-PNI e o SISCAN são processados um arquivo por vez, em fluxo, apagando o bruto.
-2. **Limpar:** um módulo por `source` gera Parquet padronizado em `data/clean/` (código IBGE de 6 dígitos, ano, tipo, sexo, faixa etária e contagem). Os DBC passam por `datasus_dbc` + `dbfread`, e os CSVs grandes pelo DuckDB. Aqui entram as exclusões de CID, a marca de ano provisório e a redistribuição do C55, única etapa de método fora de `compute`, por exceção declarada.
-3. **Calcular:** uma função testável por indicador, com o denominador, a Situação, a Tendência, a cascata e a faixa A/B/C. Fora a exceção do C55, é o único lugar com estatística.
-4. **Validar:** confere a presença dos municípios e a faixa plausível dos valores e, onde a Fonte permite, compara com números oficiais. **Se falhar, nada daquela `source` é publicado.** A comparação oficial varia:
-   - Malha: comparada com a lista oficial do IBGE, e não com uma contagem fixa, hoje 5.571 municípios.
-   - Painel: a % em até 60 dias, as contagens e a % sem informação contra o TabNet, nas tabelas de todos os casos e filtrada por modalidade. A contagem nacional de casos por mês e por modalidade de primeiro tratamento gera um alerta para o mantenedor numa queda de patamar (como a das cirurgias em 2024), sem bloquear a publicação.
-   - SIM: contagens exatas e taxas com ±3% contra o Atlas do INCA, considerando o POPSVS revisto.
-   - HPV: denominadores contra o Censo 2022 e coberturas contra referências do painel oficial.
-   - Tabagismo: a comparação oficial cobre só o total ponderado das capitais, com ±3%, sem validar cada capital.
-   - SISCAN: sem comparação com números oficiais, só a faixa plausível e a presença dos municípios.
-   - CNES, POPSVS e Estimativa INCA: conferência de consistência interna (cobertura, faixas plausíveis e totais), sem comparação com outro número oficial. Os limiares estão em `docs/data-sources.md`.
-5. **Exportar:** gera o Contrato de dados (seção 15).
+`clean` padroniza os insumos em `data/clean/`, em Parquet com código IBGE de seis dígitos e, conforme a Fonte, ano, tipo, sexo, faixa etária e contagem. Lê DBC com `datasus_dbc` e `dbfread` e CSVs grandes com DuckDB. Aplica exclusões de CID e marcas de ano provisório. A estatística fica em `compute`, com a única exceção da [redistribuição de C55](#62-mortalidade) em `clean`. `export` produz o Contrato de dados após aprovação em `validate`.
+
+A validação confere cobertura e plausibilidade e usa referências oficiais quando disponíveis:
+
+| `source` | Conferência |
+|---|---|
+| `mesh` | Lista municipal oficial do IBGE, com contagem variável |
+| `painel` | Contagens, % em até 60 dias e % sem informação contra o TabNet, conforme a tabela. Quedas de patamar na série nacional por mês e modalidade geram alerta sem bloquear. [Evidência das quebras](data/painel-series-breaks.md). |
+| `sim` | Contagens exatas e taxas com tolerância de ±3% contra o Atlas do INCA, considerando POPSVS revisto. [Conferência do Atlas](data/sim-atlas-check.md). |
+| `hpv` | Denominadores do Censo 2022 e coberturas contra o painel oficial. [Insumos e conferências](data/hpv-official-inputs.md). |
+| `vigitel` | Total ponderado das capitais e DF com tolerância de ±3%. [Referência](data-sources.md#vigitel). |
+| `siscan`, `siscan_cytopathology` | Presença dos municípios e valores plausíveis |
+| `cnes`, `popsvs`, `inca` | Consistência interna de cobertura, faixas e totais, conforme a `source` |
+
+Insumos, referências e limiares específicos ficam em [Fontes de dados](data-sources.md). Os comandos de processamento e seleção por `source` ou etapa ficam no [guia de desenvolvimento](development.md).
 
 ## 15. Contrato de dados
 
-É a única fronteira entre `pipeline/` e `site/`.
+O Contrato de dados é a única fronteira entre `pipeline/` e `site/`. O Astro é compilado com os JSON commitados em [`site/public/dados/`](../site/public/dados/).
 
-- **Camada do mapa:** um JSON por indicador × tipo, com os 5.571 municípios. Cada um traz a classe da Tendência, o último valor, a faixa de Situação, `origin` (`"municipality"`, `"immediate_region"` ou `"insufficient"`) e `quality_band`. Conforme o indicador, a camada traz também `quality`, `has_status`, `status_note` e `adjustment_note`, e o período traz `quality_years`, `value_cases` e `trend_cases`. Não se publica o número da variação (`trend_estimate`).
-- **Camada do perfil:** um JSON por UF, com a série completa de todos os indicadores e tipos dos seus municípios. Carrega sob demanda, quando um município é selecionado.
-- **`manifest.json`:** a data de extração de cada Fonte, a versão do pipeline e o período publicado de cada indicador.
-- Os JSON ficam **commitados** em `site/public/dados/`, e o deploy é só `astro build`.
-- O **Parquet/CSV** completo vai como asset de uma **GitHub Release** por versão. Serve de download aberto e permite reconstruir o site sem o pipeline. Cada arquivo identifica a Fonte, o período e as condições de reutilização. A Release é a Versão de dados, identificada por um nome como `data-2026-11-05`.
+- **Mapa** (`map/<indicador>/<tipo>.json`). Um JSON por Indicador × Tipo de câncer cobre os 5.571 municípios com classe da Tendência, último valor, faixa de Situação, `origin` (`"municipality"`, `"immediate_region"` ou `"insufficient"`) e `quality_band`. Conforme o Indicador, inclui `quality`, `has_status`, `status_note` e `adjustment_note`, com `quality_years`, `value_cases` e `trend_cases` no período. A variação numérica (`trend_estimate`) fica fora da publicação.
+- **Perfil** (`profiles/<UF>.json`). Série completa dos Indicadores e Tipos de câncer dos municípios da UF, carregada ao selecionar um município.
+- **Metadados e geografia**. `manifest.json` reúne versão do pipeline, extrações e períodos publicados. `municipalities.json` indexa os municípios e `municipalities.topojson` traz a malha.
+
+A Versão de dados é identificada por uma tag datada como `data-2026-11-06`. A Release leva o Contrato de dados completo em Parquet e CSV, com Fonte, período e condições de reutilização, e permite restaurar os JSON do site sem recalcular os Indicadores. Veja o [guia do pesquisador](reproducibility.md).
 
 ## 16. Atualização e operação
 
-Decisão e alternativas: [ADR 6](adr/0006-manual-local-data-update.md).
+O mantenedor executa a atualização localmente, sem agendamento de dados no GitHub Actions. O site serve a última versão publicada entre execuções. Painel-Oncologia, CNES e HPV têm checagem mensal. As séries anuais seguem o calendário de sua Fonte e a Estimativa INCA é conferida a cada edição. Valem as regras de consolidação, inclusive o encerramento da série de citopatológico. Veja o [ADR da atualização manual](adr/0006-manual-local-data-update.md) e o [calendário das Fontes](data-sources.md#calendário).
 
-- **Manual:** a atualização depende de uma execução do mantenedor na própria máquina, sem agendamento de dados no GitHub Actions. Entre execuções, o site mantém a última versão publicada.
-- **Por Fonte, de forma independente:**
-  - checagem mensal para Painel-Oncologia, CNES e HPV;
-  - checagem anual conforme o calendário da Fonte para as séries anuais;
-  - Estimativa INCA a cada edição.
+`update` prepara Contrato de dados e estado em snapshot isolado, para revisão antes da Release. Indicadores e denominadores dependentes são aceitos em conjunto. Uma falha descarta a cópia do grupo, preserva sua última versão válida e a data exibida, registra o erro e retorna código 1. Os grupos independentes continuam. A incorporação dos JSON ao site exige commit e deploy. O [guia de atualização](data-update.md) descreve a revisão, a publicação e a incorporação. A [verificação conjunta da pipeline](data/pipeline-reorganization-verification.md) demonstra descarte e continuidade.
 
-  Checar uma Fonte não significa publicar um período novo: valem as regras de ano consolidado. O citopatológico não recebe anos novos.
-- **Fluxo:** `update` prepara um snapshot para revisão, sem tocar nos JSON do site. Depois da revisão, os dados vão para uma Release e, com um commit dos JSON, para o site. Os comandos estão em `docs/data-update.md`.
-- **Estado:** agregados e estado necessário à retomada ficam em assets de Release (< 2 GiB por arquivo). A Release `data-2026-11-06` traz nove assets de estado e identifica o código gerador em `pipeline_version: 0.1.0+a98b5fd`; a primeira, `data-2026-11-05`, não contém estado. O acervo bruto do SI-PNI e os extratos de pacientes da auditoria ficam locais, fora do git e das Releases.
-- **Reprodução:** a Release `data-2026-11-06` mantém explícitos os limites do HPV dependente do ano corrente e dos arquivos externos de `mesh` e `painel`; `--state-dir` sozinho não garante recálculo integral. Decisões e prova com os assets públicos em [Versão de dados rastreável](data/traceable-version.md).
-- **HPV:** a atualização usa as coortes oficiais agregadas. A auditoria dos microdados é opcional, local e acionada à parte, com `hpv-audit`.
-- **Falha de validação ou mudança de formato:**
-  - a `source` afetada não publica, mantém a última versão válida, registra a falha e avisa o mantenedor pela saída do comando e pelo código de saída;
-  - as `source`s independentes seguem atualizando, mas indicadores e denominadores dependentes ficam juntos, sem combinações inconsistentes;
-  - uma tentativa que falhou não renova a data exibida.
+A Release inclui os agregados e o estado para retomada, com menos de 2 GiB por asset. O HPV usa coortes oficiais agregadas. A auditoria opcional (`hpv-audit`), os extratos de pacientes e o acervo bruto ficam locais, fora do Git e das Releases. A [prova com os assets públicos](data/traceable-version.md) registra os limites de `data-2026-11-06` e a ausência de estado em `data-2026-11-05`. Os [pré-requisitos de recálculo](reproducibility.md#nível-2--recalcular-com-o-estado) dependem do commit gerador e dos insumos disponíveis.
 
 ## 17. Pendências
 
