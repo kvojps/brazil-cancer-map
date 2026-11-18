@@ -156,6 +156,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     toggle.hidden = false;
     panelType.hidden = false;
     panelTypeSelect.value = state.cancerType;
+    panelType.querySelector<HTMLElement>('[data-panel-cancer-label]')!.textContent = panelTypeSelect.selectedOptions[0].textContent;
     panelLegend.dataset.reading = state.mode;
     if (shownCode !== selected.code || !content.querySelector('.profile')) {
       const document = new DOMParser().parseFromString(html, 'text/html');

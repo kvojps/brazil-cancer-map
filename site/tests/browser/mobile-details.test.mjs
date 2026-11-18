@@ -10,6 +10,67 @@ before(async () => {
 });
 after(async () => { await browser?.close(); });
 
+for (const [width, height, textScale, view] of [[320, 568, 1, 'mapa'], [568, 320, 1, 'lista'], [320, 568, 2, 'lista'], [568, 160, 2, 'mapa']]) {
+test(`${width}x${height}, ${textScale * 100}% CSS text, ${view}: mobile consultation controls have comfortable targets, spacing and aligned detail rows`, async () => {
+  const page = await browser.newPage({ viewport: { width, height }, isMobile: true, hasTouch: true });
+  const button = name => page.getByRole('button', { name, exact: true });
+  const assertControlLayout = async controls => {
+    const boxes = [];
+    for (const control of controls) {
+      await control.scrollIntoViewIfNeeded();
+      const box = await control.boundingBox();
+      assert.ok(box.width >= 44 && box.height >= 44, `44px target: ${JSON.stringify(box)}`);
+      assert.ok(box.x >= 0 && box.x + box.width <= width, 'control fits the viewport');
+      assert.equal(await control.evaluate(el => el.scrollWidth <= el.clientWidth), true, 'complete label fits');
+    }
+    // Measure in one frame: scrolling each target must not change relative distances.
+    for (const control of controls) boxes.push(await control.boundingBox());
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i], b = boxes[j];
+      const horizontal = Math.max(a.x - b.x - b.width, b.x - a.x - a.width);
+      const vertical = Math.max(a.y - b.y - b.height, b.y - a.y - a.height);
+      assert.ok(horizontal >= 7.9 || vertical >= 7.9, `8px spacing: ${JSON.stringify({ a, b })}`);
+      if (vertical < 0 && horizontal >= 0) assert.ok(Math.abs(a.y - b.y) < 1, 'buttons on a row align at the top');
+    }
+  };
+  try {
+    await page.goto(base + '/municipio/510550-vila-bela-da-santissima-trindade/' + (view === 'lista' ? '?visualizacao=lista' : ''));
+    await button('Ver detalhes').waitFor();
+    if (textScale === 2) await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
+    await assertControlLayout([button('Ver detalhes'), button('Limpar seleção')]);
+    await button('Ver detalhes').click();
+    const returnName = view === 'lista' ? 'Voltar à lista' : 'Voltar ao mapa';
+    await assertControlLayout([button(returnName), button('Menu'), button('Limpar seleção')]);
+    const heading = await page.getByRole('heading', { name: 'Vila Bela da Santíssima Trindade (MT)', exact: true }).boundingBox();
+    const back = await button(returnName).boundingBox();
+    assert.ok(heading.y + heading.height <= back.y, 'name has its own line above the buttons');
+    await assertControlLayout([page.locator('.details-legend'), page.getByRole('combobox', { name: 'Tipo de câncer', exact: true })]);
+    if (textScale === 2) {
+      const type = page.getByRole('combobox', { name: 'Tipo de câncer', exact: true });
+      for (const [value, label] of [['all', 'Todos os cânceres'], ['cervix', 'Colo do útero']]) {
+        await type.selectOption(value);
+        const visibleValue = page.getByText(label, { exact: true }).filter({ visible: true });
+        await visibleValue.scrollIntoViewIfNeeded();
+        const target = await type.boundingBox();
+        const text = await visibleValue.evaluate(el => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          return [...range.getClientRects()].map(r => ({ left: r.left, right: r.right, top: r.top, bottom: r.bottom }));
+        });
+        assert.ok(text.length > 0);
+        for (const line of text) assert.ok(line.left >= target.x && line.right <= target.x + target.width && line.top >= target.y && line.bottom <= target.y + target.height, 'selected label is fully visible inside its target');
+      }
+    }
+    await button(returnName).click();
+    assert.equal(await button('Ver detalhes').evaluate(el => el === document.activeElement), true);
+    assert.match(new URL(page.url()).pathname, /510550-vila-bela-da-santissima-trindade/);
+    await button('Limpar seleção').click();
+    await page.waitForFunction(() => document.querySelector('#municipality-preview').hidden);
+    assert.equal(new URL(page.url()).pathname, '/');
+  } finally { await page.close(); }
+});
+}
+
 test('history restores each details entry reading axis and internal position after logo reset', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {

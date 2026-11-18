@@ -39,9 +39,12 @@ const period = manifest.indicators[indicator].all;
         <div id="municipality-content" data-preview-content>
           <button type="button" class="details-legend" popovertarget="legend-full">Legenda</button>
           <label class="panel-type" hidden>Tipo de câncer
-            <select data-panel-cancer-type>
-              {Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}
-            </select>
+            <span class="panel-type-control">
+              <select data-panel-cancer-type>
+                {Object.entries(CANCER_TYPES).map(([value, label]) => <option value={value}>{label}</option>)}
+              </select>
+              <span class="panel-type-value" aria-hidden="true" data-panel-cancer-label>{CANCER_TYPES.all}</span>
+            </span>
           </label>
           <div data-profile-slot><slot /></div>
         </div>
@@ -93,6 +96,8 @@ const period = manifest.indicators[indicator].all;
   [data-toggle-profile], .panel-legend { display: none; }
   .panel-type { display: flex; align-items: center; gap: .75rem; margin-block: 0 .75rem; font-size: var(--text-14); font-weight: 500; }
   .panel-type select { flex: 1; min-width: 0; }
+  .panel-type-control { display: flex; flex: 1; min-width: 0; }
+  .panel-type-value { display: none; }
   .data-feedback:has(#data-status:empty):has(#retry-data[hidden]) { display: none; }
   @media (min-width: 768px) {
     .home { --panel-width: min(25rem, 60%); flex: 1; gap: 0; min-width: 0; min-height: 0; }
@@ -118,9 +123,22 @@ const period = manifest.indicators[indicator].all;
   /* Scripted phones keep the consultation inside the available viewport. */
   @media (max-width: 767px) {
     .map-and-profile:has(#municipality-preview:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+    .panel-bar { gap: max(8px, .5rem); }
+    .panel-navigation { margin: 0 0 max(8px, .5rem); }
+    .panel-bar .panel-navigation { margin: 0; }
+    .details-legend { margin-bottom: max(8px, .5rem); }
+    .panel-type { flex-wrap: wrap; }
+    .panel-type-control { flex-basis: 12rem; }
+    /* Native selects cannot wrap their selected text. Keep the native control and
+       let a non-interactive copy size its target without clipping enlarged text. */
+    #municipality-preview[data-enhanced] .panel-type-control { display: grid; }
+    #municipality-preview[data-enhanced] .panel-type select { grid-area: 1 / 1; width: 100%; height: 100%; color: transparent; background-image: linear-gradient(45deg, transparent 50%, var(--text) 50%), linear-gradient(135deg, var(--text) 50%, transparent 50%); }
+    #municipality-preview[data-enhanced] .panel-type option { color: var(--text); }
+    #municipality-preview[data-enhanced] .panel-type-value { grid-area: 1 / 1; display: block; min-width: 0; padding: .5rem 2rem .5rem .75rem; font: 500 var(--control-text)/1.25 var(--font); overflow-wrap: anywhere; pointer-events: none; align-self: center; }
+    .panel-navigation, .details-menu-toggle, .details-legend, .panel-type select, .panel-legend { min-width: 44px; min-height: 44px; }
     #municipality-preview[data-enhanced] [data-toggle-profile] { display: grid; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) :is(.details-menu-toggle, .details-legend) { display: block; }
-    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex-wrap: wrap; }
+    #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar { flex-wrap: wrap; align-items: flex-start; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-bar h2 { flex-basis: 100%; }
     #municipality-preview[data-enhanced]:not([data-collapsed]) { display: flex; flex-direction: column; overflow: hidden; height: calc(var(--dashboard-height, 100dvh) - var(--notice-height, 6rem)); }
     #municipality-preview[data-enhanced]:not([data-collapsed]) .panel-reading { flex: 1; min-height: 0; overflow: auto; overflow-anchor: none; overscroll-behavior: contain; }

@@ -202,3 +202,11 @@ Registrar nova execução, tentativas, esperado/observado, capturas e limitaçõ
 sem apagar a falha histórica. Android/Chrome físico, barras móveis e teclado
 real continuam **não executados pelo agente**. A #52 e a spec pai #44 permanecem
 abertas até suas próprias verificações.
+
+## Espaçamento dos controles — #55
+
+A [conferência dos controles de Meu município](validation/mobile-controls.md)
+registra dimensões, distâncias, alinhamento e texto ampliado, com capturas de
+320 × 568, 568 × 320 e 568 × 160. Amplia T06–T10 e T25–T26 da matriz,
+preservando o contrato de rolagem interna. A evidência é emulação de Chromium;
+não preenche a conferência física da #52 nem encerra a spec #54.
