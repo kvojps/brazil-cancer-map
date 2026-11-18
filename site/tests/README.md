@@ -1,301 +1,79 @@
 # Testes do site
 
-Os testes são organizados pelo ambiente necessário para executá-los:
+Use Git, Node.js 24 (mínimo `22.23.4`) e as dependências de
+`npm ci --prefix site`. Os JSON publicados já estão no repositório.
+Para instalar e rodar o site, veja o [guia de desenvolvimento](../../docs/development.md).
+As decisões de apresentação ficam no [contrato de interface](../../docs/ui-contract.md).
 
-| Diretório | Escopo | Comando a partir da raiz |
-| --- | --- | --- |
-| `node/` | Lógica, estado, renderização e tons, sem build ou servidor | `npm run test:unit --prefix site` |
-| `integration/` | Dados publicados, HTML gerado e servidor de desenvolvimento | `npm run test:integration --prefix site` |
-| `browser/` | Interações, responsividade, zoom e acessibilidade com Chromium | `npm run test:browser --prefix site` |
+## Node e integração
 
-`npm test --prefix site` executa Node e depois integração, interrompendo se uma
-etapa falhar. Nenhum desses dois grupos exige Chromium. Os testes de tons leem
-o CSS local; a integração lê os JSON publicados, gera o build e inicia um
-servidor temporário com heap limitado a 2 GiB. Não requer o pipeline nem `data/`.
+Execute na raiz do repositório.
 
-Para executar um arquivo, use o caminho do grupo correspondente, a partir de `site/`:
+| Comando | Cobertura |
+| --- | --- |
+| `npm run check --prefix site` | Diagnósticos de Astro e TypeScript. |
+| `npm test --prefix site` | Node seguido de integração. |
+| `npm run test:unit --prefix site` | Lógica, estado, renderização e tons. |
+| `npm run test:integration --prefix site` | Dados publicados, HTML estático e servidor de desenvolvimento. |
 
-```sh
-node --test tests/node/navigation.test.mjs
-node --test tests/integration/dev-municipality.test.mjs
-node --test tests/browser/municipality.test.mjs
-```
+Node e integração dispensam Chromium e insumos do pipeline. A integração
+gera o build em `site/dist/` e inicia seu próprio servidor de desenvolvimento.
+Reserve cerca de 1 GB para a saída. Antes de executá-la, encerre qualquer
+prévia do projeto. Execute o build e a integração em momentos distintos.
 
-A integração inclui um build. Encerre a prévia antes de executá-la e não execute
-builds simultâneos. Inicie a prévia para os testes de navegador somente depois
-de `npm test` ou `npm run test:integration` terminar. Pré-requisitos e setup
-estão no [guia de desenvolvimento](../../docs/development.md).
-
-`npm run test:a11y --prefix site` seleciona as duas auditorias automatizadas do
-grupo `browser/`; elas também fazem parte de `test:browser`.
-
-## Testes da inicial no navegador
-
-A [verificação integrada da navegação mobile](../../docs/mobile-validation.md)
-mapeia as transições das #38/#44, os comandos sobre build estático, resultados
-e limites. O roteiro `node site/scripts/verify-mobile-navigation.mjs`, executado
-da raiz com `SITE_URL` e `CHROMIUM_PATH`, registra dez tentativas frias e dez com
-cache da aplicação por viewport (320×568 e 390×844), para seleção pela busca,
-Filtros e logo. `MOBILE_ARRIVAL=canvas` repete com toque emulado no canvas;
-`MOBILE_REPORT_DIR` escolhe o diretório de `attempts.json` e capturas de falha.
-Execute depois de `npm test`, que também reconstrói a saída, sem builds durante
-a verificação. A [conferência física Android/Chrome](../../docs/mobile-validation.md#conferência-em-aparelho-físico)
-continua obrigatória e separada da emulação.
-
-Instale as dependências com `npm ci --prefix site` e inicie o site com
-`npm run dev --prefix site`. Em outro terminal:
+Para executar um arquivo na raiz:
 
 ```sh
-CHROMIUM_PATH=/caminho/para/chromium npm run test:browser --prefix site
+node --test site/tests/node/map-tones.test.mjs
+node --test site/tests/integration/municipality.test.mjs
 ```
 
-O caminho padrão é `/snap/bin/chromium`. `SITE_URL` permite usar outro servidor,
-inclusive a saída estática servida por `npm run preview --prefix site`.
-Use Chromium com suporte a extensões locais para o teste de zoom nativo.
+### Tons do mapa
 
-A suíte verifica a página pública: WebGL indisponível, malha pendente, falhas da
-lista e da camada com nova tentativa, atualização dos links após mudar o Tipo de
-câncer, acesso direto à ficha, filtro por UF, ausência de Situação e ajuste C55
-não calculável. Percorre a busca por teclado e verifica a matriz de larguras
-320/768/1280 px, temas claro/escuro e JavaScript ativo/desativado.
+`npm run check:tones --prefix site` confere separadamente as distâncias da
+paleta nos dois temas. Os testes de tons também fazem parte de `test:unit`.
 
-Além da simulação por CSS, a extensão local de teste `browser/zoom-extension` usa
-`chrome.tabs.setZoom` para aplicar zoom **nativo de 200%**. A suíte confirma a
-redução da largura da viewport CSS e o aumento da densidade de pixels; verifica
-que a rolagem horizontal fica contida na tabela. A extensão só é carregada pelo
-navegador de teste e não integra o site publicado.
+## Navegador
 
-Esses testes não substituem uma sessão com leitor de tela nem a auditoria de
-acessibilidade do lançamento (docs/validation/accessibility-audit.md). Os anúncios usam regiões de status e
-os dados continuam expressos em texto.
-
-`map-touch.test.mjs` usa WebGL e toque emulado no canvas, sem disparar o evento
-interno de seleção. Cobre o primeiro toque e o contorno renderizado, hover e
-alternância mouse/toque, seleções sucessivas após zoom e deslocamento manual,
-busca e link direto. A regressão de primeira chegada cobre 390 × 568/664/740/844, carga fria, cache, falha/nova tentativa, seleção substituída e rolagem deliberada durante carga demorada; exige o resultado visível após a composição final, com Filtros fechado e foco coerente. Confere a câmera pela geografia visível; na borda,
-localiza uma fronteira municipal com precisão de um pixel para detectar até
-pequenos deslocamentos indevidos. A emulação não comprova toque em aparelho real.
-
-A ficha municipal também é verificada em `municipality.test.mjs`: links estáticos
-para os seis Tipos de câncer, âncora direta que prevalece sobre um filtro anterior,
-preservação de tema e retorno, ativação de links e expansões pelo teclado e a
-mesma matriz de temas/larguras/JavaScript, com expansões abertas. Inclui zoom
-nativo de 200% pela extensão de teste.
-
-Para verificar os documentos efetivamente gerados, rode `npm run build --prefix site`,
-inicie `npm run preview --prefix site -- --port 4322` e use
-`SITE_URL=http://127.0.0.1:4322 npm run test:browser --prefix site`.
-Não execute builds simultâneos: eles compartilham o diretório de saída.
-
-A lista agora ocupa a área do mapa. Os testes ativam “Lista” no alternador e
-verificam Mapa/Lista, seleção e filtros ao usar Voltar/Avançar. A seleção
-aprimorada usa o caminho estático `/municipio/<código>-<nome>/`; links antigos
-com `?municipio=` são normalizados com JavaScript. A recarga desse caminho
-continua entregando quatro Eixos e seis Tipos sem JavaScript. O índice por UF
-fica na página `/municipios/`, com expansões nativas por UF; os testes verificam
-o acesso pelos documentos municipais, recarga, tema e navegação pelo teclado.
-
-`desktop-first-screen.test.mjs` verifica a composição do Mapa inicial a partir de
-768 px: mapa de 653 e 753 px com e sem município, com e sem JavaScript; barras de 48
-e 56 px; legenda no canto, com a legenda completa no ⓘ; ressalva sem mudar a altura
-do mapa; menu e duas linhas de filtros até 1023 px; painel de 480 px acima de 1920 px;
-rolagem da Lista, do painel e até o rodapé pelo teclado; altura mínima; e sem rolagem
-horizontal. O enquadramento dentro do WebGL é conferido em capturas; a conta da área
-reservada à legenda está em `tests/node/framing.test.mjs`.
-
-`visual-foundations.test.mjs` verifica o contrato dos fundamentos visuais: aviso
-integral, invertido e sempre visível nas quatro páginas, tema pela preferência do
-sistema com e sem JavaScript, controles de 40 e 44 px com estado ativo invertido,
-Inter servida pelo próprio site com o `≥` e algarismos tabulares, marca da silhueta,
-foco pelo teclado e `/municipios/` sem rolagem horizontal. As distâncias de cor do
-mapa são conferidas fora do navegador, por `npm run check:tones`, que também roda em
-`npm test`. A fonte é gerada por `scripts/build-font.sh`.
-
-`phone-first-screen.test.mjs` verifica a primeira tela abaixo de 768 px: mapa de ponta
-a ponta sob o aviso a 390 × 844, 390 × 664 e 320 × 568, sem rolagem; um dedo move o mapa
-com toque emulado; cabeçalho, menu, busca, folha de Filtros não modal e legenda
-flutuantes; sem JavaScript, menu e folha abrem com os seletores desativados; a Lista
-rola internamente; em janelas baixas ou muito estreitas e no zoom nativo de 200%,
-os comandos continuam alcançáveis internamente com JavaScript. Sem JavaScript,
-as telas pequenas mantêm a apresentação em fluxo. O teclado virtual é uma altura típica descontada da
-tela, pois a emulação do Chromium não o abre. O enquadramento dentro do WebGL é
-conferido em capturas; a conta da área reservada está em `tests/node/framing.test.mjs`.
-
-`municipal-panel.test.mjs` verifica o painel Meu município com os casos difíceis: Balsas
-(faixa C), Alcântara (Região imediata e faixa C, o bloco mais longo, a 320 × 568), Araioses
-(Dado insuficiente) e próstata (ressalva integral no resumo e nos detalhes). Cobre o mesmo bloco recolhido e
-aberto, a folha de ponta a ponta que abre por ação explícita até o aviso, Filtros, menu e busca no lugar da
-folha, a coluna de 400 e 480 px com o nome fixo, os Eixos com resultado no título e um aberto
-por vez, a ordem interna dos cartões, o foco no nome depois da busca, a mensagem de status só
-para leitores de tela e a página comum em janelas baixas, no zoom nativo de 200% e sem
-JavaScript. O contorno e o enquadramento dentro
-do WebGL são conferidos em capturas; a conta da área reservada à folha está em
-`tests/node/framing.test.mjs`.
-
-`reading-pages.test.mjs` verifica Municípios por UF e Como calculamos: cabeçalho em faixa no
-fluxo, com menu abaixo de 1024 px; a busca, que só carrega a lista de municípios ao ser usada,
-leva ao dashboard com a seleção, tem falha com nova tentativa e, sem JavaScript, vira link para
-Municípios por UF; o retorno pelo link Mapa; as UFs em linhas com alvos de 44 px; o sumário lateral
-e a linha fixa, com seção atual, fechamento e foco; e as 11 âncoras abaixo do aviso e do sumário a
-320, 390, 768 e 1280 px, com e sem JavaScript.
-
-`list.test.mjs` verifica a Lista: abaixo de 640 px da própria largura, linhas com nome,
-classe com a textura do mapa, Faixa C e valor em 20 px, com o ⌄ abrindo os demais campos em
-texto real e `aria-expanded`; a forma larga, com cabeçalho e município fixos, rolando por dentro
-da área do mapa, também a 1280 px com o painel aberto; a troca de forma pela largura da Lista,
-e não da janela; UF e contagem fixas no celular, com Mapa/Lista e o aviso; a folha sem cobrir as
-últimas linhas nem o foco do teclado; ordem por UF e nome; próstata e mortalidade sem Situação;
-HPV sem Tendência, com camada montada no teste; e falha de
-carga com nova tentativa. A semântica de tabela é conferida na árvore de acessibilidade do
-Chromium, o que não substitui uma sessão com leitor de tela. Com os arquivos em paralelo, o
-servidor de desenvolvimento pode estourar os tempos de espera: use a saída estática.
-Em uma máquina carregada, mesmo a saída estática pode estourar. Nesse caso, rode um arquivo por
-vez: `node --test --test-concurrency=1 tests/browser/*.test.mjs`. O servidor de desenvolvimento
-também pode estourar o limite de memória do Node; se cair, aumente-o com
-`NODE_OPTIONS=--max-old-space-size=5120`.
-
-## Auditoria automatizada de acessibilidade
-
-Com o build estático e a prévia já disponíveis:
+Use Chromium com suporte a extensões locais para os testes de zoom nativo.
+Defina `CHROMIUM_PATH` com o caminho absoluto para usar o mesmo executável
+em toda a suíte. A maioria dos arquivos usa `/snap/bin/chromium` por padrão.
+Para instalar e selecionar o Chromium do Playwright, execute na raiz:
 
 ```sh
-SITE_URL=http://127.0.0.1:4321 CHROMIUM_PATH=/caminho/para/chromium npm run test:a11y --prefix site
+cd site
+npx playwright-core install chromium
+export CHROMIUM_PATH="$(node --input-type=module -e 'import { chromium } from "playwright-core"; console.log(chromium.executablePath())')"
+cd ..
 ```
 
-`accessibility.test.mjs` executa axe na inicial, no índice por UF, na Metodologia e
-em três documentos municipais, com e sem scripts, nos dois temas. A inicial usa a Lista filtrada por
-PE; o índice abre PE e as expansões dos documentos são abertas. Falham violações
-graves/críticas e nomes repetidos de regiões acessíveis. `A11Y_REPORT_DIR` permite
-guardar os relatórios completos, incluindo verificações inconclusivas.
+No Linux, se faltarem bibliotecas de sistema, use
+`npx playwright-core install --with-deps chromium` em `site/`.
 
-`map-state-accessibility.test.mjs` percorre as 27 combinações publicadas de
-Indicador, Tipo e modo, nos dois temas, com WebGL indisponível, e compara a classe,
-a origem, as notas e o ano de Recife com os JSONs publicados. Os demais testes
-continuam cobrindo interação, recuperação, responsividade, zoom e teclado.
-
-O repositório não tem CI: esses dois arquivos rodam localmente, com `npm run test:a11y`.
-Os resultados históricos e limites da auditoria, incluindo revisão humana, estão na [auditoria](../../docs/validation/accessibility-audit.md).
-
-Medições locais reproduzíveis, após o build:
+Gere a saída estática ou use a saída deixada pela integração, se estiver
+atualizada. Inicie a prévia em outro terminal, a partir da raiz:
 
 ```sh
-npm run measure:output --prefix site
-CHROMIUM_PATH=/caminho/para/chromium npm run measure:visit --prefix site
+npm run build --prefix site
+npm run preview --prefix site -- --host 127.0.0.1 --port 4322
 ```
 
-A segunda medição inicia seu próprio servidor HTTP local com gzip e usa contexto
-novo do navegador; soma corpos comprimidos, sem cabeçalhos. Registra primeira
-visita e seleção de Recife na mesma sessão. Não comprova compressão no provedor.
+Com a prévia disponível, execute no terminal com `CHROMIUM_PATH` definido.
+Ajuste `SITE_URL` se o Astro informar outra porta.
 
-Para diagnosticar o tempo da seleção municipal, rode
-`node scripts/measure-selection.mjs` a partir de `site/`, depois do build e sem
-outros testes de navegador em paralelo. O script inicia um servidor local e
-alterna Recife e Olinda em Chromium, a 390 × 844 e com CPU reduzida em 4 vezes.
-Registra o callback síncrono, a inserção do perfil e dois frames seguintes.
-As últimas quatro consultas reaproveitam os dados. A guarda local falha
-se o maior callback dessas consultas atingir 200 ms. A medição usa o evento
-de seleção do mapa e deixa o reconhecimento do toque, a rede pública e a
-GPU para a conferência no aparelho físico. Os frames medidos também não
-garantem o instante em que o resultado apareceu na tela.
-`CHROMIUM_PATH` escolhe o navegador, `CPU_RATE` e `SELECTION_SYNC_BUDGET_MS`
-ajustam o cenário e `PROFILE_PATH` grava um perfil de CPU.
-`municipality-selection.test.mjs` verifica que trocar de município não reescreve
-os milhares de links municipais com os mesmos filtros e que os links de retorno
-e os links novos do painel continuam recebendo o contexto correto. Também
-confirma que o Mapa deixa as linhas da Lista fora do documento e que reabrir a
-Lista preserva o filtro de UF e as linhas expandidas.
+```sh
+export SITE_URL=http://127.0.0.1:4322
+npm run test:browser --prefix site
+npm run test:a11y --prefix site
+node --test site/tests/browser/municipality.test.mjs
+```
 
-`mobile-details.test.mjs` verifica a expansão deliberada por “Ver detalhes”, retorno ao
-Mapa ou à Lista pelo × “Fechar detalhes”, foco, Voltar/Avançar entre detalhes, municípios e filtros e preservação
-da posição de exploração da Lista ao alternar visualizações. Cobre resumo recolhido e retorno em fluxo e composição flutuante a 390 ×
-568/664/740/844 e em horizontal, com UF e linhas abertas preservadas. Âncoras
-revelam o Eixo após a composição final, sem entrada artificial no histórico;
-interação deliberada durante carga cancela o deslocamento, e nova seleção
-substitui a âncora pendente. Cobre também links entre Eixos e indisponibilidade
-no recorte. O × “Limpar seleção” e os alvos móveis são verificados com nome
-municipal longo, 320 px, paisagem e texto ampliado.
-`mobile-surfaces.test.mjs` cobre Busca e Filtros após recolher, além do retorno
-de foco de Legenda pelo controle de fechar e por Escape.
-`map-touch.test.mjs` confere também a preservação da câmera ao retornar dos detalhes
-e ao alternar Mapa/Lista, por rótulos geográficos em pontos da tela. Falha com nova tentativa
-no resumo e seleções rápidas são cobertas por `integrated-profile.test.mjs`; os casos
-de origem regional, Faixa C, Dado insuficiente, mortalidade e leitura sem JavaScript
-permanecem em `municipal-panel.test.mjs`. Não há teto percentual de altura do resumo.
+`test:a11y` seleciona `accessibility.test.mjs` e
+`map-state-accessibility.test.mjs`, ambos incluídos em `test:browser`.
+Use `A11Y_REPORT_DIR` para guardar os relatórios do axe, incluindo as
+verificações inconclusivas. Se a execução em paralelo atingir os limites de
+tempo, rode `node --test --test-concurrency=1 site/tests/browser/*.test.mjs`.
+Ao terminar, use `npm run preview --prefix site -- stop`.
 
-`mobile-surfaces.test.mjs` percorre busca, filtros e legenda no celular, com
-ativação por teclado, fechamento, exclusividade e retorno de foco. A partir de
-Mapa e Lista, verifica consulta anterior, filtros aplicados, UF e linhas abertas,
-e seleção pela busca com resumo recolhido. Usa emulação de Chromium; não comprova
-teclado virtual ou comportamento em aparelho físico.
-
-`mobile-reading.test.mjs` cobre rótulos renderizados dos gráficos (piso de 12 px,
-eixos sem cortes e tabela), resumo longo em fluxo e acesso à última linha da
-Lista após seleção pela busca em 320 × 568, 390 × 844, 568 × 320, 844 × 390 e
-390 × 360. A janela de altura reduzida é uma aproximação de teclado aberto.
-`map-touch.test.mjs` também compara a geografia visível após girar a janela e
-voltar, depois de alterar o zoom. Roteiro e limites em
-[Leitura mobile](../../docs/mobile-validation.md).
-
-O [roteiro integrado mobile](../../docs/mobile-validation.md) cruza
-os percursos dessas suítes e mantém a conferência em aparelho real separada. Os cenários de primeiro toque,
-busca e link direto de `map-touch.test.mjs` também percorrem resumo, quatro Eixos
-e retorno à exploração com seleção e geografia preservadas.
-
-A regressão da #32 em `map-touch.test.mjs` verifica a recuperação do resumo
-flutuante após reduzir e restaurar a altura útil, com toque no canvas,
-Filtros fechados, foco e rolagem observados, detalhes deliberados e câmera
-preservada. `mobile-reading.test.mjs` confere a conservação da posição de
-leitura nos detalhes e no fluxo durante a medição. Comandos e
-limites da emulação ficam em
-[Recuperação da seleção mobile](../../docs/mobile-validation.md).
-
-O [roteiro de resumo, detalhes e retorno em fluxo](../../docs/mobile-validation.md)
-orienta a conferência conjunta e mantém explícitas as pendências físicas.
-
-`mobile-details.test.mjs` também cobre a #49: posições por entrada de detalhes e
-Lista, Eixo, UF e expansões após logo e Voltar/Avançar; Voltar com perfil de RN
-retido na fronteira HTTP; e falha da malha seguida de recuperação independente,
-sem histórico adicional ou expansão da consulta. Os testes observam URL,
-conteúdo e rolagem após conclusão do recurso e recomposição, sem pausa fixa.
-Roteiro de verificação: [guia mobile](../../docs/mobile-validation.md).
-
-## Exploração e resumo sem rolagem externa (#45)
-
-Na composição mobile com pelo menos 300 px de largura e 520 px de altura útil,
-o resumo agora permanece sobreposto mesmo quando longo. `municipal-panel`,
-`phone-first-screen`, `mobile-reading` e `map-touch` substituem as expectativas
-anteriores de fluxo por painel com rolagem interna e fontes preservadas.
-Canvas mantém foco na exploração; busca por toque ou Enter fecha e foca o nome
-sem rolar o documento. A primeira chegada observa geometria após dois frames,
-sem pausa fixa para aprovar o foco. Seleção substituída e limpeza durante carga
-não permitem resultado obsoleto. O aviso usa a redação curta aprovada na #44.
-
-As referências anteriores a fluxo por resumo longo descrevem as entregas
-históricas. Lista, detalhes e composição extrema têm suas coberturas
-nas #47, #46 e #50; a conferência integrada está na #51 e a física na #52.
-A emulação de Chromium não comprova teclado virtual, barras móveis ou toque
-em aparelho real. Roteiro físico: [guia mobile](../../docs/mobile-validation.md#conferência-em-aparelho-físico).
-
-## Lista com rolagem interna (#47)
-
-Na composição flutuante, `list.test.mjs` observa roda do mouse na área interna,
-última linha expandida, foco, UF, filtros e seleção substituída durante carga
-municipal controlada, em 390 × 844 e 320 × 568. Mapa/Lista fica junto de Filtros
-para não interceptar as linhas. `mobile-details.test.mjs` observa a posição
-interna no retorno; `municipality-selection.test.mjs` também detecta substituição
-dos links, além de alterações nos destinos. `map-touch.test.mjs` compara a
-geografia visível depois de selecionar outro município pela Lista com zoom
-previamente alterado. As descrições anteriores de rolagem externa da Lista são
-históricas; a composição extrema tem sua cobertura na #50. Evidências e limites em
-[Lista e contexto](../../docs/mobile-validation.md).
-
-## Altura extrema (#50)
-
-A #50 amplia `mobile-details.test.mjs` e `municipal-panel.test.mjs` com
-568 × 160 e fonte CSS de 200%: fim do aviso, resumo, barra, conteúdo, Menu,
-busca, filtros, legenda, retorno e recuperação de altura, sem cliques forçados.
-O teste de recuperação compara consulta, URL, histórico e posição de leitura.
-Os casos incluem origem regional, Faixa C, Dado insuficiente, próstata e
-mortalidade. `phone-first-screen.test.mjs` cobre separadamente zoom nativo;
-redução da janela aproxima perda de altura com teclado, sem comprovar teclado
-físico. Roteiro e pendências: [altura extrema](../../docs/mobile-validation.md).
+A [spec](../../docs/spec.md#17-pendências) registra a sessão pendente com
+leitor de tela.

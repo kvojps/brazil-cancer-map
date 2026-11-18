@@ -2,7 +2,7 @@
 
 Esta é a spec viva do projeto: as regras que valem hoje, com a numeração de seções que o código cita como "spec, section N". As decisões difíceis de reverter têm contexto e alternativas em [`adr/`](adr/); em divergência, vale o ADR mais recente. Os termos em maiúscula (Eixo, Indicador, Tendência, Situação, Referência, Ação, Região imediata, Dado insuficiente, Mapa inicial, Meu município, Tipo de câncer, Fonte, Contrato de dados, Versão de dados) seguem o [`GLOSSARY.md`](../GLOSSARY.md). **Fonte** é o provedor oficial; `source`, em código, é a unidade do pipeline.
 
-Os caminhos em `docs/data-sources.md`, `docs/ui-contract.md`, `docs/data/`, `docs/mobile-validation.md` e `docs/validation/accessibility-audit.md` indicam onde ficam os detalhes operacionais, as evidências e o contrato de interface.
+Os detalhes operacionais, as evidências e as decisões de apresentação ficam na documentação de [Fontes](data-sources.md), nas [evidências de dados](data/) e no [contrato de interface](ui-contract.md).
 
 ---
 
@@ -32,7 +32,7 @@ Os caminhos em `docs/data-sources.md`, `docs/ui-contract.md`, `docs/data/`, `doc
   - **Forma:** como o site não lembra nada entre visitas (seção 11.1), um botão de fechar faria a faixa voltar a cada visita. A redação curta permanece integral e pode ganhar destaque. No dashboard mobile com JavaScript, a abertura normal em retrato mostra a mensagem integral, sem corte nem rolagem interna. Quando faltar altura para o texto e a interface nas dimensões e ampliação atuais, a faixa apresenta **“Em construção · Ler aviso”**, sem reduzir fontes. “Ler aviso” abre a mensagem completa sobre o dashboard, com rolagem interna quando necessária, Fechar alcançável, Esc, foco visível e retorno ao acionador. Fechar a leitura mantém a faixa compacta. Recuperar espaço restaura automaticamente a faixa integral; uma leitura já aberta permanece disponível e seu foco é preservado. Se o acionador desaparecer com foco, o destino é Fechar na leitura aberta ou a mensagem integral. Desktop, documentos de leitura e acesso sem JavaScript conservam a apresentação integral. Ela é texto, não só cor, e não usa as cores da Tendência nem vermelho, para não ser lida como uma classe do mapa.
   - **Texto:** é genérico para não mudar a cada item resolvido. Evita "provisório" e "preliminar", que aqui querem dizer os anos recentes do dado (seção 6.4), e não diz "não use estes dados", para não afastar o público.
   - **Saída:** por decisão do responsável pelo projeto, e não por um critério fixo. Os arquivos de dados abertos não levam o aviso.
-- **Acessibilidade** (requisito de lançamento, sem certificação formal de WCAG ou eMAG): toda informação do mapa tem alternativa em texto ou tabela, toda interação funciona pelo teclado e nenhuma informação depende só de cor (por isso as texturas da seção 11).
+- **Acessibilidade** (requisito de lançamento, sem certificação formal de WCAG ou eMAG): todas as interações funcionam pelo teclado, toda informação do mapa tem alternativa em texto ou tabela e nenhuma informação depende só de cor. A [verificação com leitor de tela](#17-pendências) está pendente.
 
 ## 3. Escopo
 
@@ -221,7 +221,7 @@ O "Saiba mais" do 60 dias traz os direitos e canais: Lei 12.732/2012 (60 dias), 
 
 ## 11. Experiência
 
-A apresentação é a do **Console horizontal**, aprovado pelo responsável em 04/11/2026: a consulta municipal acontece no próprio dashboard e substitui a separação entre prévia e ficha. A aparência segue "sóbrio e preciso": menos bordas e caixas, tipografia e números fortes, cor reservada aos dados. No celular, "compatibilidade" significa layout e toque. As decisões de UI que os testes usam como contrato estão em `docs/ui-contract.md`.
+A apresentação é a do **Console horizontal**, aprovado pelo responsável em 04/11/2026: a consulta municipal acontece no próprio dashboard e substitui a separação entre prévia e ficha. A aparência segue "sóbrio e preciso": menos bordas e caixas, tipografia e números fortes, cor reservada aos dados. No celular, "compatibilidade" significa layout e toque. O CSS e os testes seguem o [contrato de interface](ui-contract.md).
 
 No celular com JavaScript, Mapa, Lista e resumo recolhido permanecem no dashboard sem
 rolagem externa abaixo de 768 px, usando a altura da viewport visual, inclusive em
@@ -309,7 +309,7 @@ O monorepo reúne `pipeline/` e `site/`. O site usa Astro estático, sem backend
 
 O mapa é uma ilha TypeScript com MapLibre GL JS (BSD-3), sem mapa base. Usa `promoteId: "CD_MUN"` e `feature-state` para trocar Indicador e ano. A malha IBGE 2025 é um TopoJSON simplificado a 1–2% com mapshaper (1,5% na versão atual), com exclusão das duas lagoas.
 
-A hospedagem usa Cloudflare Workers gratuito com assets estáticos em `workers.dev` (20.000 arquivos de até 25 MiB). GitHub Pages é a alternativa prevista (1 GB por site). O ADR do site estático registra o histórico da hospedagem, as alternativas DuckDB-WASM e PMTiles e as medições de tamanho. As estimativas iniciais (~1,3 MB na primeira visita e menos de 30 MB no site) são históricas. Em 14/11/2026, o responsável considerou satisfatório o carregamento e encerrou as pendências de tamanho e verificação da hospedagem. A avaliação de uso foi qualitativa. Acessibilidade e validação dos dados seguem obrigatórias. Veja as [medições históricas](validation/accessibility-audit.md).
+A hospedagem usa Cloudflare Workers gratuito com assets estáticos em `workers.dev` (20.000 arquivos de até 25 MiB). GitHub Pages é a alternativa prevista (1 GB por site). O ADR do site estático registra o histórico da hospedagem, as alternativas DuckDB-WASM e PMTiles e as medições de tamanho. As estimativas iniciais (~1,3 MB na primeira visita e menos de 30 MB no site) são históricas. Em 14/11/2026, o responsável considerou satisfatório o carregamento e encerrou as pendências de tamanho e verificação da hospedagem. A avaliação de uso foi qualitativa. Acessibilidade e validação dos dados seguem obrigatórias.
 
 ## 14. Pipeline
 
@@ -353,7 +353,7 @@ A Release inclui os agregados e o estado para retomada, com menos de 2 GiB por a
 
 ### Dívidas conhecidas
 
-**1. Sessão humana de acessibilidade.** Não há registro de sessão com leitor de tela. A automação não a substitui: o axe 4.14 não encontrou violação confirmada nas 24 análises, mas deixou verificações inconclusivas (3.498 nós de contraste e 48 de nome acessível), e os 316 testes de navegador não verificam anúncios. A sessão precisa registrar data, responsável, sistema, navegador e leitor de tela, e conferir também a semântica da Lista. O roteiro está em `docs/validation/accessibility-audit.md`. A verificação em celular real foi declarada pelo responsável ("Aconteceu, sem problemas"), sem registro de aparelho, sistema ou navegador.
+**1. Sessão humana de acessibilidade.** Verificar com leitor de tela os anúncios de seleção e a semântica da Lista, incluindo cabeçalhos, células e estado expandido. Registrar data, responsável, sistema, navegador e leitor de tela. A [automação do site](../site/tests/README.md#navegador) cobre parte do requisito. O roteiro e os limites registrados estão no [histórico da auditoria](https://github.com/kvojps/brazil-cancer-map/blob/b1df8352614fd664c612a9359cf8fb156a60af8c/docs/validation/accessibility-audit.md#roteiro-humano-pendente).
 
 **2. Revisão clínica das Ações.** O código registra `reviewer: null` em todas as Ações, e o site trata a revisão como pendente: os detalhes clínicos seguem ocultos (seção 10.4). `reviewer` não é preenchido sem nome, data e versão reais. Na revisão, reconferir também os pontos com data:
 

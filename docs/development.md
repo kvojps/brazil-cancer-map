@@ -59,38 +59,9 @@ Da raiz do repositório:
 | `npm test --prefix site` | Testes Node, dados publicados, build e servidor de desenvolvimento. |
 
 Use `uv run pytest pipeline/tests/<arquivo>.py` para testar um módulo do
-pipeline. O [guia de testes do site](../site/tests/README.md) mostra como
-executar arquivos individuais, testes de navegador, auditorias
-automatizadas de acessibilidade e medições.
-
-Para conferir o build estático e executar testes de navegador, prepare a
-prévia abaixo. Reserve cerca de 1 GB para `site/dist/`.
-
-```sh
-npm run build --prefix site
-npm run preview --prefix site -- --host 127.0.0.1 --port 4322
-```
-
-Se o Astro escolher outra porta, use a URL informada na variável
-`SITE_URL` dos testes. Encerre a prévia com
-`npm run preview --prefix site -- stop` antes de executar outro build.
-Execute `npm test` e `npm run build` em momentos distintos, pois os dois
-comandos gravam em `site/dist/`.
-
-Em outro terminal, com a prévia em execução:
-
-```sh
-cd site
-npx playwright-core install chromium
-export CHROMIUM_PATH="$(node --input-type=module -e 'import { chromium } from "playwright-core"; console.log(chromium.executablePath())')"
-SITE_URL=http://127.0.0.1:4322 npm run test:browser
-SITE_URL=http://127.0.0.1:4322 npm run test:a11y
-```
-
-Para usar um Chromium instalado, defina `CHROMIUM_PATH` com seu caminho
-absoluto. Os testes usam `/snap/bin/chromium` por padrão. Em Linux, a
-instalação pode precisar de `install --with-deps chromium`. O zoom nativo
-também exige suporte a extensões locais.
+pipeline. O [guia de testes do site](../site/tests/README.md) reúne os
+pré-requisitos de Chromium e os comandos para arquivos individuais, prévia
+estática e verificações automatizadas de acessibilidade.
 
 Execute as verificações pertinentes antes de integrar a mudança. O
 repositório depende dessas verificações locais.
