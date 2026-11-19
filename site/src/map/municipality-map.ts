@@ -40,6 +40,7 @@ import {
   type MunicipalityListing,
 } from "./indicator-layer";
 import { framingPaddings, type Padding } from "./framing";
+import type { CameraRenderer } from "./camera";
 
 /** Properties each municipality carries in the TopoJSON exported by the pipeline. */
 export interface MunicipalityProperties {
@@ -475,20 +476,20 @@ function revealSelection(map: MapLibreMap, point: LngLat, overlays: MapOverlays,
 }
 
 /** On a phone, frame the country clear of what floats over the map. Larger screens keep the constructor's fit. */
-export function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
+function frameCountry(map: MapLibreMap, overlays: MapOverlays): void {
   // No municipality is selected here: the buttons that stay at the bottom never kept the country from growing.
   if (isPhone()) fitClearOfOverlays(map, LngLatBounds.convert(PHONE_BRAZIL_BOUNDS), { ...overlays, floor: [] }, PHONE_COUNTRY_MARGIN);
 }
 
 /** Restart deliberate exploration on either layout, independently of selection clearing. */
-export function resetCountry(map: MapLibreMap, overlays: MapOverlays): void {
+function resetCountry(map: MapLibreMap, overlays: MapOverlays): void {
   map.resize();
   if (isPhone()) frameCountry(map, overlays);
   else map.fitBounds(BRAZIL_BOUNDS, { padding: 16, duration: 0 });
 }
 
 /** Frame a municipality on arrival; canvas exploration only reveals the selected point if covered. */
-export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays, preserveCamera = false, revealOutside = false): void {
+function focusMunicipality(map: MapLibreMap, code: string, overlays: MapOverlays, preserveCamera = false, revealOutside = false): void {
   const bounds = new LngLatBounds();
   for (const item of meshes.get(map)?.features ?? []) {
     if (String(item.properties?.CD_MUN) !== code) continue;
@@ -511,13 +512,25 @@ export function focusMunicipality(map: MapLibreMap, code: string, overlays: MapO
 }
 
 /** Update the selected outline without moving a camera the user has already taken over. */
-export function highlightMunicipality(map: MapLibreMap, code: string | undefined): void {
+function highlightMunicipality(map: MapLibreMap, code: string | undefined): void {
   for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter(code ? [code] : []));
 }
 
-export function clearMunicipality(map: MapLibreMap): void {
+function clearMunicipality(map: MapLibreMap): void {
   for (const layer of [SELECTED_CASING_LAYER, SELECTED_LAYER]) map.setFilter(layer, codeFilter([]));
   map.resize();
+}
+
+/** The camera's view of a mounted map: overlays are measured and the clicked point remembered here. */
+export function createCameraRenderer(map: MapLibreMap, overlays: MapOverlays): CameraRenderer {
+  return {
+    isVisible: () => map.getContainer().clientWidth > 0,
+    frameCountry: () => frameCountry(map, overlays),
+    resetCountry: () => resetCountry(map, overlays),
+    focusMunicipality: (code, { preserveCamera, revealOutside }) => focusMunicipality(map, code, overlays, preserveCamera, revealOutside),
+    highlightMunicipality: code => highlightMunicipality(map, code),
+    clearMunicipality: () => clearMunicipality(map),
+  };
 }
 
 export function onMunicipalityClick(map: MapLibreMap, select: (code: string) => void): void {
