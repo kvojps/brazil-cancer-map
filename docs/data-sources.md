@@ -216,7 +216,7 @@ As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`,
 - **Calendário:** mensal, com atraso de ~1 mês. Os meses do ano corrente são regravados juntos (os 9 de 2026, em 01/11/2026), e os anos de 2020–2025 foram regravados em agosto de 2026. Não se sabe se isso é rotina.
 - **Armadilhas:** HTTP 403 não significa mês ausente, por isso os meses vêm do catálogo. Mês anunciado que falha, ou mês ausente, interrompe a auditoria, sem virar zero. A API (`apidadosabertos.saude.gov.br`) só aceita `limit` e `offset`, sem filtro por vacina, e o endpoint CKAN do portal devolve 404. A leitura por `Range` não ajuda, porque o CSV é um só bloco comprimido.
 - **O que fica local:** extratos com chaves de pacientes em `data/clean/hpv/months/` e `audit.json`. Nada disso entra no git nem nas Releases.
-- **Não há medição do job anual.** Só há medições de etapas locais, em [`data/hpv-benchmark.md`](data/hpv-benchmark.md).
+- **Não há medição do job anual.** Só há medições de etapas locais, no [registro histórico de duração e disco](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-benchmark.md).
 - **Método e evidência:** [`/metodologia/#hpv`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#hpv), [`data/hpv-official-inputs.md`](data/hpv-official-inputs.md).
 
 ## `inca`
@@ -268,6 +268,5 @@ A portaria que regulamenta a Lei 14.758/2023 não foi lida, e não se sabe se el
 | [`data/sim-atlas-check.md`](data/sim-atlas-check.md) | Segi/Doll com 80+ e tolerância de ±3% |
 | [`data/c55-validation.md`](data/c55-validation.md) | Redistribuição do C55 no colo do útero |
 | [`data/hpv-official-inputs.md`](data/hpv-official-inputs.md) | Agregados oficiais do HPV e como repetir a auditoria |
-| [`data/hpv-benchmark.md`](data/hpv-benchmark.md) | Duração e disco de etapas da auditoria, como registro histórico |
 | [`data/action-sources.md`](data/action-sources.md) | Fontes das Ações, para a revisão clínica |
 | [`data/methodology-links.md`](data/methodology-links.md) | Conferência dos links da metodologia |

@@ -49,4 +49,4 @@ Os itens 1–8 estão nas seções próprias de cada indicador; versões, agrega
 - Tabagismo: fonte/extração/recortes; fórmula ponderada; ausências; desenho/IC; janela e lacuna 2022; classes e Situação invertida; ausência de mínimo municipal/região/faixas; validação, reprodução e revisão dos pesos.
 - INCA: edição/extração/recortes; transcrição e ausência de cálculo de taxa/pesos/denominador; ausência de série, Tendência, Situação e mínimo/região/faixas; validação/limites; reprodução e histórico.
 
-As medições de duração e disco da auditoria de microdados do HPV ficam como registro histórico em `docs/data/hpv-benchmark.md`. Sem workflow de microdados, não há medição pendente.
+As medições de duração e disco da auditoria de microdados do HPV ficam como [registro histórico](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-benchmark.md). Sem workflow de microdados, não há medição pendente.

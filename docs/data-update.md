@@ -39,7 +39,7 @@ uv run python -m pipeline update --source painel --source cnes --source hpv \
 
 `update` passa por `download`, `clean`, `compute`, `validate` e `export`. A proposta contém `dados/`, `clean/` e `update.json`. O contrato e o estado de entrada permanecem intactos.
 
-Repita `--source` para selecionar mais de uma. `popsvs` agrupa `siscan`, `siscan_cytopathology` e `sim` por dependerem da mesma população. Escolher só `sim` usa a população do snapshot. `mesh` inclui todas as `source`s no mesmo grupo. Uma falha descarta toda a cópia do grupo, mantém seus dados e estado anteriores e deixa os grupos independentes seguirem. O comando retorna código 1 se algum grupo falhar. Veja a [verificação de isolamento e continuidade](data/pipeline-reorganization-verification.md).
+Repita `--source` para selecionar mais de uma. `popsvs` agrupa `siscan`, `siscan_cytopathology` e `sim` por dependerem da mesma população. Escolher só `sim` usa a população do snapshot. `mesh` inclui todas as `source`s no mesmo grupo. Uma falha descarta toda a cópia do grupo, mantém seus dados e estado anteriores e deixa os grupos independentes seguirem. O comando retorna código 1 se algum grupo falhar. Veja a [verificação de isolamento e continuidade](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/pipeline-reorganization-verification.md).
 
 ## Revisar a proposta
 

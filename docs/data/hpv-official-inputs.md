@@ -1,6 +1,6 @@
 # HPV: insumos oficiais da coorte e da auditoria
 
-O indicador publicado usa as **coortes agregadas oficiais** do Ministério ([ADR 4](../adr/0004-hpv-from-official-aggregates.md)). Este registro traz o que é preciso para repetir a **auditoria** com microdados, que é opcional e local: a NT 16/2025, a consulta ao TabNet e os limites do dicionário. Limiares e endereços em uso estão em [`data-sources.md`](../data-sources.md#hpv), e duração e disco em [`hpv-benchmark.md`](hpv-benchmark.md).
+O indicador publicado usa as **coortes agregadas oficiais** do Ministério ([ADR 4](../adr/0004-hpv-from-official-aggregates.md)). Este registro traz o que é preciso para repetir a **auditoria** com microdados, que é opcional e local: a NT 16/2025, a consulta ao TabNet e os limites do dicionário. Limiares e endereços em uso estão em [`data-sources.md`](../data-sources.md#hpv), e duração e disco no [registro histórico](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-benchmark.md).
 
 Verificação: **04/11/2026**. Fontes primárias, com consulta HTTP real ao TabNet e leitura de amostra DBF do FTP. Nenhum arquivo mensal grande foi baixado nessa etapa, e os endereços não foram reconferidos desde então.
 
@@ -32,7 +32,7 @@ O formulário envia POST a `http://tabnet.datasus.gov.br/cgi/webtabx.exe?bd_pni/
 
 Os demais seletores `S...` podem seguir o formulário com `TODAS_AS_CATEGORIAS__`. Os caracteres `\|` na tabela representam separadores literais `|` (o escape é apenas Markdown). Usar os valores extraídos do formulário evita depender de SQL de apresentação fixado no código.
 
-**Consulta pequena executada:** Brasileia/AC (`SMunicípio=120010 BRASILEIA|120010|6`), feminino, D1, 2019: 9 anos **48**, 10 **5**, 11 **1**, 12 **4**, 13 **2**, 14 **2**, total **62**. Resposta identifica os filtros e a fonte SI-PNI. A extração nacional consulta dez tabelas (cinco anos × dois sexos) e foi executada depois desta verificação: os resultados estão em [`hpv-benchmark.md`](hpv-benchmark.md).
+**Consulta pequena executada:** Brasileia/AC (`SMunicípio=120010 BRASILEIA|120010|6`), feminino, D1, 2019: 9 anos **48**, 10 **5**, 11 **1**, 12 **4**, 13 **2**, 14 **2**, total **62**. Resposta identifica os filtros e a fonte SI-PNI. A extração nacional consulta dez tabelas (cinco anos × dois sexos) e foi executada depois desta verificação: os resultados estão no [registro histórico](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-benchmark.md).
 
 ## FTP: útil para inspeção, inadequado como única base fechada
 

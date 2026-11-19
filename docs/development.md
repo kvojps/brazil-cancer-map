@@ -80,7 +80,7 @@ Para trabalhar em uma `source`, comece pela [arquitetura da pipeline](architectu
 Ao registrar uma nova unidade, use caminhos de estado, insumos e saída do
 mesmo snapshot. Cubra com fixtures o Contrato de dados e a preservação da
 saída vigente em caso de falha. Veja os exemplos de registro, validação e
-fixtures na [verificação da reorganização](data/pipeline-reorganization-verification.md).
+fixtures na [verificação da reorganização](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/pipeline-reorganization-verification.md).
 Os relatos de setup em clone limpo e de execução com fixtures de SISCAN e
 HPV estão no [histórico do guia](https://github.com/kvojps/brazil-cancer-map/blob/72e8b7ed10b15a58f65b7f4dd545712ee7f81f83/docs/development.md).
 
