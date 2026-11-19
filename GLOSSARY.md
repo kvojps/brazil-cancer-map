@@ -12,6 +12,8 @@
 
 **Meu município**: A consulta de um município no próprio Mapa inicial, reunindo os quatro Eixos e os indicadores disponíveis para o município ou, quando pertinente, para sua região, UF ou capital. É a visão local completa do cuidado com o câncer, para entender e agir.
 
+**Endereço**: O que a URL e a entrada de histórico guardam do Mapa inicial: o estado do mapa (indicador, Tipo de câncer e modo), o município do Meu município, a visualização (Mapa ou Lista), os detalhes abertos, a âncora do Eixo e o contexto de leitura. É o que faz o Voltar e um link compartilhado reabrirem a mesma leitura. _Evitar_: "rota" ou "estado da URL".
+
 **Tendência**: A direção recente de um indicador, em uma de quatro classes: melhorando, piorando, estável (sabemos que quase não mudou) ou sem direção clara (a mudança é incerta demais para dizer). Quando nem há casos suficientes para calcular, o indicador fica como dado insuficiente, que não é uma Tendência. Aparece em todo cartão e é a cor padrão do Mapa inicial. "Melhorando" depende do indicador: para a mortalidade, é cair; para a cobertura, é subir. É sempre medida como variação percentual anual, em relação ao próprio valor do indicador. _Evitar_: pontos percentuais para expressar a Tendência. _Evitar_: "estável" para uma série que só não mostrou mudança significativa.
 
 **Ação**: Um próximo passo concreto de prevenção, cuidado ou acesso a direitos, associado a um indicador ou oferecido num eixo sem indicador pertinente ao tipo de câncer. É orientação geral, disponível mesmo quando o dado é insuficiente, e não uma conduta individual determinada pela situação do município.
