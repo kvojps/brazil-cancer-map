@@ -2,7 +2,7 @@ import pytest
 
 from pipeline.sources.painel.models import UfShare
 from pipeline.sources.painel.validation import compare_with_tabnet
-from pipeline.sources.painel.acquisition import parse_tabnet
+from pipeline.sources.painel.download import parse_tabnet
 
 
 def tabnet_page(rows):

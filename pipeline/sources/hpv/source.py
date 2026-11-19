@@ -1,4 +1,4 @@
-"""Coordinate official HPV acquisition, calculation, validation and publication."""
+"""Coordinate official HPV download, compute, validation and export."""
 
 import json
 from datetime import UTC, datetime
@@ -9,7 +9,7 @@ from pipeline.sources.hpv.historical_inputs import download_fixed_inputs
 from pipeline.sources.hpv.vaccination_data import download_official_cohorts
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.steps.export import MANIFEST, publish_together, updated_manifest
-from pipeline.sources.hpv.calculation import calculate
+from pipeline.sources.hpv.compute import calculate
 from pipeline.sources.hpv.export import documents
 from pipeline.sources.hpv.models import HpvResult, SOURCE
 from pipeline.sources.hpv.persistence import read_census, read_official, read_result, write_result
@@ -22,7 +22,7 @@ class HpvSource:
     def __init__(self, *, raw_dir: Path = RAW_DIR / 'hpv',
                  clean_dir: Path = CLEAN_DIR / 'hpv', site_data_dir: Path = SITE_DATA_DIR,
                  years: tuple[int, ...] | None = None,
-                 validation_path: Path = Path(__file__).resolve().parents[2] / 'references' / 'hpv.json',
+                 validation_path: Path = Path(__file__).resolve().parent / 'official-figures.json',
                  transport: Transport | None = None) -> None:
         if years is None:
             years = tuple(range(2020, datetime.now(UTC).year + 1))

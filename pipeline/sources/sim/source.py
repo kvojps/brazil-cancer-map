@@ -31,7 +31,7 @@ FTP_ROOT = 'ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/'
 SOURCE = {'name': 'SIM (DATASUS/Ministério da Saúde)', 'url': FTP_ROOT,
           'conditions': 'Dados abertos do Ministério da Saúde; reutilização com citação da fonte.',
           'period': 'Óbitos por residência e causa básica, 2014–2024, sem anos preliminares.'}
-REFERENCE_PATH = Path(__file__).parent.parent / 'references' / 'sim-atlas.json'
+OFFICIAL_FIGURES = Path(__file__).resolve().parent / 'official-figures.json'
 
 
 def read_records(path: Path) -> Iterator[dict[str, str]]:
@@ -74,7 +74,7 @@ class SimSource:
     def __init__(self, *, raw_dir: Path = RAW_DIR / 'sim', clean_dir: Path = CLEAN_DIR / 'sim',
                  site_data_dir: Path = SITE_DATA_DIR,
                  population_path: Path = CLEAN_DIR / 'popsvs' / 'population.parquet',
-                 reference_path: Path = REFERENCE_PATH, transport: Transport | None = None) -> None:
+                 reference_path: Path = OFFICIAL_FIGURES, transport: Transport | None = None) -> None:
         self._raw_dir, self._clean_dir, self._site_data_dir = raw_dir, clean_dir, site_data_dir
         self._population_path, self._reference_path = population_path, reference_path
         self._transport = transport or FtpTransport(timeout=120, workers=8)

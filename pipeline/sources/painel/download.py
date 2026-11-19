@@ -1,4 +1,4 @@
-"""Decode DBC, count clean cases and acquire/parse official TabNet comparisons."""
+"""Decode DBC, count clean cases and download/parse official TabNet comparisons."""
 
 import re
 import tempfile

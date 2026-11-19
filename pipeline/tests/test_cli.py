@@ -157,7 +157,7 @@ def test_update_failure_keeps_old_manifest_and_independent_source_succeeds(tmp_p
 
 def test_population_failure_blocks_dependent_group_but_not_independent_source(tmp_path, monkeypatch):
     import json
-    monkeypatch.setattr('pipeline.sources.popsvs.list_ftp', lambda url: [])
+    monkeypatch.setattr('pipeline.sources.popsvs.source.list_ftp', lambda url: [])
     live = tmp_path / 'live'
     live.mkdir()
     (live / 'manifest.json').write_text('{"sources":{"sim":{"extracted_at":"old"}}}')

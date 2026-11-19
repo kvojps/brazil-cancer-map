@@ -23,6 +23,10 @@ territorial e denominadores de população) e
 versão do pipeline). `steps/` não importa `sources` nem `operations`, e
 nenhuma `source` importa outra; o teste de arquitetura verifica as duas regras.
 
+Cada `source` é um pacote em [`pipeline/sources/<nome>/`](../pipeline/sources/), com a
+classe em `source.py`, reexportada pelo pacote, e os arquivos de dados versionados
+que só ela lê. `siscan` e `siscan_cytopathology` compartilham o pacote `siscan`.
+
 ## Da Fonte ao Contrato de dados
 
 ```mermaid
@@ -87,9 +91,9 @@ Os caminhos abaixo são relativos à raiz do repositório.
 
 | Etapa | Onde seguir o Indicador |
 | --- | --- |
-| `download` | A [aquisição](../pipeline/sources/painel/acquisition.py) baixa `POBR<ano>.dbc` do FTP do DATASUS, de 2014 em diante, e duas tabelas anuais do TabNet em HTML. Os arquivos ficam em `data/raw/painel/`. |
+| `download` | O [download](../pipeline/sources/painel/download.py) baixa `POBR<ano>.dbc` do FTP do DATASUS, de 2014 em diante, e duas tabelas anuais do TabNet em HTML. Os arquivos ficam em `data/raw/painel/`. |
 | `clean` | Os DBC são lidos e agregados. A [persistência](../pipeline/sources/painel/persistence.py) grava `cases.parquet` por ano, município de residência e tipo, `months.parquet` por mês e modalidade de primeiro tratamento e `extract.json` com a data da extração. A etapa também copia as tabelas do TabNet para `data/clean/painel/tabnet/`. |
-| `compute` | A etapa lê os Parquet e a relação entre municípios e Regiões imediatas de [`municipalities.json`](../site/public/dados/municipalities.json). Passa os dados a [`calculate`](../pipeline/sources/painel/calculation.py) e grava `layers/<tipo>.json`, `layers/<tipo>-profiles.json` e `monthly_alerts.json` em `data/clean/painel/`. |
+| `compute` | A etapa lê os Parquet e a relação entre municípios e Regiões imediatas de [`municipalities.json`](../site/public/dados/municipalities.json). Passa os dados a [`calculate`](../pipeline/sources/painel/compute.py) e grava `layers/<tipo>.json`, `layers/<tipo>-profiles.json` e `monthly_alerts.json` em `data/clean/painel/`. |
 | `validate` | A [validação](../pipeline/sources/painel/validation.py) compara agregados do recorte Todos os cânceres por UF e ano com as duas tabelas do TabNet. Também verifica cobertura da malha, percentuais plausíveis e presença de faixa nas UFs. Quedas mensais por modalidade geram alertas informativos. |
 | `export` | A [montagem dos documentos](../pipeline/sources/painel/export.py) usa os resultados calculados para gerar as camadas do mapa e incorporar o Indicador aos perfis por UF. `PainelSource.export` repete as verificações que bloqueiam a exportação, inclusive quando acionada isoladamente, e atualiza o manifesto. |
 

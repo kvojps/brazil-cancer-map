@@ -3,7 +3,8 @@ import json
 import duckdb
 import pytest
 
-from pipeline.sources.cnes import CnesSource, CnesValidationError, clean_facilities, nearby_facilities
+from pipeline.sources.cnes import CnesSource
+from pipeline.sources.cnes.source import CnesValidationError, clean_facilities, nearby_facilities
 
 
 def habilitation(code="1707", start="202001", end="999999"):
@@ -61,7 +62,7 @@ def test_export_rechecks_uf_counts_and_preserves_previous_publication(tmp_path):
 
 
 def test_download_selects_the_latest_month_complete_for_both_files_and_all_states(tmp_path, monkeypatch):
-    from pipeline.sources import cnes
+    from pipeline.sources.cnes import source as cnes
 
     def listing(url):
         kind = "HB" if "/HB/" in url else "ST"

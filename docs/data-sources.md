@@ -76,7 +76,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
 - **Calendário:** anual. Os arquivos de 2000–2024 foram regravados juntos em 07/01/2025, na revisão pós-Censo, e o de 2025 saiu em 29/10/2025.
 - **Endereços:** `ftp://ftp.datasus.gov.br/dissemin/publicos/IBGE/POPSVS/` e [TabNet](http://tabnet.datasus.gov.br/cgi/deftohtm.exe?ibge/cnv/popsvs2024br.def), que recusou HTTPS e respondeu por HTTP.
 - **Volumes:** ~3,4 MB por ano, 4,75 MB em 2025, 0,09 GB na série. Cerca de 25–27 MB por DBF descompactado.
-- **Armadilhas:** no arquivo de 2025 os nomes de coluna estão em minúsculas, e `idade` tem largura 5. O código só aceita arquivos até `POPSBR25` e anos até 2025, então o arquivo de 2026 exige mudar o código (lido em `pipeline/sources/popsvs.py`). Ao sair uma atualização, conferir se os anos anteriores foram regravados.
+- **Armadilhas:** no arquivo de 2025 os nomes de coluna estão em minúsculas, e `idade` tem largura 5. O código só aceita arquivos até `POPSBR25` e anos até 2025, então o arquivo de 2026 exige mudar o código (lido em `pipeline/sources/popsvs/source.py`). Ao sair uma atualização, conferir se os anos anteriores foram regravados.
 - **Validações, que bloqueiam:**
   - 162 células distintas por município × ano;
   - domínios válidos de código, ano, sexo, idade e população;
@@ -118,7 +118,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
 ## `cnes`
 
 - **Insumos:** `HB<UF><aamm>.dbc` e `ST<UF><aamm>.dbc` das 27 UFs, na competência mais recente comum a todos, e `TAB_CNES.zip`, de onde vêm os nomes (`CADGERBR.dbf`), que os DBC não trazem.
-- **Habilitações usadas:** 1704, 1706–1713 e 1715 (`HABILITATIONS`, em `pipeline/sources/cnes.py`). Contam como radioterapia 1704, 1707, 1712, 1713 e 1715 (lido no código).
+- **Habilitações usadas:** 1704, 1706–1713 e 1715 (`HABILITATIONS`, em `pipeline/sources/cnes/source.py`). Contam como radioterapia 1704, 1707, 1712, 1713 e 1715 (lido no código).
 - **Pré-requisitos:** malha publicada. Node.js e `npm ci --prefix pipeline`, porque o mapshaper calcula os centroides.
 - **Calendário:** mensal. `HBSP2606` saiu em 15/07/2026, `2607` em 17/08, `2608` em 15/09 e `2609` em 15/10/2026.
 - **Endereços:** `ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/HB/`, `.../Dados/ST/` e `.../Auxiliar/TAB_CNES.zip`.
@@ -132,7 +132,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
 
 ## `siscan` e `siscan_cytopathology`
 
-As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`, com caches separados em `data/clean/siscan/` e `data/clean/siscan_cytopathology/`.
+As duas `source` leem a mesma Fonte e compartilham o pacote `pipeline/sources/siscan/`, com caches separados em `data/clean/siscan/` e `data/clean/siscan_cytopathology/`.
 
 | | `siscan` | `siscan_cytopathology` |
 |---|---|---|
@@ -185,7 +185,7 @@ As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`,
 - **Endereços:** `ftp://ftp.datasus.gov.br/dissemin/publicos/SIM/CID10/DORES/` e [Atlas On-line do INCA](https://mortalidade.inca.gov.br/MortalidadeWeb/).
 - **Volumes:** 1,40 GB em 2014–2024, ~130 MB por ano.
 - **Validações, que bloqueiam:**
-  - amostra de `pipeline/references/sim-atlas.json`: contagem exata e taxa com ±3% (relativo à taxa oficial);
+  - amostra de `pipeline/sources/sim/official-figures.json`: contagem exata e taxa com ±3% (relativo à taxa oficial);
   - série ajustada do C55: conservação de C53+C54+C55, outros tipos sem mudança, séries completas e taxas ausentes sempre sinalizadas;
   - todos os tipos, todos os municípios da malha, taxas finitas entre 0 e 10.000.
 - **Limiares operacionais:** o teto de 10.000 é plausibilidade, e os ±3% acomodam o POPSVS revisto.
@@ -203,9 +203,9 @@ As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`,
 - **Validações, que bloqueiam:**
   - denominadores oficiais iguais ao Censo, por fatia;
   - cobertura dos municípios da malha, valores finitos e não negativos, Situação coerente com o valor;
-  - referências em `pipeline/references/hpv.json` obrigatórias, com fonte, data e observações do total e dos dois sexos, em município com dado próprio e ano não provisório.
+  - números oficiais em `pipeline/sources/hpv/official-figures.json` obrigatórios, com fonte, data e observações do total e dos dois sexos, em município com dado próprio e ano não provisório.
 - **Limiares operacionais:** `tolerance_pp` é hoje **0,01 p.p.** O código aceita no máximo 1 p.p. Valores acima de 100% ficam sem corte, com nota.
-- **Formato de `hpv.json`:** `source_url`, `extracted_at`, `tolerance_pp` e `observations`, cada uma com `municipality` (seis dígitos), `year`, `sex` (`F`, `M` ou `null` para o total) e `value`. O arquivo não é preenchido com valores inventados. Hoje traz nove referências reais de 2025, de Recife, Brasileia e Jundiaí.
+- **Formato de `official-figures.json`:** `source_url`, `extracted_at`, `tolerance_pp` e `observations`, cada uma com `municipality` (seis dígitos), `year`, `sex` (`F`, `M` ou `null` para o total) e `value`. O arquivo não é preenchido com valores inventados. Hoje traz nove observações reais de 2025, de Recife, Brasileia e Jundiaí.
 - **Resíduo no contrato publicado:** o `manifest.json` ainda lista os 81 ZIPs da auditoria, e as camadas trazem `audit_last_month`. É metadado antigo, sem efeito em nenhum valor. A exportação atual grava só `official.json` e `census.parquet`.
 
 **Auditoria (`hpv-audit`):**
@@ -221,7 +221,7 @@ As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`,
 
 ## `inca`
 
-- **Insumos:** `pipeline/references/inca-estimates-2026.json`, transcrito à mão das tabelas de Estado e Capital em 04/11/2026. Os 324 valores foram reconferidos. O download não acessa a rede.
+- **Insumos:** `pipeline/sources/inca/input-estimates-2026.json`, transcrito à mão das tabelas de Estado e Capital em 04/11/2026. Os 324 valores foram reconferidos. O download não acessa a rede.
 - **Pré-requisitos:** nenhum além dos gerais.
 - **Calendário:** a cada edição. Atual: 2026–2028, lançada em 04/02/2026. A página é reescrita a cada edição e não tem CSV oficial, por isso a extração não é automatizada. Uma edição nova exige mudar o código, que valida o nome da edição e o ano.
 - **Endereços:** <https://www.gov.br/inca/pt-br/assuntos/cancer/numeros/estimativa/estado-capital/brasil> e [PDF no Ninho](https://ninho.inca.gov.br/jspui/handle/123456789/18038).
@@ -238,7 +238,7 @@ As duas `source` leem a mesma Fonte e compartilham `pipeline/sources/siscan.py`,
 - **Validações, que bloqueiam:**
   - colunas presentes; ano, cidade, idade a partir de 18, `fumante` 0 ou 1 e peso positivo, sem descartar registros em silêncio;
   - as 27 capitais, com os mesmos anos; prevalência entre 0 e 100; amostra de pelo menos 2; intervalo coerente;
-  - total ponderado das capitais contra a Figura 31 (p. 100) do relatório oficial: 2019 = 9,7; 2020 = 9,2; 2021 = 9,0; 2023 = 9,2; 2024 = 11,5 (`pipeline/references/vigitel.json`).
+  - total ponderado das capitais contra a Figura 31 (p. 100) do relatório oficial: 2019 = 9,7; 2020 = 9,2; 2021 = 9,0; 2023 = 9,2; 2024 = 11,5 (`pipeline/sources/vigitel/official-figures.json`).
 - **Limiares operacionais:** ±3% relativos no total das capitais, para acomodar o arredondamento e a revisão de pesos de Fortaleza e Florianópolis de agosto de 2026. **Essa comparação não valida cada capital.**
 - **Resultado:** extração de 05/11/2026, 27 capitais, 18 anos observados entre 2006 e 2024.
 - **Método:** [`/metodologia/#tabagismo`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#tabagismo).

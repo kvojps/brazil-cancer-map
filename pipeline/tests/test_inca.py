@@ -31,7 +31,7 @@ def test_source_exports_annual_estimates_only_in_profiles_and_preserves_other_da
 
 def test_invalid_manual_input_cannot_replace_published_profiles(tmp_path):
     import pytest
-    from pipeline.sources.inca import INPUT
+    from pipeline.sources.inca.source import INPUT
 
     data = json.loads(INPUT.read_text())
     profile = tmp_path / 'profiles' / 'PE.json'

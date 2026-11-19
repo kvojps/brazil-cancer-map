@@ -2,7 +2,7 @@
 
 > Leitura curta. A [versão completa](https://github.com/kvojps/brazil-cancer-map/blob/11fd03c47e1ce09b9a2ccb873ccc75da1ccb304f/docs/data/c55-validation.md), com as contagens anuais do relatório e o efeito por ano, está no commit `11fd03c`.
 
-Sustenta a redistribuição do C55 no colo do útero. A decisão e as alternativas estão no [ADR 9](../adr/0009-c55-redistribution-cervix-only.md), e o método em [`/metodologia/#mortalidade`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#mortalidade). O relatório da execução está em `pipeline/references/sim-c55-validation.json`.
+Sustenta a redistribuição do C55 no colo do útero. A decisão e as alternativas estão no [ADR 9](../adr/0009-c55-redistribution-cervix-only.md), e o método em [`/metodologia/#mortalidade`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#mortalidade). O relatório da execução está em [`c55-validation.json`](c55-validation.json).
 
 **Data:** execução de 04/11/2026, pipeline `0.1.0+ddbacb4`, anos 2014–2024, 5.571 municípios.
 

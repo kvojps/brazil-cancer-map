@@ -3,9 +3,9 @@
 from collections.abc import Mapping
 from typing import Any
 
-from .acquisition import FTP_DIR
+from .download import FTP_DIR
 from .models import CANCER_TYPES, WITHOUT_STATUS
-from .calculation import PainelResult
+from .compute import PainelResult
 
 SOURCE = {
     "name": "Painel-Oncologia (DATASUS/Ministério da Saúde)",

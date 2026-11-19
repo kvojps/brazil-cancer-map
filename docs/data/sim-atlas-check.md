@@ -2,7 +2,7 @@
 
 > Leitura curta. A [versão completa](https://github.com/kvojps/brazil-cancer-map/blob/11fd03c47e1ce09b9a2ccb873ccc75da1ccb304f/docs/data/sim-atlas-check.md), com a leitura do Atlas, as faixas de idade e a comparação das populações padrão e das fontes que redistribuem causas, está no commit `11fd03c`.
 
-Sustenta a padronização por Segi/Doll com 80+ e a tolerância de ±3% da validação do SIM. `pipeline/references/sim-atlas.json` guarda a amostra que o pipeline compara a cada execução. O método está em [`/metodologia/#mortalidade`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#mortalidade).
+Sustenta a padronização por Segi/Doll com 80+ e a tolerância de ±3% da validação do SIM. `pipeline/sources/sim/official-figures.json` guarda a amostra que o pipeline compara a cada execução. O método está em [`/metodologia/#mortalidade`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#mortalidade).
 
 **Data:** pesquisa de 02/11/2026, com o SIM de 2022 a 2024, a população `POPSBR22–24` e o TabNet de 2014–2024. Resultado com o código do pipeline em 03/11/2026, mantido na carga completa de 04/11/2026.
 

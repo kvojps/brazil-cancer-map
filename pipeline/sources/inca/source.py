@@ -9,7 +9,7 @@ from pipeline.paths import SITE_DATA_DIR
 from pipeline.steps.export import MANIFEST, publish_together, updated_manifest
 from pipeline.territory import CAPITALS
 
-INPUT = Path(__file__).resolve().parents[1] / 'references' / 'inca-estimates-2026.json'
+INPUT = Path(__file__).resolve().parent / 'input-estimates-2026.json'
 CANCER_TYPES = {'all', 'breast', 'cervix', 'prostate', 'colorectal', 'lung'}
 
 

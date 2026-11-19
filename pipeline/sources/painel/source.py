@@ -10,9 +10,9 @@ from pathlib import Path
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.steps.export import MANIFEST, publish_together, updated_manifest
 
-from .acquisition import FILE_NAME, FIRST_YEAR, download, parse_tabnet, read_dbc, count_cases
+from .download import FILE_NAME, FIRST_YEAR, download, parse_tabnet, read_dbc, count_cases
 from .models import TABNET_TABLES, TABNET_CANCER_TYPE, TabnetTable, CleanRow
-from .calculation import calculate
+from .compute import calculate
 from .persistence import read_clean, read_months, read_layers, read_result, write_clean, write_result
 from .validation import check
 from .export import SOURCE, INDICATOR, documents

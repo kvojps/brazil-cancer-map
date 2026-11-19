@@ -13,7 +13,7 @@ O indicador publicado usa as **coortes agregadas oficiais** do Ministério ([ADR
 - **Desde 2020 vêm os microdados RNDS mensais**, com os códigos **67 (quadrivalente) e 93 (nonavalente)**. Os códigos históricos do TabNet são outros: 93 feminino e 94 masculino.
 - **A auditoria não reproduz os numeradores oficiais.** A carga de janeiro de 2020 a setembro de 2026, com 81 extratos, divergiu do painel oficial nos numeradores, com denominadores censitários idênticos. O dicionário não documenta o hash de `co_paciente` nem a qualificação interna da NT, e a deduplicação não foi ajustada para bater com amostras. Por isso o indicador usa os agregados oficiais.
 
-**Referências oficiais da publicação** (`pipeline/references/hpv.json`, extração de 05/11/2026, tabela `KeWXGFP`, ano 2025):
+**Números oficiais da publicação** (`pipeline/sources/hpv/official-figures.json`, extração de 05/11/2026, tabela `KeWXGFP`, ano 2025):
 
 | Município | Recorte | Numerador | Denominador | Cobertura |
 |---|---|---:|---:|---:|

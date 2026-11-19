@@ -1,6 +1,6 @@
 import json
 
-from pipeline.sources.mesh import build_mesh
+from pipeline.sources.mesh.source import build_mesh
 
 
 def square(x, y):

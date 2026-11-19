@@ -67,7 +67,7 @@ def test_hpv_official_calculation_intermediates_and_new_instances_match_frozen_b
 
 
 def test_painel_calculates_in_memory_without_the_original_state(tmp_path, monkeypatch):
-    from pipeline.sources.painel.calculation import calculate
+    from pipeline.sources.painel.compute import calculate
     from pipeline.sources.painel.persistence import read_clean, read_months
 
     _, clean, site = prepare(tmp_path, monkeypatch)
@@ -98,7 +98,7 @@ def test_hpv_calculates_in_memory_without_the_original_state(tmp_path):
     from copy import deepcopy
     from dataclasses import asdict
 
-    from pipeline.sources.hpv.calculation import calculate
+    from pipeline.sources.hpv.compute import calculate
     from pipeline.sources.hpv.persistence import read_census, read_official
 
     _, site, clean = prepared_source(tmp_path, last_year=2026)

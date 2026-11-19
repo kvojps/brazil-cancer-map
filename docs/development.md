@@ -77,7 +77,9 @@ e o [glossário](../GLOSSARY.md). Use inglês no código e nos commits e
 português nos documentos e nos textos públicos.
 
 Para trabalhar em uma `source`, comece pela [arquitetura da pipeline](architecture.md).
-Registre a nova unidade em [`pipeline/registry.py`](../pipeline/registry.py),
+Crie a unidade como pacote em `pipeline/sources/<nome>/`, com a classe em
+`source.py` reexportada pelo `__init__.py` e os dados versionados que só ela lê.
+Registre-a em [`pipeline/registry.py`](../pipeline/registry.py),
 com caminhos de estado, insumos e saída do mesmo snapshot. Cubra com fixtures o Contrato de dados e a preservação da
 saída vigente em caso de falha. Veja os exemplos de registro, validação e
 fixtures na [verificação da reorganização](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/pipeline-reorganization-verification.md).

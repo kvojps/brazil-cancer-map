@@ -22,7 +22,7 @@ from pipeline.steps.compute.status import classify_status
 from pipeline.steps.compute.trend import weighted_prevalence_trend
 
 CITY_UFS = 'SE PA MG RR MS MT PR SC CE GO PB AP AL AM RN TO RS RO PE AC RJ BA MA SP PI ES DF'.split()
-REFERENCE = Path(__file__).resolve().parents[1] / 'references' / 'vigitel.json'
+OFFICIAL_FIGURES = Path(__file__).resolve().parent / 'official-figures.json'
 SOURCE = {'name': 'Vigitel — Ministério da Saúde',
           'url': 'https://svs.aids.gov.br/daent/cgdnt/vigitel/',
           'conditions': 'Dados públicos; reutilização com citação da fonte.'}
@@ -34,7 +34,7 @@ class VigitelSource:
     def __init__(self, *, input_path: Path | None = None,
                  clean_dir: Path = CLEAN_DIR / 'vigitel',
                  site_data_dir: Path = SITE_DATA_DIR,
-                 reference_path: Path = REFERENCE) -> None:
+                 reference_path: Path = OFFICIAL_FIGURES) -> None:
         self._input = input_path or Path(os.environ.get('VIGITEL_INPUT_PATH', RAW_DIR / 'vigitel' / 'microdata.zip'))
         self._clean = clean_dir
         self._site = site_data_dir

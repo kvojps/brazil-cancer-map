@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from pipeline.sources.mesh import MeshSource, MeshValidationError
+from pipeline.sources.mesh import MeshSource
+from pipeline.sources.mesh.source import MeshValidationError
 
 PELOTAS = ("431440", "Pelotas", "RS", "430018", "Pelotas")
 CAPAO = ("430463", "Capão do Leão", "RS", "430018", "Pelotas")

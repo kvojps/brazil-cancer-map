@@ -16,7 +16,7 @@ from .models import (
     MonthKey,
     provisional_years,
 )
-from .calculation import PainelResult
+from .compute import PainelResult
 
 
 def write_clean(

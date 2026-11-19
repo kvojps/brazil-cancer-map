@@ -1,5 +1,5 @@
 from pipeline.sources.painel.models import CaseCounts, FirstTreatment, provisional_years
-from pipeline.sources.painel.acquisition import count_cases
+from pipeline.sources.painel.download import count_cases
 
 
 def record(cid="C50", year="2020", municipality="261160", treatment="2", days="+0030", month="03"):

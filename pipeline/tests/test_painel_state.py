@@ -134,7 +134,7 @@ def test_update_snapshot_isolates_treatment_pages_and_failure_preserves_previous
 
     def unavailable_ftp(directory):
         raise OSError('fixture: DATASUS is unavailable')
-    monkeypatch.setattr('pipeline.sources.painel.acquisition.list_ftp', unavailable_ftp)
+    monkeypatch.setattr('pipeline.sources.painel.download.list_ftp', unavailable_ftp)
     failed = tmp_path / 'failed'
     assert main(['update', '--source', 'painel', '--data-dir', str(proposal / 'dados'),
                  '--clean-dir', str(proposal / 'clean'), '--output', str(failed)], []) == 1
