@@ -86,7 +86,7 @@ for source in mesh popsvs painel cnes siscan siscan_cytopathology sim hpv inca v
 done
 ```
 
-Compare `site/public/dados/` com `"$WORK/reference"` por conteúdo JSON. A [prova da Versão de dados rastreável](data/traceable-version.md) registra a igualdade dos 48 arquivos após o recálculo de `data-2026-11-06` com os insumos externos fornecidos localmente. A falha temporal do HPV foi observada com relógio simulado.
+Compare `site/public/dados/` com `"$WORK/reference"` por conteúdo JSON. A [prova da Versão de dados rastreável](data/traceable-version.md) registra a igualdade dos 48 arquivos após o recálculo de `data-2026-11-06` com os insumos externos fornecidos localmente. A falha temporal do HPV foi observada com [relógio simulado](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-temporal-recalculation.md).
 
 ### Recálculo com o código atual
 

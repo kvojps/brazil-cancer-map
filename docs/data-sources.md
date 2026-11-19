@@ -111,7 +111,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
   - porcentagens entre 0 e 100;
   - toda UF com faixa de qualidade.
 - **Limiares operacionais:** 1% de diferença nos casos e 0,5 p.p. nas porcentagens por UF, porque o TabNet e o FTP se atualizam em dias diferentes.
-- **Alerta, que não bloqueia:** contagem nacional por mês e modalidade de primeiro tratamento, abaixo de 75% da mediana dos 12 meses anteriores, com mês ausente valendo zero e sem vigiar os anos provisórios. Hoje dispara 16 alertas, listados em [`data/painel-series-breaks.md`](data/painel-series-breaks.md#3-resultado-depois-das-decisões).
+- **Alerta, que não bloqueia:** contagem nacional por mês e modalidade de primeiro tratamento, abaixo de 75% da mediana dos 12 meses anteriores, com mês ausente valendo zero e sem vigiar os anos provisórios. Hoje dispara 16 alertas, listados em [`data/painel-series-breaks.md`](data/painel-series-breaks.md#resultado-depois-das-decisões).
 - **Resultado:** extração de 17/10/2026, contagens **exatas** nas 351 combinações UF × ano (27 UFs, 2014–2026), nas duas tabelas.
 - **Método e evidência:** [`/metodologia/#60-dias`](https://brazil-cancer-map.kvojps.workers.dev/metodologia/#60-dias), [`data/painel-series-breaks.md`](data/painel-series-breaks.md), [`data/quality-by-state.md`](data/quality-by-state.md).
 

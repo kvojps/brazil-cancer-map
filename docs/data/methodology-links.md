@@ -1,8 +1,14 @@
 # Conferência dos links da metodologia
 
-Data da conferência: **05/11/2026**. Escopo: links oficiais externos da página Como calculamos, incluindo arquivos FTP, documentos e páginas das fontes.
+> Leitura curta. A [versão completa](https://github.com/kvojps/brazil-cancer-map/blob/11fd03c47e1ce09b9a2ccb873ccc75da1ccb304f/docs/data/methodology-links.md), com a cobertura editorial dos nove itens da spec em cada Indicador, está no commit `11fd03c`.
 
-Consulta HTTP por GET com leitura inicial do corpo; FTP por abertura e leitura inicial. O resultado verifica acesso ao endereço, não valida clinicamente o conteúdo nem substitui a validação estatística. Consultas ao portal DATASUS, Vigitel, INCA Estimativa e ficha de mamografia também foram abertas pelo navegador de pesquisa.
+Sustenta a conferência dos links oficiais citada na página [Como calculamos](https://brazil-cancer-map.kvojps.workers.dev/metodologia/).
+
+**Data:** 05/11/2026.
+
+## Resultado
+
+**Dos 26 endereços oficiais, 23 abriram na consulta direta.** A ficha de mamografia do INCA de 2014 deu 404 e foi substituída na página pelo registro Ninho/INCA 17330 da mesma ficha. A página de malhas do IBGE deu 403 na consulta direta. A licença CC BY-SA 4.0 deu 403 na consulta direta, mas abriu pelo navegador de pesquisa. O painel HPV e sua nota técnica redirecionam para o InfoMS; os endereços oficiais estáveis foram mantidos, sem os parâmetros temporários de sessão.
 
 | Endereço consultado | Resultado |
 | --- | --- |
@@ -33,20 +39,8 @@ Consulta HTTP por GET com leitura inicial do corpo; FTP por abertura e leitura i
 | ftp://ftp.datasus.gov.br/dissemin/publicos/IBGE/POPSVS/ | FTP OK |
 | https://creativecommons.org/licenses/by-sa/4.0/deed.pt-br | HTTP 403 na consulta direta; conteúdo confirmado pelo navegador de pesquisa (título e condições CC BY-SA 4.0). |
 
-O painel HPV e sua nota técnica redirecionam para o InfoMS. O portal HPV retornou 403 no navegador de pesquisa, mas abriu com HTTP 200 na consulta direta. Mantidos os endereços oficiais estáveis, sem os parâmetros temporários de sessão.
+Os links do projeto (código, README e Releases) também abriram. `/releases/latest` apontava para `data-2026-11-05` na data da conferência.
 
-Os links do projeto (código, README e Releases) também abriram com HTTP 200. `/releases/latest` apontou para `data-2026-11-05`. Os links deste próprio documento e do histórico de commits são referências ao repositório, não fontes estatísticas.
+## Método
 
-## Cobertura editorial dos nove itens da spec
-
-Os itens 1–8 estão nas seções próprias de cada indicador; versões, agregados e revisões (item 9) têm também seção transversal explicitamente aplicável aos oito indicadores e contextos. Fontes e extrações são apresentadas a partir do manifesto atual.
-
-- Tratamento: nove itens na lista numerada, mais condições e citação.
-- CNES: fonte/competência/universo; habilitações/limpeza; fórmula de distância; ausência de taxa, janela de Tendência, mínimo e substituição regional; validação/limites; reprodução e histórico.
-- Mamografia e citopatológico: fontes/recortes; limpeza; fórmula/POPSVS; janela e congelamento; Tendência, mínimo e Situação; limites/validação; reprodução e histórico.
-- Mortalidade: fontes/recortes/limpeza; C55 e fallbacks; pesos Segi; janela/modelo/incerteza; mínimo e região; ausência de Situação; validações; reprodução e histórico.
-- HPV: fonte/coortes/extração no quadro transversal; limpeza/deduplicação; fórmula/Censo; dose única/provisórios; Situação/ausência de Tendência; mínimo/região; limites/validação; reprodução e histórico.
-- Tabagismo: fonte/extração/recortes; fórmula ponderada; ausências; desenho/IC; janela e lacuna 2022; classes e Situação invertida; ausência de mínimo municipal/região/faixas; validação, reprodução e revisão dos pesos.
-- INCA: edição/extração/recortes; transcrição e ausência de cálculo de taxa/pesos/denominador; ausência de série, Tendência, Situação e mínimo/região/faixas; validação/limites; reprodução e histórico.
-
-As medições de duração e disco da auditoria de microdados do HPV ficam como [registro histórico](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/hpv-benchmark.md). Sem workflow de microdados, não há medição pendente.
+HTTP por GET com leitura inicial do corpo e FTP por abertura e leitura inicial. Portal DATASUS, Vigitel, Estimativa INCA e ficha de mamografia também foram abertos pelo navegador de pesquisa. O resultado verifica o acesso ao endereço, sem validar clinicamente o conteúdo. Uma falha de acesso não comprova que a fonte deixou de existir.
