@@ -1,10 +1,17 @@
-import type { Address } from './address';
+import type { Address, View } from './address';
 
 /** Where the visitor was reading in each visualization. */
 export interface ViewContext { page: number; positions: [boolean, { page: number; table: number }][] }
 
-/** Swap the text alternative and renderer without remounting either or losing selection; returns how to restore a reading context. */
-export function mountVisualization(address: Address<{ view: ViewContext }>): (context: ViewContext | undefined) => void {
+export interface Visualization {
+  /** Show the map or its List, as the address now asks. */
+  show(view: View): void;
+  /** Bring back where the visitor was reading, before the entry's visualization is shown. */
+  restore(context: ViewContext | undefined): void;
+}
+
+/** Swap the text alternative and renderer without remounting either or losing selection. */
+export function mountVisualization(address: Address<{ view: ViewContext }>): Visualization {
   const controls = document.querySelector<HTMLElement>('.view-controls')!;
   const map = document.querySelector<HTMLElement>('[data-map-view]')!;
   const list = document.querySelector<HTMLElement>('.indicator-table')!;
@@ -13,13 +20,8 @@ export function mountVisualization(address: Address<{ view: ViewContext }>): (co
   const positions = new Map<boolean, { page: number; table: number }>();
   let restoring = false;
   address.registerContext('view', () => ({ page: window.scrollY, positions: [...positions] }));
-  const sync = () => {
-    const url = new URL(location.href);
-    const isList = url.searchParams.get('visualizacao') === 'lista';
-    if (!isList && url.searchParams.has('visualizacao')) {
-      url.searchParams.delete('visualizacao');
-      address.replaceVisit(history.state, url);
-    }
+  const show = (view: View) => {
+    const isList = view === 'list';
     const changed = activeList !== undefined && activeList !== isList;
     if (changed && !restoring) positions.set(activeList!, { page: window.scrollY, table: listScroll.scrollTop });
     activeList = isList;
@@ -37,23 +39,22 @@ export function mountVisualization(address: Address<{ view: ViewContext }>): (co
     });
     restoring = false;
   };
-  const choose = (view: string) => {
-    const url = new URL(location.href);
-    if (view === 'lista') url.searchParams.set('visualizacao', 'lista');
-    else url.searchParams.delete('visualizacao');
-    if (url.href !== location.href) address.pushVisit(history.state, url);
-    sync();
-    window.dispatchEvent(new Event('navigation-state-change'));
-  };
   controls.hidden = false;
-  for (const button of controls.querySelectorAll<HTMLButtonElement>('[data-view]')) button.onclick = () => choose(button.dataset.view!);
-  window.addEventListener('popstate', sync);
-  window.addEventListener('map-reset', sync);
-  sync();
-  return context => {
-    restoring = true;
-    positions.clear();
-    for (const [view, position] of context?.positions ?? []) positions.set(view, position);
-    requestAnimationFrame(() => window.scrollTo({ top: context?.page ?? 0, behavior: 'instant' }));
+  for (const button of controls.querySelectorAll<HTMLButtonElement>('[data-view]')) {
+    button.onclick = () => {
+      const view = button.dataset.view === 'lista' ? 'list' : 'map';
+      address.chooseView(view);
+      show(view);
+      window.dispatchEvent(new Event('navigation-state-change'));
+    };
+  }
+  return {
+    show,
+    restore(context) {
+      restoring = true;
+      positions.clear();
+      for (const [view, position] of context?.positions ?? []) positions.set(view, position);
+      requestAnimationFrame(() => window.scrollTo({ top: context?.page ?? 0, behavior: 'instant' }));
+    },
   };
 }

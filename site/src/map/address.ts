@@ -15,12 +15,29 @@ export interface AddressHistory {
   onPopState(listener: () => void): void;
 }
 
+/** The visualization of the home map: the map itself or its List. */
+export type View = 'map' | 'list';
+
+const VIEW_PARAM = 'visualizacao';
+
+/** The visualization a home map address asks for: anything but the List is the map. */
+export function viewOf(url: URL): View {
+  return url.searchParams.get(VIEW_PARAM) === 'lista' ? 'list' : 'map';
+}
+
+function withView(url: URL, view: View): URL {
+  if (view === 'list') url.searchParams.set(VIEW_PARAM, 'lista');
+  else url.searchParams.delete(VIEW_PARAM);
+  return url;
+}
+
 /** Why the home map is being shown again. */
 export type NavigationCause = 'initial' | 'back';
 
 export interface Navigation<Contexts> {
   readonly url: URL;
   readonly cause: NavigationCause;
+  readonly view: View;
   /** What each part left on this entry; absent on an entry this document has not left. */
   readonly context: Partial<Contexts>;
 }
@@ -30,6 +47,8 @@ export interface Address<Contexts = Record<string, unknown>> {
   registerContext<Name extends keyof Contexts & string>(name: Name, read: () => Contexts[Name]): void;
   /** The single handler of the home map: called now with `initial`, then on every navigation. */
   listen(handler: (navigation: Navigation<Contexts>) => void): void;
+  /** Show the map or its List: a new entry only when the address changes. */
+  chooseView(view: View): void;
   /** Provisional: a new entry, for the parts that do not yet ask the Address by domain commands. */
   pushVisit(state: EntryState, url: string | URL): void;
   /** Provisional: the current entry rewritten, keeping its reading context. */
@@ -55,13 +74,21 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     sequence = Math.max(sequence, visit);
     return visit;
   };
+  const loaded = new URL(history.url);
+  if (loaded.searchParams.has(VIEW_PARAM) && viewOf(loaded) === 'map') history.replace(history.state, withView(loaded, 'map'));
   sequence = visitOf(history.state) ?? 0;
   let active = enter();
   const leave = () => {
     contexts.set(active, Object.fromEntries(readers.map(([name, read]) => [name, read()])) as Partial<Contexts>);
   };
   const deliver = (cause: NavigationCause) => {
-    handler?.({ url: new URL(history.url), cause, context: contexts.get(active) ?? {} });
+    const url = new URL(history.url);
+    handler?.({ url, cause, view: viewOf(url), context: contexts.get(active) ?? {} });
+  };
+  const push = (state: EntryState, url: string | URL) => {
+    leave();
+    active = ++sequence;
+    history.push({ ...state, [VISIT]: active }, url);
   };
   history.onPopState(() => {
     leave();
@@ -76,11 +103,11 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
       handler = next;
       deliver('initial');
     },
-    pushVisit(state, url) {
-      leave();
-      active = ++sequence;
-      history.push({ ...state, [VISIT]: active }, url);
+    chooseView(view) {
+      const url = new URL(history.url);
+      if (viewOf(url) !== view) push(history.state, withView(url, view));
     },
+    pushVisit: push,
     replaceVisit(state, url) {
       history.replace({ ...state, [VISIT]: active }, url);
     },

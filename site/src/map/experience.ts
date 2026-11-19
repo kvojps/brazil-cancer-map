@@ -1,4 +1,4 @@
-import { browserHistory, createAddress } from './address';
+import { browserHistory, createAddress, viewOf } from './address';
 import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization, type ViewContext } from './view';
@@ -78,12 +78,13 @@ if (container && status) {
   const address = createAddress<ReadingContexts>(browserHistory());
   mountSeriesCharts();
   mountMobileLayout();
-  const restoreView = mountVisualization(address);
+  const visualization = mountVisualization(address);
   let restoreList = (_context: ListContext | undefined) => {};
   let restoreMunicipality = (_context: MunicipalityContext | undefined) => {};
-  address.listen(({ cause, context }) => {
+  address.listen(({ cause, view, context }) => {
+    if (cause === 'back') visualization.restore(context.view);
+    visualization.show(view);
     if (cause !== 'back') return;
-    restoreView(context.view);
     restoreList(context.list);
     restoreMunicipality(context.municipality);
   });
@@ -197,6 +198,7 @@ if (container && status) {
         // The brand has a native destination too; only a ready dashboard handles it in place.
         if (link.href !== location.href) address.pushVisit(null, link.href);
         window.dispatchEvent(new Event('map-reset'));
+        visualization.show(viewOf(new URL(location.href)));
         void selectState(readMapState(new URLSearchParams(location.search)), '', false);
         camera.resetCountry();
         link.focus({ preventScroll: true });
