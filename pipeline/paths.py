@@ -13,3 +13,6 @@ CLEAN_DIR = REPO_DIR / "data" / "clean"
 
 SITE_DATA_DIR = REPO_DIR / "site" / "public" / "dados"
 """The data contract read by the site (spec, section 15)."""
+
+MAPSHAPER = PIPELINE_DIR / "node_modules" / ".bin" / "mapshaper"
+"""Mapshaper binary installed by `npm ci --prefix pipeline`."""

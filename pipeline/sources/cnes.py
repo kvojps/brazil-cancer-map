@@ -17,9 +17,8 @@ import dbfread
 import duckdb
 
 from pipeline.download import fetch, list_ftp
-from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
+from pipeline.paths import CLEAN_DIR, MAPSHAPER, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
-from pipeline.sources.mesh import MAPSHAPER
 
 FTP_ROOT = "ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/"
 SOURCE = {"name": "Ministério da Saúde/DATASUS — CNES", "url": FTP_ROOT,

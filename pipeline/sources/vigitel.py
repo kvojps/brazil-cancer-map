@@ -17,7 +17,7 @@ from scipy import stats
 
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import MANIFEST, publish_together, updated_manifest
-from pipeline.sources.inca import CAPITALS
+from pipeline.territory import CAPITALS
 from pipeline.calculation.status import classify_status
 from pipeline.calculation.trend import weighted_prevalence_trend
 

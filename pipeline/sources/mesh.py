@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from pipeline.download import Transport, fetch
-from pipeline.paths import CLEAN_DIR, PIPELINE_DIR, RAW_DIR, SITE_DATA_DIR
+from pipeline.paths import CLEAN_DIR, MAPSHAPER, RAW_DIR, SITE_DATA_DIR
 from pipeline.publish import publish_together
 
 MESH_URL = (
@@ -33,8 +33,6 @@ SOURCE = {
 
 MAX_GZIP_BYTES = 1_000_000
 """First-visit budget for the geometry (spec, section 13: ~0.6–0.9 MB gzip)."""
-
-MAPSHAPER = PIPELINE_DIR / "node_modules" / ".bin" / "mapshaper"
 
 SIMPLIFY = "1.5%"
 """Share of vertices kept. 1.5% lands at ~0.7 MB gzip (spec, section 13: 1–2%)."""
