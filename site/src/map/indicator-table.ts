@@ -1,5 +1,5 @@
 import { navigationUrl } from "../shared/navigation.ts";
-import { keepVisitContext } from './visit-history.ts';
+import type { Address } from './address.ts';
 import { municipalityPath } from "../profile/profile.ts";
 import { classOf, readingMode, showsBandC } from "../profile/panel-result.ts";
 import {
@@ -53,11 +53,20 @@ export function listLede(
 
 const TREATMENT_COLUMNS = new Set(["missing", "quality"]);
 
+/** Where the visitor was reading in the List. */
+export interface ListContext { uf: string; open: string[]; top: number }
+
+export interface IndicatorTable {
+  /** Shows a layer, or no results while it loads. */
+  show(layer: IndicatorLayer | undefined, mode: MapMode): void;
+  restoreReading(context: ListContext | undefined): void;
+}
+
 /**
  * Set up the table that mirrors the map: one row per municipality, ordered by UF
  * and name (never by value: the map is not a ranking). A UF filter keeps the
  * 5,570 rows navigable by keyboard. Returns how to fill it with a layer, called
- * again whenever the map switches layers.
+ * again whenever the map switches layers, and how to restore a reading context.
  *
  * Below 640 px of its own width the table is laid out as rows that open. CSS then
  * drops the table semantics, so roles and column indexes are explicit: a closed
@@ -66,7 +75,8 @@ const TREATMENT_COLUMNS = new Set(["missing", "quality"]);
 export function mountIndicatorTable(
   root: HTMLElement,
   listing: MunicipalityListing,
-): (layer: IndicatorLayer | undefined, mode: MapMode) => void {
+  address: Address<{ list: ListContext }>,
+): IndicatorTable {
   const body = root.querySelector("tbody")!;
   const filter = root.querySelector<HTMLSelectElement>("select")!;
   const count = root.querySelector<HTMLElement>(".table-count")!;
@@ -86,15 +96,7 @@ export function mountIndicatorTable(
   let lastTop = scroll.scrollTop;
   scroll.addEventListener('scroll', () => { if (!root.hidden) lastTop = scroll.scrollTop; }, { passive: true });
   let restoredTop: number | undefined;
-  keepVisitContext(() => ({ uf: filter.value, open: [...open], top: root.hidden ? lastTop : scroll.scrollTop }), context => {
-    if (!context) return;
-    filter.value = context.uf;
-    open.clear();
-    for (const code of context.open) open.add(code);
-    lastTop = restoredTop = context.top;
-    // Let URL restoration choose the layer and visualization before rebuilding rows.
-    queueMicrotask(render);
-  });
+  address.registerContext('list', () => ({ uf: filter.value, open: [...open], top: root.hidden ? lastTop : scroll.scrollTop }));
   body.addEventListener("click", (event) => {
     const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>("[data-row-toggle]") : null;
     if (!button) return;
@@ -175,7 +177,16 @@ export function mountIndicatorTable(
   filter.addEventListener("change", render);
   new MutationObserver(render).observe(root, { attributes: true, attributeFilter: ['hidden'] });
 
-  return (layer, mode) => {
+  const restoreReading = (context: ListContext | undefined) => {
+    if (!context) return;
+    filter.value = context.uf;
+    open.clear();
+    for (const code of context.open) open.add(code);
+    lastTop = restoredTop = context.top;
+    // Let URL restoration choose the layer and visualization before rebuilding rows.
+    queueMicrotask(render);
+  };
+  const show = (layer: IndicatorLayer | undefined, mode: MapMode) => {
     current = layer;
     currentMode = mode;
     root.querySelector<HTMLElement>('.scroll')!.hidden = !layer;
@@ -210,6 +221,7 @@ export function mountIndicatorTable(
     root.querySelector(".status-note")!.textContent = `${noStatusNote(layer)} `;
     render();
   };
+  return { show, restoreReading };
 }
 
 /** The class of the map's reading: the swatch of the map, the text and the band C mark. */

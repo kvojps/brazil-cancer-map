@@ -1,6 +1,10 @@
-import { keepVisitContext, pushVisit } from './visit-history';
-/** Swap the text alternative and renderer without remounting either or losing selection. */
-export function mountVisualization(): void {
+import type { Address } from './address';
+
+/** Where the visitor was reading in each visualization. */
+export interface ViewContext { page: number; positions: [boolean, { page: number; table: number }][] }
+
+/** Swap the text alternative and renderer without remounting either or losing selection; returns how to restore a reading context. */
+export function mountVisualization(address: Address<{ view: ViewContext }>): (context: ViewContext | undefined) => void {
   const controls = document.querySelector<HTMLElement>('.view-controls')!;
   const map = document.querySelector<HTMLElement>('[data-map-view]')!;
   const list = document.querySelector<HTMLElement>('.indicator-table')!;
@@ -8,18 +12,13 @@ export function mountVisualization(): void {
   let activeList: boolean | undefined;
   const positions = new Map<boolean, { page: number; table: number }>();
   let restoring = false;
-  keepVisitContext(() => ({ page: window.scrollY, positions: [...positions] }), context => {
-    restoring = true;
-    positions.clear();
-    for (const [view, position] of context?.positions ?? []) positions.set(view, position);
-    requestAnimationFrame(() => window.scrollTo({ top: context?.page ?? 0, behavior: 'instant' }));
-  });
+  address.registerContext('view', () => ({ page: window.scrollY, positions: [...positions] }));
   const sync = () => {
     const url = new URL(location.href);
     const isList = url.searchParams.get('visualizacao') === 'lista';
     if (!isList && url.searchParams.has('visualizacao')) {
       url.searchParams.delete('visualizacao');
-      history.replaceState(history.state, '', url);
+      address.replaceVisit(history.state, url);
     }
     const changed = activeList !== undefined && activeList !== isList;
     if (changed && !restoring) positions.set(activeList!, { page: window.scrollY, table: listScroll.scrollTop });
@@ -42,7 +41,7 @@ export function mountVisualization(): void {
     const url = new URL(location.href);
     if (view === 'lista') url.searchParams.set('visualizacao', 'lista');
     else url.searchParams.delete('visualizacao');
-    if (url.href !== location.href) pushVisit(history.state, url);
+    if (url.href !== location.href) address.pushVisit(history.state, url);
     sync();
     window.dispatchEvent(new Event('navigation-state-change'));
   };
@@ -51,4 +50,10 @@ export function mountVisualization(): void {
   window.addEventListener('popstate', sync);
   window.addEventListener('map-reset', sync);
   sync();
+  return context => {
+    restoring = true;
+    positions.clear();
+    for (const [view, position] of context?.positions ?? []) positions.set(view, position);
+    requestAnimationFrame(() => window.scrollTo({ top: context?.page ?? 0, behavior: 'instant' }));
+  };
 }

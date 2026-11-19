@@ -1,9 +1,9 @@
-import { pushVisit } from './visit-history';
+import { browserHistory, createAddress } from './address';
 import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
-import { mountVisualization } from './view';
-import { mountMunicipalityNavigation } from "../map/navigation-view";
-import { mountIndicatorTable } from "../map/indicator-table";
+import { mountVisualization, type ViewContext } from './view';
+import { mountMunicipalityNavigation, type MunicipalityContext } from "../map/navigation-view";
+import { mountIndicatorTable, type ListContext } from "../map/indicator-table";
 import { updateLegend, updateLegendCorner } from '../map/legend';
 import { createMapCamera } from './camera';
 import {
@@ -71,15 +71,27 @@ function showNotes(layer: IndicatorLayer): void {
   );
 }
 
+/** The reading context each part of the home map leaves on a history entry. */
+interface ReadingContexts { view: ViewContext; list: ListContext; municipality: MunicipalityContext }
+
 if (container && status) {
+  const address = createAddress<ReadingContexts>(browserHistory());
   mountSeriesCharts();
   mountMobileLayout();
-  mountVisualization();
+  const restoreView = mountVisualization(address);
+  let restoreList = (_context: ListContext | undefined) => {};
+  let restoreMunicipality = (_context: MunicipalityContext | undefined) => {};
+  address.listen(({ cause, context }) => {
+    if (cause !== 'back') return;
+    restoreView(context.view);
+    restoreList(context.list);
+    restoreMunicipality(context.municipality);
+  });
   const { meshUrl, listingUrl } = container.dataset;
   const initialUrl = new URL(location.href);
   const anchorType = initialUrl.hash.startsWith('#tipo-') ? initialUrl.hash.slice(6) : '';
   if (Object.hasOwn(CANCER_TYPES, anchorType)) initialUrl.searchParams.set('tipo', anchorType);
-  history.replaceState(history.state, '', initialUrl);
+  address.replaceVisit(history.state, initialUrl);
   const initial = readMapState(new URLSearchParams(location.search));
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
   const retry = document.querySelector<HTMLButtonElement>('#retry-data')!;
@@ -95,7 +107,8 @@ if (container && status) {
       let mapState = initial;
       // The camera keeps the intentions until a map is attached to it.
       const camera = createMapCamera();
-      const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
+      const indicatorTable = table ? mountIndicatorTable(table, listing, address) : undefined;
+      if (indicatorTable) restoreList = indicatorTable.restoreReading;
       const notice = document.querySelector<HTMLElement>("#map-selection-notice");
       let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
       let current = initial;
@@ -139,10 +152,10 @@ if (container && status) {
         const url = new URL(location.href);
         if (url.hash.startsWith('#tipo-')) url.hash = '';
         url.search = writeMapState(state, url.searchParams).toString();
-        if (push) pushVisit(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
-        else history.replaceState(history.state, "", url);
+        if (push) address.pushVisit(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
+        else address.replaceVisit(history.state, url);
         window.dispatchEvent(new Event('navigation-state-change'));
-        showInTable(shown, state.mode);
+        indicatorTable?.show(shown, state.mode);
         updatePreview(shown, state);
       };
       const showAvailability = (available: boolean) => {
@@ -172,7 +185,9 @@ if (container && status) {
           retry.hidden = false;
         }
       };
-      updatePreview = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
+      const municipalityNavigation = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""), address);
+      updatePreview = municipalityNavigation.update;
+      restoreMunicipality = municipalityNavigation.restoreReading;
       void selectState(initial, '', false);
       retry.onclick = () => { void selectState(current, '', false); };
       document.querySelector<HTMLAnchorElement>('.identity')!.addEventListener('click', event => {
@@ -180,7 +195,7 @@ if (container && status) {
         event.preventDefault();
         const link = event.currentTarget as HTMLAnchorElement;
         // The brand has a native destination too; only a ready dashboard handles it in place.
-        if (link.href !== location.href) pushVisit(null, link.href);
+        if (link.href !== location.href) address.pushVisit(null, link.href);
         window.dispatchEvent(new Event('map-reset'));
         void selectState(readMapState(new URLSearchParams(location.search)), '', false);
         camera.resetCountry();
