@@ -37,6 +37,34 @@ snapshot. Se uma etapa falha, o CLI pula as etapas restantes daquela
 Para preparar uma atualização isolada dos dados vigentes, veja o
 [guia do mantenedor](data-update.md).
 
+## `source`s com fluxo parcial
+
+Todas as `source`s implementam as cinco etapas, mas nem todas percorrem o
+fluxo do diagrama.
+
+**Dependem de ação fora do pipeline.** `run` e `update` não bastam:
+
+- [`vigitel`](data-sources.md#vigitel): o `download` não baixa nada. Ele só
+  confere o arquivo local, obtido antes com `./download-vigitel.sh` ou
+  indicado em `VIGITEL_INPUT_PATH`. Sem o arquivo, a `source` falha.
+- [`inca`](data-sources.md#inca): a entrada é um JSON transcrito à mão e
+  versionado. `download`, `clean` e `compute` só validam esse JSON, e
+  `export` o publica. Uma nova edição exige nova transcrição e revisão do
+  pipeline.
+
+**Têm etapas sem efeito.** Rodam no fluxo normal, mas alguma etapa não
+faz nada:
+
+| `source` | Etapa sem efeito | Motivo |
+| --- | --- | --- |
+| [`hpv`](data-sources.md#hpv) | `clean` | O `download` já grava as coortes oficiais e o Censo padronizados. |
+| [`mesh`](data-sources.md#mesh) | `compute` | A malha não tem estatística. |
+| [`popsvs`](data-sources.md#popsvs) | `compute` e `export` | A população é insumo do `compute` de `siscan`, `siscan_cytopathology` e `sim`. Não vira Indicador no site, e o `export` só revalida. |
+
+**Fora de `run` e `update`.** A auditoria do HPV com microdados não é uma
+`source` registrada. Ela roda só pelo comando `hpv-audit`, como descrito em
+[Fontes de dados](data-sources.md#hpv).
+
 O [Contrato de dados](spec.md#15-contrato-de-dados) é a fronteira entre
 pipeline e site. O Astro usa os JSON commitados para exibir valores, classes
 de Tendência, Situação, origem na cascata e faixas A/B/C já calculados.

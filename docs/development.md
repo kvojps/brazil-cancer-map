@@ -39,8 +39,11 @@ uv run python -m pipeline run
 ```
 
 Esse comando executa todas as etapas de cada `source` registrada, da aquisição
-à exportação dos JSON em `site/public/dados/`. Para preparar uma proposta
-isolada, use [`update`](data-update.md).
+à exportação dos JSON em `site/public/dados/`. Há exceções: `vigitel` exige
+o arquivo local obtido antes com `./download-vigitel.sh` ou indicado em
+`VIGITEL_INPUT_PATH`, e `inca` publica a edição transcrita e versionada, sem
+adquirir uma nova. Veja as [`source`s com fluxo parcial](architecture.md#sources-com-fluxo-parcial).
+Para preparar uma proposta isolada, use [`update`](data-update.md).
 
 | Comando | Quando usar |
 | --- | --- |
