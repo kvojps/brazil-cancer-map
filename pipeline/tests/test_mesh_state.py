@@ -9,7 +9,7 @@ import tarfile
 import pytest
 
 from pipeline.cli import main
-from pipeline.sources import create_sources
+from pipeline.registry import create_sources
 from pipeline.sources.mesh import MeshSource
 
 FIXTURES = Path(__file__).parent / 'fixtures'

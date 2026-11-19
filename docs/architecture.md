@@ -10,7 +10,7 @@ Na raiz do repositório, execute a pipeline completa com
 mostra os pré-requisitos e como listar ou selecionar `source`s e etapas.
 
 A entrada [`python -m pipeline`](../pipeline/__main__.py)
-passa o [registro de `source`s](../pipeline/sources/__init__.py) ao
+passa o [registro de `source`s](../pipeline/registry.py) ao
 [CLI](../pipeline/cli.py), que executa as etapas do
 [protocolo `Source`](../pipeline/source.py).
 

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pipeline.source import STEPS
-from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition, create_sources, validate_registry
+from pipeline.registry import SOURCE_DEFINITIONS, SourceDefinition, create_sources, validate_registry
 from pipeline.operations.update_plan import plan_update
 
 

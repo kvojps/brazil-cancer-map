@@ -1,6 +1,6 @@
 """Pure update planning returns ordered acceptance groups without construction."""
 
-from pipeline.sources import SOURCE_DEFINITIONS, SourceDefinition
+from pipeline.registry import SOURCE_DEFINITIONS, SourceDefinition
 
 
 def test_population_and_panel_plan_without_constructing_sources():
@@ -45,7 +45,7 @@ def test_mesh_includes_future_entries_in_registry_order():
 
 
 def test_expansion_is_transitive_and_acceptance_only_joins_selected_participants():
-    from pipeline.sources import SourceInput
+    from pipeline.registry import SourceInput
     from pipeline.operations.update_plan import plan_update
 
     registry = (
@@ -68,7 +68,7 @@ def test_expansion_is_transitive_and_acceptance_only_joins_selected_participants
 def test_invalid_selection_and_registry_are_rejected_without_construction():
     import pytest
 
-    from pipeline.sources import SourceInput
+    from pipeline.registry import SourceInput
     from pipeline.operations.update_plan import plan_update
 
     for selected in ([], ['missing']):

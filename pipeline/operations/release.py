@@ -161,7 +161,7 @@ def export_state(directory: Path, output: Path) -> list[Path]:
 def restore_state(assets: Path, directory: Path) -> None:
     """Restore a complete state set into a new directory after checking archive paths."""
     import tarfile
-    from pipeline.sources import create_sources
+    from pipeline.registry import create_sources
 
     files = sorted(assets.glob('state-*.tar.gz'))
     if not files or directory.exists():

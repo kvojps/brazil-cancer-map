@@ -6,7 +6,7 @@ import json
 import pytest
 
 from pipeline.cli import main
-from pipeline.sources import create_sources
+from pipeline.registry import create_sources
 from pipeline.tests.test_cli import FakeSource
 
 NAMES = ['mesh', 'popsvs', 'painel', 'cnes', 'siscan',

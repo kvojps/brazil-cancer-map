@@ -11,7 +11,7 @@ Referência por `source` e por Fonte: insumos, pré-requisitos, calendário, end
 
 ## Fonte e `source`
 
-Uma Fonte pode alimentar mais de uma `source`, e nem toda `source` gera Indicador. A ordem é a do registro em `pipeline/sources/__init__.py`.
+Uma Fonte pode alimentar mais de uma `source`, e nem toda `source` gera Indicador. A ordem é a do registro em `pipeline/registry.py`.
 
 | `source` | Fonte | O que gera | Indicador ou uso |
 |---|---|---|---|

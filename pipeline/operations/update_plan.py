@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 
-from pipeline.sources import SourceDefinition, validate_registry
+from pipeline.registry import SourceDefinition, validate_registry
 
 
 type UpdatePlan = list[list[str]]

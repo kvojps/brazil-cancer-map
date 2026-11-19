@@ -2,7 +2,7 @@
 
 import pytest
 
-from pipeline.sources import SourceDefinition, SourceInput, create_sources
+from pipeline.registry import SourceDefinition, SourceInput, create_sources
 from pipeline.tests.test_cli import FakeSource
 
 

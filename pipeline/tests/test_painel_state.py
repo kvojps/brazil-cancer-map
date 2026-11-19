@@ -10,7 +10,7 @@ import tarfile
 import pytest
 
 from pipeline.cli import main
-from pipeline.sources import create_sources
+from pipeline.registry import create_sources
 from pipeline.sources.painel import PainelSource
 from pipeline.tests.test_painel_clean import record
 from pipeline.tests.test_painel_validate import tabnet_page
