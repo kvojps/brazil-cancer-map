@@ -84,8 +84,8 @@ if (container && status) {
   let arrivalAnchor = '';
   let applyMapState = (_navigation: Navigation<ReadingContexts>) => {};
   let restoreList = (_context: ListContext | undefined) => {};
-  let restoreMunicipality = (_context: MunicipalityContext | undefined) => {};
-  // The parts are applied in this order: map state, visualization, then each reading context.
+  let restoreMunicipality = (_context: MunicipalityContext | undefined, _anchor: string) => {};
+  // The parts are applied in this order: map state (which the selected municipality still follows), visualization, the List, then the Meu município details and reading.
   address.listen(navigation => {
     const { cause, view, context } = navigation;
     requested = navigation.mapState;
@@ -93,9 +93,9 @@ if (container && status) {
     applyMapState(navigation);
     if (cause === 'back') visualization.restore(context.view);
     visualization.show(view);
-    if (cause !== 'back') return;
+    if (cause === 'initial') return;
     restoreList(context.list);
-    restoreMunicipality(context.municipality);
+    restoreMunicipality(context.municipality, navigation.anchor);
   });
   const { meshUrl, listingUrl } = container.dataset;
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;

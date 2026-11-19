@@ -25,7 +25,8 @@ export function municipalityFromUrl(places: Municipality[], url: URL): Municipal
 export function createMunicipalityNavigation<T>(options: {
   places: Municipality[];
   getUrl(): URL;
-  setUrl(url: URL): void;
+  /** Put the selected municipality, or Brazil, on the address. */
+  setPlace(place: Municipality | undefined): void;
   focus(place: Municipality): void;
   load(place: Municipality): Promise<T>;
   show(content: T): void;
@@ -35,13 +36,7 @@ export function createMunicipalityNavigation<T>(options: {
   return {
     async select(place: Municipality, push = true) {
       const pending = ++request;
-      if (push) {
-        const url = options.getUrl();
-        url.pathname = municipalityPath(place);
-        url.searchParams.delete('municipio');
-        url.hash = '';
-        options.setUrl(url);
-      }
+      if (push) options.setPlace(place);
       options.focus(place);
       try {
         const content = await options.load(place);
@@ -52,13 +47,7 @@ export function createMunicipalityNavigation<T>(options: {
     },
     close(push = true) {
       ++request;
-      if (push) {
-        const url = options.getUrl();
-        url.pathname = '/';
-        url.searchParams.delete('municipio');
-        url.hash = '';
-        options.setUrl(url);
-      }
+      if (push) options.setPlace(undefined);
       options.clear();
     },
     restore() {

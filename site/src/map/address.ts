@@ -14,6 +14,7 @@ export interface AddressHistory {
   readonly state: EntryState;
   push(state: EntryState, url: string | URL): void;
   replace(state: EntryState, url: string | URL): void;
+  back(): void;
   /** Called when the visitor moves to another entry: Back, Forward or a hash navigation. */
   onPopState(listener: () => void): void;
 }
@@ -66,6 +67,28 @@ function normalized(url: URL): URL {
   return next;
 }
 
+/** A scroll position of the page. */
+export interface Position { readonly left: number; readonly top: number }
+
+/** Where the visitor was exploring the map when the entry's municipality was selected. */
+const EXPLORATION = 'municipalExploration';
+/** The municipal path whose details the entry shows open. */
+const DETAILS = 'municipalDetails';
+/** Whether opening the details created the entry, so closing them is going back. */
+const BY_OPENING = 'detailsEntry';
+
+const MUNICIPAL_PATH = '/municipio/';
+/** The query that named the municipality before the municipal paths of ADR-0010. */
+const LEGACY_MUNICIPALITY = 'municipio';
+
+/** The address of a municipality's query, or of Brazil when `path` is `/`: the hash and the legacy `?municipio=` go away. */
+function atMunicipality(url: URL, path: string): URL {
+  url.pathname = path;
+  url.searchParams.delete(LEGACY_MUNICIPALITY);
+  url.hash = '';
+  return url;
+}
+
 /** Why the home map is being shown again. */
 export type NavigationCause = 'initial' | 'back' | 'hash' | 'reset';
 
@@ -74,8 +97,12 @@ export interface Navigation<Contexts> {
   readonly cause: NavigationCause;
   readonly view: View;
   readonly mapState: MapState;
-  /** The anchor without `#`: on load, the one the visitor arrived with, even a `#tipo-` the address has dropped. */
+  /** The anchor without `#`: on load, the one the visitor arrived with, even a `#tipo-` the address has dropped; none on an entry whose reading context comes back. */
   readonly anchor: string;
+  /** Where the visitor was exploring the map before the municipality on this entry was selected. */
+  readonly exploration: Position | undefined;
+  /** Whether the municipality's details are open on this entry. */
+  readonly detailsOpen: boolean;
   /** What each part left on this entry; absent on an entry this document has not left. */
   readonly context: Partial<Contexts>;
 }
@@ -97,15 +124,34 @@ export interface Address<Contexts = Record<string, unknown>> {
   chooseView(view: View): void;
   /** Show another indicator, cancer type or mode: a new entry, which keeps the details open but was not created by opening them. */
   setMapState(state: MapState): void;
+  /** Show a municipality's query at its `path`: a new entry, which remembers where the visitor was exploring the map. */
+  selectMunicipality(path: string, exploration: Position): void;
+  /** Back to Brazil: a new entry, keeping the map state and the visualization. */
+  closeMunicipality(): void;
+  /** Whether the municipality's details are open on the current entry. */
+  readonly detailsOpen: boolean;
+  /** Where the visitor was exploring the map behind the current entry's municipality. */
+  readonly exploration: Position | undefined;
+  /** Open the municipality's details: a new entry, created by the opening; the exploration stays on the entry left behind. */
+  openDetails(): void;
+  /** Open the details on the current entry, as a link with an Eixo anchor arrives: no entry is added. */
+  openDetailsInPlace(): void;
+  /** Close the details: Back when opening them created the entry, otherwise the entry rewritten without them nor its anchor. True when they closed on this entry; after Back, the navigation closes them. */
+  closeDetails(): boolean;
+  /** Arrive at an Eixo anchor of the same municipality: the entry is rewritten, so Back still leaves it as a whole. */
+  followAnchor(anchor: string): void;
+  /** Turn a legacy `?municipio=<code>` into the municipal path `pathOf` gives for that code, rewriting the entry; a municipal path already on the address wins. */
+  convertLegacyMunicipality(pathOf: (code: string) => string | undefined): void;
   /** Back to the default home map at `home`: a new entry only when the address changes, delivered with no reading context. */
   reset(home: string | URL): void;
-  /** Provisional: a new entry, for the parts that do not yet ask the Address by domain commands. */
-  pushVisit(state: EntryState, url: string | URL): void;
-  /** Provisional: the current entry rewritten, keeping its reading context. */
-  replaceVisit(state: EntryState, url: string | URL): void;
 }
 
 const VISIT = 'visitEntry';
+
+function positionOf(state: EntryState): Position | undefined {
+  const position = state?.[EXPLORATION] as Partial<Position> | undefined;
+  return typeof position?.left === 'number' && typeof position.top === 'number' ? { left: position.left, top: position.top } : undefined;
+}
 
 export function createAddress<Contexts = Record<string, unknown>>(history: AddressHistory): Address<Contexts> {
   const readers: [string, () => unknown][] = [];
@@ -138,10 +184,15 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
   };
   const deliver = (cause: NavigationCause) => {
     const url = new URL(history.url);
-    handler?.({ url, cause, view: viewOf(url), mapState: mapStateOf(url), anchor: cause === 'initial' ? arrival : url.hash.slice(1),
-      context: cause === 'reset' ? {} : contexts.get(active) ?? {} });
+    const context = cause === 'reset' ? undefined : contexts.get(active);
+    // Where the visitor left this entry wins over the anchor of the link that first brought them here.
+    const anchor = cause === 'initial' ? arrival : context ? '' : url.hash.slice(1);
+    handler?.({ url, cause, view: viewOf(url), mapState: mapStateOf(url), anchor,
+      exploration: positionOf(history.state), detailsOpen: detailsOpen(), context: context ?? {} });
     signal(cause);
   };
+  const detailsOpen = () => history.state?.[DETAILS] === new URL(history.url).pathname;
+  const rewrite = (state: EntryState, url: string | URL) => history.replace({ ...state, [VISIT]: active }, url);
   const push = (state: EntryState, url: string | URL) => {
     leave();
     active = ++sequence;
@@ -156,6 +207,8 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     deliver(typed ? 'hash' : 'back');
   });
   return {
+    get detailsOpen() { return detailsOpen(); },
+    get exploration() { return positionOf(history.state); },
     registerContext(name, read) {
       readers.push([name, read]);
     },
@@ -175,21 +228,60 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     setMapState(state) {
       const url = withMapState(new URL(history.url), state);
       if (url.href === history.url) return;
-      push(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
+      push(history.state?.[DETAILS] ? { ...history.state, [BY_OPENING]: false } : history.state, url);
+      signal('command');
+    },
+    selectMunicipality(path, exploration) {
+      push({ [EXPLORATION]: exploration }, atMunicipality(new URL(history.url), path));
+      signal('command');
+    },
+    closeMunicipality() {
+      push(null, atMunicipality(new URL(history.url), '/'));
+      signal('command');
+    },
+    openDetails() {
+      if (detailsOpen()) return;
+      const exploration = positionOf(history.state) ?? { left: 0, top: 0 };
+      rewrite({ ...history.state, [EXPLORATION]: exploration }, history.url);
+      push({ ...history.state, [DETAILS]: new URL(history.url).pathname, [BY_OPENING]: true }, history.url);
+      signal('command');
+    },
+    openDetailsInPlace() {
+      if (detailsOpen()) return;
+      rewrite({ ...history.state, [DETAILS]: new URL(history.url).pathname, [BY_OPENING]: false,
+        [EXPLORATION]: positionOf(history.state) ?? { left: 0, top: 0 } }, history.url);
+      signal('command');
+    },
+    closeDetails() {
+      if (detailsOpen() && history.state?.[BY_OPENING]) {
+        history.back();
+        return false;
+      }
+      const url = new URL(history.url);
+      url.hash = '';
+      rewrite({ ...history.state, [DETAILS]: undefined, [BY_OPENING]: undefined }, url);
+      signal('command');
+      return true;
+    },
+    followAnchor(anchor) {
+      const url = new URL(history.url);
+      url.hash = anchor;
+      rewrite(history.state, url);
+      signal('command');
+    },
+    convertLegacyMunicipality(pathOf) {
+      const url = new URL(history.url);
+      const code = url.searchParams.get(LEGACY_MUNICIPALITY);
+      if (code === null) return;
+      url.searchParams.delete(LEGACY_MUNICIPALITY);
+      if (!url.pathname.startsWith(MUNICIPAL_PATH)) url.pathname = pathOf(code) ?? url.pathname;
+      rewrite(history.state, url);
       signal('command');
     },
     reset(home) {
       const url = new URL(home, history.url);
       if (url.href !== history.url) push(null, url);
       deliver('reset');
-    },
-    pushVisit(state, url) {
-      push(state, url);
-      signal('command');
-    },
-    replaceVisit(state, url) {
-      history.replace({ ...state, [VISIT]: active }, url);
-      signal('command');
     },
   };
 }
@@ -215,6 +307,7 @@ export function browserHistory(): AddressHistory {
     get state() { return history.state as EntryState; },
     push(state, url) { history.pushState(state, '', url); },
     replace(state, url) { history.replaceState(state, '', url); },
+    back() { history.back(); },
     onPopState(listener) { window.addEventListener('popstate', listener); },
   };
 }
@@ -222,7 +315,6 @@ export function browserHistory(): AddressHistory {
 export interface MemoryHistory extends AddressHistory {
   readonly length: number;
   readonly index: number;
-  back(): void;
   forward(): void;
   /** A hash navigation, as following an in-page link: a new entry with no state. */
   setHash(hash: string): void;

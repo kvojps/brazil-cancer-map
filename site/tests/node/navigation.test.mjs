@@ -12,14 +12,14 @@ test('search accepts accents, punctuation and a UF to distinguish names', () => 
   assert.deepEqual(searchMunicipalities(places, ''), []);
 });
 
-test('selection focuses the state before loading its profile and closing retains filters', async () => {
+test('selection puts the municipality on the address and focuses it before loading its profile; closing puts Brazil back', async () => {
   const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
   const events = [];
-  let url = new URL('https://example.org/?tipo=breast&modo=hoje');
+  const placed = [];
   const navigation = createMunicipalityNavigation({
     places,
-    getUrl: () => new URL(url),
-    setUrl: next => { url = next; },
+    getUrl: () => new URL('https://example.org/'),
+    setPlace: place => placed.push(place?.code),
     focus: place => events.push(`focus:${place.uf}`),
     load: async place => { events.push(`load:${place.uf}`); return place.name; },
     show: content => events.push(content),
@@ -28,25 +28,18 @@ test('selection focuses the state before loading its profile and closing retains
   assert.deepEqual(events, []);
   await navigation.select(places[0]);
   assert.deepEqual(events, ['focus:PE', 'load:PE', 'São João']);
-  assert.equal(url.pathname, '/municipio/1-sao-joao/');
-  assert.equal(url.search, '?tipo=breast&modo=hoje');
   navigation.close();
-  assert.equal(url.pathname, '/');
-  assert.equal(url.search, '?tipo=breast&modo=hoje');
+  assert.deepEqual(placed, ['1', undefined]);
   assert.equal(events.at(-1), 'closed');
 });
 
 test('preview selection stays on the map and ignores late results and failures', async () => {
   const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
-  let url = new URL('https://example.org/?tipo=breast&theme=dark');
   const pending = [];
   const shown = [];
-  const navigation = createMunicipalityNavigation({ places, getUrl: () => new URL(url), setUrl: next => { url = next; }, focus() {}, clear() {},
+  const navigation = createMunicipalityNavigation({ places, getUrl: () => new URL('https://example.org/'), setPlace() {}, focus() {}, clear() {},
     load: place => new Promise((resolve, reject) => pending.push({ resolve, reject, place })), show: value => shown.push(value) });
   const first = navigation.select(places[0]);
-  assert.equal(url.pathname, '/municipio/1-sao-joao/');
-  assert.equal(url.searchParams.get('municipio'), null);
-  assert.equal(url.searchParams.get('theme'), 'dark');
   const second = navigation.select(places[1]);
   pending[1].resolve('PR'); await second;
   pending[0].reject(new Error('Late failure')); await first;
@@ -54,20 +47,16 @@ test('preview selection stays on the map and ignores late results and failures',
   const third = navigation.select(places[0]); navigation.close();
   pending[2].resolve('PE'); await third;
   assert.deepEqual(shown, ['PR']);
-  assert.equal(url.searchParams.get('municipio'), null);
 });
 
-test('municipal documents restore selection without query strings', async () => {
+test('a municipal path restores the selection', async () => {
   const { createMunicipalityNavigation } = await import('../../src/map/navigation.ts');
   const focused = [];
-  let url = new URL('https://example.org/municipio/1-sao-joao/?visualizacao=lista');
-  const navigation = createMunicipalityNavigation({ places, getUrl: () => url, setUrl: next => { url = next; },
+  const url = new URL('https://example.org/municipio/1-sao-joao/?visualizacao=lista');
+  const navigation = createMunicipalityNavigation({ places, getUrl: () => url, setPlace() {},
     focus: place => focused.push(place.code), load: async place => place.code, show() {}, clear() {} });
   await navigation.restore();
   assert.deepEqual(focused, ['1']);
-  await navigation.select(places[1]);
-  assert.equal(url.pathname, '/municipio/2-sao-joao/');
-  assert.equal(url.search, '?visualizacao=lista');
 });
 
 test('the search status agrees in number and does not assume a keyboard', () => {

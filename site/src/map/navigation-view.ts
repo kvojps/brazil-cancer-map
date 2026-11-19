@@ -3,7 +3,7 @@ import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer
 import { readMapState, sameMapState, writeMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
-import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
+import { createMunicipalityNavigation, searchMunicipalities, searchStatusText } from './navigation';
 import { axisResults, panelResult } from '../profile/panel-result';
 import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
 import { mountMunicipalityShare } from './municipality-share';
@@ -20,15 +20,15 @@ export interface MunicipalityContext { code: string; axis: string; top: number; 
 export interface MunicipalityNavigation {
   /** Follows the map state into the query. */
   update(layer: IndicatorLayer | undefined, state: MapState): void;
-  restoreReading(context: MunicipalityContext | undefined): void;
+  /** Bring back the details and the reading of an entry the visitor navigated to; `anchor` is the Eixo it asks for, if any. */
+  restoreReading(context: MunicipalityContext | undefined, anchor: string): void;
 }
 
 export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string, address: Address<{ municipality: MunicipalityContext }>, arrivalAnchor: string): MunicipalityNavigation {
-  const initialUrl = new URL(location.href);
-  const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
-  initialUrl.searchParams.delete('municipio');
-  if (initialPlace) initialUrl.pathname = municipalityPath(initialPlace);
-  address.replaceVisit(history.state, initialUrl);
+  address.convertLegacyMunicipality(code => {
+    const place = listing.municipalities.find(place => place.code === code);
+    return place && municipalityPath(place);
+  });
   const panel = document.querySelector<HTMLElement>('#municipality-preview')!;
   panel.dataset.enhanced = '';
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
@@ -100,7 +100,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const selectOnCamera = (preserveCamera?: boolean) => {
     if (selected) camera.select(selected.code, { preserveCamera });
   };
-  const detailsOpen = () => history.state?.municipalDetails === location.pathname;
+  const detailsOpen = () => address.detailsOpen;
   const expand = (expanded: boolean, preserveShareFocus = false) => {
     const focused = document.activeElement;
     const shareFocused = focused instanceof HTMLElement && share.contains(focused);
@@ -133,17 +133,13 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
         if (focusSummaryOnLoad) panel.focus({ preventScroll: true });
         else toggle.focus();
       }
-      const position = history.state?.municipalExploration;
+      const position = address.exploration;
       if (position) requestAnimationFrame(() => window.scrollTo({ ...position, behavior: 'instant' }));
     }
   };
   const openDetails = () => {
     cancelArrival();
-    if (!detailsOpen()) {
-      const exploration = history.state?.municipalExploration ?? { left: 0, top: 0 };
-      address.replaceVisit({ ...history.state, municipalExploration: exploration }, location.href);
-      address.pushVisit({ ...history.state, municipalDetails: location.pathname, detailsEntry: true }, location.href);
-    }
+    address.openDetails();
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(state.indicator);
     expand(true);
     heading.focus({ preventScroll: true });
@@ -151,16 +147,11 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   toggle.onclick = openDetails;
   closeDetails.onclick = () => {
     closeDetails.focus({ preventScroll: true });
-    if (history.state?.detailsEntry) history.back();
-    else {
-      initialAnchor = '';
-      const url = new URL(location.href);
-      url.hash = '';
-      address.replaceVisit({ ...history.state, municipalDetails: undefined }, url);
-      syncDetails();
-    }
+    // Closing details the opening created is Back: the navigation that follows syncs them.
+    if (!address.closeDetails()) return;
+    initialAnchor = '';
+    syncDetails();
   };
-  window.addEventListener('popstate', syncDetails);
   window.addEventListener('navigation-state-change', syncDetails);
   matchMedia('(max-width: 767px)').addEventListener('change', syncDetails);
   const prepareAxes = () => {
@@ -210,9 +201,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       if (indicatorChanged && isPhone() && detailsOpen()) content.querySelector<HTMLElement>(`#${axisId}`)?.scrollIntoView({ block: 'start' });
       if (initialAnchor && isPhone()) {
         // A shared anchor is already the destination, not a synthetic details visit.
-        if (!detailsOpen()) address.replaceVisit({ ...history.state, municipalDetails: location.pathname, detailsEntry: false,
-          municipalExploration: history.state?.municipalExploration ?? { left: 0, top: 0 },
-        }, location.href);
+        address.openDetailsInPlace();
         expand(true);
         const target = content.querySelector<HTMLElement>(`#${axisId}`);
         const code = selected.code;
@@ -241,7 +230,12 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
     getUrl: () => new URL(location.href),
-    setUrl: url => { address.pushVisit(null, url); window.dispatchEvent(new Event('navigation-state-change')); },
+    setPlace: place => {
+      // The exploration is read before the selection moves anything.
+      if (place) address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
+      else address.closeMunicipality();
+      window.dispatchEvent(new Event('navigation-state-change'));
+    },
     focus: place => {
       const changed = selected?.code !== place.code;
       selected = place;
@@ -343,7 +337,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       if (isPhone()) {
         // Axis navigation belongs to this details entry, so Back still returns to the summary.
         event.preventDefault();
-        address.replaceVisit(history.state, link.href);
+        address.followAnchor(link.hash.slice(1));
         axis.querySelector('summary')!.focus({ preventScroll: true });
         requestAnimationFrame(() => axis.scrollIntoView({ block: 'start' }));
       }
@@ -351,11 +345,9 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, preserveCamera = false) => {
     initialAnchor = '';
-    const exploration = { left: scrollX, top: scrollY };
     returnFocus = focusAfterwards;
     const loading = navigation.select(place);
     selectOnCamera(preserveCamera);
-    address.replaceVisit({ ...history.state, municipalExploration: exploration }, location.href);
     void loading.catch(failed);
   };
   const selectFromSearch = (place: MunicipalityListing['municipalities'][number]) => {
@@ -424,10 +416,10 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       selectOnCamera();
       void Promise.resolve(restoring).catch(failed);
     },
-    restoreReading(context) {
+    restoreReading(context, anchor) {
       // The map state, applied first, already told the camera where to arrive.
       restoredReading = context;
-      initialAnchor = context ? '' : location.hash.slice(1);
+      initialAnchor = anchor;
       anchorArrival = true;
       // The details come before the reading: the profile may render right after this navigation, and reads in the open sheet.
       syncDetails();

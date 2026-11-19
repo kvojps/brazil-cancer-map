@@ -183,8 +183,8 @@ export function mountIndicatorTable(
     open.clear();
     for (const code of context.open) open.add(code);
     lastTop = restoredTop = context.top;
-    // Let URL restoration choose the layer and visualization before rebuilding rows.
-    queueMicrotask(render);
+    // The home map applied the map state and the visualization first.
+    render();
   };
   const show = (layer: IndicatorLayer | undefined, mode: MapMode) => {
     current = layer;

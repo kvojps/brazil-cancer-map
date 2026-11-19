@@ -16,7 +16,7 @@ test('the reading context left behind comes back with the entry', () => {
   const { history, address, navigations } = setup();
   let scroll = 120;
   address.registerContext('view', () => ({ page: scroll }));
-  address.pushVisit(null, `${HOME}?visualizacao=lista`);
+  address.chooseView('list');
   scroll = 40;
   history.back();
   assert.equal(history.url, HOME);
@@ -37,7 +37,7 @@ test('an entry this document never left has no reading context', () => {
 test('the reading context lasts only for the document that saved it', () => {
   const first = setup();
   first.address.registerContext('list', () => ({ uf: 'PE' }));
-  first.address.pushVisit(null, `${HOME}?visualizacao=lista`);
+  first.address.chooseView('list');
   first.history.reload();
   const { history, address, navigations } = setup(first.history);
   address.registerContext('list', () => ({ uf: 'SP' }));
@@ -49,7 +49,7 @@ test('the reading context lasts only for the document that saved it', () => {
 
 test('the handler is told the page started, then that Back and Forward moved it', () => {
   const { history, address, navigations } = setup();
-  address.pushVisit(null, `${HOME}?visualizacao=lista`);
+  address.chooseView('list');
   history.back();
   history.forward();
   assert.deepEqual(navigations.map(({ cause, url }) => [cause, url.href]), [
@@ -63,7 +63,7 @@ test('each named part gets back only its own context', () => {
   const { history, address, navigations } = setup();
   address.registerContext('view', () => ({ page: 10 }));
   address.registerContext('list', () => ({ uf: 'BA' }));
-  address.pushVisit(null, `${HOME}?indicador=mortalidade`);
+  address.setMapState({ indicator: 'mortality', cancerType: 'all', mode: 'trend' });
   history.back();
   assert.deepEqual(navigations.at(-1).context, { view: { page: 10 }, list: { uf: 'BA' } });
 });
@@ -71,11 +71,11 @@ test('each named part gets back only its own context', () => {
 test('rewriting the entry keeps its reading context and adds no entry', () => {
   const { history, address, navigations } = setup();
   address.registerContext('view', () => ({ page: 75 }));
-  address.replaceVisit(null, `${HOME}?tipo=breast`);
-  address.pushVisit(null, `${HOME}?visualizacao=lista`);
+  address.followAnchor('acesso');
+  address.chooseView('list');
   history.back();
   assert.equal(history.length, 2);
-  assert.equal(history.url, `${HOME}?tipo=breast`);
+  assert.equal(history.url, `${HOME}#acesso`);
   assert.deepEqual(navigations.at(-1).context.view, { page: 75 });
 });
 
@@ -250,4 +250,134 @@ test('following a #tipo- link for an unknown cancer type is an ordinary hash nav
   history.setHash('#tipo-x');
   assert.equal(history.url, `${HOME}#tipo-x`);
   assert.equal(navigations.at(-1).cause, 'back');
+});
+
+const RECIFE = `${HOME}municipio/261160-recife/`;
+
+test('selecting a municipality adds an entry, Back returns to Brazil and Forward reopens it', () => {
+  const { history, address, navigations } = setup(memoryHistory(`${HOME}?tipo=breast#acesso`));
+  address.selectMunicipality('/municipio/261160-recife/', { left: 0, top: 80 });
+  assert.equal(history.length, 2);
+  assert.equal(history.url, `${RECIFE}?tipo=breast`);
+  history.back();
+  assert.equal(history.url, `${HOME}?tipo=breast#acesso`);
+  history.forward();
+  assert.equal(navigations.at(-1).url.href, `${RECIFE}?tipo=breast`);
+  assert.deepEqual(navigations.at(-1).exploration, { left: 0, top: 80 });
+});
+
+test('closing the municipality adds an entry for Brazil, keeping the map state', () => {
+  const { history, address } = setup(memoryHistory(`${RECIFE}?tipo=breast&visualizacao=lista#acesso`));
+  address.closeMunicipality();
+  assert.equal(history.length, 2);
+  assert.equal(history.url, `${HOME}?tipo=breast&visualizacao=lista`);
+  history.back();
+  assert.equal(history.url, `${RECIFE}?tipo=breast&visualizacao=lista#acesso`);
+});
+
+test('opening the details adds an entry: Back closes only the details, Forward reopens them', () => {
+  const { history, address, navigations } = setup(memoryHistory(HOME));
+  address.selectMunicipality('/municipio/261160-recife/', { left: 0, top: 80 });
+  address.openDetails();
+  assert.equal(history.length, 3);
+  assert.equal(history.url, RECIFE);
+  assert.equal(address.detailsOpen, true);
+  history.back();
+  assert.equal(history.url, RECIFE);
+  assert.equal(navigations.at(-1).detailsOpen, false);
+  assert.deepEqual(navigations.at(-1).exploration, { left: 0, top: 80 });
+  history.forward();
+  assert.equal(navigations.at(-1).detailsOpen, true);
+  address.openDetails();
+  assert.equal(history.length, 3);
+});
+
+test('closing details the opening created goes back to the entry before them', () => {
+  const { history, address, navigations } = setup(memoryHistory(RECIFE));
+  address.openDetails();
+  assert.equal(address.closeDetails(), false);
+  assert.equal(history.index, 0);
+  assert.equal(history.length, 2);
+  assert.equal(address.detailsOpen, false);
+  assert.equal(navigations.at(-1).cause, 'back');
+  assert.equal(navigations.at(-1).detailsOpen, false);
+});
+
+test('a filter change with the details open keeps them, and closing them there rewrites the entry', () => {
+  const { history, address } = setup(memoryHistory(RECIFE));
+  address.openDetails();
+  address.setMapState({ indicator: 'mortality', cancerType: 'all', mode: 'trend' });
+  assert.equal(history.length, 3);
+  assert.equal(address.detailsOpen, true);
+  assert.equal(address.closeDetails(), true);
+  assert.equal(history.length, 3);
+  assert.equal(history.index, 2);
+  assert.equal(history.url, `${RECIFE}?indicador=mortality`);
+  assert.equal(address.detailsOpen, false);
+  history.back();
+  assert.equal(address.detailsOpen, true);
+});
+
+test('details opened in place by an anchor are closed in the same entry, without the anchor', () => {
+  const { history, address } = setup(memoryHistory(`${RECIFE}?tipo=breast#deteccao`));
+  address.openDetailsInPlace();
+  assert.equal(history.length, 1);
+  assert.equal(address.detailsOpen, true);
+  assert.deepEqual(address.exploration, { left: 0, top: 0 });
+  address.closeDetails();
+  assert.equal(history.length, 1);
+  assert.equal(history.url, `${RECIFE}?tipo=breast`);
+  assert.equal(address.detailsOpen, false);
+});
+
+test('details restored by Forward, which the opening created, are closed by going back', () => {
+  const { history, address, navigations } = setup(memoryHistory(RECIFE));
+  address.openDetails();
+  history.back();
+  history.forward();
+  assert.equal(navigations.at(-1).detailsOpen, true);
+  address.closeDetails();
+  assert.equal(history.index, 0);
+  assert.equal(history.length, 2);
+});
+
+test('arriving by an anchor at the same path rewrites the entry, and Back still closes the details', () => {
+  const { history, address } = setup(memoryHistory(RECIFE));
+  address.openDetails();
+  address.followAnchor('acesso');
+  assert.equal(history.length, 2);
+  assert.equal(history.url, `${RECIFE}#acesso`);
+  assert.equal(address.detailsOpen, true);
+  address.closeDetails();
+  assert.equal(history.index, 0);
+});
+
+const recifePath = code => (code === '261160' ? '/municipio/261160-recife/' : undefined);
+
+test('a legacy ?municipio= link becomes the municipal path, without an entry', () => {
+  const { history, address } = setup(memoryHistory(`${HOME}?municipio=261160&tipo=breast#deteccao`));
+  address.convertLegacyMunicipality(recifePath);
+  assert.equal(history.length, 1);
+  assert.equal(history.url, `${RECIFE}?tipo=breast#deteccao`);
+});
+
+test('a municipal path wins over a legacy ?municipio=, which leaves the address; an unknown one is just dropped', () => {
+  const { history, address } = setup(memoryHistory(`${HOME}municipio/230440-fortaleza/?municipio=261160`));
+  address.convertLegacyMunicipality(recifePath);
+  assert.equal(history.url, `${HOME}municipio/230440-fortaleza/`);
+  const unknown = setup(memoryHistory(`${HOME}?municipio=999`));
+  unknown.address.convertLegacyMunicipality(recifePath);
+  assert.equal(unknown.history.url, HOME);
+  assert.equal(unknown.history.length, 1);
+});
+
+test('the Eixo anchor counts on the first visit to an entry, and is dropped when its reading context comes back', () => {
+  const { history, address, navigations } = setup(memoryHistory(`${RECIFE}#deteccao`));
+  address.registerContext('municipality', () => ({ axis: 'acesso' }));
+  assert.equal(navigations[0].anchor, 'deteccao');
+  address.closeMunicipality();
+  history.back();
+  assert.equal(history.url, `${RECIFE}#deteccao`);
+  assert.equal(navigations.at(-1).anchor, '');
+  assert.deepEqual(navigations.at(-1).context.municipality, { axis: 'acesso' });
 });
