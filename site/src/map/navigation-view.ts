@@ -23,7 +23,7 @@ export interface MunicipalityNavigation {
   restoreReading(context: MunicipalityContext | undefined): void;
 }
 
-export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string, address: Address<{ municipality: MunicipalityContext }>): MunicipalityNavigation {
+export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string, address: Address<{ municipality: MunicipalityContext }>, arrivalAnchor: string): MunicipalityNavigation {
   const initialUrl = new URL(location.href);
   const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
   initialUrl.searchParams.delete('municipio');
@@ -61,7 +61,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   });
   let shownCode = '';
   let shownIndicator = '';
-  let initialAnchor = location.hash.slice(1);
+  let initialAnchor = arrivalAnchor;
   let anchorArrival = true;
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
@@ -425,10 +425,12 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       void Promise.resolve(restoring).catch(failed);
     },
     restoreReading(context) {
-      cancelArrival();
+      // The map state, applied first, already told the camera where to arrive.
       restoredReading = context;
       initialAnchor = context ? '' : location.hash.slice(1);
       anchorArrival = true;
+      // The details come before the reading: the profile may render right after this navigation, and reads in the open sheet.
+      syncDetails();
     },
   };
 }

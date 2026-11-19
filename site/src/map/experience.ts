@@ -1,4 +1,4 @@
-import { browserHistory, createAddress, viewOf } from './address';
+import { createHomeAddress, type Navigation } from './address';
 import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization, type ViewContext } from './view';
@@ -16,7 +16,7 @@ import {
   type MunicipalityListing,
 } from "../map/indicator-layer";
 
-import { filterSummary, normalizeMapState, readMapState, sameMapState, writeMapState, type MapState } from "../map/map-state";
+import { filterSummary, normalizeMapState, sameMapState, type MapState } from "../map/map-state";
 
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -75,13 +75,22 @@ function showNotes(layer: IndicatorLayer): void {
 interface ReadingContexts { view: ViewContext; list: ListContext; municipality: MunicipalityContext }
 
 if (container && status) {
-  const address = createAddress<ReadingContexts>(browserHistory());
+  const address = createHomeAddress<ReadingContexts>();
   mountSeriesCharts();
   mountMobileLayout();
   const visualization = mountVisualization(address);
+  // The map state the address asks for, applied once the listing has loaded.
+  let requested: MapState | undefined;
+  let arrivalAnchor = '';
+  let applyMapState = (_navigation: Navigation<ReadingContexts>) => {};
   let restoreList = (_context: ListContext | undefined) => {};
   let restoreMunicipality = (_context: MunicipalityContext | undefined) => {};
-  address.listen(({ cause, view, context }) => {
+  // The parts are applied in this order: map state, visualization, then each reading context.
+  address.listen(navigation => {
+    const { cause, view, context } = navigation;
+    requested = navigation.mapState;
+    if (cause === 'initial') arrivalAnchor = navigation.anchor;
+    applyMapState(navigation);
     if (cause === 'back') visualization.restore(context.view);
     visualization.show(view);
     if (cause !== 'back') return;
@@ -89,11 +98,6 @@ if (container && status) {
     restoreMunicipality(context.municipality);
   });
   const { meshUrl, listingUrl } = container.dataset;
-  const initialUrl = new URL(location.href);
-  const anchorType = initialUrl.hash.startsWith('#tipo-') ? initialUrl.hash.slice(6) : '';
-  if (Object.hasOwn(CANCER_TYPES, anchorType)) initialUrl.searchParams.set('tipo', anchorType);
-  address.replaceVisit(history.state, initialUrl);
-  const initial = readMapState(new URLSearchParams(location.search));
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
   const retry = document.querySelector<HTMLButtonElement>('#retry-data')!;
   let started = false;
@@ -104,6 +108,7 @@ if (container && status) {
     .then((listing) => {
       started = true;
       let showOnMap = (_layer: IndicatorLayer | undefined, _mode: MapState['mode']) => {};
+      const initial = requested!;
       let mapLayer: IndicatorLayer | undefined;
       let mapState = initial;
       // The camera keeps the intentions until a map is attached to it.
@@ -132,7 +137,7 @@ if (container && status) {
           }
         }
       };
-      const show = (shown: IndicatorLayer | undefined, state: MapState, push = false) => {
+      const show = (shown: IndicatorLayer | undefined, state: MapState) => {
         current = state;
         syncControls(state);
         document.querySelector('#map-indicator-heading')!.textContent = INDICATORS[state.indicator]!.name;
@@ -150,11 +155,6 @@ if (container && status) {
         }
         // The legend reserves its area only once a layer has filled it.
         camera.layerShown(!!shown);
-        const url = new URL(location.href);
-        if (url.hash.startsWith('#tipo-')) url.hash = '';
-        url.search = writeMapState(state, url.searchParams).toString();
-        if (push) address.pushVisit(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
-        else address.replaceVisit(history.state, url);
         window.dispatchEvent(new Event('navigation-state-change'));
         indicatorTable?.show(shown, state.mode);
         updatePreview(shown, state);
@@ -163,9 +163,9 @@ if (container && status) {
         dataStatus.textContent = available ? '' : 'Os dados desta seleção não estão disponíveis. Busque um município ou use o índice por UF para acessar sua ficha.';
         retry.hidden = available;
       };
-      const selectState = async (next: MapState, message = "", push = true) => {
+      const selectState = async (next: MapState, message = "") => {
         const pending = ++request;
-        show(undefined, next, push);
+        show(undefined, next);
         dataStatus.textContent = 'Carregando os dados desta seleção…';
         retry.hidden = true;
         if (notice) notice.hidden = true;
@@ -186,21 +186,29 @@ if (container && status) {
           retry.hidden = false;
         }
       };
-      const municipalityNavigation = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""), address);
+      const municipalityNavigation = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""), address, arrivalAnchor);
       updatePreview = municipalityNavigation.update;
       restoreMunicipality = municipalityNavigation.restoreReading;
-      void selectState(initial, '', false);
-      retry.onclick = () => { void selectState(current, '', false); };
+      /** The notice when the cancer type chosen leaves the indicator shown without data. */
+      const incompatibility = (previous: MapState, next: MapState) => next.indicator !== previous.indicator
+        ? `${INDICATORS[previous.indicator]?.name} não se aplica a ${CANCER_TYPES[next.cancerType]}; mostrando até 60 dias.` : '';
+      applyMapState = ({ cause, mapState: next }) => {
+        if (cause !== 'reset' && sameMapState(next, current)) updatePreview(mapLayer, current);
+        else void selectState(next, cause === 'hash' ? incompatibility(current, next) : '');
+        if (cause === 'reset') camera.resetCountry();
+      };
+      const choose = (next: MapState, message = '') => {
+        address.setMapState(next);
+        void selectState(next, message);
+      };
+      void selectState(initial);
+      retry.onclick = () => { void selectState(current); };
       document.querySelector<HTMLAnchorElement>('.identity')!.addEventListener('click', event => {
         if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
         const link = event.currentTarget as HTMLAnchorElement;
         // The brand has a native destination too; only a ready dashboard handles it in place.
-        if (link.href !== location.href) address.pushVisit(null, link.href);
-        window.dispatchEvent(new Event('map-reset'));
-        visualization.show(viewOf(new URL(location.href)));
-        void selectState(readMapState(new URLSearchParams(location.search)), '', false);
-        camera.resetCountry();
+        address.reset(link.href);
         link.focus({ preventScroll: true });
       });
       let resizing = false;
@@ -243,34 +251,16 @@ if (container && status) {
         if (!control) continue;
         control.disabled = false;
         control.addEventListener('change', () => {
-          void selectState(normalizeMapState({ indicator: indicatorSelector!.value, mode: readingSelector!.value, cancerType: current.cancerType }));
+          choose(normalizeMapState({ indicator: indicatorSelector!.value, mode: readingSelector!.value, cancerType: current.cancerType }));
         });
       }
       if (selector) {
         selector.disabled = false;
-        window.addEventListener('hashchange', () => {
-          const type = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
-          if (!Object.hasOwn(CANCER_TYPES, type)) return;
-          selector.value = type;
-          selector.dispatchEvent(new Event('change'));
-        });
         selector.addEventListener("change", () => {
-          const { indicator, mode } = current;
-          const next = normalizeMapState({ indicator, mode, cancerType: selector.value });
-          const message = next.indicator !== indicator
-            ? `${INDICATORS[indicator!]?.name} não se aplica a ${CANCER_TYPES[next.cancerType]}; mostrando até 60 dias.` : "";
-          void selectState(next, message);
+          const next = normalizeMapState({ indicator: current.indicator, mode: current.mode, cancerType: selector.value });
+          choose(next, incompatibility(current, next));
         });
       }
-      window.addEventListener("popstate", () => {
-        const params = new URLSearchParams(location.search);
-        const anchorType = location.hash.startsWith('#tipo-') ? location.hash.slice(6) : '';
-        if (Object.hasOwn(CANCER_TYPES, anchorType)) params.set('tipo', anchorType);
-        const restored = readMapState(params);
-        if (sameMapState(restored, current)) {
-          updatePreview(mapLayer, current);
-        } else void selectState(restored, "", false);
-      });
     })
     .catch((error: unknown) => {
       console.error(error);

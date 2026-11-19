@@ -38,9 +38,12 @@ export function readMapState(params: URLSearchParams, catalog: IndicatorCatalog 
     mode: params.get("modo") === "hoje" ? "status" : params.get("modo") }, catalog);
 }
 
+/** The query parameters that carry the map state. */
+export const MAP_STATE_PARAMS = ["indicador", "tipo", "modo"] as const;
+
 export function writeMapState(state: MapState, params = new URLSearchParams()): URLSearchParams {
   const result = new URLSearchParams(params);
-  for (const key of ["indicador", "tipo", "modo"]) result.delete(key);
+  for (const key of MAP_STATE_PARAMS) result.delete(key);
   if (state.indicator !== DEFAULT_INDICATOR) result.set("indicador", state.indicator);
   if (state.cancerType !== DEFAULT_CANCER_TYPE) result.set("tipo", state.cancerType);
   if (state.mode !== "trend") result.set("modo", "hoje");

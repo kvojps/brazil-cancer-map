@@ -1,3 +1,5 @@
+import { onHomeAddressChange } from '../map/address';
+
 /** Coordinate temporary controls without changing the municipal or exploration state. */
 export function mountTemporarySurfaces(): void {
   const header = document.querySelector<HTMLElement>('.site-header');
@@ -35,7 +37,7 @@ export function mountTemporarySurfaces(): void {
     if (menu?.open) menu.open = false;
     switching = false;
   };
-  window.addEventListener('map-reset', () => replaceSurface());
+  onHomeAddressChange(({ cause }) => { if (cause === 'reset') replaceSurface(); });
   searchToggle.setAttribute('aria-controls', 'municipality-search-surface');
   searchToggle.setAttribute('aria-expanded', 'false');
   search.id = 'municipality-search-surface';

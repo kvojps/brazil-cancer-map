@@ -3,6 +3,9 @@
  * each part leaves on an entry. The home map writes its history entries through it.
  */
 
+import { CANCER_TYPES } from './indicator-layer.ts';
+import { MAP_STATE_PARAMS, readMapState, writeMapState, type MapState } from './map-state.ts';
+
 export type EntryState = Record<string, unknown> | null;
 
 /** The history the Address writes to: the browser's in production, an in-memory one in tests. */
@@ -31,15 +34,56 @@ function withView(url: URL, view: View): URL {
   return url;
 }
 
+const TYPE_ANCHOR = '#tipo-';
+
+/** The map state an address asks for: a `#tipo-` link names the cancer type; invalid or incompatible choices are corrected. */
+export function mapStateOf(url: URL): MapState {
+  const params = new URLSearchParams(url.searchParams);
+  const anchored = anchoredType(url);
+  if (anchored) params.set('tipo', anchored);
+  return readMapState(params);
+}
+
+/** The cancer type a `#tipo-` link names, if it names a known one. */
+function anchoredType(url: URL): string | undefined {
+  const type = url.hash.startsWith(TYPE_ANCHOR) ? decodeURIComponent(url.hash.slice(TYPE_ANCHOR.length)) : '';
+  return Object.hasOwn(CANCER_TYPES, type) ? type : undefined;
+}
+
+/** The address with `state` written on it, untouched when it already says so. */
+function withMapState(url: URL, state: MapState): URL {
+  const written = writeMapState(state, url.searchParams);
+  const unchanged = MAP_STATE_PARAMS.every(key => written.getAll(key).join() === url.searchParams.getAll(key).join());
+  if (!unchanged) url.search = written.toString();
+  return url;
+}
+
+/** The address written the one way the Address writes it. */
+function normalized(url: URL): URL {
+  const next = withMapState(new URL(url), mapStateOf(url));
+  if (next.searchParams.has(VIEW_PARAM)) withView(next, viewOf(next));
+  if (next.hash.startsWith(TYPE_ANCHOR)) next.hash = '';
+  return next;
+}
+
 /** Why the home map is being shown again. */
-export type NavigationCause = 'initial' | 'back';
+export type NavigationCause = 'initial' | 'back' | 'hash' | 'reset';
 
 export interface Navigation<Contexts> {
   readonly url: URL;
   readonly cause: NavigationCause;
   readonly view: View;
+  readonly mapState: MapState;
+  /** The anchor without `#`: on load, the one the visitor arrived with, even a `#tipo-` the address has dropped. */
+  readonly anchor: string;
   /** What each part left on this entry; absent on an entry this document has not left. */
   readonly context: Partial<Contexts>;
+}
+
+/** What the change signal says: the address now, and why it changed. A `command` is a write asked by a part of the home map. */
+export interface AddressChange {
+  readonly url: URL;
+  readonly cause: NavigationCause | 'command';
 }
 
 export interface Address<Contexts = Record<string, unknown>> {
@@ -47,8 +91,14 @@ export interface Address<Contexts = Record<string, unknown>> {
   registerContext<Name extends keyof Contexts & string>(name: Name, read: () => Contexts[Name]): void;
   /** The single handler of the home map: called now with `initial`, then on every navigation. */
   listen(handler: (navigation: Navigation<Contexts>) => void): void;
+  /** The single change signal: heard after every write and every navigation, once the handler has applied it. */
+  onChange(listener: (change: AddressChange) => void): void;
   /** Show the map or its List: a new entry only when the address changes. */
   chooseView(view: View): void;
+  /** Show another indicator, cancer type or mode: a new entry, which keeps the details open but was not created by opening them. */
+  setMapState(state: MapState): void;
+  /** Back to the default home map at `home`: a new entry only when the address changes, delivered with no reading context. */
+  reset(home: string | URL): void;
   /** Provisional: a new entry, for the parts that do not yet ask the Address by domain commands. */
   pushVisit(state: EntryState, url: string | URL): void;
   /** Provisional: the current entry rewritten, keeping its reading context. */
@@ -62,6 +112,10 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
   // Only this document's lifetime: a reload starts with no context on any entry.
   const contexts = new Map<number, Partial<Contexts>>();
   let handler: ((navigation: Navigation<Contexts>) => void) | undefined;
+  const listeners: ((change: AddressChange) => void)[] = [];
+  const signal = (cause: AddressChange['cause']) => {
+    for (const listener of listeners) listener({ url: new URL(history.url), cause });
+  };
   let sequence = 0;
   const visitOf = (state: EntryState) => (typeof state?.[VISIT] === 'number' ? state[VISIT] : undefined);
   /** The current entry's visit, given one if it has none (a fresh load or a hash navigation). */
@@ -74,8 +128,9 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     sequence = Math.max(sequence, visit);
     return visit;
   };
-  const loaded = new URL(history.url);
-  if (loaded.searchParams.has(VIEW_PARAM) && viewOf(loaded) === 'map') history.replace(history.state, withView(loaded, 'map'));
+  const arrival = new URL(history.url).hash.slice(1);
+  const loaded = normalized(new URL(history.url));
+  if (loaded.href !== history.url) history.replace(history.state, loaded);
   sequence = visitOf(history.state) ?? 0;
   let active = enter();
   const leave = () => {
@@ -83,7 +138,9 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
   };
   const deliver = (cause: NavigationCause) => {
     const url = new URL(history.url);
-    handler?.({ url, cause, view: viewOf(url), context: contexts.get(active) ?? {} });
+    handler?.({ url, cause, view: viewOf(url), mapState: mapStateOf(url), anchor: cause === 'initial' ? arrival : url.hash.slice(1),
+      context: cause === 'reset' ? {} : contexts.get(active) ?? {} });
+    signal(cause);
   };
   const push = (state: EntryState, url: string | URL) => {
     leave();
@@ -92,12 +149,18 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
   };
   history.onPopState(() => {
     leave();
+    // Only a link followed in the page leaves a `#tipo-` on the address: every entry written here drops it.
+    const typed = anchoredType(new URL(history.url)) !== undefined;
+    if (typed) history.replace(history.state, normalized(new URL(history.url)));
     active = enter();
-    deliver('back');
+    deliver(typed ? 'hash' : 'back');
   });
   return {
     registerContext(name, read) {
       readers.push([name, read]);
+    },
+    onChange(listener) {
+      listeners.push(listener);
     },
     listen(next) {
       handler = next;
@@ -105,13 +168,44 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     },
     chooseView(view) {
       const url = new URL(history.url);
-      if (viewOf(url) !== view) push(history.state, withView(url, view));
+      if (viewOf(url) === view) return;
+      push(history.state, withView(url, view));
+      signal('command');
     },
-    pushVisit: push,
+    setMapState(state) {
+      const url = withMapState(new URL(history.url), state);
+      if (url.href === history.url) return;
+      push(history.state?.municipalDetails ? { ...history.state, detailsEntry: false } : history.state, url);
+      signal('command');
+    },
+    reset(home) {
+      const url = new URL(home, history.url);
+      if (url.href !== history.url) push(null, url);
+      deliver('reset');
+    },
+    pushVisit(state, url) {
+      push(state, url);
+      signal('command');
+    },
     replaceVisit(state, url) {
       history.replace({ ...state, [VISIT]: active }, url);
+      signal('command');
     },
   };
+}
+
+const homeListeners: ((change: AddressChange) => void)[] = [];
+
+/** Hear the home map's change signal from a part mounted outside the home map, like the shared header; silent on other pages. */
+export function onHomeAddressChange(listener: (change: AddressChange) => void): void {
+  homeListeners.push(listener);
+}
+
+/** The Address of the home map, over the browser's history; its change signal also reaches `onHomeAddressChange`. */
+export function createHomeAddress<Contexts>(): Address<Contexts> {
+  const address = createAddress<Contexts>(browserHistory());
+  address.onChange(change => { for (const listener of homeListeners) listener(change); });
+  return address;
 }
 
 /** The browser's own history and location. */
