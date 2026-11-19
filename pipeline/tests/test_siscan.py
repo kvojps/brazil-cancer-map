@@ -108,7 +108,7 @@ def test_export_rejects_bad_values_or_missing_municipalities_without_publishing(
 
 
 def test_download_reduces_each_file_before_next_and_reuses_unchanged_extracts(tmp_path):
-    from pipeline.download import RemoteInfo
+    from pipeline.steps.download import RemoteInfo
 
     class Transport:
         downloads = 0

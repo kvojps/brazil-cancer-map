@@ -1,7 +1,7 @@
 import duckdb
 import pytest
 
-from pipeline.population import Population
+from pipeline.steps.compute.population import Population
 
 
 def population_file(tmp_path):

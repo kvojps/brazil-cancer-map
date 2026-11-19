@@ -14,6 +14,15 @@ passa o [registro de `source`s](../pipeline/registry.py) ao
 [CLI](../pipeline/cli.py), que executa as etapas do
 [protocolo `Source`](../pipeline/source.py).
 
+O apoio que várias `source`s usam fica em [`pipeline/steps/`](../pipeline/steps/),
+agrupado pela etapa a que serve: [`download`](../pipeline/steps/download.py)
+(transportes FTP e HTTP, cache incremental e novas tentativas),
+[`compute`](../pipeline/steps/compute/) (Tendência, Situação, cascata
+territorial e denominadores de população) e
+[`export`](../pipeline/steps/export.py) (escrita atômica, `manifest.json` e
+versão do pipeline). `steps/` não importa `sources` nem `operations`, e
+nenhuma `source` importa outra; o teste de arquitetura verifica as duas regras.
+
 ## Da Fonte ao Contrato de dados
 
 ```mermaid

@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pipeline.paths import CLEAN_DIR, RAW_DIR, SITE_DATA_DIR
-from pipeline.publish import MANIFEST, publish_together, updated_manifest
+from pipeline.steps.export import MANIFEST, publish_together, updated_manifest
 
 from .acquisition import FILE_NAME, FIRST_YEAR, download, parse_tabnet, read_dbc, count_cases
 from .models import TABNET_TABLES, TABNET_CANCER_TYPE, TabnetTable, CleanRow

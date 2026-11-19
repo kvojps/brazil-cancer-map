@@ -108,7 +108,7 @@ def test_atlas_mismatch_blocks_export_and_preserves_published_data(tmp_path, mon
 
 
 def test_download_only_fetches_consolidated_national_files_and_reuses_cache(tmp_path):
-    from pipeline.download import RemoteInfo
+    from pipeline.steps.download import RemoteInfo
 
     class Transport:
         urls: list[str] = []

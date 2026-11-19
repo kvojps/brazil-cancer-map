@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 import duckdb
 
-from pipeline.download import fetch, with_retries
+from pipeline.steps.download import fetch, with_retries
 
 CENSUS_URL = ('https://servicodados.ibge.gov.br/api/v3/agregados/9514/periodos/2022/variaveis/93'
               '?localidades=N6%5Ball%5D&classificacao=2%5B4,5%5D%7C287%5B6566,6567,6568,6569,6570,6571%5D%7C286%5B113635%5D')

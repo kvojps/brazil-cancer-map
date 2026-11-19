@@ -1,1 +1,0 @@
-"""Shared indicator calculation rules."""

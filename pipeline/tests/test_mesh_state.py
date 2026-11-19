@@ -122,7 +122,7 @@ def test_failed_mesh_update_preserves_entire_dependency_group(tmp_path, monkeypa
     def unavailable_transport(url):
         raise OSError('fixture: IBGE is unavailable')
 
-    monkeypatch.setattr('pipeline.download.transport_for', unavailable_transport)
+    monkeypatch.setattr('pipeline.steps.download.transport_for', unavailable_transport)
     proposal = tmp_path / 'failed-proposal'
     assert main(['update', '--source', 'mesh', '--data-dir', str(site),
                  '--clean-dir', str(clean), '--output', str(proposal)], []) == 1

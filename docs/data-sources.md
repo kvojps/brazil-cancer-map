@@ -4,7 +4,7 @@ Referência por `source` e por Fonte: insumos, pré-requisitos, calendário, end
 
 **De onde vem cada informação:**
 
-- **Validações e limiares:** lidos no código em 06/11/2026, em `pipeline/sources/` e `pipeline/download.py`. A lista de `source` foi conferida com `run --list`.
+- **Validações e limiares:** lidos no código em 06/11/2026, em `pipeline/sources/` e `pipeline/steps/download.py`. A lista de `source` foi conferida com `run --list`.
 - **Calendário e volumes:** listagens feitas em 02/11/2026, salvo outra data indicada. São uma foto: só uma listagem não mostra se uma regravação é rotina.
 - **Resultados:** da carga real indicada em cada seção. A carga completa não foi repetida para escrever este documento.
 - **Endereços:** como usados no código ou anotados na data da listagem. A última conferência dos links da metodologia está em [`data/methodology-links.md`](data/methodology-links.md).
@@ -83,7 +83,7 @@ Conferir uma Fonte não significa publicar um período novo. As séries anuais t
   - as 27 UFs em cada ano;
   - total nacional entre 160 e 230 milhões em cada ano;
   - cada UF entre 45% e 155% do total aproximado de 2022 (`STATE_BASELINES`).
-- **Consulta no código:** `pipeline.population.Population.get` e `get_many` consultam município de seis dígitos, ano, sexo (1 masculino, 2 feminino) e idade, com limites inclusivos. Retornam o ano usado e a indicação de provisório. Só arquivo anual ausente permite usar o ano imediatamente anterior; município ausente gera erro, sem reconstruir sua história nem alterar o de origem. Em lote, anos anteriores ao primeiro registro municipal são omitidos; ausências posteriores e recortes incompletos geram erro.
+- **Consulta no código:** `pipeline.steps.compute.population.Population.get` e `get_many` consultam município de seis dígitos, ano, sexo (1 masculino, 2 feminino) e idade, com limites inclusivos. Retornam o ano usado e a indicação de provisório. Só arquivo anual ausente permite usar o ano imediatamente anterior; município ausente gera erro, sem reconstruir sua história nem alterar o de origem. Em lote, anos anteriores ao primeiro registro municipal são omitidos; ausências posteriores e recortes incompletos geram erro.
 - **Limiares operacionais:** as faixas acima são amplas para 2000–2025. Detectam cargas incompletas e duplicações, sem pretender reproduzir taxas oficiais.
 - **Conferência manual** (arquivos lidos em 02/11/2026). Totais do Brasil: 2014 = 200.811.131; 2022 = 210.862.983; 2023 = 211.695.158; 2024 = 212.583.750; 2025 = 213.421.037. O de 2025 é igual à estimativa do IBGE no DOU. Recife (2611606):
 

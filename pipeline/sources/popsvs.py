@@ -10,7 +10,7 @@ from pathlib import Path
 import dbfread
 import duckdb
 
-from pipeline.download import fetch, list_ftp
+from pipeline.steps.download import fetch, list_ftp
 from pipeline.paths import CLEAN_DIR, RAW_DIR
 
 FTP_ROOT = 'ftp://ftp.datasus.gov.br/dissemin/publicos/IBGE/POPSVS/'

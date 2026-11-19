@@ -16,7 +16,7 @@ from pipeline.sources.hpv.audit import HpvAudit
 
 @pytest.mark.parametrize('execution_year', [2026, 2027, 2030])
 def test_restored_state_reproduces_the_independent_2026_contract(tmp_path, monkeypatch, execution_year):
-    from pipeline.publish import pipeline_version
+    from pipeline.steps.export import pipeline_version
     from pipeline.operations.release import export_state, restore_state
 
     source, site, clean = prepared_source(tmp_path, last_year=2026)
@@ -376,7 +376,7 @@ def test_current_year_uses_catalog_boundary_and_rejects_internal_gaps(tmp_path):
 
 def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_path, monkeypatch):
     import pytest
-    from pipeline.download import DownloadError, RemoteInfo
+    from pipeline.steps.download import DownloadError, RemoteInfo
     from pipeline.sources.hpv.audit import CATALOG_ROOT, MONTHS, S3_ROOT
     current = datetime.now(UTC).year
     clean = tmp_path / 'clean'
@@ -406,7 +406,7 @@ def test_download_discovers_catalog_and_never_swallows_advertised_failures(tmp_p
 
     transport = CatalogTransport()
     monkeypatch.setattr('pipeline.sources.hpv.audit.download_fixed_inputs', lambda *args: None)
-    monkeypatch.setattr('pipeline.download.time.sleep', lambda seconds: None)
+    monkeypatch.setattr('pipeline.steps.download.time.sleep', lambda seconds: None)
     source = HpvAudit(clean_dir=clean, years=(current,), transport=transport)
     source.download()
     assert transport.inspected == [f'{S3_ROOT}vacinacao_{name}_{current}_csv.zip' for name in ('jan', 'fev')]

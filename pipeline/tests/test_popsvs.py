@@ -70,7 +70,7 @@ def test_validation_checks_every_state_and_brazil_and_rejects_duplicates(tmp_pat
 
 
 def test_download_uses_incremental_cache(tmp_path, monkeypatch):
-    from pipeline.download import RemoteInfo, fetch
+    from pipeline.steps.download import RemoteInfo, fetch
     from pipeline.sources import popsvs
 
     class Transport:

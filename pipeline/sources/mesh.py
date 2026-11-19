@@ -9,9 +9,9 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from pipeline.download import Transport, fetch
+from pipeline.steps.download import Transport, fetch
 from pipeline.paths import CLEAN_DIR, MAPSHAPER, RAW_DIR, SITE_DATA_DIR
-from pipeline.publish import publish_together
+from pipeline.steps.export import publish_together
 
 MESH_URL = (
     "https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/"

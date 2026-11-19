@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from pipeline.download import DownloadError, RemoteInfo, download_ranges, fetch
+from pipeline.steps.download import DownloadError, RemoteInfo, download_ranges, fetch
 
 URL = "https://example.org/mesh.zip"
 MODIFIED = 1_772_136_168.0  # 2026-02-26 20:02:48 UTC

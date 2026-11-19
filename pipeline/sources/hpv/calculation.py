@@ -4,8 +4,8 @@ from collections.abc import Mapping, Sequence
 from datetime import date
 from typing import Any
 
-from pipeline.calculation.cascade import Origin, data_origins
-from pipeline.calculation.status import classify_status, status_note
+from pipeline.steps.compute.cascade import Origin, data_origins
+from pipeline.steps.compute.status import classify_status, status_note
 from pipeline.sources.hpv.models import CensusRow, HpvResult
 
 

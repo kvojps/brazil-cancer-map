@@ -10,7 +10,7 @@ from pathlib import Path
 import datasus_dbc
 import dbfread
 
-from pipeline.download import fetch, list_ftp, with_retries
+from pipeline.steps.download import fetch, list_ftp, with_retries
 
 from .models import (
     CANCER_TYPES,

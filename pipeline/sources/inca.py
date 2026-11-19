@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from pipeline.paths import SITE_DATA_DIR
-from pipeline.publish import MANIFEST, publish_together, updated_manifest
+from pipeline.steps.export import MANIFEST, publish_together, updated_manifest
 from pipeline.territory import CAPITALS
 
 INPUT = Path(__file__).resolve().parents[1] / 'references' / 'inca-estimates-2026.json'

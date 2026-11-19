@@ -49,12 +49,18 @@ def _is_under(module: str, package: str) -> bool:
     return module == package or module.startswith(package + ".")
 
 
+def _checked_files(root: Path) -> list[Path]:
+    """The package's own modules, without tests and Node tooling."""
+    return [
+        path for path in root.rglob("*.py")
+        if path.relative_to(root).parts[0] not in {"tests", "node_modules"}
+    ]
+
+
 def violations(root: Path) -> list[str]:
     """Imports in the package at ``root`` that break the dependency rules."""
     broken: set[str] = set()
-    for path in root.rglob("*.py"):
-        if path.relative_to(root).parts[0] in {"tests", "node_modules"}:
-            continue
+    for path in _checked_files(root):
         module = _module_name(path, root)
         source = _source_of(module)
         for imported in _imports(path, root):
@@ -78,6 +84,16 @@ def _write(root: Path, files: dict[str, str]) -> Path:
 
 def test_pipeline_follows_the_dependency_rules() -> None:
     assert violations(PIPELINE_DIR) == []
+
+
+def test_the_dependency_rules_reach_every_shared_step() -> None:
+    checked = {_module_name(path, PIPELINE_DIR) for path in _checked_files(PIPELINE_DIR)}
+
+    assert {
+        f"{PACKAGE}.steps.download",
+        f"{PACKAGE}.steps.compute",
+        f"{PACKAGE}.steps.export",
+    } <= checked
 
 
 def test_a_source_importing_another_source_is_a_violation(tmp_path: Path) -> None:
