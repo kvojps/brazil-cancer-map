@@ -95,11 +95,6 @@ if (container && status) {
       let mapState = initial;
       // The camera keeps the intentions until a map is attached to it.
       const camera = createMapCamera();
-      window.addEventListener('municipality-arrival-cancelled', () => camera.userTookOver());
-      const mapSelection = { focus: (code: string | undefined, preserveCamera = false) => {
-        if (code) camera.select(code, { preserveCamera });
-        else camera.clear();
-      } };
       const showInTable = table ? mountIndicatorTable(table, listing) : () => {};
       const notice = document.querySelector<HTMLElement>("#map-selection-notice");
       let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
@@ -177,7 +172,7 @@ if (container && status) {
           retry.hidden = false;
         }
       };
-      updatePreview = mountMunicipalityNavigation(mapSelection, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
+      updatePreview = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""));
       void selectState(initial, '', false);
       retry.onclick = () => { void selectState(current, '', false); };
       document.querySelector<HTMLAnchorElement>('.identity')!.addEventListener('click', event => {
@@ -197,8 +192,7 @@ if (container && status) {
         resizing = true;
         requestAnimationFrame(() => {
           resizing = false;
-          const panel = document.querySelector('#municipality-preview');
-          camera.layoutChanged({ sheetOpen: matchMedia('(max-width: 767px)').matches && !panel?.hasAttribute('data-collapsed') });
+          camera.layoutChanged();
         });
       });
       // Loading the optional renderer never gates the text alternatives.

@@ -7,13 +7,14 @@ import { createMunicipalityNavigation, municipalityFromUrl, searchMunicipalities
 import { axisResults, panelResult } from '../profile/panel-result';
 import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
 import { mountMunicipalityShare } from './municipality-share';
+import type { MapCamera } from './camera';
 
 /** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
 const SHEET = '(max-width: 767px)';
 const isPhone = () => matchMedia('(max-width: 767px)').matches;
 const isSheet = () => matchMedia(SHEET).matches;
 
-export function mountMunicipalityNavigation(map: { focus: (code: string | undefined, preserveCamera?: boolean) => void }, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
+export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string): (layer: IndicatorLayer | undefined, state: MapState) => void {
   const initialUrl = new URL(location.href);
   const initialPlace = municipalityFromUrl(listing.municipalities, initialUrl);
   initialUrl.searchParams.delete('municipio');
@@ -60,13 +61,12 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   let anchorArrival = true;
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
-  let frameOnRender = false;
   let focusSummaryOnLoad = false;
+  // A gesture cancels both arrivals: the reading's and the camera's.
   const cancelArrival = () => {
     anchorArrival = false;
-    frameOnRender = false;
     restoredReading = undefined;
-    window.dispatchEvent(new Event('municipality-arrival-cancelled'));
+    camera.userTookOver();
   };
   for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
     window.addEventListener(event, cancelArrival, { passive: true, capture: true });
@@ -92,12 +92,9 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     target?.focus({ preventScroll: true });
   };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
-  // Frame above the collapsed sheet; an arrival under an open sheet waits for it to come down.
-  let frameOnCollapse = false;
-  let preserveCameraFor: string | undefined;
-  const frame = (code: string) => {
-    frameOnCollapse = isSheet() && !panel.hasAttribute('data-collapsed');
-    if (!frameOnCollapse) map.focus(code, preserveCameraFor === code);
+  // The camera hears of a selection once the panel has placed the sheet around it.
+  const selectOnCamera = (preserveCamera?: boolean) => {
+    if (selected) camera.select(selected.code, { preserveCamera });
   };
   const detailsOpen = () => history.state?.municipalDetails === location.pathname;
   const expand = (expanded: boolean, preserveShareFocus = false) => {
@@ -119,7 +116,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     }
     toggle.setAttribute('aria-expanded', String(expanded));
     syncSheetMetrics();
-    if (!expanded && frameOnCollapse && selected) frame(selected.code);
+    camera.sheetChanged(!isSheet() ? 'none' : expanded ? 'open' : 'collapsed');
   };
   const syncDetails = (event?: Event) => {
     const resizing = event?.type === 'change';
@@ -235,7 +232,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
     // Frame against the loaded summary and the controls resting above it.
     syncSheetMetrics();
-    if (frameOnRender) { frameOnRender = false; if (isSheet()) frame(selected.code); }
+    camera.summaryRendered();
   };
   const navigation = createMunicipalityNavigation({
     places: listing.municipalities,
@@ -243,7 +240,6 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     setUrl: url => { pushVisit(null, url); window.dispatchEvent(new Event('navigation-state-change')); },
     focus: place => {
       const changed = selected?.code !== place.code;
-      if (changed && preserveCameraFor !== place.code) preserveCameraFor = undefined;
       selected = place;
       heading.textContent = `${place.name} (${place.uf})`;
       clear.hidden = false;
@@ -258,11 +254,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
         panelType.hidden = true;
         content.replaceChildren();
         shownCode = '';
-        frameOnCollapse = false;
-        frameOnRender = true;
         expand(!isPhone() || detailsOpen());
       }
-      if (changed) frame(place.code);
       status.textContent = `${place.name} (${place.uf}) selecionado.`;
     },
     load: async place => {
@@ -303,7 +296,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
       resultBlock.replaceChildren();
       status.textContent = '';
       syncSheetMetrics();
-      map.focus(undefined);
+      camera.clear();
     },
   });
   const failed = (error: unknown) => {
@@ -322,7 +315,7 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     retry.textContent = 'Tentar novamente';
     retry.onclick = () => {
       if (selected) {
-        frameOnRender = true;
+        camera.summaryReloading();
         void navigation.select(selected, false).catch(failed);
       }
     };
@@ -354,10 +347,10 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
   });
   const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, preserveCamera = false) => {
     initialAnchor = '';
-    preserveCameraFor = preserveCamera ? place.code : undefined;
     const exploration = { left: scrollX, top: scrollY };
     returnFocus = focusAfterwards;
     const loading = navigation.select(place);
+    selectOnCamera(preserveCamera);
     history.replaceState({ ...history.state, municipalExploration: exploration }, '', location.href);
     void loading.catch(failed);
   };
@@ -422,6 +415,8 @@ export function mountMunicipalityNavigation(map: { focus: (code: string | undefi
     void nextLayer;
     if (!sameMapState(state, nextState)) resetShare();
     state = nextState;
-    void Promise.resolve(navigation.restore()).catch(failed);
+    const restoring = navigation.restore();
+    selectOnCamera();
+    void Promise.resolve(restoring).catch(failed);
   };
 }
