@@ -1,4 +1,5 @@
 from pipeline.cli import main
+from pipeline.tests.helpers import FakeSource
 
 Log = list[tuple[str, str]]
 
@@ -9,35 +10,6 @@ def run_cli(argv, sources):
         return main(argv, sources=sources)
     except SystemExit as exit_:
         return exit_.code
-
-
-class FakeSource:
-    """Source that logs the steps it runs, and can fail at one of them."""
-
-    def __init__(self, name, log, fails_at=None):
-        self.name = name
-        self._log = log
-        self._fails_at = fails_at
-
-    def _run(self, step):
-        self._log.append((self.name, step))
-        if step == self._fails_at:
-            raise RuntimeError(f"{self.name} failed at {step}")
-
-    def download(self):
-        self._run("download")
-
-    def clean(self):
-        self._run("clean")
-
-    def compute(self):
-        self._run("compute")
-
-    def validate(self):
-        self._run("validate")
-
-    def export(self):
-        self._run("export")
 
 
 def test_run_executes_the_five_steps_in_order():

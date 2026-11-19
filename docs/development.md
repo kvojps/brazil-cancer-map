@@ -50,6 +50,37 @@ Para preparar uma proposta isolada, use [`update`](data-update.md).
 | `uv run python -m pipeline run --list` | Consultar as etapas e as `source`s disponíveis sem executá-las. |
 | `uv run python -m pipeline run --source painel --step compute` | Executar só o cálculo de `painel`, com os insumos já preparados. |
 
+### Organização do pacote
+
+Cada responsabilidade de `pipeline/` tem um lugar:
+
+| Lugar | O que guarda |
+| --- | --- |
+| Raiz | O núcleo e o que mais de um módulo usa: entrada e CLI, protocolo `Source` com `STEPS`, registro de `source`s, caminhos e tabela territorial. |
+| `steps/` | O apoio compartilhado, agrupado pela etapa a que serve: `download`, `compute` (toda a estatística compartilhada) e `export`. |
+| `sources/` | Uma `source` por pacote, do `download` ao `export`, com os arquivos de dados versionados que só ela lê. |
+| `operations/` | Os fluxos sobre várias `source`s: atualização, plano de atualização e Release. |
+| `tests/` | Espelho das pastas acima, com as fixtures junto dos testes que as usam. |
+
+As dependências seguem uma direção só. `sources` importa do núcleo e de
+`steps`. `steps` importa só do núcleo. `operations` importa do núcleo e do
+registro. O CLI importa do núcleo, do registro e de `operations`. Nenhuma
+`source` importa outra. O teste de arquitetura falha quando uma `source`
+importa outra ou quando `steps/` importa `sources` ou `operations`.
+
+Uma `source` nova entra como pacote em `pipeline/sources/<nome>/` e no
+registro, como descrito em [Contribuir](#contribuir). Divida a `source` em
+módulos com os nomes das etapas (`download`, `compute`, `export`) só quando
+ela crescer. Se uma regra servir a mais de uma `source`, mova-a para
+`steps/<etapa>` ou, quando não for de uma etapa, para a raiz. Os testes
+dela ficam em `pipeline/tests/sources/<nome>/`.
+
+Em `tests/`, os testes do núcleo ficam na raiz, e os de `steps`,
+`operations` e de cada `source` ficam na pasta correspondente. Nenhum teste
+importa de outro arquivo de teste: o que vários testes usam fica em um
+módulo `helpers.py`, na raiz de `tests/` quando serve a mais de uma parte
+ou na pasta da `source` quando serve só a ela.
+
 ## Testes e verificações
 
 Da raiz do repositório:
@@ -61,8 +92,10 @@ Da raiz do repositório:
 | `npm run check --prefix site` | Tipos e diagnósticos de Astro e TypeScript. |
 | `npm test --prefix site` | Testes Node, dados publicados, build e servidor de desenvolvimento. |
 
-Use `uv run pytest pipeline/tests/<arquivo>.py` para testar um módulo do
-pipeline. O [guia de testes do site](../site/tests/README.md) reúne os
+Use `uv run pytest pipeline/tests/<caminho>` para testar uma parte do
+pipeline, por exemplo `pipeline/tests/sources/painel/` ou
+`pipeline/tests/steps/compute/test_trend.py`. O
+[guia de testes do site](../site/tests/README.md) reúne os
 pré-requisitos de Chromium e os comandos para arquivos individuais, prévia
 estática e verificações automatizadas de acessibilidade.
 
@@ -80,7 +113,7 @@ Para trabalhar em uma `source`, comece pela [arquitetura da pipeline](architectu
 Crie a unidade como pacote em `pipeline/sources/<nome>/`, com a classe em
 `source.py` reexportada pelo `__init__.py` e os dados versionados que só ela lê.
 Registre-a em [`pipeline/registry.py`](../pipeline/registry.py),
-com caminhos de estado, insumos e saída do mesmo snapshot. Cubra com fixtures o Contrato de dados e a preservação da
+com caminhos de estado, insumos e saída do mesmo snapshot. Cubra com fixtures, em `pipeline/tests/sources/<nome>/`, o Contrato de dados e a preservação da
 saída vigente em caso de falha. Veja os exemplos de registro, validação e
 fixtures na [verificação da reorganização](https://github.com/kvojps/brazil-cancer-map/blob/04c2e4921f8b21f449b9f30601e900b9a12352a2/docs/data/pipeline-reorganization-verification.md).
 Os relatos de setup em clone limpo e de execução com fixtures de SISCAN e

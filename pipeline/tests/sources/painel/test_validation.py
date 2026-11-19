@@ -3,26 +3,7 @@ import pytest
 from pipeline.sources.painel.models import UfShare
 from pipeline.sources.painel.validation import compare_with_tabnet
 from pipeline.sources.painel.download import parse_tabnet
-
-
-def tabnet_page(rows):
-    """A TabNet result page as `webtabx.exe` returns it, trimmed to the table script."""
-    lines = ",\n".join(
-        f'["{uf}" ,{{v: {a}.0 ,f: \'{a}\'}} ,{{v: {b}.0 ,f: \'{b}\'}} ,{{v: {c}.0 ,f: \'{c}\'}} '
-        f",{{v: {d}.0 ,f: '{d}'}} ,{{v: {a + b + c + d}.0 ,f: '{a + b + c + d}'}} ]"
-        for uf, (a, b, c, d) in rows.items()
-    )
-    return f"""<html><script>
-        data.addColumn('string','UF da residência');
-        data.addColumn('number','Até 30 dias');
-        data.addColumn('number','31 - 60 dias');
-        data.addColumn('number','Mais de 60');
-        data.addColumn('number','Sem informação de tratamento');
-        data.addColumn('number',' Total');
-        data.addRows([
-{lines}
-        ]);
-</script></html>"""
+from pipeline.tests.sources.painel.helpers import tabnet_page
 
 
 def test_tabnet_page_gives_the_cases_within_60_days_by_uf():

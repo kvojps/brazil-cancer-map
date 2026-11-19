@@ -6,7 +6,7 @@ from pipeline.sources.painel.models import CANCER_TYPES, CaseCounts, FirstTreatm
 from pipeline.sources.painel import PainelSource
 from pipeline.sources.painel.validation import PainelValidationError
 from pipeline.sources.painel.persistence import write_clean
-from pipeline.tests.test_painel_validate import tabnet_page
+from pipeline.tests.sources.painel.helpers import tabnet_page
 
 YEARS = range(2014, 2027)
 

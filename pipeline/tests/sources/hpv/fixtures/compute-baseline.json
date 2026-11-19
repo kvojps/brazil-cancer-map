@@ -1,0 +1,971 @@
+{
+  "json": {
+    "computed.json": {
+      "period": {
+        "first_year": 2020,
+        "last_year": 2026,
+        "latest": 2025,
+        "trend": [],
+        "provisional": [
+          2026
+        ],
+        "single_dose_year": 2024,
+        "denominator_year": 2022
+      },
+      "reference": {
+        "value": 90,
+        "label": "meta para 2030"
+      },
+      "municipalities": {
+        "110001": {
+          "origin": "municipality",
+          "value": 0.8333333333333334,
+          "status": "far",
+          "status_note": null,
+          "by_sex": {
+            "F": {
+              "value": 0.0,
+              "status": "far",
+              "status_note": null
+            },
+            "M": {
+              "value": 1.6666666666666667,
+              "status": "far",
+              "status_note": null
+            }
+          },
+          "trend": null,
+          "denominator_note": null,
+          "quality_band": null,
+          "without_treatment_info": null,
+          "series_id": "municipality:110001"
+        },
+        "110002": {
+          "origin": "immediate_region",
+          "value": 0.7575757575757576,
+          "status": "far",
+          "status_note": null,
+          "by_sex": {
+            "F": {
+              "value": 0.0,
+              "status": "far",
+              "status_note": null
+            },
+            "M": {
+              "value": 1.5151515151515151,
+              "status": "far",
+              "status_note": null
+            }
+          },
+          "trend": null,
+          "denominator_note": null,
+          "quality_band": null,
+          "without_treatment_info": null,
+          "series_id": "immediate_region:r1"
+        },
+        "110003": {
+          "origin": "insufficient",
+          "value": null,
+          "status": null,
+          "status_note": null,
+          "by_sex": {
+            "F": {
+              "value": null,
+              "status": null,
+              "status_note": null
+            },
+            "M": {
+              "value": null,
+              "status": null,
+              "status_note": null
+            }
+          },
+          "trend": null,
+          "denominator_note": null,
+          "quality_band": null,
+          "without_treatment_info": null,
+          "series_id": null
+        }
+      },
+      "series": {
+        "municipality:110001": [
+          {
+            "year": 2020,
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2021,
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2022,
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2023,
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2024,
+            "value": 1.6666666666666667,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": true,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2025,
+            "value": 0.8333333333333334,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.6666666666666667,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2026,
+            "value": 0.0,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": true,
+            "without_treatment_info": null
+          }
+        ],
+        "immediate_region:r1": [
+          {
+            "year": 2020,
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2021,
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2022,
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2023,
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2024,
+            "value": 1.5151515151515151,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": true,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2025,
+            "value": 0.7575757575757576,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 1.5151515151515151,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": false,
+            "without_treatment_info": null
+          },
+          {
+            "year": 2026,
+            "value": 0.0,
+            "status": "far",
+            "status_note": null,
+            "by_sex": {
+              "F": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              },
+              "M": {
+                "value": 0.0,
+                "status": "far",
+                "status_note": null
+              }
+            },
+            "single_dose": false,
+            "provisional": true,
+            "without_treatment_info": null
+          }
+        ]
+      }
+    },
+    "official.json": {
+      "source_url": "https://example.test/official-cohorts",
+      "extracted_at": "2026-11-05",
+      "years": [
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "records": [
+        {
+          "year": 2020,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2020,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2020,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2020,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2020,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2020,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2021,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2021,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2021,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2021,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2021,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2021,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2022,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2022,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2022,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2022,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2022,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2022,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2023,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2023,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2023,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2023,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2023,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2023,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2024,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2024,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2024,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2024,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2024,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2024,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2025,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 60,
+          "coverage": 0.0
+        },
+        {
+          "year": 2025,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 1,
+          "population": 60,
+          "coverage": 0.016666666666666666
+        },
+        {
+          "year": 2025,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2025,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2025,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2025,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110001",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 60,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110001",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 60,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110002",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110002",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110003",
+          "sex": "Feminino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        },
+        {
+          "year": 2026,
+          "municipality": "110003",
+          "sex": "Masculino",
+          "vaccinated": 0,
+          "population": 6,
+          "coverage": 0.0
+        }
+      ]
+    }
+  },
+  "parquet": {
+    "census.parquet": {
+      "columns": [
+        "municipality",
+        "sex",
+        "age",
+        "population"
+      ],
+      "rows": [
+        [
+          "110001",
+          "F",
+          9,
+          10
+        ],
+        [
+          "110001",
+          "F",
+          10,
+          10
+        ],
+        [
+          "110001",
+          "F",
+          11,
+          10
+        ],
+        [
+          "110001",
+          "F",
+          12,
+          10
+        ],
+        [
+          "110001",
+          "F",
+          13,
+          10
+        ],
+        [
+          "110001",
+          "F",
+          14,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          9,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          10,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          11,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          12,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          13,
+          10
+        ],
+        [
+          "110001",
+          "M",
+          14,
+          10
+        ],
+        [
+          "110002",
+          "F",
+          9,
+          1
+        ],
+        [
+          "110002",
+          "F",
+          10,
+          1
+        ],
+        [
+          "110002",
+          "F",
+          11,
+          1
+        ],
+        [
+          "110002",
+          "F",
+          12,
+          1
+        ],
+        [
+          "110002",
+          "F",
+          13,
+          1
+        ],
+        [
+          "110002",
+          "F",
+          14,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          9,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          10,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          11,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          12,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          13,
+          1
+        ],
+        [
+          "110002",
+          "M",
+          14,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          9,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          10,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          11,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          12,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          13,
+          1
+        ],
+        [
+          "110003",
+          "F",
+          14,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          9,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          10,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          11,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          12,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          13,
+          1
+        ],
+        [
+          "110003",
+          "M",
+          14,
+          1
+        ]
+      ]
+    }
+  }
+}

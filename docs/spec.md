@@ -329,6 +329,8 @@ A validação confere cobertura e plausibilidade e usa referências oficiais qua
 | `siscan`, `siscan_cytopathology` | Presença dos municípios e valores plausíveis |
 | `cnes`, `popsvs`, `inca` | Consistência interna de cobertura, faixas e totais, conforme a `source` |
 
+O pacote `pipeline/` separa o núcleo na raiz (CLI, protocolo `Source`, registro, caminhos e tabela territorial), o apoio compartilhado por etapa em `steps/`, uma `source` por pacote em `sources/` e os fluxos sobre várias `source`s em `operations/`. `tests/` espelha essa árvore. As dependências vão de `sources` para `steps` e o núcleo, e de `steps` só para o núcleo. Nenhuma `source` importa outra. A regra completa e onde entra uma `source` nova ficam no [guia de desenvolvimento](development.md#organização-do-pacote).
+
 Insumos, referências e limiares específicos ficam em [Fontes de dados](data-sources.md). Os comandos de processamento e seleção por `source` ou etapa ficam no [guia de desenvolvimento](development.md).
 
 ## 15. Contrato de dados

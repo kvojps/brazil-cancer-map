@@ -3,7 +3,7 @@
 import pytest
 
 from pipeline.registry import SourceDefinition, SourceInput, create_sources
-from pipeline.tests.test_cli import FakeSource
+from pipeline.tests.helpers import FakeSource
 
 
 def test_new_consumer_receives_declared_snapshot_input_by_name(tmp_path):
@@ -98,7 +98,7 @@ def test_screening_factories_compute_with_population_only_in_snapshot(tmp_path, 
     import shutil
 
     from pipeline.cli import main
-    from pipeline.tests.test_siscan import prepared_source
+    from pipeline.tests.sources.siscan.helpers import prepared_source
 
     source, site, clean = prepared_source(tmp_path)
     source.clean()

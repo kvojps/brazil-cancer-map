@@ -7,7 +7,7 @@ import pytest
 
 from pipeline.cli import main
 from pipeline.registry import create_sources
-from pipeline.tests.test_cli import FakeSource
+from pipeline.tests.helpers import FakeSource
 
 NAMES = ['mesh', 'popsvs', 'painel', 'cnes', 'siscan',
          'siscan_cytopathology', 'sim', 'hpv', 'inca', 'vigitel']
@@ -157,7 +157,7 @@ def test_public_registry_preserves_source_order(tmp_path):
 
 def test_direct_sim_compute_uses_existing_snapshot_population(tmp_path, monkeypatch):
     import shutil
-    from pipeline.tests.test_sim import fixture_source
+    from pipeline.tests.sources.sim.helpers import fixture_source
 
     source, clean, site = fixture_source(tmp_path, monkeypatch)
     source.clean()

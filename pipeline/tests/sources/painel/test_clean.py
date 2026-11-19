@@ -1,17 +1,6 @@
 from pipeline.sources.painel.models import CaseCounts, FirstTreatment, provisional_years
 from pipeline.sources.painel.download import count_cases
-
-
-def record(cid="C50", year="2020", municipality="261160", treatment="2", days="+0030", month="03"):
-    """One Painel-Oncologia row, with the fields as `dbfread` yields them."""
-    return {
-        "ANO_DIAGN": year,
-        "ANOMES_DIA": year + month,
-        "MUN_RESID": municipality,
-        "DIAG_DETH": cid,
-        "TRATAMENTO": treatment,
-        "TEMPO_TRAT": days,
-    }
+from pipeline.tests.sources.painel.helpers import record
 
 
 def test_all_cancers_for_treatment_leaves_out_c44_c73_and_c76_to_c80():
