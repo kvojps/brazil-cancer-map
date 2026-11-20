@@ -1,10 +1,6 @@
 import { homeMapContainer, onHomeAddressChange } from '../map/address.ts';
 import { readMapState, writeMapState } from '../map/map-state.ts';
-
-export function readTheme(params: URLSearchParams): 'light' | 'dark' | null {
-  const value = params.get('theme');
-  return value === 'light' || value === 'dark' ? value : null;
-}
+import { readTheme } from './theme-url.ts';
 
 /** Carry only the state relevant to the destination, keeping section anchors intact. */
 export function navigationUrl(destination: URL, current: URL): URL {
@@ -49,6 +45,7 @@ function mountSiteMenu(): void {
 
 export function mountSharedNavigation(): void {
   mountSiteMenu();
+  const isHomeMap = homeMapContainer() !== null;
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
   const destinations = new WeakMap<HTMLAnchorElement, string>();
   const fixedMunicipalDestinations = new WeakSet<HTMLAnchorElement>();
@@ -94,7 +91,7 @@ export function mountSharedNavigation(): void {
   };
   const sync = () => {
     const current = new URL(location.href);
-    if (current.pathname === '/metodologia/') {
+    if (!isHomeMap && current.pathname === '/metodologia/') {
       const canonical = navigationUrl(current, current);
       if (canonical.href !== current.href) {
         history.replaceState(history.state, '', canonical);
@@ -105,7 +102,7 @@ export function mountSharedNavigation(): void {
     if (theme) {
       if (document.documentElement.dataset.theme !== theme) document.documentElement.dataset.theme = theme;
     } else if (document.documentElement.hasAttribute('data-theme')) delete document.documentElement.dataset.theme;
-    if (!theme && current.searchParams.has('theme')) {
+    if (!isHomeMap && !theme && current.searchParams.has('theme')) {
       current.searchParams.delete('theme');
       history.replaceState(history.state, '', current);
     }
@@ -119,7 +116,7 @@ export function mountSharedNavigation(): void {
     if (target) updateLink(target, new URL(location.href));
   }, true);
   // On the home map the Address owns the history: its change signal follows every write and navigation.
-  if (homeMapContainer()) onHomeAddressChange(sync);
+  if (isHomeMap) onHomeAddressChange(sync);
   else window.addEventListener('popstate', sync);
   // A result or profile arriving changes only its new links, not every municipal link in the list.
   new MutationObserver(records => {

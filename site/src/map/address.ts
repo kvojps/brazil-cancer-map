@@ -5,6 +5,7 @@
 
 import { CANCER_TYPES } from './indicator-layer.ts';
 import { MAP_STATE_PARAMS, readMapState, writeMapState, type MapState } from './map-state.ts';
+import { readTheme } from '../shared/theme-url.ts';
 
 export type EntryState = Record<string, unknown> | null;
 
@@ -16,7 +17,7 @@ export interface AddressHistory {
   replace(state: EntryState, url: string | URL): void;
   back(): void;
   /** Called when the visitor moves to another entry: Back, Forward or a hash navigation. */
-  onPopState(listener: () => void): void;
+  onNavigation(listener: () => void): void;
 }
 
 /** The visualization of the home map: the map itself or its List. */
@@ -47,8 +48,13 @@ export function mapStateOf(url: URL): MapState {
 
 /** The cancer type a `#tipo-` link names, if it names a known one. */
 function anchoredType(url: URL): string | undefined {
-  const type = url.hash.startsWith(TYPE_ANCHOR) ? decodeURIComponent(url.hash.slice(TYPE_ANCHOR.length)) : '';
-  return Object.hasOwn(CANCER_TYPES, type) ? type : undefined;
+  if (!url.hash.startsWith(TYPE_ANCHOR)) return undefined;
+  try {
+    const type = decodeURIComponent(url.hash.slice(TYPE_ANCHOR.length));
+    return Object.hasOwn(CANCER_TYPES, type) ? type : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** The address with `state` written on it, untouched when it already says so. */
@@ -64,6 +70,7 @@ function normalized(url: URL): URL {
   const next = withMapState(new URL(url), mapStateOf(url));
   if (next.searchParams.has(VIEW_PARAM)) withView(next, viewOf(next));
   if (next.hash.startsWith(TYPE_ANCHOR)) next.hash = '';
+  if (next.searchParams.has('theme') && !readTheme(next.searchParams)) next.searchParams.delete('theme');
   return next;
 }
 
@@ -148,6 +155,10 @@ export interface Address<Contexts = Record<string, unknown>> {
 
 const VISIT = 'visitEntry';
 
+function visitOf(state: EntryState): number | undefined {
+  return typeof state?.[VISIT] === 'number' ? state[VISIT] : undefined;
+}
+
 function positionOf(state: EntryState): Position | undefined {
   const position = state?.[EXPLORATION] as Partial<Position> | undefined;
   return typeof position?.left === 'number' && typeof position.top === 'number' ? { left: position.left, top: position.top } : undefined;
@@ -163,22 +174,16 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     for (const listener of listeners) listener({ url: new URL(history.url), cause });
   };
   let sequence = 0;
-  const visitOf = (state: EntryState) => (typeof state?.[VISIT] === 'number' ? state[VISIT] : undefined);
   /** The current entry's visit, given one if it has none (a fresh load or a hash navigation). */
-  const enter = () => {
-    let visit = visitOf(history.state);
-    if (visit === undefined) {
-      visit = ++sequence;
-      history.replace({ ...history.state, [VISIT]: visit }, history.url);
-    }
+  const enter = (url: string | URL = history.url) => {
+    const previous = visitOf(history.state);
+    const visit = previous ?? ++sequence;
+    if (previous === undefined || String(url) !== history.url) history.replace({ ...history.state, [VISIT]: visit }, url);
     sequence = Math.max(sequence, visit);
     return visit;
   };
   const arrival = new URL(history.url).hash.slice(1);
-  const loaded = normalized(new URL(history.url));
-  if (loaded.href !== history.url) history.replace(history.state, loaded);
-  sequence = visitOf(history.state) ?? 0;
-  let active = enter();
+  let active = enter(normalized(new URL(history.url)));
   const leave = () => {
     contexts.set(active, Object.fromEntries(readers.map(([name, read]) => [name, read()])) as Partial<Contexts>);
   };
@@ -198,13 +203,13 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     active = ++sequence;
     history.push({ ...state, [VISIT]: active }, url);
   };
-  history.onPopState(() => {
+  history.onNavigation(() => {
     leave();
-    // Only a link followed in the page leaves a `#tipo-` on the address: every entry written here drops it.
-    const typed = anchoredType(new URL(history.url)) !== undefined;
-    if (typed) history.replace(history.state, normalized(new URL(history.url)));
-    active = enter();
-    deliver(typed ? 'hash' : 'back');
+    const url = new URL(history.url);
+    // Native fragment navigation creates an entry without a visit; traversed entries already have one.
+    const cause = visitOf(history.state) === undefined ? 'hash' : 'back';
+    active = enter(anchoredType(url) ? normalized(url) : url);
+    deliver(cause);
   });
   return {
     get detailsOpen() { return detailsOpen(); },
@@ -313,7 +318,13 @@ export function browserHistory(): AddressHistory {
     push(state, url) { history.pushState(state, '', url); },
     replace(state, url) { history.replaceState(state, '', url); },
     back() { history.back(); },
-    onPopState(listener) { window.addEventListener('popstate', listener); },
+    onNavigation(listener) {
+      window.addEventListener('popstate', listener);
+      window.addEventListener('hashchange', event => {
+        // A fragment change can dispatch both events. The first delivery assigns the visit.
+        if (event.newURL === location.href && visitOf(history.state as EntryState) === undefined) listener();
+      });
+    },
   };
 }
 
@@ -351,7 +362,7 @@ export function memoryHistory(url: string): MemoryHistory {
     replace(state, next) {
       entries[index] = { url: resolve(next), state: structuredClone(state) };
     },
-    onPopState(listener) { listeners.push(listener); },
+    onNavigation(listener) { listeners.push(listener); },
     back() { go(-1); },
     forward() { go(1); },
     reload() { listeners.length = 0; },

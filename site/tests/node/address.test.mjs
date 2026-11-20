@@ -134,6 +134,14 @@ test('an invalid map state on load is corrected on the address without an entry'
   assert.deepEqual(navigations[0].mapState, { indicator: 'within_60_days', cancerType: 'prostate', mode: 'trend' });
 });
 
+test('an invalid theme is removed on load without changing the municipal path or its anchor', () => {
+  const municipal = `${HOME}municipio/261160-recife/`;
+  const { history, navigations } = setup(memoryHistory(`${municipal}?theme=invalid&tipo=breast#acesso`));
+  assert.equal(history.length, 1);
+  assert.equal(history.url, `${municipal}?tipo=breast#acesso`);
+  assert.equal(navigations[0].anchor, 'acesso');
+});
+
 test('a #tipo- link on load becomes the cancer type, and the hash leaves the address', () => {
   const { history, navigations } = setup(memoryHistory(`${HOME}?visualizacao=lista#tipo-breast`));
   assert.equal(history.length, 1);
@@ -159,11 +167,17 @@ test('following a #tipo- link is a hash navigation to that cancer type, and Back
   assert.equal(navigations.at(-1).mapState.cancerType, 'all');
 });
 
-test('following an Eixo anchor is still delivered as Back or Forward', () => {
+test('following an Eixo anchor has a hash cause; revisiting it has a back cause', () => {
   const { history, navigations } = setup();
   history.setHash('#acesso');
   assert.equal(history.url, `${HOME}#acesso`);
+  assert.equal(navigations.at(-1).cause, 'hash');
+  assert.equal(navigations.at(-1).anchor, 'acesso');
+  history.back();
   assert.equal(navigations.at(-1).cause, 'back');
+  history.forward();
+  assert.equal(navigations.at(-1).cause, 'back');
+  assert.equal(navigations.at(-1).anchor, '');
 });
 
 test('setting the map state adds an entry, and Back restores the combination before it', () => {
@@ -245,11 +259,14 @@ test('the anchor the visitor arrived with is delivered on load, even a #tipo- on
   assert.equal(navigations.at(-1).anchor, 'acesso');
 });
 
-test('following a #tipo- link for an unknown cancer type is an ordinary hash navigation', () => {
-  const { history, navigations } = setup();
-  history.setHash('#tipo-x');
-  assert.equal(history.url, `${HOME}#tipo-x`);
-  assert.equal(navigations.at(-1).cause, 'back');
+test('unknown and malformed #tipo- fragments preserve the cancer type', () => {
+  for (const hash of ['#tipo-x', '#tipo-%']) {
+    const { history, navigations } = setup(memoryHistory(`${HOME}?tipo=breast${hash}`));
+    assert.equal(history.url, `${HOME}?tipo=breast`);
+    history.setHash(hash);
+    assert.equal(navigations.at(-1).cause, 'hash');
+    assert.equal(navigations.at(-1).mapState.cancerType, 'breast');
+  }
 });
 
 const RECIFE = `${HOME}municipio/261160-recife/`;
