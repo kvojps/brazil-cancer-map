@@ -1,9 +1,10 @@
-import type { Address } from './address';
-import { type IndicatorLayer, type MunicipalityListing } from './indicator-layer';
-import { readMapState, sameMapState, writeMapState, type MapState } from './map-state';
+import type { Address, Navigation } from './address';
+import type { MunicipalityListing } from './indicator-layer';
+import { writeMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
-import { createMunicipalityNavigation, searchMunicipalities, searchStatusText } from './navigation';
+import { municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
+import { createMunicipalityQuery } from '../profile/municipality-query';
 import { axisResults, panelResult } from '../profile/panel-result';
 import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
 import { mountMunicipalityShare } from './municipality-share';
@@ -17,14 +18,18 @@ const isSheet = () => matchMedia(SHEET).matches;
 /** Where the visitor was reading the Meu município query. */
 export interface MunicipalityContext { code: string; axis: string; top: number; panelTop: number }
 
+type Municipality = MunicipalityListing['municipalities'][number];
+
+type MunicipalityReading = { municipality: MunicipalityContext };
+
 export interface MunicipalityNavigation {
   /** Follows the map state into the query. */
-  update(layer: IndicatorLayer | undefined, state: MapState): void;
+  update(state: MapState): void;
   /** Bring back the details and the reading of an entry the visitor navigated to; `anchor` is the Eixo it asks for, if any. */
-  restoreReading(context: MunicipalityContext | undefined, anchor: string): void;
+  restore(navigation: Navigation<MunicipalityReading>): void;
 }
 
-export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string, address: Address<{ municipality: MunicipalityContext }>, arrivalAnchor: string): MunicipalityNavigation {
+export function mountMunicipalityNavigation(camera: MapCamera, listing: MunicipalityListing, dataBase: string, address: Address<MunicipalityReading>, initialState: MapState): MunicipalityNavigation {
   address.convertLegacyMunicipality(code => {
     const place = listing.municipalities.find(place => place.code === code);
     return place && municipalityPath(place);
@@ -34,7 +39,6 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const input = document.querySelector<HTMLInputElement>('#municipality-search')!;
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
   const status = document.querySelector<HTMLElement>('#search-status')!;
-  const profiles = new Map<string, Promise<UfProfile>>();
   const content = panel.querySelector<HTMLElement>('[data-profile-slot]')!;
   const reading = panel.querySelector<HTMLElement>('.panel-reading')!;
   let restoredReading: MunicipalityContext | undefined;
@@ -47,13 +51,10 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const panelType = panel.querySelector<HTMLLabelElement>('.panel-type')!;
   const panelTypeSelect = panelType.querySelector<HTMLSelectElement>('select')!;
   const panelLegend = panel.querySelector<HTMLElement>('[data-panel-legend]')!;
-  const documents = new Map<string, Promise<string>>();
   const initialProfile = content.querySelector<HTMLElement>('.profile');
-  if (initialProfile) documents.set(initialProfile.dataset.code!, Promise.resolve(initialProfile.outerHTML));
-  let selected: MunicipalityListing['municipalities'][number] | undefined;
-  let state: MapState = readMapState(new URLSearchParams(location.search));
   const share = panel.querySelector<HTMLElement>('[data-municipality-share]')!;
   const resetShare = mountMunicipalityShare(share, () => {
+    const { place: selected, state } = query;
     if (!selected) return;
     const url = new URL(municipalityPath(selected), location.origin);
     url.search = writeMapState(state).toString();
@@ -61,14 +62,16 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   });
   let shownCode = '';
   let shownIndicator = '';
-  let initialAnchor = arrivalAnchor;
+  let initialAnchor = '';
   let anchorArrival = true;
+  let arrivalRevision = 0;
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
   let focusSummaryOnLoad = false;
   // A gesture cancels both arrivals: the reading's and the camera's.
   const cancelArrival = () => {
     anchorArrival = false;
+    arrivalRevision++;
     restoredReading = undefined;
     camera.userTookOver();
   };
@@ -96,10 +99,6 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     target?.focus({ preventScroll: true });
   };
   const axisFor = (indicator: string) => indicator === 'within_60_days' ? 'acesso' : indicator === 'hpv' ? 'prevencao' : indicator === 'mortality' ? 'panorama' : 'deteccao';
-  // The camera hears of a selection once the panel has placed the sheet around it.
-  const selectOnCamera = (preserveCamera?: boolean) => {
-    if (selected) camera.select(selected.code, { preserveCamera });
-  };
   const detailsOpen = () => address.detailsOpen;
   const expand = (expanded: boolean, preserveShareFocus = false) => {
     const focused = document.activeElement;
@@ -140,7 +139,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const openDetails = () => {
     cancelArrival();
     address.openDetails();
-    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(state.indicator);
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisFor(query.state.indicator);
     expand(true);
     heading.focus({ preventScroll: true });
   };
@@ -165,8 +164,37 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       axis.addEventListener('toggle', () => { if (axis.open && touched) title.scrollIntoView({ block: 'nearest' }); touched = false; });
     }
   };
-  const render = ({ html, profile }: { html: string; profile: UfProfile }) => {
-    if (!selected) return;
+  const showReading = (indicator: string) => {
+    if (restoredReading?.code === shownCode) {
+      const position = restoredReading;
+      restoredReading = undefined;
+      initialAnchor = '';
+      shownIndicator = indicator;
+      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === position.axis;
+      reading.scrollTop = position.top;
+      panel.scrollTop = position.panelTop;
+      return;
+    }
+    if (shownIndicator === indicator && !initialAnchor) return;
+    const indicatorChanged = shownIndicator !== '' && shownIndicator !== indicator;
+    const axisId = ['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor)
+      ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(indicator);
+    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
+    shownIndicator = indicator;
+    const target = content.querySelector<HTMLElement>(`#${axisId}`);
+    if (indicatorChanged && isPhone() && detailsOpen()) target?.scrollIntoView({ block: 'start' });
+    if (initialAnchor && isPhone()) {
+      // A shared anchor opens details on the entry that already contains it.
+      address.openDetailsInPlace();
+      expand(true);
+      const revision = arrivalRevision;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (anchorArrival && revision === arrivalRevision && detailsOpen()) target?.scrollIntoView({ block: 'start' });
+      }));
+    }
+    initialAnchor = '';
+  };
+  const render = (selected: Municipality, { html, profile }: { html: string; profile: UfProfile }, state: MapState) => {
     const region = listing.immediate_regions[selected.immediate_region];
     const result = panelResult(selected, profile, state, region);
     renderResult(resultBlock, result);
@@ -193,32 +221,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     if (note) note.hidden = state.cancerType !== 'all';
     const lines = axisResults(selected, profile, state);
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) renderAxisResults(axis, lines[axis.id] ?? []);
-    if (shownIndicator !== state.indicator) {
-      const indicatorChanged = shownIndicator !== '';
-      const axisId = ['acesso', 'deteccao', 'prevencao', 'panorama'].includes(initialAnchor)
-        ? initialAnchor : initialAnchor.startsWith('tipo-') ? 'acesso' : axisFor(state.indicator);
-      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
-      shownIndicator = state.indicator;
-      if (indicatorChanged && isPhone() && detailsOpen()) content.querySelector<HTMLElement>(`#${axisId}`)?.scrollIntoView({ block: 'start' });
-      if (initialAnchor && isPhone()) {
-        // A shared anchor is already the destination, not a synthetic details visit.
-        address.openDetailsInPlace();
-        expand(true);
-        const target = content.querySelector<HTMLElement>(`#${axisId}`);
-        const code = selected.code;
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          if (anchorArrival && selected?.code === code && detailsOpen()) target?.scrollIntoView({ block: 'start' });
-        }));
-      }
-      initialAnchor = '';
-    }
-    if (restoredReading?.code === selected.code) {
-      const position = restoredReading;
-      restoredReading = undefined;
-      for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === position.axis;
-      reading.scrollTop = position.top;
-      panel.scrollTop = position.panelTop;
-    }
+    showReading(state.indicator);
     if (focusSummaryOnLoad) {
       focusSummaryOnLoad = false;
       if (document.activeElement === panel && isPhone() && panel.hasAttribute('data-collapsed')) toggle.focus();
@@ -228,75 +231,32 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     syncSheetMetrics();
     camera.summaryRendered();
   };
-  const navigation = createMunicipalityNavigation({
-    places: listing.municipalities,
-    getUrl: () => new URL(location.href),
-    setPlace: place => {
-      // The exploration is read before the selection moves anything.
-      if (place) address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
-      else address.closeMunicipality();
-    },
-    focus: place => {
-      const changed = selected?.code !== place.code;
-      selected = place;
-      heading.textContent = `${place.name} (${place.uf})`;
-      clear.hidden = false;
-      panelLegend.hidden = false;
-      if (changed) {
-        resetShare();
-        panel.hidden = false;
-        toggle.hidden = true;
-        focusSummaryOnLoad = false;
-        resultBlock.removeAttribute('data-kind');
-        resultBlock.textContent = 'Carregando o resultado…';
-        panelType.hidden = true;
-        content.replaceChildren();
-        shownCode = '';
-        expand(!isPhone() || detailsOpen());
-      }
-      status.textContent = `${place.name} (${place.uf}) selecionado.`;
-    },
-    load: async place => {
-      let profile = profiles.get(place.uf);
-      if (!profile) {
-        profile = fetch(`${dataBase}/profiles/${place.uf}.json`).then(response => {
-          if (!response.ok) throw new Error(`Profile request failed (${response.status})`);
-          return response.json() as Promise<UfProfile>;
-        });
-        profiles.set(place.uf, profile);
-        profile.catch(() => profiles.delete(place.uf));
-      }
-      let document = documents.get(place.code);
-      if (!document) {
-        document = fetch(municipalityPath(place)).then(async response => {
-          if (!response.ok) throw new Error(`Municipality request failed (${response.status})`);
-          const html = await response.text();
-          const profile = new DOMParser().parseFromString(html, 'text/html').querySelector('.profile');
-          if (!profile) throw new Error('Municipal profile is missing');
-          return profile.outerHTML;
-        });
-        documents.set(place.code, document);
-        document.catch(() => documents.delete(place.code));
-      }
-      // Reuse the static cards as the single editorial renderer, with the UF data loaded on demand.
-      const [data, html] = await Promise.all([profile, document]);
-      return { html, profile: data };
-    },
-    show: render,
-    clear: () => {
-      if (selected) cancelArrival();
-      resetShare();
+  const showSelection = (place: Municipality | undefined) => {
+    resetShare();
+    shownCode = '';
+    content.replaceChildren();
+    if (!place) {
+      cancelArrival();
       panel.hidden = true;
       panelLegend.hidden = true;
-      selected = undefined;
-      content.replaceChildren();
-      shownCode = '';
       resultBlock.replaceChildren();
       status.textContent = '';
       syncSheetMetrics();
       camera.clear();
-    },
-  });
+      return;
+    }
+    heading.textContent = `${place.name} (${place.uf})`;
+    clear.hidden = false;
+    panelLegend.hidden = false;
+    panel.hidden = false;
+    toggle.hidden = true;
+    focusSummaryOnLoad = false;
+    resultBlock.removeAttribute('data-kind');
+    resultBlock.textContent = 'Carregando o resultado…';
+    panelType.hidden = true;
+    expand(!isPhone() || detailsOpen());
+    status.textContent = `${place.name} (${place.uf}) selecionado.`;
+  };
   const failed = (error: unknown) => {
     console.error(error);
     initialAnchor = '';
@@ -312,15 +272,39 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     retry.type = 'button';
     retry.textContent = 'Tentar novamente';
     retry.onclick = () => {
-      if (selected) {
-        camera.summaryReloading();
-        void navigation.select(selected, false).catch(failed);
-      }
+      camera.summaryReloading();
+      void query.retry();
     };
     resultBlock.dataset.kind = 'error';
     resultBlock.append(note, retry);
   };
-  clear.onclick = () => { navigation.close(); restoreFocus(); };
+  const query = createMunicipalityQuery(initialState, {
+    initialDocument: initialProfile && initialProfile.dataset.code
+      ? { code: initialProfile.dataset.code, html: initialProfile.outerHTML } : undefined,
+    async loadProfile(uf) {
+      const response = await fetch(`${dataBase}/profiles/${uf}.json`);
+      if (!response.ok) throw new Error(`Profile request failed (${response.status})`);
+      return response.json() as Promise<UfProfile>;
+    },
+    async loadDocument(place) {
+      const response = await fetch(municipalityPath(place));
+      if (!response.ok) throw new Error(`Municipality request failed (${response.status})`);
+      const html = await response.text();
+      const profile = new DOMParser().parseFromString(html, 'text/html').querySelector('.profile');
+      if (!profile) throw new Error('Municipal profile is missing');
+      return profile.outerHTML;
+    },
+    selectionChanged: showSelection,
+    filtersChanged: resetShare,
+    render,
+    failed,
+  });
+  clear.onclick = () => {
+    address.closeMunicipality();
+    initialAnchor = '';
+    void query.apply(undefined, query.state);
+    restoreFocus();
+  };
   panelTypeSelect.addEventListener('change', () => {
     const selector = document.querySelector<HTMLSelectElement>('#cancer-type')!;
     selector.value = panelTypeSelect.value;
@@ -343,12 +327,16 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       }
     }
   });
-  const select = (place: MunicipalityListing['municipalities'][number], focusAfterwards: HTMLElement = input, preserveCamera = false) => {
+  const select = (place: Municipality, focusAfterwards: HTMLElement = input, preserveCamera = false) => {
     initialAnchor = '';
+    restoredReading = undefined;
+    arrivalRevision++;
     returnFocus = focusAfterwards;
-    const loading = navigation.select(place);
-    selectOnCamera(preserveCamera);
-    void loading.catch(failed);
+    // Save exploration before the selection moves anything.
+    address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
+    void query.apply(place, query.state);
+    // The camera hears of the selection once the panel has placed the sheet around it.
+    camera.select(place.code, { preserveCamera });
   };
   const selectFromSearch = (place: MunicipalityListing['municipalities'][number]) => {
     results.replaceChildren();
@@ -408,21 +396,21 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     select(place, input, true);
   });
   return {
-    update(nextLayer, nextState) {
-      void nextLayer;
-      if (!sameMapState(state, nextState)) resetShare();
-      state = nextState;
-      const restoring = navigation.restore();
-      selectOnCamera();
-      void Promise.resolve(restoring).catch(failed);
+    update(nextState) {
+      void query.update(nextState);
     },
-    restoreReading(context, anchor) {
-      // The map state, applied first, already told the camera where to arrive.
-      restoredReading = context;
+    restore({ url, mapState, context, anchor }) {
+      restoredReading = context.municipality;
       initialAnchor = anchor;
       anchorArrival = true;
-      // The details come before the reading: the profile may render right after this navigation, and reads in the open sheet.
+      arrivalRevision++;
       syncDetails();
+      const place = municipalityFromUrl(listing.municipalities, url);
+      void query.apply(place, mapState);
+      if (place) {
+        camera.select(place.code);
+        if (shownCode === place.code) showReading(mapState.indicator);
+      }
     },
   };
 }

@@ -79,23 +79,20 @@ if (container && status) {
   mountSeriesCharts();
   mountMobileLayout();
   const visualization = mountVisualization(address);
-  // The map state the address asks for, applied once the listing has loaded.
-  let requested: MapState | undefined;
-  let arrivalAnchor = '';
+  // The address to apply once the listing has loaded.
+  let requested: Navigation<ReadingContexts>;
   let applyMapState = (_navigation: Navigation<ReadingContexts>) => {};
   let restoreList = (_context: ListContext | undefined) => {};
-  let restoreMunicipality = (_context: MunicipalityContext | undefined, _anchor: string) => {};
-  // The parts are applied in this order: map state (which the selected municipality still follows), visualization, the List, then the Meu município details and reading.
+  let restoreMunicipality = (_navigation: Navigation<ReadingContexts>) => {};
   address.listen(navigation => {
     const { cause, view, context } = navigation;
-    requested = navigation.mapState;
-    if (cause === 'initial') arrivalAnchor = navigation.anchor;
+    requested = navigation;
     applyMapState(navigation);
     if (cause === 'back') visualization.restore(context.view);
     visualization.show(view);
     if (cause === 'initial') return;
     restoreList(context.list);
-    restoreMunicipality(context.municipality, navigation.anchor);
+    restoreMunicipality(navigation);
   });
   const { meshUrl, listingUrl } = container.dataset;
   const dataStatus = document.querySelector<HTMLElement>('#data-status')!;
@@ -108,7 +105,7 @@ if (container && status) {
     .then((listing) => {
       started = true;
       let showOnMap = (_layer: IndicatorLayer | undefined, _mode: MapState['mode']) => {};
-      const initial = requested!;
+      const initial = requested.mapState;
       let mapLayer: IndicatorLayer | undefined;
       let mapState = initial;
       // The camera keeps the intentions until a map is attached to it.
@@ -116,7 +113,6 @@ if (container && status) {
       const indicatorTable = table ? mountIndicatorTable(table, listing, address) : undefined;
       if (indicatorTable) restoreList = indicatorTable.restoreReading;
       const notice = document.querySelector<HTMLElement>("#map-selection-notice");
-      let updatePreview = (_layer: IndicatorLayer | undefined, _state: MapState) => {};
       let current = initial;
       let request = 0;
       const syncControls = (state: MapState) => {
@@ -156,7 +152,6 @@ if (container && status) {
         // The legend reserves its area only once a layer has filled it.
         camera.layerShown(!!shown);
         indicatorTable?.show(shown, state.mode);
-        updatePreview(shown, state);
       };
       const showAvailability = (available: boolean) => {
         dataStatus.textContent = available ? '' : 'Os dados desta seleção não estão disponíveis. Busque um município ou use o índice por UF para acessar sua ficha.';
@@ -185,21 +180,25 @@ if (container && status) {
           retry.hidden = false;
         }
       };
-      const municipalityNavigation = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""), address, arrivalAnchor);
-      updatePreview = municipalityNavigation.update;
-      restoreMunicipality = municipalityNavigation.restoreReading;
+      const municipality = mountMunicipalityNavigation(camera, listing, listingUrl!.replace(/\/municipalities.json$/, ""), address, initial);
+      restoreMunicipality = navigation => {
+        municipality.restore(navigation);
+        if (navigation.cause === 'reset') camera.resetCountry();
+      };
       /** The notice when the cancer type chosen leaves the indicator shown without data. */
       const incompatibility = (previous: MapState, next: MapState) => next.indicator !== previous.indicator
         ? `${INDICATORS[previous.indicator]?.name} não se aplica a ${CANCER_TYPES[next.cancerType]}; mostrando até 60 dias.` : '';
       applyMapState = ({ cause, mapState: next }) => {
-        if (cause !== 'reset' && sameMapState(next, current)) updatePreview(mapLayer, current);
-        else void selectState(next, cause === 'hash' ? incompatibility(current, next) : '');
-        if (cause === 'reset') camera.resetCountry();
+        if (cause === 'reset' || !sameMapState(next, current)) {
+          void selectState(next, cause === 'hash' ? incompatibility(current, next) : '');
+        }
       };
       const choose = (next: MapState, message = '') => {
         address.setMapState(next);
+        municipality.update(next);
         void selectState(next, message);
       };
+      restoreMunicipality(requested);
       void selectState(initial);
       retry.onclick = () => { void selectState(current); };
       document.querySelector<HTMLAnchorElement>('.identity')!.addEventListener('click', event => {

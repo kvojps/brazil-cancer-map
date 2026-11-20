@@ -9,6 +9,72 @@ after(async () => { await browser?.close(); });
 const select = (page, code) => page.evaluate(code => window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code })), code);
 const ready = page => page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
 
+test('the consultation shows the latest filters while the indicator layer is pending and through its recovery', { timeout: 60_000 }, async () => {
+  const page = await browser.newPage();
+  const profile = Promise.withResolvers();
+  const layer = Promise.withResolvers();
+  const profileRequested = Promise.withResolvers();
+  const layerRequested = Promise.withResolvers();
+  let layerAttempts = 0;
+  let profileRequests = 0;
+  let documentRequests = 0;
+  try {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', {
+        value: async ({ url }) => { window.sharedMunicipality = url; },
+      });
+    });
+    await page.route(url => url.pathname === '/municipio/261160-recife/', route => {
+      documentRequests++;
+      return route.continue();
+    });
+    await page.route('**/dados/profiles/PE.json', async route => {
+      profileRequests++;
+      profileRequested.resolve();
+      await profile.promise;
+      await route.continue();
+    });
+    await page.route('**/map/mammography/breast.json', async route => {
+      if (++layerAttempts > 1) return route.continue();
+      layerRequested.resolve();
+      await layer.promise;
+      await route.fulfill({ status: 503, body: '' });
+    });
+    await page.goto(base + '/municipio/261160-recife/?visualizacao=lista');
+    await profileRequested.promise;
+    await page.selectOption('#cancer-type', 'breast');
+    await page.selectOption('#map-indicator', 'mammography');
+    await page.selectOption('#map-reading', 'status');
+    await layerRequested.promise;
+    await page.getByRole('button', { name: 'Compartilhar', exact: true }).click();
+    assert.equal(await page.evaluate(() => window.sharedMunicipality),
+      base + '/municipio/261160-recife/?indicador=mammography&tipo=breast&modo=hoje');
+
+    profile.resolve();
+    await ready(page);
+    const result = page.locator('[data-profile-result]');
+    assert.match(await result.textContent(), /mamografia/i);
+    assert.match(await result.locator('.result-context').textContent(), /^Referência/);
+    assert.equal(await page.locator('[data-panel-cancer-type]').inputValue(), 'breast');
+    assert.equal(await page.locator('.indicator-table tbody tr').count(), 0);
+    const resultBeforeLayer = await result.locator(':scope > :first-child').elementHandle();
+
+    layer.resolve();
+    const retry = page.locator('#retry-data');
+    await retry.waitFor();
+    assert.equal(await resultBeforeLayer.evaluate(node => node.isConnected), true, 'layer failure leaves the result in place');
+    await retry.click();
+    await page.locator('.indicator-table tbody tr').first().waitFor();
+    assert.equal(await resultBeforeLayer.evaluate(node => node.isConnected), true, 'layer retry leaves the result in place');
+    assert.equal(profileRequests, 1);
+    assert.equal(documentRequests, 1, 'the direct document supplies the municipal HTML');
+  } finally {
+    profile.resolve();
+    layer.resolve();
+    await page.close();
+  }
+});
+
 test('selection loads four axes, filters all types and distinguishes returning from clearing', async () => {
   const page = await browser.newPage({ viewport: { width: 320, height: 900 } });
   try {
