@@ -104,7 +104,7 @@ export interface Navigation<Contexts> {
   readonly cause: NavigationCause;
   readonly view: View;
   readonly mapState: MapState;
-  /** The anchor without `#`: on load, the one the visitor arrived with, even a `#tipo-` the address has dropped; none on an entry whose reading context comes back. */
+  /** The entry's anchor without `#`, including a `#tipo-` the Address normalized away. */
   readonly anchor: string;
   /** Where the visitor was exploring the map before the municipality on this entry was selected. */
   readonly exploration: Position | undefined;
@@ -168,6 +168,7 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
   const readers: [string, () => unknown][] = [];
   // Only this document's lifetime: a reload starts with no context on any entry.
   const contexts = new Map<number, Partial<Contexts>>();
+  const normalizedAnchors = new Map<number, string>();
   let handler: ((navigation: Navigation<Contexts>) => void) | undefined;
   const listeners: ((change: AddressChange) => void)[] = [];
   const signal = (cause: AddressChange['cause']) => {
@@ -182,16 +183,20 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     sequence = Math.max(sequence, visit);
     return visit;
   };
-  const arrival = new URL(history.url).hash.slice(1);
-  let active = enter(normalized(new URL(history.url)));
+  const enterAddress = (url: URL, next: URL) => {
+    const visit = enter(next);
+    if (url.hash && !next.hash) normalizedAnchors.set(visit, url.hash.slice(1));
+    return visit;
+  };
+  const initial = new URL(history.url);
+  let active = enterAddress(initial, normalized(initial));
   const leave = () => {
     contexts.set(active, Object.fromEntries(readers.map(([name, read]) => [name, read()])) as Partial<Contexts>);
   };
   const deliver = (cause: NavigationCause) => {
     const url = new URL(history.url);
     const context = cause === 'reset' ? undefined : contexts.get(active);
-    // Where the visitor left this entry wins over the anchor of the link that first brought them here.
-    const anchor = cause === 'initial' ? arrival : context ? '' : url.hash.slice(1);
+    const anchor = url.hash.slice(1) || normalizedAnchors.get(active) || '';
     handler?.({ url, cause, view: viewOf(url), mapState: mapStateOf(url), anchor,
       exploration: positionOf(history.state), detailsOpen: detailsOpen(), context: context ?? {} });
     signal(cause);
@@ -208,7 +213,7 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     const url = new URL(history.url);
     // Native fragment navigation creates an entry without a visit; traversed entries already have one.
     const cause = visitOf(history.state) === undefined ? 'hash' : 'back';
-    active = enter(anchoredType(url) ? normalized(url) : url);
+    active = enterAddress(url, anchoredType(url) ? normalized(url) : url);
     deliver(cause);
   });
   return {
@@ -264,6 +269,7 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
       }
       const url = new URL(history.url);
       url.hash = '';
+      normalizedAnchors.delete(active);
       rewrite({ ...history.state, [DETAILS]: undefined, [BY_OPENING]: undefined }, url);
       signal('command');
       return true;
@@ -286,6 +292,7 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     reset(home) {
       const url = new URL(home, history.url);
       if (url.href !== history.url) push(null, url);
+      normalizedAnchors.delete(active);
       deliver('reset');
     },
   };

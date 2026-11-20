@@ -27,12 +27,63 @@ function consultation(options = {}) {
     },
     selectionChanged: place => events.push(['selection', place?.code]),
     filtersChanged() {},
+    read() {},
+    rendered() {},
     render: (place, content, state) => events.push(['result', place.code, content, state]),
     failed: error => events.push(['error', error]),
     ...options,
   });
   return { query, documents, profiles, events };
 }
+
+test('restoring the same pending municipality applies saved reading before its original anchor', async () => {
+  const reading = [];
+  const { query, documents, profiles, events } = consultation({ read: destination => reading.push(destination) });
+  const first = query.restore(recife, initial, { anchor: 'prevencao' });
+  const saved = { code: recife.code, axis: 'panorama', readingTop: 240, panelTop: 30, barTop: 15 };
+  query.restore(recife, initial, { anchor: 'prevencao', saved });
+  documents.get(recife.code).resolve('Recife HTML');
+  profiles.get(recife.uf).resolve('PE profile');
+  await first;
+  assert.equal(events.filter(([event]) => event === 'result').length, 1);
+  assert.deepEqual(reading, [{ axis: 'panorama', source: 'saved', position: saved }]);
+});
+
+test('an explicit anchor chooses the axis during loading even when the visitor cancels its positioning', async () => {
+  const reading = [];
+  const { query, documents, profiles } = consultation({ read: destination => reading.push(destination) });
+  const pending = query.restore(recife, initial, { anchor: 'prevencao' });
+  const late = query.guardArrival(() => assert.fail('the old arrival moved the panel'));
+  query.cancelArrival();
+  documents.get(recife.code).resolve('Recife HTML');
+  profiles.get(recife.uf).resolve('PE profile');
+  await pending;
+  late();
+  assert.deepEqual(reading, [{ axis: 'prevencao', source: 'anchor', position: false }]);
+});
+
+test('an actual indicator change supersedes a pending anchor while type and mode keep the current reading', async () => {
+  const reading = [];
+  const { query, documents, profiles } = consultation({ read: destination => reading.push(destination) });
+  const pending = query.restore(recife, initial, { anchor: 'prevencao' });
+  query.update(breast);
+  documents.get(recife.code).resolve('Recife HTML');
+  profiles.get(recife.uf).resolve('PE profile');
+  await pending;
+  query.update(breastToday);
+  assert.deepEqual(reading, [{ axis: 'deteccao', source: 'indicator', position: false }]);
+});
+
+test('selecting the same municipality starts a fresh reading without inheriting its pending anchor', async () => {
+  const reading = [];
+  const { query, documents, profiles } = consultation({ read: destination => reading.push(destination) });
+  const pending = query.restore(recife, initial, { anchor: 'prevencao' });
+  assert.equal(query.select(recife), pending);
+  documents.get(recife.code).resolve('Recife HTML');
+  profiles.get(recife.uf).resolve('PE profile');
+  await pending;
+  assert.deepEqual(reading, [{ axis: 'acesso', source: 'indicator', position: false }]);
+});
 
 test('the same municipal load serves successive filters and the ready consultation updates immediately', async () => {
   const { query, documents, profiles, events } = consultation();

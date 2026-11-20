@@ -478,11 +478,86 @@ test('deliberate scrolling during an anchored load cancels late positioning', as
     release();
     await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
     assert.equal(await page.locator('#prevencao').getAttribute('open'), '');
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    assert.equal(await page.locator('.panel-reading').evaluate(el => el.scrollTop), 0);
     assert.ok(Math.abs(await page.evaluate(() => scrollY) - position) < 3, 'loading respects the deliberate reading position');
   } finally { release(); await page.close(); }
 });
 
-test('a new search selection supersedes an anchor still loading', async () => {
+test('Back while an anchored entry loads keeps the summary, and Forward reaches the unread anchor', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  let requested;
+  const started = new Promise(resolve => { requested = resolve; });
+  try {
+    await page.route('**/dados/profiles/PE.json', async route => { requested(); await held; await route.continue(); });
+    await page.goto(base + RECIFE);
+    await started;
+    await page.evaluate(() => { location.hash = 'prevencao'; });
+    await page.waitForURL('**/#prevencao');
+    const length = await page.evaluate(() => history.length);
+    await page.goBack();
+    await page.waitForURL(base + RECIFE);
+    await page.locator('#preview-heading').focus();
+    release();
+    const details = page.getByRole('button', { name: 'Ver detalhes', exact: true });
+    await details.waitFor();
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    await details.focus();
+    await page.goForward();
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
+    assert.equal(await page.locator('#preview-heading').evaluate(el => el === document.activeElement), true);
+    await page.waitForFunction(() => {
+      const axis = document.querySelector('#prevencao');
+      const bounds = axis.querySelector('summary').getBoundingClientRect();
+      return axis.open && bounds.top >= document.querySelector('.construction-notice').getBoundingClientRect().bottom && bounds.bottom <= innerHeight;
+    });
+    assert.equal(await page.evaluate(() => history.length), length);
+  } finally { release(); await page.close(); }
+});
+
+test('Back to an anchored entry restores the reading left there', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE + '#prevencao');
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
+    await page.locator('#panorama > summary').click();
+    await page.locator('#panorama [data-cancer-type="all"] .card-action').last().scrollIntoViewIfNeeded();
+    const position = await page.locator('.panel-reading').evaluate(el => el.scrollTop);
+    assert.ok(position > 100);
+    await page.locator('[data-panel-cancer-type]').selectOption('breast');
+    const length = await page.evaluate(() => history.length);
+    await page.goBack();
+    await page.waitForURL(base + RECIFE + '#prevencao');
+    await page.waitForFunction(top => document.querySelector('#panorama').open &&
+      Math.abs(document.querySelector('.panel-reading').scrollTop - top) < 3, position);
+    assert.equal(await page.evaluate(() => history.length), length);
+  } finally { await page.close(); }
+});
+
+test('Back and Forward restore the details bar scroll at short heights', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 190 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE + '#prevencao');
+    await page.getByRole('button', { name: 'Fechar detalhes', exact: true }).waitFor();
+    const bar = page.locator('.panel-bar');
+    const first = await bar.evaluate(el => {
+      el.scrollTop = el.scrollHeight;
+      return el.scrollTop;
+    });
+    assert.ok(first > 0);
+    await page.locator('[data-panel-cancer-type]').selectOption('breast');
+    await bar.evaluate(el => { el.scrollTop = 0; });
+    await page.goBack();
+    await page.waitForFunction(top => document.querySelector('.panel-bar').scrollTop === top, first);
+    await page.goForward();
+    await page.waitForFunction(() => document.querySelector('.panel-bar').scrollTop === 0);
+  } finally { await page.close(); }
+});
+
+for (const [name, code] of [['Olinda', '260960'], ['Recife', '261160']]) {
+test(`selecting ${name} in search supersedes an anchor still loading`, async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
   let release;
   const held = new Promise(resolve => { release = resolve; });
@@ -493,11 +568,11 @@ test('a new search selection supersedes an anchor still loading', async () => {
     await page.goto(base + RECIFE + '#prevencao');
     await started;
     if (await page.locator('.search-toggle').isVisible()) await page.locator('.search-toggle').click();
-    await page.locator('#municipality-search').fill('Olinda PE');
+    await page.locator('#municipality-search').fill(`${name} PE`);
     await page.locator('#municipality-search').press('Enter');
     release();
-    await page.locator('.profile[data-code="260960"]').waitFor({ state: 'attached' });
-    assert.equal(await page.locator('#preview-heading').innerText(), 'Olinda (PE)');
+    await page.locator(`.profile[data-code="${code}"]`).waitFor({ state: 'attached' });
+    assert.equal(await page.locator('#preview-heading').innerText(), `${name} (PE)`);
     assert.equal(new URL(page.url()).hash, '', 'new selection discards the superseded anchor');
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
     await page.getByRole('button', { name: 'Ver detalhes', exact: true }).waitFor();
@@ -506,6 +581,7 @@ test('a new search selection supersedes an anchor still loading', async () => {
     assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
   } finally { release(); await page.close(); }
 });
+}
 
 test('reloading an axis inside a deliberate details entry preserves its return history', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });

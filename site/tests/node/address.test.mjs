@@ -177,7 +177,7 @@ test('following an Eixo anchor has a hash cause; revisiting it has a back cause'
   assert.equal(navigations.at(-1).cause, 'back');
   history.forward();
   assert.equal(navigations.at(-1).cause, 'back');
-  assert.equal(navigations.at(-1).anchor, '');
+  assert.equal(navigations.at(-1).anchor, 'acesso');
 });
 
 test('setting the map state adds an entry, and Back restores the combination before it', () => {
@@ -388,13 +388,13 @@ test('a municipal path wins over a legacy ?municipio=, which leaves the address;
   assert.equal(unknown.history.length, 1);
 });
 
-test('the Eixo anchor counts on the first visit to an entry, and is dropped when its reading context comes back', () => {
+test('the axis anchor and saved reading are both delivered to the consultation', () => {
   const { history, address, navigations } = setup(memoryHistory(`${RECIFE}#deteccao`));
   address.registerContext('municipality', () => ({ axis: 'acesso' }));
   assert.equal(navigations[0].anchor, 'deteccao');
   address.closeMunicipality();
   history.back();
   assert.equal(history.url, `${RECIFE}#deteccao`);
-  assert.equal(navigations.at(-1).anchor, '');
+  assert.equal(navigations.at(-1).anchor, 'deteccao');
   assert.deepEqual(navigations.at(-1).context.municipality, { axis: 'acesso' });
 });
