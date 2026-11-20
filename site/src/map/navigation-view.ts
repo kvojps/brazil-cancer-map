@@ -147,12 +147,13 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   toggle.onclick = openDetails;
   closeDetails.onclick = () => {
     closeDetails.focus({ preventScroll: true });
-    // Closing details the opening created is Back: the navigation that follows syncs them.
-    if (!address.closeDetails()) return;
     initialAnchor = '';
-    syncDetails();
+    // The change signal syncs them; closing details the opening created is Back, synced by the navigation that follows.
+    address.closeDetails();
   };
-  window.addEventListener('navigation-state-change', syncDetails);
+  // The address arrived before this part mounted: sync now, then after every write and navigation.
+  syncDetails();
+  address.onChange(() => syncDetails());
   matchMedia('(max-width: 767px)').addEventListener('change', syncDetails);
   const prepareAxes = () => {
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
@@ -234,7 +235,6 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       // The exploration is read before the selection moves anything.
       if (place) address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
       else address.closeMunicipality();
-      window.dispatchEvent(new Event('navigation-state-change'));
     },
     focus: place => {
       const changed = selected?.code !== place.code;

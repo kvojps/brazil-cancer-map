@@ -288,6 +288,11 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
 
 const homeListeners: ((change: AddressChange) => void)[] = [];
 
+/** The home map's container, present only on the pages of the home map, whose address an Address owns. */
+export function homeMapContainer(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.map[data-mesh-url]');
+}
+
 /** Hear the home map's change signal from a part mounted outside the home map, like the shared header; silent on other pages. */
 export function onHomeAddressChange(listener: (change: AddressChange) => void): void {
   homeListeners.push(listener);

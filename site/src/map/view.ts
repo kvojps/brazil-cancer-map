@@ -45,7 +45,6 @@ export function mountVisualization(address: Address<{ view: ViewContext }>): Vis
       const view = button.dataset.view === 'lista' ? 'list' : 'map';
       address.chooseView(view);
       show(view);
-      window.dispatchEvent(new Event('navigation-state-change'));
     };
   }
   return {

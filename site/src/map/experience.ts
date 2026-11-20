@@ -1,4 +1,4 @@
-import { createHomeAddress, type Navigation } from './address';
+import { createHomeAddress, homeMapContainer, type Navigation } from './address';
 import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization, type ViewContext } from './view';
@@ -24,7 +24,7 @@ async function getJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-const container = document.querySelector<HTMLElement>(".map[data-mesh-url]");
+const container = homeMapContainer();
 const status = document.querySelector<HTMLElement>(".map-status");
 const table = document.querySelector<HTMLElement>(".indicator-table");
 const selector = document.querySelector<HTMLSelectElement>("#cancer-type");
@@ -155,7 +155,6 @@ if (container && status) {
         }
         // The legend reserves its area only once a layer has filled it.
         camera.layerShown(!!shown);
-        window.dispatchEvent(new Event('navigation-state-change'));
         indicatorTable?.show(shown, state.mode);
         updatePreview(shown, state);
       };

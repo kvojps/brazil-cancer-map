@@ -1,3 +1,4 @@
+import { homeMapContainer, onHomeAddressChange } from '../map/address.ts';
 import { readMapState, writeMapState } from '../map/map-state.ts';
 
 export function readTheme(params: URLSearchParams): 'light' | 'dark' | null {
@@ -117,8 +118,9 @@ export function mountSharedNavigation(): void {
     const target = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
     if (target) updateLink(target, new URL(location.href));
   }, true);
-  window.addEventListener('popstate', sync);
-  window.addEventListener('navigation-state-change', sync);
+  // On the home map the Address owns the history: its change signal follows every write and navigation.
+  if (homeMapContainer()) onHomeAddressChange(sync);
+  else window.addEventListener('popstate', sync);
   // A result or profile arriving changes only its new links, not every municipal link in the list.
   new MutationObserver(records => {
     const current = new URL(location.href);

@@ -94,6 +94,32 @@ test('a pending municipal response cannot undo a reset or take focus', async () 
   } finally { release(); await page.close(); }
 });
 
+test('main navigation links carry the home map state after Back, Forward and reset', async () => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 844 } });
+  try {
+    await page.goto(base + '/?tipo=breast&visualizacao=lista&theme=dark');
+    await page.locator('#cancer-type:enabled').waitFor();
+    const methodology = page.locator('.site-header nav[aria-label="Navegação principal"] a', { hasText: 'Como calculamos' });
+    const carried = async () => new URL(await methodology.evaluate(link => link.href)).searchParams;
+    await page.locator('#cancer-type').selectOption('cervix');
+    assert.equal((await carried()).get('tipo'), 'cervix');
+    await page.goBack();
+    await page.waitForFunction(() => new URL(location.href).searchParams.get('tipo') === 'breast');
+    assert.equal((await carried()).get('tipo'), 'breast');
+    assert.equal((await carried()).get('visualizacao'), 'lista');
+    assert.equal((await carried()).get('theme'), 'dark');
+    await page.goForward();
+    await page.waitForFunction(() => new URL(location.href).searchParams.get('tipo') === 'cervix');
+    assert.equal((await carried()).get('tipo'), 'cervix');
+    await page.locator('.identity').click();
+    await page.waitForURL(base + '/?theme=dark');
+    assert.equal((await carried()).has('tipo'), false);
+    assert.equal((await carried()).has('visualizacao'), false);
+    assert.equal((await carried()).get('theme'), 'dark');
+    assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+  } finally { await page.close(); }
+});
+
 for (const source of ['/metodologia/', '/municipios/']) {
   test(`${source}: Mapa returns with context while the logo carries only the explicit theme`, async () => {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
