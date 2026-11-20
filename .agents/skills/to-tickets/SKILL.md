@@ -79,6 +79,8 @@ Do NOT close or modify any parent issue.
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
 
+**Browser-tests da fatia:** the affected browser-test files, or "nenhum" with the reason.
+
 </local-ticket-template>
 
 <issue-template>
@@ -96,10 +98,14 @@ The end-to-end behaviour this ticket makes work, from the user's perspective, no
 - [ ] Criterion 1
 - [ ] Criterion 2
 
+**Browser-tests da fatia:** the affected browser-test files, or "nenhum" with the reason.
+
 ## Blocked by
 
 - A reference to each blocking ticket, or "None (can start immediately)". Omit this section when blockers were set as native edges.
 
 </issue-template>
 
-In either form, avoid specific file paths or code snippets: they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts, not a working demo, just the important bits.
+Every ticket lists its **browser-tests da fatia** in its verification: the browser-test files covering the site areas the slice touches. When the slice does not touch the site, write the list as explicitly empty with the reason (e.g. "nenhum, porque a fatia só mexe em documentação"). The implementer may add files to the list but never remove them. The full browser suite runs once, when the parent spec issue closes, not in each ticket. The rule lives in the development guide (two-level site verification) and the tracker guide.
+
+In either form, avoid specific file paths or code snippets: they go stale fast. The browser-test list is the exception: name the exact files. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts, not a working demo, just the important bits.

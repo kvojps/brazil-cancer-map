@@ -88,5 +88,9 @@ os limites de tempo.
 
 Ao terminar, use `npm run preview --prefix site -- stop`.
 
+Uma sub-issue roda só os browser-tests listados no ticket; a suíte completa
+roda uma vez, no fechamento da issue pai. Veja a
+[verificação do site em dois níveis](../../docs/development.md#verificação-do-site-em-dois-níveis).
+
 A [spec](../../docs/spec.md#17-pendências) registra a sessão pendente com
 leitor de tela.

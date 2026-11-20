@@ -25,6 +25,14 @@ bloqueios. Quando indisponíveis, use listas de tarefas no pai e
 referências `Part of #<n>` e `Blocked by: #<n>` nas filhas.
 Uma issue está desbloqueada quando todos os seus bloqueadores estão fechados.
 
+Na verificação de cada sub-issue, liste os browser-tests afetados pela
+fatia: os arquivos de `site/tests/browser/` que cobrem as áreas do site
+que ela toca. Quando a fatia não toca o site, escreva a lista vazia de
+forma explícita (por exemplo, "nenhum, porque a fatia só mexe no
+pipeline"). Quem implementa pode acrescentar arquivos à lista se a
+mudança tocar algo a mais, mas nunca remover. A regra dos dois níveis
+está no [guia de desenvolvimento](../development.md#verificação-do-site-em-dois-níveis).
+
 Para exploração com wayfinder, a issue principal guarda notas,
 decisões e dúvidas e usa o label `wayfinder:map`. As filhas usam labels
 `wayfinder:<tipo>` (`research`, `prototype`, `grilling` ou `task`).
@@ -39,6 +47,9 @@ Crie os labels de wayfinder ao adotar esse fluxo, caso ainda não existam.
 Marque os critérios atendidos e registre a solução com links para
 os commits ou PR. Use `Closes #<n>` no PR quando aplicável.
 Feche como concluída somente quando os critérios estiverem atendidos.
+Ao fechar uma sub-issue, registre quais browser-tests rodaram e o
+resultado. Antes de fechar uma issue pai de especificação, rode
+`npm run test:browser --prefix site` completo uma vez e registre na pai que ficou verde.
 Para fechamento manual, publique a explicação com `gh issue comment`
 e então execute `gh issue close <n>`.
 

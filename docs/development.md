@@ -102,6 +102,23 @@ estática e verificações automatizadas de acessibilidade.
 Execute as verificações pertinentes antes de integrar a mudança. O
 repositório depende dessas verificações locais.
 
+### Verificação do site em dois níveis
+
+A suíte de navegador é cara, então a verificação do site se divide em
+dois níveis:
+
+- **Sub-issue:** `npm test --prefix site`, `npm run check --prefix site`
+  e só os browser-tests
+  listados no próprio ticket. Quem implementa pode acrescentar arquivos
+  à lista, nunca remover. Uma sub-issue que não toca o site traz a lista
+  vazia de forma explícita e não roda browser-tests.
+- **Issue pai de especificação:** `npm run test:browser --prefix site`
+  completo, verde,
+  uma vez, antes do fechamento, além das verificações conjuntas.
+
+O [guia do tracker](agents/issue-tracker.md) descreve onde a lista fica no
+ticket e como registrar o resultado.
+
 ## Contribuir
 
 Registre problemas e propostas no [tracker](agents/issue-tracker.md).
