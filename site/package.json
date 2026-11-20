@@ -14,7 +14,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:tones": "node scripts/map-tones.mjs",
-    "test:browser": "node --test tests/browser/*.test.mjs",
+    "test:browser": "node --test --test-concurrency=2 tests/browser/*.test.mjs",
     "test:a11y": "node --test --test-concurrency=1 tests/browser/accessibility.test.mjs tests/browser/map-state-accessibility.test.mjs",
     "measure:output": "node scripts/measure-output.mjs",
     "measure:visit": "node scripts/measure-visit.mjs",

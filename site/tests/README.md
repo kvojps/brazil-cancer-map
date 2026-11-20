@@ -69,10 +69,23 @@ node --test site/tests/browser/municipality.test.mjs
 ```
 
 `test:a11y` seleciona `accessibility.test.mjs` e
-`map-state-accessibility.test.mjs`, ambos incluídos em `test:browser`.
-Use `A11Y_REPORT_DIR` para guardar os relatórios do axe, incluindo as
-verificações inconclusivas. Se a execução em paralelo atingir os limites de
-tempo, rode `node --test --test-concurrency=1 site/tests/browser/*.test.mjs`.
+`map-state-accessibility.test.mjs`, ambos incluídos em `test:browser`, e
+roda um arquivo por vez. Use `A11Y_REPORT_DIR` para guardar os relatórios
+do axe, incluindo as verificações inconclusivas.
+
+`test:browser` roda dois arquivos ao mesmo tempo. Com essa concorrência, a
+suíte completa levou cerca de 11 minutos e ocupou perto de 4 GB de memória
+além do que a máquina já usava. Para outra concorrência, chame o Node
+direto. Passar a opção pelo npm, depois de `--`, não funciona, porque ela
+chega depois dos arquivos e o Node a ignora.
+
+```sh
+node --test --test-concurrency=4 site/tests/browser/*.test.mjs
+```
+
+Use `--test-concurrency=1` se a concorrência 2 de `test:browser` atingir
+os limites de tempo.
+
 Ao terminar, use `npm run preview --prefix site -- stop`.
 
 A [spec](../../docs/spec.md#17-pendências) registra a sessão pendente com
