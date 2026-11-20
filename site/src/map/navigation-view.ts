@@ -272,6 +272,9 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     retry.type = 'button';
     retry.textContent = 'Tentar novamente';
     retry.onclick = () => {
+      // Retry in the current view even if an axis anchor arrived while the consultation showed an error.
+      initialAnchor = '';
+      restoredReading = undefined;
       camera.summaryReloading();
       void query.retry();
     };

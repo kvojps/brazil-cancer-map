@@ -75,6 +75,62 @@ test('the consultation shows the latest filters while the indicator layer is pen
   }
 });
 
+test('changing filters keeps the failed consultation until its own retry', async () => {
+  const page = await browser.newPage();
+  const layer = Promise.withResolvers();
+  let profileAttempts = 0;
+  let documentRequests = 0;
+  let layerAttempts = 0;
+  try {
+    await page.route('**/municipio/261160-recife/', route => {
+      documentRequests++;
+      return route.continue();
+    });
+    await page.route('**/dados/profiles/PE.json', route => ++profileAttempts === 1
+      ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.route('**/map/mammography/breast.json', async route => {
+      if (++layerAttempts > 1) return route.continue();
+      await layer.promise;
+      await route.fulfill({ status: 503, body: '' });
+    });
+    await page.goto(base + '/?visualizacao=lista');
+    await page.locator('#municipality-search').fill('Recife PE');
+    await page.getByRole('button', { name: 'Recife (PE)', exact: true }).click();
+    const result = page.locator('[data-profile-result]');
+    const profileRetry = result.getByRole('button', { name: 'Tentar novamente', exact: true });
+    await profileRetry.waitFor();
+    assert.equal(await result.getAttribute('data-kind'), 'error');
+    const message = await result.locator('p').textContent();
+    assert.match(message, /Não foi possível carregar a consulta municipal/);
+
+    await page.selectOption('#cancer-type', 'breast');
+    await page.selectOption('#map-indicator', 'mammography');
+    await page.selectOption('#map-reading', 'status');
+    layer.resolve();
+    const layerRetry = page.locator('#retry-data');
+    await layerRetry.waitFor();
+    assert.equal(await result.locator('p').textContent(), message);
+    assert.equal(profileAttempts, 1);
+    const entry = await page.evaluate(() => ({ url: location.href, length: history.length, state: history.state }));
+
+    await profileRetry.click();
+    await ready(page);
+    assert.match(await result.textContent(), /mamografia/i);
+    assert.match(await result.locator('.result-context').textContent(), /^Referência/);
+    assert.deepEqual(await page.evaluate(() => ({ url: location.href, length: history.length, state: history.state })), entry);
+    assert.equal(profileAttempts, 2);
+    assert.equal(documentRequests, 1);
+    assert.equal(layerAttempts, 1);
+    await layerRetry.click();
+    await page.locator('.indicator-table tbody tr').first().waitFor();
+    assert.equal(layerAttempts, 2);
+    assert.equal(profileAttempts, 2);
+  } finally {
+    layer.resolve();
+    await page.close();
+  }
+});
+
 test('selection loads four axes, filters all types and distinguishes returning from clearing', async () => {
   const page = await browser.newPage({ viewport: { width: 320, height: 900 } });
   try {

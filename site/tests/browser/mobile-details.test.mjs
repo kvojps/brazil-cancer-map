@@ -221,6 +221,31 @@ test('retry after an anchored profile failure keeps the summary and history, whi
   } finally { await page.close(); }
 });
 
+test('an anchor reached while the profile has failed stays collapsed after retry', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  let attempts = 0;
+  try {
+    await page.route('**/dados/profiles/PE.json', route => ++attempts === 1
+      ? route.fulfill({ status: 503, body: '' }) : route.continue());
+    await page.goto(base + RECIFE);
+    const retry = page.locator('[data-profile-result]').getByRole('button', { name: 'Tentar novamente', exact: true });
+    await retry.waitFor();
+    await page.evaluate(() => new Promise(resolve => {
+      window.addEventListener('hashchange', () => resolve(), { once: true });
+      location.hash = 'prevencao';
+    }));
+    const entry = await page.evaluate(() => ({ url: location.href, length: history.length, state: history.state }));
+
+    await retry.click();
+    const details = page.locator('[data-toggle-profile]:not([hidden])');
+    await details.waitFor({ state: 'attached' });
+    assert.equal(await details.getAttribute('aria-expanded'), 'false');
+    assert.equal(await page.locator('[data-preview-content]').isVisible(), false);
+    assert.deepEqual(await page.evaluate(() => ({ url: location.href, length: history.length, state: history.state })), entry);
+    assert.equal(attempts, 2);
+  } finally { await page.close(); }
+});
+
 test('details are deliberate and Back/Forward traverse details before the municipal selection', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {

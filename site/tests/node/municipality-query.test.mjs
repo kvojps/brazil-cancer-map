@@ -89,6 +89,35 @@ test('obsolete success and failure cannot change the consultation after selectin
   assert.equal(query.place, undefined);
 });
 
+for (const resource of ['document', 'profile']) {
+  test(`a failed municipal ${resource} is loaded again only on explicit retry`, async () => {
+    const { query, documents, profiles, events } = consultation();
+    const first = query.apply(recife, initial);
+    const document = documents.get(recife.code);
+    const profile = profiles.get(recife.uf);
+    const error = new Error(`Failed municipal ${resource}`);
+    (resource === 'document' ? document : profile).reject(error);
+    await first;
+
+    query.update(breastToday);
+    assert.deepEqual(events, [['selection', recife.code], ['error', error]]);
+    assert.equal(documents.get(recife.code), document);
+    assert.equal(profiles.get(recife.uf), profile);
+
+    const retry = query.retry();
+    const nextDocument = documents.get(recife.code);
+    const nextProfile = profiles.get(recife.uf);
+    assert.equal(nextDocument === document, resource !== 'document');
+    assert.equal(nextProfile === profile, resource !== 'profile');
+    nextDocument.resolve('Recife HTML');
+    nextProfile.resolve('PE profile');
+    await retry;
+    assert.deepEqual(events.slice(2), [
+      ['result', recife.code, { html: 'Recife HTML', profile: 'PE profile' }, breastToday],
+    ]);
+  });
+}
+
 test('a profile that cannot be presented offers recovery with a new profile and the cached document', async () => {
   const result = [];
   const { query, documents, profiles, events } = consultation({
