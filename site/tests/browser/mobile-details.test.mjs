@@ -437,6 +437,32 @@ for (const [width, height] of [[390, 568], [390, 664], [390, 740], [390, 844], [
   });
 }
 
+test('the reading stays open and focus moves to the heading when the mobile close control disappears', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 568 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE);
+    await page.getByRole('button', { name: 'Ver detalhes', exact: true }).press('Enter');
+    const axis = page.locator('#panorama');
+    await axis.locator(':scope > summary').click();
+    const close = page.getByRole('button', { name: 'Fechar detalhes', exact: true });
+    await close.focus();
+    const reading = page.locator('.panel-reading');
+    const position = await reading.evaluate(element => {
+      element.scrollTop = 300;
+      return element.scrollTop;
+    });
+    assert.ok(position > 0);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await close.waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => document.activeElement?.id === 'preview-heading', undefined, { timeout: 5000 });
+    assert.equal(await axis.evaluate(element => element.open), true);
+    await page.setViewportSize({ width: 390, height: 568 });
+    await close.waitFor();
+    assert.equal(await axis.evaluate(element => element.open), true);
+    assert.equal(await reading.evaluate(element => element.scrollTop), position);
+  } finally { await page.close(); }
+});
+
 for (const height of [568, 844]) {
   test(`list return at ${height} restores the position before selection, UF and open rows`, async () => {
     const page = await browser.newPage({ viewport: { width: 390, height }, isMobile: true, hasTouch: true });

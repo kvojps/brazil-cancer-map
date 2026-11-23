@@ -4,7 +4,8 @@ import { writeMapState, type MapState } from './map-state';
 import type { UfProfile } from '../profile/profile';
 import { municipalityPath } from '../profile/profile';
 import { municipalityFromUrl, searchMunicipalities, searchStatusText } from './navigation';
-import { createMunicipalityQuery, type MunicipalityContext, type ReadingDestination } from '../profile/municipality-query';
+import { createMunicipalityQuery } from '../profile/municipality-query';
+import { mountPanelReading, type MunicipalityReading } from '../profile/panel-reading';
 import { axisResults, panelResult } from '../profile/panel-result';
 import { renderAxisResults, renderResult, resultAnnouncement } from '../profile/panel-view';
 import { mountMunicipalityShare } from './municipality-share';
@@ -12,12 +13,7 @@ import type { MapCamera } from './camera';
 
 /** The composition where the panel is a sheet at the bottom; repeated in the CSS of the components that take part in it. */
 const SHEET = '(max-width: 767px)';
-const isPhone = () => matchMedia('(max-width: 767px)').matches;
-const isSheet = () => matchMedia(SHEET).matches;
-
 type Municipality = MunicipalityListing['municipalities'][number];
-
-type MunicipalityReading = { municipality: MunicipalityContext | undefined };
 
 export interface MunicipalityNavigation {
   /** Follows the map state into the query. */
@@ -37,19 +33,10 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const results = document.querySelector<HTMLElement>('#municipality-results')!;
   const status = document.querySelector<HTMLElement>('#search-status')!;
   const content = panel.querySelector<HTMLElement>('[data-profile-slot]')!;
-  const reading = panel.querySelector<HTMLElement>('.panel-reading')!;
-  const bar = panel.querySelector<HTMLElement>('.panel-bar')!;
-  address.registerContext('municipality', () => shownCode ? {
-    code: shownCode,
-    axis: content.querySelector<HTMLDetailsElement>('[data-profile-axis][open]')?.id ?? '',
-    readingTop: reading.scrollTop,
-    panelTop: panel.scrollTop,
-    barTop: bar.scrollTop,
-  } : undefined);
+  const sheet = matchMedia(SHEET);
   const resultBlock = panel.querySelector<HTMLElement>('[data-profile-result]')!;
   const heading = panel.querySelector<HTMLElement>('#preview-heading')!;
   const toggle = panel.querySelector<HTMLButtonElement>('[data-toggle-profile]')!;
-  const closeDetails = panel.querySelector<HTMLButtonElement>('[data-close-details]')!;
   const clear = panel.querySelector<HTMLButtonElement>('[data-clear-profile]')!;
   const panelType = panel.querySelector<HTMLLabelElement>('.panel-type')!;
   const panelTypeSelect = panelType.querySelector<HTMLSelectElement>('select')!;
@@ -66,16 +53,6 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   let shownCode = '';
   let returnFocus: HTMLElement = input;
   const root = document.documentElement;
-  let focusSummaryOnLoad = false;
-  // A gesture cancels both arrivals: the reading's and the camera's.
-  const cancelArrival = () => {
-    query.cancelArrival();
-    focusSummaryOnLoad = false;
-    camera.userTookOver();
-  };
-  for (const event of ['wheel', 'touchmove', 'pointerdown', 'keydown']) {
-    window.addEventListener(event, cancelArrival, { passive: true, capture: true });
-  }
 
   // What the floating controls and the sheet are placed against. The open sheet keeps the collapsed height, so nothing moves behind it.
   const list = document.querySelector<HTMLElement>('.indicator-table')!;
@@ -84,7 +61,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     if (!list.hidden) root.style.setProperty('--list-reading-top', `${listScroll.getBoundingClientRect().top}px`);
     root.style.setProperty('--notice-height', `${document.querySelector('.construction-notice')!.getBoundingClientRect().height}px`);
     if (panel.hidden) root.style.setProperty('--sheet-height', '0px');
-    else if (isSheet() && panel.hasAttribute('data-collapsed')) root.style.setProperty('--sheet-height', `${panel.getBoundingClientRect().height}px`);
+    else if (sheet.matches && panel.hasAttribute('data-collapsed')) root.style.setProperty('--sheet-height', `${panel.getBoundingClientRect().height}px`);
   };
   const metrics = new ResizeObserver(syncSheetMetrics);
   metrics.observe(panel);
@@ -95,106 +72,6 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     // On a phone the closed search leaves only its icon in place.
     const target = [returnFocus, input, document.querySelector<HTMLElement>('.search-toggle')].find(element => element?.getClientRects().length);
     target?.focus({ preventScroll: true });
-  };
-  const detailsOpen = () => address.detailsOpen;
-  const expand = (expanded: boolean, preserveShareFocus = false) => {
-    const wasExpanded = !panel.hasAttribute('data-collapsed');
-    const focused = document.activeElement;
-    const shareFocused = focused instanceof HTMLElement && share.contains(focused);
-    panel.toggleAttribute('data-collapsed', !expanded);
-    const nextToShare = expanded ? clear : panelLegend;
-    const movingShare = share.nextElementSibling !== nextToShare;
-    if (!expanded && wasExpanded && (movingShare || !shareFocused)) panel.scrollTop = 0;
-    if (movingShare) {
-      // Keep pending sharing and its feedback with the control in either layout.
-      nextToShare.before(share);
-      if (preserveShareFocus && shareFocused) {
-        focused.focus({ preventScroll: true });
-        requestAnimationFrame(query.guardArrival(() => {
-          if (document.activeElement === focused) focused.scrollIntoView({ block: 'nearest' });
-        }));
-      }
-    }
-    toggle.setAttribute('aria-expanded', String(expanded));
-    syncSheetMetrics();
-    camera.sheetChanged(!isSheet() ? 'none' : expanded ? 'open' : 'collapsed');
-  };
-  const syncDetails = (event?: Event, restoring = false) => {
-    const resizing = event?.type === 'change';
-    const hadFocus = panel.contains(document.activeElement);
-    const wasExpanded = !panel.hasAttribute('data-collapsed');
-    expand(!isPhone() || detailsOpen(), resizing);
-    if (isPhone() && wasExpanded && !detailsOpen()) {
-      if (hadFocus && !(resizing && share.contains(document.activeElement))) {
-        focusSummaryOnLoad = toggle.hasAttribute('hidden');
-        if (focusSummaryOnLoad) panel.focus({ preventScroll: true });
-        else toggle.focus({ preventScroll: true });
-      }
-    } else if (restoring && isPhone() && !wasExpanded && detailsOpen() && hadFocus) {
-      heading.focus({ preventScroll: true });
-    }
-  };
-  const openDetails = () => {
-    cancelArrival();
-    address.openDetails();
-    query.readIndicator();
-    heading.focus({ preventScroll: true });
-  };
-  toggle.onclick = openDetails;
-  closeDetails.onclick = () => {
-    closeDetails.focus({ preventScroll: true });
-    query.cancelArrival({ dismissAnchor: true });
-    // The change signal syncs them; closing details the opening created is Back, synced by the navigation that follows.
-    if (address.closeDetails() && address.exploration) {
-      const { left, top } = address.exploration;
-      requestAnimationFrame(query.guardArrival(() => window.scrollTo({ left, top, behavior: 'instant' })));
-    }
-  };
-  // The address arrived before this part mounted: sync now, then after every write and navigation.
-  syncDetails();
-  matchMedia('(max-width: 767px)').addEventListener('change', syncDetails);
-  const prepareAxes = () => {
-    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) {
-      axis.name = 'profile-axis';
-      const title = axis.querySelector<HTMLElement>(':scope > summary')!;
-      let revealTitle: (() => void) | undefined;
-      title.addEventListener('click', () => {
-        revealTitle = query.guardArrival(() => title.scrollIntoView({ block: 'nearest' }));
-      });
-      // Closing the Eixo above moves this one: keep the title that was just activated in view.
-      axis.addEventListener('toggle', () => {
-        if (axis.open) revealTitle?.();
-        revealTitle = undefined;
-      });
-    }
-  };
-  const showReading = ({ axis: axisId, source, position }: ReadingDestination) => {
-    for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) axis.open = axis.id === axisId;
-    if (source === 'saved') {
-      if (position) {
-        // Traversal can still move to the URL fragment after popstate has run.
-        const restorePosition = query.guardArrival(() => {
-          reading.scrollTop = position.readingTop;
-          panel.scrollTop = position.panelTop;
-          bar.scrollTop = position.barTop;
-        });
-        requestAnimationFrame(() => requestAnimationFrame(restorePosition));
-      }
-      return;
-    }
-    const anchored = source === 'anchor';
-    if (anchored && isPhone()) {
-      const toggleHadFocus = document.activeElement === toggle;
-      address.openDetailsInPlace();
-      if (toggleHadFocus) heading.focus({ preventScroll: true });
-    }
-    if (!position || (!anchored && (!isPhone() || !detailsOpen()))) return;
-    const target = content.querySelector<HTMLElement>(`#${axisId}`);
-    const revealAxis = query.guardArrival(() => {
-      if (target?.isConnected && (!isPhone() || detailsOpen())) target.scrollIntoView({ block: 'start' });
-    });
-    if (anchored) requestAnimationFrame(() => requestAnimationFrame(revealAxis));
-    else revealAxis();
   };
   const render = (selected: Municipality, { html, profile }: { html: string; profile: UfProfile }, state: MapState) => {
     const region = listing.immediate_regions[selected.immediate_region];
@@ -212,7 +89,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       profile.querySelector('.profile-types')?.remove();
       profile.querySelector('.profile-axes')?.remove();
       content.replaceChildren(profile);
-      prepareAxes();
+      reading.prepareAxes();
       shownCode = selected.code;
     }
     for (const section of content.querySelectorAll<HTMLElement>('[data-cancer-type]')) section.hidden = section.dataset.cancerType !== state.cancerType;
@@ -225,10 +102,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
   };
   const rendered = () => {
-    if (focusSummaryOnLoad) {
-      focusSummaryOnLoad = false;
-      if (document.activeElement === panel && isPhone() && panel.hasAttribute('data-collapsed')) toggle.focus({ preventScroll: true });
-    }
+    reading.rendered();
     // Frame against the loaded summary and the controls resting above it.
     syncSheetMetrics();
     camera.summaryRendered();
@@ -236,10 +110,8 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   const showSelection = (place: Municipality | undefined) => {
     resetShare();
     shownCode = '';
-    focusSummaryOnLoad = false;
     content.replaceChildren();
-    panel.scrollTop = 0;
-    bar.scrollTop = 0;
+    reading.resetSelection();
     camera.clear();
     if (!place) {
       panel.hidden = true;
@@ -257,7 +129,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     resultBlock.removeAttribute('data-kind');
     resultBlock.textContent = 'Carregando o resultado…';
     panelType.hidden = true;
-    expand(!isPhone() || detailsOpen());
+    reading.showSelection();
     status.textContent = `${place.name} (${place.uf}) selecionado.`;
   };
   const failed = (error: unknown) => {
@@ -299,12 +171,22 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     selectionChanged: showSelection,
     filtersChanged: resetShare,
     render,
-    read: showReading,
+    read: destination => reading.apply(destination),
     rendered,
     failed,
   });
+  const reading = mountPanelReading({
+    panel, content, heading, toggle, clear, share, panelLegend, sheet, address, query,
+    onCompositionChanged(expanded) {
+      syncSheetMetrics();
+      camera.sheetChanged(!sheet.matches ? 'none' : expanded ? 'open' : 'collapsed');
+    },
+    onGesture: () => camera.userTookOver(),
+    restoreAnchorReading: anchor => { void query.restore(query.place, query.state, { anchor }); },
+  });
+  address.registerContext('municipality', () => reading.capture(shownCode));
   address.onChange(({ url }) => {
-    if (!query.place || url.pathname === municipalityPath(query.place)) syncDetails();
+    if (!query.place || url.pathname === municipalityPath(query.place)) reading.syncDetails();
   });
   clear.onclick = () => {
     address.closeMunicipality();
@@ -316,22 +198,8 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     selector.value = panelTypeSelect.value;
     selector.dispatchEvent(new Event('change'));
   });
-  // A link to an Eixo inside a card opens it: browsers only reveal closed details around a target, not the target itself.
-  content.addEventListener('click', event => {
-    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
-    const click = event as MouseEvent;
-    if (!link || link.pathname !== location.pathname || click.ctrlKey || click.metaKey || click.shiftKey || click.altKey || click.button !== 0) return;
-    const axis = [...content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')].find(axis => `#${axis.id}` === link.hash);
-    const phone = isPhone();
-    if (!axis || (!phone && link.hash !== location.hash)) return;
-    // On a phone, Back still returns to the summary; on desktop, an unchanged hash needs a fresh reveal.
-    event.preventDefault();
-    if (phone) address.followAnchor(axis.id);
-    void query.restore(query.place, query.state, { anchor: axis.id });
-    if (phone) axis.querySelector('summary')!.focus({ preventScroll: true });
-  });
   const select = (place: Municipality, focusAfterwards: HTMLElement = input, preserveCamera = false) => {
-    focusSummaryOnLoad = false;
+    reading.cancelPendingSummaryFocus();
     returnFocus = focusAfterwards;
     // Save exploration before the selection moves anything.
     address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
@@ -388,7 +256,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     if (!place) return;
     event.preventDefault();
     select(place, link, true);
-    if (isSheet()) panel.scrollTop = 0;
+    reading.resetSheetPosition();
   });
   window.addEventListener('municipality-map-select', event => {
     const code = (event as CustomEvent<string>).detail;
@@ -401,15 +269,11 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
       void query.update(nextState);
     },
     restore({ url, mapState, context, anchor, cause }) {
-      focusSummaryOnLoad = false;
-      const focusWasInPanel = panel.contains(document.activeElement);
       const place = municipalityFromUrl(listing.municipalities, url);
-      if (place?.code === query.place?.code) syncDetails(undefined, cause === 'back');
-      void query.restore(place, mapState, { saved: context.municipality, anchor });
-      if (place) {
-        if (focusWasInPanel && !panel.contains(document.activeElement)) heading.focus({ preventScroll: true });
-        camera.select(place.code);
-      }
+      reading.restore({ sameSelection: place?.code === query.place?.code, fromBack: cause === 'back' }, () => {
+        void query.restore(place, mapState, { saved: context.municipality, anchor });
+      });
+      if (place) camera.select(place.code);
     },
   };
 }
