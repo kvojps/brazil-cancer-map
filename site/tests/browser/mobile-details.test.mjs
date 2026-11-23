@@ -337,6 +337,16 @@ for (const height of [568, 844]) test(`municipal anchors at ${height} reach thei
   } finally { await page.close(); }
 });
 
+test('an unknown cancer type fragment leaves the indicator axis in the summary', async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(base + RECIFE + '?indicador=mortality#tipo-unknown');
+    await page.locator('[data-profile-axis][open]').waitFor({ state: 'attached' });
+    assert.equal(await page.locator('[data-profile-axis][open]').getAttribute('id'), 'panorama');
+    assert.equal(await page.locator('[data-toggle-profile]').getAttribute('aria-expanded'), 'false');
+  } finally { await page.close(); }
+});
+
 test('links between axes keep mobile details open without adding a step before collapse', async () => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {

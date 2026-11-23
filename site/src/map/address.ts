@@ -41,16 +41,16 @@ const TYPE_ANCHOR = '#tipo-';
 /** The map state an address asks for: a `#tipo-` link names the cancer type; invalid or incompatible choices are corrected. */
 export function mapStateOf(url: URL): MapState {
   const params = new URLSearchParams(url.searchParams);
-  const anchored = anchoredType(url);
+  const anchored = cancerTypeOfAnchor(url.hash);
   if (anchored) params.set('tipo', anchored);
   return readMapState(params);
 }
 
 /** The cancer type a `#tipo-` link names, if it names a known one. */
-function anchoredType(url: URL): string | undefined {
-  if (!url.hash.startsWith(TYPE_ANCHOR)) return undefined;
+export function cancerTypeOfAnchor(hash: string): string | undefined {
+  if (!hash.startsWith(TYPE_ANCHOR)) return undefined;
   try {
-    const type = decodeURIComponent(url.hash.slice(TYPE_ANCHOR.length));
+    const type = decodeURIComponent(hash.slice(TYPE_ANCHOR.length));
     return Object.hasOwn(CANCER_TYPES, type) ? type : undefined;
   } catch {
     return undefined;
@@ -213,7 +213,7 @@ export function createAddress<Contexts = Record<string, unknown>>(history: Addre
     const url = new URL(history.url);
     // Native fragment navigation creates an entry without a visit; traversed entries already have one.
     const cause = visitOf(history.state) === undefined ? 'hash' : 'back';
-    active = enterAddress(url, anchoredType(url) ? normalized(url) : url);
+    active = enterAddress(url, cancerTypeOfAnchor(url.hash) ? normalized(url) : url);
     deliver(cause);
   });
   return {

@@ -101,8 +101,8 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     for (const axis of content.querySelectorAll<HTMLDetailsElement>('[data-profile-axis]')) renderAxisResults(axis, lines[axis.id] ?? []);
     status.textContent = resultAnnouncement(`${selected.name} (${selected.uf})`, result);
   };
-  const rendered = () => {
-    reading.rendered();
+  const contentReady = () => {
+    reading.contentReady();
     // Frame against the loaded summary and the controls resting above it.
     syncSheetMetrics();
     camera.summaryRendered();
@@ -133,6 +133,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     status.textContent = `${place.name} (${place.uf}) selecionado.`;
   };
   const failed = (error: unknown) => {
+    reading.contentFailed();
     console.error(error);
     content.replaceChildren();
     resultBlock.replaceChildren();
@@ -146,6 +147,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     retry.type = 'button';
     retry.textContent = 'Tentar novamente';
     retry.onclick = () => {
+      reading.retry();
       camera.summaryReloading();
       void query.retry();
     };
@@ -171,18 +173,16 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     selectionChanged: showSelection,
     filtersChanged: resetShare,
     render,
-    read: destination => reading.apply(destination),
-    rendered,
+    contentReady,
     failed,
   });
   const reading = mountPanelReading({
-    panel, content, heading, toggle, clear, share, panelLegend, sheet, address, query,
+    panel, content, heading, toggle, clear, share, panelLegend, sheet, address, initialIndicator: initialState.indicator,
     onCompositionChanged(expanded) {
       syncSheetMetrics();
       camera.sheetChanged(!sheet.matches ? 'none' : expanded ? 'open' : 'collapsed');
     },
     onGesture: () => camera.userTookOver(),
-    restoreAnchorReading: anchor => { void query.restore(query.place, query.state, { anchor }); },
   });
   address.registerContext('municipality', () => reading.capture(shownCode));
   address.onChange(({ url }) => {
@@ -190,6 +190,7 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   });
   clear.onclick = () => {
     address.closeMunicipality();
+    reading.clear();
     void query.apply(undefined, query.state);
     restoreFocus();
   };
@@ -199,11 +200,11 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
     selector.dispatchEvent(new Event('change'));
   });
   const select = (place: Municipality, focusAfterwards: HTMLElement = input, preserveCamera = false) => {
-    reading.cancelPendingSummaryFocus();
+    reading.select();
     returnFocus = focusAfterwards;
     // Save exploration before the selection moves anything.
     address.selectMunicipality(municipalityPath(place), { left: scrollX, top: scrollY });
-    void query.select(place);
+    void query.apply(place, query.state);
     // The camera hears of the selection once the panel has placed the sheet around it.
     camera.select(place.code, { preserveCamera });
   };
@@ -266,12 +267,20 @@ export function mountMunicipalityNavigation(camera: MapCamera, listing: Municipa
   });
   return {
     update(nextState) {
-      void query.update(nextState);
+      reading.updateIndicator(nextState.indicator);
+      void query.apply(query.place, nextState);
     },
     restore({ url, mapState, context, anchor, cause }) {
       const place = municipalityFromUrl(listing.municipalities, url);
-      reading.restore({ sameSelection: place?.code === query.place?.code, fromBack: cause === 'back' }, () => {
-        void query.restore(place, mapState, { saved: context.municipality, anchor });
+      reading.restore({
+        code: place?.code,
+        indicator: mapState.indicator,
+        anchor,
+        saved: context.municipality,
+        sameSelection: place?.code === query.place?.code,
+        fromBack: cause === 'back',
+      }, () => {
+        void query.apply(place, mapState);
       });
       if (place) camera.select(place.code);
     },

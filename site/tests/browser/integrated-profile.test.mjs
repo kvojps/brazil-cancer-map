@@ -9,6 +9,35 @@ after(async () => { await browser?.close(); });
 const select = (page, code) => page.evaluate(code => window.dispatchEvent(new CustomEvent('municipality-map-select', { detail: code })), code);
 const ready = page => page.locator('#municipality-content .profile').waitFor({ state: 'attached' });
 
+test('changing the indicator during an anchored load opens the new indicator axis', { timeout: 60_000 }, async () => {
+  const page = await browser.newPage();
+  const requested = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  try {
+    await page.route('**/dados/profiles/PE.json', async route => {
+      requested.resolve();
+      await release.promise;
+      await route.continue();
+    });
+    await page.goto(base + '/municipio/261160-recife/?visualizacao=lista#prevencao');
+    await requested.promise;
+    await page.selectOption('#cancer-type', 'breast');
+    await page.selectOption('#map-indicator', 'mammography');
+    await page.selectOption('#map-reading', 'status');
+    release.resolve();
+    await ready(page);
+    const openAxis = page.locator('[data-profile-axis][open]');
+    assert.equal(await openAxis.getAttribute('id'), 'deteccao');
+    await page.locator('#panorama > summary').click();
+    await page.selectOption('#cancer-type', 'all');
+    await page.selectOption('#map-reading', 'trend');
+    assert.equal(await openAxis.getAttribute('id'), 'panorama');
+  } finally {
+    release.resolve();
+    await page.close();
+  }
+});
+
 test('the consultation shows the latest filters while the indicator layer is pending and through its recovery', { timeout: 60_000 }, async () => {
   const page = await browser.newPage();
   const profile = Promise.withResolvers();

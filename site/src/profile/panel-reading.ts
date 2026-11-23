@@ -1,7 +1,31 @@
-import type { Address } from '../map/address';
-import type { createMunicipalityQuery, MunicipalityContext, ReadingDestination } from './municipality-query';
+import { cancerTypeOfAnchor, type Address } from '../map/address';
+
+/** Where the visitor left the municipal panel on a history entry. */
+interface MunicipalityContext {
+  code: string;
+  axis: string;
+  readingTop: number;
+  panelTop: number;
+  barTop: number;
+}
 
 export type MunicipalityReading = { municipality: MunicipalityContext | undefined };
+
+type ReadingDestination =
+  | { axis: string; source: 'saved'; position?: MunicipalityContext }
+  | { axis: string; source: 'anchor' | 'indicator'; position: boolean };
+
+function axisFor(indicator: string): string {
+  if (indicator === 'within_60_days') return 'acesso';
+  if (indicator === 'hpv') return 'prevencao';
+  if (indicator === 'mortality') return 'panorama';
+  return 'deteccao';
+}
+
+function axisOfAnchor(anchor: string): string | undefined {
+  if (cancerTypeOfAnchor(`#${anchor}`)) return 'acesso';
+  if (['acesso', 'deteccao', 'prevencao', 'panorama'].includes(anchor)) return anchor;
+}
 
 interface PanelReadingOptions {
   panel: HTMLElement;
@@ -13,24 +37,41 @@ interface PanelReadingOptions {
   panelLegend: HTMLElement;
   sheet: MediaQueryList;
   address: Address<MunicipalityReading>;
-  query: Pick<ReturnType<typeof createMunicipalityQuery>, 'cancelArrival' | 'guardArrival' | 'readIndicator'>;
+  initialIndicator: string;
   onCompositionChanged(expanded: boolean): void;
   onGesture(): void;
-  restoreAnchorReading(axis: string): void;
 }
 
-/** Apply the current reading to the mounted municipal panel. */
+/** Choose and apply the current reading to the mounted municipal panel. */
 export function mountPanelReading({
   panel, content, heading, toggle, clear, share, panelLegend, sheet, address,
-  query, onCompositionChanged, onGesture, restoreAnchorReading,
+  initialIndicator, onCompositionChanged, onGesture,
 }: PanelReadingOptions) {
   const reading = panel.querySelector<HTMLElement>('.panel-reading')!;
   const bar = panel.querySelector<HTMLElement>('.panel-bar')!;
   const closeDetails = panel.querySelector<HTMLButtonElement>('[data-close-details]')!;
+  let indicator = initialIndicator;
+  let available = false;
+  let destination: ReadingDestination | undefined;
+  let arrival = 0;
   let focusSummaryOnLoad = false;
+  const indicatorReading = (position = false): ReadingDestination => ({ axis: axisFor(indicator), source: 'indicator', position });
+  const setDestination = (next?: ReadingDestination) => {
+    arrival++;
+    destination = next;
+  };
+  const guardArrival = (callback: () => void) => {
+    const current = arrival;
+    return () => { if (current === arrival) callback(); };
+  };
+  const cancelPositioning = (dismissAnchor = false) => {
+    if (dismissAnchor && destination?.source === 'anchor') setDestination(indicatorReading());
+    else if (destination?.source === 'saved') setDestination({ ...destination, position: undefined });
+    else setDestination(destination && { ...destination, position: false });
+  };
   // A gesture cancels both arrivals: the reading's and the camera's.
   const cancelArrival = () => {
-    query.cancelArrival();
+    cancelPositioning();
     focusSummaryOnLoad = false;
     onGesture();
   };
@@ -51,7 +92,7 @@ export function mountPanelReading({
       nextToShare.before(share);
       if (preserveShareFocus && shareFocused) {
         focused.focus({ preventScroll: true });
-        requestAnimationFrame(query.guardArrival(() => {
+        requestAnimationFrame(guardArrival(() => {
           if (document.activeElement === focused) focused.scrollIntoView({ block: 'nearest' });
         }));
       }
@@ -79,16 +120,17 @@ export function mountPanelReading({
   toggle.onclick = () => {
     cancelArrival();
     address.openDetails();
-    query.readIndicator();
+    setDestination(indicatorReading());
+    readWhenAvailable();
     heading.focus({ preventScroll: true });
   };
   closeDetails.onclick = () => {
     closeDetails.focus({ preventScroll: true });
-    query.cancelArrival({ dismissAnchor: true });
+    cancelPositioning(true);
     // The change signal syncs them; closing details the opening created is Back, synced by the navigation that follows.
     if (address.closeDetails() && address.exploration) {
       const { left, top } = address.exploration;
-      requestAnimationFrame(query.guardArrival(() => window.scrollTo({ left, top, behavior: 'instant' })));
+      requestAnimationFrame(guardArrival(() => window.scrollTo({ left, top, behavior: 'instant' })));
     }
   };
   // The address arrived before this part mounted, so apply its initial composition now.
@@ -100,7 +142,7 @@ export function mountPanelReading({
       const title = axis.querySelector<HTMLElement>(':scope > summary')!;
       let revealTitle: (() => void) | undefined;
       title.addEventListener('click', () => {
-        revealTitle = query.guardArrival(() => title.scrollIntoView({ block: 'nearest' }));
+        revealTitle = guardArrival(() => title.scrollIntoView({ block: 'nearest' }));
       });
       // Closing the axis above moves this one. Keep the activated title in view.
       axis.addEventListener('toggle', () => {
@@ -114,7 +156,7 @@ export function mountPanelReading({
     if (source === 'saved') {
       if (position) {
         // Traversal can still move to the URL fragment after popstate has run.
-        const restorePosition = query.guardArrival(() => {
+        const restorePosition = guardArrival(() => {
           reading.scrollTop = position.readingTop;
           panel.scrollTop = position.panelTop;
           bar.scrollTop = position.barTop;
@@ -131,11 +173,17 @@ export function mountPanelReading({
     }
     if (!position || (!anchored && (!sheet.matches || !address.detailsOpen))) return;
     const target = content.querySelector<HTMLElement>(`#${axisId}`);
-    const revealAxis = query.guardArrival(() => {
+    const revealAxis = guardArrival(() => {
       if (target?.isConnected && (!sheet.matches || address.detailsOpen)) target.scrollIntoView({ block: 'start' });
     });
     if (anchored) requestAnimationFrame(() => requestAnimationFrame(revealAxis));
     else revealAxis();
+  };
+  const readWhenAvailable = () => {
+    if (!available || !destination) return;
+    const next = destination;
+    destination = undefined;
+    apply(next);
   };
   // Browsers open closed details around a fragment target. A link to the axis itself needs to open it explicitly.
   content.addEventListener('click', event => {
@@ -148,7 +196,8 @@ export function mountPanelReading({
     // On a phone, Back still returns to the summary; on desktop, an unchanged hash needs a fresh reveal.
     event.preventDefault();
     if (phone) address.followAnchor(axis.id);
-    restoreAnchorReading(axis.id);
+    setDestination({ axis: axis.id, source: 'anchor', position: true });
+    readWhenAvailable();
     if (phone) axis.querySelector('summary')!.focus({ preventScroll: true });
   });
 
@@ -163,33 +212,64 @@ export function mountPanelReading({
         barTop: bar.scrollTop,
       };
     },
-    apply,
     prepareAxes,
     syncDetails,
-    restore({ sameSelection, fromBack }: { sameSelection: boolean; fromBack: boolean }, restoreQuery: () => void) {
+    select() {
+      focusSummaryOnLoad = false;
+      setDestination(indicatorReading());
+    },
+    clear() {
+      setDestination();
+    },
+    updateIndicator(next: string) {
+      if (next === indicator) return;
+      indicator = next;
+      setDestination(indicatorReading(available));
+    },
+    restore({ code, indicator: next, anchor, saved, sameSelection, fromBack }: {
+      code: string | undefined;
+      indicator: string;
+      anchor: string;
+      saved?: MunicipalityContext;
+      sameSelection: boolean;
+      fromBack: boolean;
+    }, restoreQuery: () => void) {
+      indicator = next;
+      const axis = axisOfAnchor(anchor);
+      if (!code) setDestination();
+      else if (saved?.code === code) setDestination({ axis: saved.axis, source: 'saved', position: saved });
+      else if (axis) setDestination({ axis, source: 'anchor', position: true });
+      else setDestination(indicatorReading());
       focusSummaryOnLoad = false;
       const hadFocus = panel.contains(document.activeElement);
       if (sameSelection) syncDetails({ restoring: fromBack });
       restoreQuery();
       if (!panel.hidden && hadFocus && !panel.contains(document.activeElement)) heading.focus({ preventScroll: true });
     },
-    rendered() {
+    contentReady() {
+      available = true;
+      readWhenAvailable();
       if (!focusSummaryOnLoad) return;
       focusSummaryOnLoad = false;
       if (document.activeElement === panel && sheet.matches && panel.hasAttribute('data-collapsed')) {
         toggle.focus({ preventScroll: true });
       }
     },
+    contentFailed() {
+      available = false;
+      setDestination();
+    },
+    retry() {
+      setDestination(indicatorReading());
+    },
     resetSelection() {
+      available = false;
       focusSummaryOnLoad = false;
       panel.scrollTop = 0;
       bar.scrollTop = 0;
     },
     showSelection() {
       expand(!sheet.matches || address.detailsOpen);
-    },
-    cancelPendingSummaryFocus() {
-      focusSummaryOnLoad = false;
     },
     resetSheetPosition() {
       if (sheet.matches) panel.scrollTop = 0;

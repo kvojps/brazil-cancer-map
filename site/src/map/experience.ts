@@ -3,7 +3,7 @@ import { mountSeriesCharts } from '../profile/series-chart';
 import { mountMobileLayout } from '../shared/mobile-layout';
 import { mountVisualization, type ViewContext } from './view';
 import { mountMunicipalityNavigation } from './navigation-view';
-import type { MunicipalityContext } from '../profile/municipality-query';
+import type { MunicipalityReading } from '../profile/panel-reading';
 import { mountIndicatorTable, type ListContext } from "../map/indicator-table";
 import { updateLegend, updateLegendCorner } from '../map/legend';
 import { createMapCamera } from './camera';
@@ -73,7 +73,7 @@ function showNotes(layer: IndicatorLayer): void {
 }
 
 /** The reading context each part of the home map leaves on a history entry. */
-interface ReadingContexts { view: ViewContext; list: ListContext; municipality: MunicipalityContext | undefined }
+interface ReadingContexts extends MunicipalityReading { view: ViewContext; list: ListContext }
 
 if (container && status) {
   const address = createHomeAddress<ReadingContexts>();
